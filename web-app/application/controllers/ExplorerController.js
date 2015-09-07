@@ -137,6 +137,10 @@ var ExplorerController = Backbone.Router.extend({
 
     },
 
+    close: function (idImage, review) {
+        this.tabs.removeTab(idImage, review? 'review': 'image')
+        window.app.status.currentImages.splice($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.image})));
+    },
 
     closeAll: function () {
         if (this.tabs == null) {

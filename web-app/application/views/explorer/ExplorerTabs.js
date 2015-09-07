@@ -203,7 +203,7 @@ var ExplorerTabs = Backbone.View.extend({
                 var idImage = $(this).attr("data-image");
                 self.removeTab(idImage, "image");
                 self.showLastTab(idImage);
-                window.app.status.currentImages.splice($.inArray(idImage));
+                window.app.status.currentImages.splice($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.image})));
             });
         }
     },

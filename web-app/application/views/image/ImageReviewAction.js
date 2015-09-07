@@ -313,7 +313,7 @@ var ImageReviewAction = Backbone.View.extend({
                                         self.container.afterDeleteImageEvent();
                                         clearInterval(timer);
                                         dialog.close();
-
+                                        window.app.controllers.browse.close(self.model.id, self.model.attributes.inReview);
                                     },
                                     error: function (model, response) {
                                         clearInterval(timer);
