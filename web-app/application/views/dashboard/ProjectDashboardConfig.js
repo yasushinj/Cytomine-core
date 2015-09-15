@@ -343,11 +343,19 @@ var GeneralConfigPanel = Backbone.View.extend({
 var UsersConfigPanel = Backbone.View.extend({
     userMaggicSuggest : null,
     adminMaggicSuggest : null,
+    allUsers: [],
     projectUsers: [],
     projectAdmins: [],
     groups: null,
     callback: null,
     render: function() {
+        var self = this;
+        self.getValues(function() {
+            self.doLayout()
+        });
+        return this;
+    },
+    doLayout: function() {
         var self = this;
         self.createUserList();
         self.createMultiSelectUser();
@@ -395,6 +403,88 @@ var UsersConfigPanel = Backbone.View.extend({
         });
 
         return this;
+    },
+    getValues: function (doLayout) {
+        var self = this;
+        var allUser = null;
+        var projectUser = null;
+        var projectAdmin = null;
+
+
+        var loadUsers = function() {
+            if(allUser == null || projectUser == null || projectAdmin == null) {
+                return;
+            }
+
+            self.allUsers = [];
+            self.projectUsers = [];
+
+            allUser.each(function(user) {
+                self.allUsers.push({id:user.id,label:user.prettyName()});
+            });
+
+            projectUser.each(function(user) {
+                self.projectUsers.push(user.id);
+            });
+
+
+            projectAdmin.each(function(user) {
+                self.projectAdmins.push(user.id);
+            });
+
+            doLayout();
+
+        }
+
+        new UserCollection({}).fetch({
+            success: function (allUserCollection) {
+                allUser = allUserCollection;
+                loadUsers();
+            }});
+
+        new UserCollection({project: self.model.id}).fetch({
+            success: function (projectUserCollection) {
+                projectUser = projectUserCollection;
+                window.app.models.projectUser = projectUserCollection;
+                loadUsers();
+            }});
+
+        new UserCollection({project: self.model.id, admin:true}).fetch({
+            success: function (projectUserCollection) {
+                projectAdmin = projectUserCollection;
+                window.app.models.projectAddmin = projectUserCollection;
+                loadUsers();
+            }});
+
+    },
+    createUserList: function () {
+        var self = this;
+        self.userMaggicSuggest = $(self.el).find('#projectedituser').magicSuggest({
+            data: self.allUsers,
+            displayField: 'label',
+            value: self.projectUsers,
+            width: 590,
+            maxSelection:null
+        });
+        $(self.userMaggicSuggest).on('selectionchange', function(e,m){
+            self.projectUsers = this.getValue()
+            self.update(function() {
+                self.loadMultiSelectUser()
+            })
+        });
+
+        self.adminMaggicSuggest = $(self.el).find('#projecteditadmin').magicSuggest({
+            data: self.allUsers,
+            displayField: 'label',
+            value: self.projectAdmins,
+            width: 590,
+            maxSelection:null
+        });
+        $(self.adminMaggicSuggest).on('selectionchange', function(e,m){
+            self.update(function() {
+                self.loadMultiSelectUser()
+            })
+        });
     },
     createMultiSelectUser: function() {
 
@@ -478,8 +568,6 @@ var UsersConfigPanel = Backbone.View.extend({
             }
         });
 
-        // TODO
-
         // do a request to have all users of this group
         new GroupWithUserCollection().fetch({
             success: function (groupUsersCollection, response) {
@@ -487,81 +575,6 @@ var UsersConfigPanel = Backbone.View.extend({
                 reload(currentUsers, self.groups);
             }
         });
-    },
-    createUserList: function () {
-        var self = this;
-        var allUser = null;
-        var projectUser = null;
-        var projectAdmin = null;
-
-
-        var loadUser = function() {
-            if(allUser == null || projectUser == null || projectAdmin == null) {
-                return;
-            }
-            var allUserArray = [];
-
-            allUser.each(function(user) {
-                allUserArray.push({id:user.id,label:user.prettyName()});
-            });
-
-            var projectUserArray=[]
-            projectUser.each(function(user) {
-                projectUserArray.push(user.id);
-            });
-
-            projectAdmin.each(function(user) {
-                self.projectAdmins.push(user.id);
-            });
-
-            self.userMaggicSuggest = $(self.el).find('#projectedituser').magicSuggest({
-                data: allUserArray,
-                displayField: 'label',
-                value: projectUserArray,
-                width: 590,
-                maxSelection:null
-            });
-            $(self.userMaggicSuggest).on('selectionchange', function(e,m){
-                self.projectUsers = this.getValue()
-                self.update(function() {
-                    self.loadMultiSelectUser()
-                })
-            });
-
-            self.adminMaggicSuggest = $(self.el).find('#projecteditadmin').magicSuggest({
-                data: allUserArray,
-                displayField: 'label',
-                value: self.projectAdmins,
-                width: 590,
-                maxSelection:null
-            });
-            $(self.adminMaggicSuggest).on('selectionchange', function(e,m){
-                self.update(function() {
-                    self.loadMultiSelectUser()
-                })
-            });
-        }
-
-        new UserCollection({}).fetch({
-            success: function (allUserCollection) {
-                allUser = allUserCollection;
-                loadUser();
-            }});
-
-        new UserCollection({project: self.model.id}).fetch({
-            success: function (projectUserCollection) {
-                projectUser = projectUserCollection;
-                window.app.models.projectUser = projectUserCollection;
-                loadUser();
-            }});
-
-        new UserCollection({project: self.model.id, admin:true}).fetch({
-            success: function (projectUserCollection) {
-                projectAdmin = projectUserCollection;
-                window.app.models.projectAddmin = projectUserCollection;
-                loadUser();
-            }});
-
     },
     refreshUserList: function (reloadAllUsers) {
         var self = this;
@@ -571,7 +584,7 @@ var UsersConfigPanel = Backbone.View.extend({
 
         var loadUser = function() {
 
-            if(!reloadDone || projectUsers == null) {
+            if(projectUsers == null || (reloadAllUsers && !reloadDone)) {
                 return
             }
 
