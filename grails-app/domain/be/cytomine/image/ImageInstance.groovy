@@ -166,7 +166,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['extension'] = image?.baseImage?.mime?.extension
         returnArray['originalMimeType'] = image?.baseImage?.originalMimeType()
         returnArray['originalFilename'] = image?.baseImage?.originalFilename
-        returnArray['instanceFilename'] = image?.getFileName()
+        returnArray['instanceFilename'] = image?.instanceFilename
         returnArray['sample'] = image?.baseImage?.sample?.id
         returnArray['path'] = image?.baseImage?.path
         returnArray['mime'] = image?.baseImage?.mime?.mimeType
@@ -253,7 +253,13 @@ class ImageInstance extends CytomineDomain implements Serializable {
         return user
     }
 
+    // use a normal method and not a getter to avoid erasing instanceFilename with "Blind name"
     public String getFileName() {
+        if(project?.blindMode) return "[BLIND]"+id
+        return getInstanceFilename()
+    }
+
+    public String getInstanceFilename() {
         if (instanceFilename != null && instanceFilename.trim() != '') {
             return instanceFilename
         }
