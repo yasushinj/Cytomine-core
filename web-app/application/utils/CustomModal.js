@@ -88,7 +88,6 @@ var CustomModal = Backbone.View.extend({
             //when click on button to open modal, build modal html, append to doc and open modal
             self.button.unbind();
             self.button.click(function(evt) {
-                console.log("click sur le button");
                 self.render();
             });
         }// else, the owner must call render() by its own.
@@ -119,7 +118,6 @@ var DescriptionModal = {
 
         var callBackAfterCreation = function() {
 
-            $("iframe").contents().find("body").attr('contenteditable', editable);
             if (window.app.status.currentProjectModel.isReadOnly(window.app.models.projectAdmin)) {
                 $("#saveDescription" + idDescription).hide();
             }
@@ -154,6 +152,7 @@ var DescriptionModal = {
                 });
             });
         }
+
 
         var modal = new CustomModal({
             idModal: "descriptionModal"+ (editable ? "" : "Preview")+ domainIdent,
@@ -227,7 +226,9 @@ var DescriptionModal = {
                     }
                     callbackGet();
 
+                    // initPreview modal
                     self.initDescriptionModal(container, description.id, domainIdent, domainClassName, description.get('data'), false, container.find("a.descriptionPreview"), callbackUpdate);
+                    // if editable init the second modal for edition
                     if(self.editable) {
                         self.initDescriptionModal(container, description.id, domainIdent, domainClassName, description.get('data'), self.editable, container.find("a.description"), callbackUpdate);
                     }
@@ -465,7 +466,7 @@ var UpdateTextFiedsModal = {
 
     initUpdateTextFiedsModal: function (id, type, title, text, values, callback) {
 
-        // create a text en loopant sur le tab [{field, nom, value}]
+        // create a text with a loop on tab [{field, nom, value}]
         var body = '<p>'+text+'</p>';
         for(var i=0;i<values.length;i++){
             body = body + '<br/>'
