@@ -53,13 +53,17 @@ var ImagePropertiesView = Backbone.View.extend({
             self.model.fetch({
                 success: function (model, response) {
                     target.append(_.template(tpl, {key: "original name", value: self.model.get('originalFilename')}));
-                    new ImagePropertyCollection({image: self.model.get("baseImage")}).fetch({
-                        success: function (collection, response) {
-                            collection.sort();
-                            collection.each(function (model) {
-                                target.append(_.template(tpl, {key: model.get("key"), value: model.get("value")}));
-                            });
-                        }
+
+                    $.get("/api/abstractimage/"+self.model.get("baseImage")+"/user.$format", function(data) {
+                        target.append(_.template(tpl, {key: "original uploader", value: data.username+" ("+data.firstname+" "+data.lastname+")"}));
+                        new ImagePropertyCollection({image: self.model.get("baseImage")}).fetch({
+                            success: function (collection, response) {
+                                collection.sort();
+                                collection.each(function (model) {
+                                    target.append(_.template(tpl, {key: model.get("key"), value: model.get("value")}));
+                                });
+                            }
+                        });
                     });
                 }
             });

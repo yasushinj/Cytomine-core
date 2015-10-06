@@ -179,6 +179,14 @@ class AbstractImageService extends ModelService {
         return res
     }
 
+    def getUploaderOfImage(long id){
+        AbstractImage img = AbstractImage.get(id)
+        if(!img){
+            return null
+        }
+        return UploadedFile.findByImage(img).user
+    }
+
     /**
      * Check if some instances of this image exists and are still active
      */

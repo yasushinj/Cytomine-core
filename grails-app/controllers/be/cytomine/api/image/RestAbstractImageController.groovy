@@ -145,6 +145,19 @@ class RestAbstractImageController extends RestController {
         responseSuccess(result);
     }
 
+    @RestApiMethod(description="Show user who uploaded an image")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The abstract image id")
+    ])
+    def showUploaderOfImage() {
+        SecUser user = abstractImageService.getUploaderOfImage(params.long('id'))
+        if (user) {
+            responseSuccess(user)
+        } else {
+            responseNotFound("User", "Image", params.id)
+        }
+    }
+
     /**
      * Get image thumb URL
      */

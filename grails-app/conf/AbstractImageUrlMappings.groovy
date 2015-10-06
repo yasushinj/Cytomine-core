@@ -87,6 +87,9 @@ class AbstractImageUrlMappings {
             action = [GET: "listUnused"]
         }
 
+        "/api/abstractimage/$id/user.$format"(controller:"restAbstractImage"){
+            action = [GET:"showUploaderOfImage"]
+        }
         "/api/abstractimage/$id/properties/clear.$format"(controller:"restUploadedFile"){
             action = [POST:"clearProperties"]
         }
