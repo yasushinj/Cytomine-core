@@ -97,7 +97,8 @@ environments {
             //loggingSql = true
             dbCreate = "create"
             url = "jdbc:postgresql://localhost:5432/cytominetest"
-            password = "postgres"
+            username = "docker"
+            password = "docker"
         }
     }
     production {
