@@ -157,7 +157,7 @@ var OntologyTreeView = Backbone.View.extend({
         });
 
 
-        $(this.el).find(".termVisible").change(function() {
+        $(this.el).on('change', ".termVisible", function() {
             self.browseImageView.refreshLayers();
         });
 
