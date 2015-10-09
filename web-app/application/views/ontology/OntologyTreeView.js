@@ -192,6 +192,7 @@ var OntologyTreeView = Backbone.View.extend({
                 }
 
            });
+        $(this.el).find(".dynatree-title").removeAttr("href");
     },
     expand: function () {
         $(this.el).find('.tree').dynatree("getRoot").visit(function (node) {
