@@ -109,7 +109,9 @@ var OntologyTreeView = Backbone.View.extend({
                 }
             },
             onDblClick: function (node, event) {
-                node.toggleSelect();
+                if(event.target.id.indexOf("Term")<0) { // else we can link or unling term by dbl click on showTerm
+                    node.toggleSelect();
+                }
             },
             onRender: function (node, nodeSpan) {
                 $(nodeSpan).find("span.dynatree-icon").css({"background-image": "url(css/custom-theme/images/ui-icons_ffffff_256x240.png)"});
