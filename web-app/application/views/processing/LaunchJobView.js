@@ -702,6 +702,7 @@ var InputListDomainView = Backbone.View.extend({
             selectionStacked: false,
             maxSelection: (self.multiple ? null : 1),
             value : magicSuggestValue,
+            displayField : self.printAttribut,
             width : 750,
             renderer: function(v){
                 var item
