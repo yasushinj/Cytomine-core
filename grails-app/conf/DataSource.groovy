@@ -130,6 +130,10 @@ grails {
         host = "localhost"
         port = 27017
         databaseName = "cytomine"
+        option {
+            connectionsPerHost = 10 // The maximum number of connections allowed per host
+            threadsAllowedToBlockForConnectionMultiplier = 5 // so it*connectionsPerHost threads can wait for a connection
+        }
     }
 }
 environments {
