@@ -1769,7 +1769,21 @@ BrowseImageView = Backbone.View.extend({
     },
     refreshLayers: function () {
         var self = this;
+        var layersRefreshed = 0
+        var callbackRefresh = function(){
+            layersRefreshed++;
+            if(layersRefreshed == self.layers.length) {
+                self.annotationProperties.updateAnnotationProperyLayers();
+            }
+        };
+
         _.each(self.layers, function (layer) {
+
+            layer.vectorsLayer.events.remove("loadend");
+            layer.vectorsLayer.events.on({"loadend": function() {
+                callbackRefresh();
+            }});
+
             layer.vectorsLayer.refresh();
         });
         self.refreshReviewLayer();

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-var AnnotationPropertyLayer = function (imageID, userID, browseImageView, key) {
+var AnnotationPropertyLayer = function (imageID, layer, browseImageView, key) {
 
     var self = this;
     this.idImage = imageID;
-    this.idUser = userID;
+    this.layer = layer;
+    this.idUser = layer.userID;
 
     this.browseImageView = browseImageView;
     this.map = browseImageView.map;
@@ -66,18 +67,27 @@ var AnnotationPropertyLayer = function (imageID, userID, browseImageView, key) {
 
 OpenLayers.Format.AnnotationProperty = OpenLayers.Class(OpenLayers.Format, {
     read: function (collection) {
-        var nestedCollection = collection.collection;
 
         var self = this;
+
+        var idAnnotations = $.map(self.annotationPropertyLayer.layer.vectorsLayer.features, function( n, i ) {
+            return ( n.attributes.idAnnotation);
+        });
+
+        var nestedCollection = collection.collection;
 
         var featuresMap = {}
 
         _.each(nestedCollection, function (result) {
-            var samePointValue = featuresMap[result.x + "_" + result.y];
-            if(samePointValue) {
-                featuresMap[result.x + "_" + result.y] = samePointValue + " ; " + result.value
-            } else {
-                featuresMap[result.x + "_" + result.y] = result.value
+
+            // only add properties on visible annotations
+            if($.inArray(result.idAnnotation, idAnnotations) > -1) {
+                var samePointValue = featuresMap[result.x + "_" + result.y];
+                if(samePointValue) {
+                    featuresMap[result.x + "_" + result.y] = samePointValue + " ; " + result.value
+                } else {
+                    featuresMap[result.x + "_" + result.y] = result.value
+                }
             }
         });
         console.log("featuresMap");

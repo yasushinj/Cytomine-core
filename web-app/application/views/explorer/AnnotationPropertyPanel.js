@@ -157,7 +157,7 @@ var AnnotationPropertyPanel = SideBarPanel.extend({
             if (layer.vectorsLayer.visibility) {
                 $("#selectLayersAnnotationProperty-"+idImage+" ."+layer.userID).show();
                 if (key != "selectedEmpty") {
-                    var annotationPropertyLayer = new AnnotationPropertyLayer(self.model.get('id'), layer.userID, self.browseImageView, key);
+                    var annotationPropertyLayer = new AnnotationPropertyLayer(self.model.get('id'), layer, self.browseImageView, key);
                     annotationPropertyLayer.addToMap();
                     //annotationPropertyLayer.setZIndex(726);
 
