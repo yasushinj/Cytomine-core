@@ -339,7 +339,7 @@ class ImageRetrievalService {
     private List<Long> getIndexedResource() {
         RetrievalServer server = RetrievalServer.findByDeletedIsNull()
         String URL = server.url+"/api/images"
-        List json = JSON.parse(getGetResponse(URL),server.username,server.password)
+        List json = JSON.parse(getGetResponse(URL,server.username,server.password))
         List<Long> resources = new ArrayList<Long>()
         json.each { image ->
             log.debug "resource=" + Long.parseLong(image.id)
