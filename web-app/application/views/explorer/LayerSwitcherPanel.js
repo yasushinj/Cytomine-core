@@ -26,7 +26,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * LayerSwitcherPanel constructor
      * @param options
      */
     initialize: function (options) {

@@ -26,7 +26,7 @@ var OntologyPanel = SideBarPanel.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * OntologyPanel constructor
      * @param options
      */
     initialize: function (options) {

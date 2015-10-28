@@ -26,7 +26,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * AnnotationPopupPanel constructor
      * @param options
      */
     initialize: function (options) {

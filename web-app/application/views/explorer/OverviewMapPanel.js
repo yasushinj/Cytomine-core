@@ -26,7 +26,7 @@ var OverviewMapPanel = SideBarPanel.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * OverviewMapPanel constructor
      * @param options
      */
     initialize: function (options) {

@@ -26,7 +26,7 @@ var AnnotationsPanel = Backbone.View.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * AnnotationsPanel constructor
      * @param options
      */
     initialize: function (options) {

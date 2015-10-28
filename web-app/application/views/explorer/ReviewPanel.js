@@ -27,7 +27,7 @@ var ReviewPanel = SideBarPanel.extend({
     userJobLayers: null,
     reviewLayer: null,
     /**
-     * ExplorerTabs constructor
+     * ReviewPanel constructor
      * @param options
      */
     initialize: function (options) {

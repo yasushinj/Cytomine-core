@@ -26,7 +26,7 @@ var MultiDimensionPanel = SideBarPanel.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * MultiDimensionPanel constructor
      * @param options
      */
     initialize: function (options) {

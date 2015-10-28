@@ -27,7 +27,7 @@ var JobTemplatePanel = SideBarPanel.extend({
     currentAnnotation : null,
     currentInterval : null,
     /**
-     * ExplorerTabs constructor
+     * JobTemplatePanel constructor
      * @param options
      */
     initialize: function (options) {

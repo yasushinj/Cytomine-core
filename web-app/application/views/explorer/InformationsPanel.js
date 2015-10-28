@@ -26,7 +26,7 @@ var InformationsPanel = SideBarPanel.extend({
     tagName: "div",
 
     /**
-     * ExplorerTabs constructor
+     * InformationsPanel constructor
      * @param options
      */
     initialize: function (options) {

@@ -19,7 +19,7 @@ var AnnotationPropertyPanel = SideBarPanel.extend({
     keyAnnotationProperty: null,
     annotationPropertyLayers : [],
     /**
-     * ExplorerTabs constructor
+     * AnnotationPropertyPanel constructor
      * @param options
      */
     initialize: function (options) {
