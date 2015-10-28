@@ -187,7 +187,10 @@ class UploadedFile extends CytomineDomain implements Serializable{
     }
 
     def getAbsolutePath() {
-        return [ StorageAbstractImage.findByAbstractImage(this.getAbstractImageObject()).storage.basePath, this.filename].join(File.separator)
+        AbstractImage img = this.getAbstractImageObject();
+        if(img) return [ StorageAbstractImage.findByAbstractImage(img).storage.basePath, this.filename].join(File.separator)
+        // at creation, img are not set
+        else return [ this.path, this.filename].join(File.separator)
     }
 
     def getAbstractImage() {

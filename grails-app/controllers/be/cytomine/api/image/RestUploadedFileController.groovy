@@ -189,6 +189,7 @@ class RestUploadedFileController extends RestController {
         Mime mime = Mime.findByMimeType(mimeType)
         if (!mime) {
             MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+            // TODO : We are not sure than we will have the same mimetype in uploadedFile
             mimeType = mimeTypesMap.getContentType(uploadedFile.getAbsolutePath())
             mime = new Mime(extension: ext, mimeType : mimeType)
             mime.save(failOnError: true)
