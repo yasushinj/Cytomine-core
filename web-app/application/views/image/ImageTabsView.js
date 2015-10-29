@@ -22,15 +22,13 @@ var ImageTabsView = Backbone.View.extend({
     project : null,
     initialize: function (options) {
         this.idProject = options.idProject;
-        this.container = options.container;
-        console.log(options);
         this.project = options.project;
     },
     refresh: function () {
         this.afterDeleteImageEvent();
     },
     afterDeleteImageEvent: function () {
-        var table = $("#imageProjectTable" + this.idProject);
+        var table = $(this.el).find("#imageProjectTable" + this.idProject);
         if(table && table.dataTable()) {
             table.dataTable().fnDestroy();
         }
@@ -44,7 +42,7 @@ var ImageTabsView = Backbone.View.extend({
                 new AddImageToProjectDialog({el: "#dialogs", model: self.project}).render();
             });
             $("#imageRefresh"+self.idProject).click(function() {
-                self.container.imagesTabsView.refresh();
+                self.refresh();
             });
 
         });
@@ -61,8 +59,8 @@ var ImageTabsView = Backbone.View.extend({
         var self = this;
         self.images = [];
         var isAdmin = window.app.status.currentProjectModel.isAdmin(window.app.models.projectAdmin);
-        var table = $("#imageProjectTable" + self.idProject);
-        var body = $("#imageProjectArray" + self.idProject);
+        var table = $(this.el).find("#imageProjectTable" + self.idProject);
+        var body = $(this.el).find("#imageProjectArray" + self.idProject);
         var columns = [
             { sClass: 'center', "mData": "id", "bSearchable": false},
             { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {

@@ -116,8 +116,12 @@ var ProjectDashboardView = Backbone.View.extend({
     },
 
     refreshImagesTable: function () {
+        var self = this;
         if (this.projectDashboardImages == null) {
-            this.projectDashboardImages = new ProjectDashboardImages({ model: this.model});
+            this.projectDashboardImages = new ProjectDashboardImages({
+                model: this.model,
+                el: $("#tabs-images-"+self.model.id)
+            });
         }
         this.projectDashboardImages.refreshImagesTable();
     },

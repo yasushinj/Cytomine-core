@@ -17,6 +17,30 @@
 var ProjectDashboardImages = Backbone.View.extend({
     imagesView: null,
     imagesTabsView: null,
+    render: function () {
+
+        var self = this;
+        require(["text!application/templates/dashboard/ImageTable.tpl.html"
+            ],
+            function (imageTableTemplate) {
+                self.doLayout(imageTableTemplate);
+            });
+        return this;
+    },
+    doLayout: function (imageTableTemplate) {
+        var self = this;
+        if (this.imagesTabsView == null) {
+            this.imagesTabsView = new ImageTabsView({
+                model: new ImageInstanceCollection({project: self.model.get('id')}),
+                el: _.template(imageTableTemplate, {id : self.model.get('id')}),
+                idProject: this.model.id,
+                project: this.model
+            }).render();
+            $(this.el).append(this.imagesTabsView.el)
+        }
+    },
+
+    // find a way to integrate this too
     refreshImagesThumbs: function () {
         console.log("refreshImagesThumbs");
         if (this.imagesView == null) {
@@ -31,16 +55,10 @@ var ProjectDashboardImages = Backbone.View.extend({
         }
     },
     refreshImagesTable: function () {
+        var self = this;
         console.log("refreshImagesTable");
         if (this.imagesTabsView == null) {
-            console.log(this.imagesTabsView);
-            this.imagesTabsView = new ImageTabsView({
-                model: new ImageInstanceCollection({project: this.model.get('id')}),
-                el: $("#tabs-projectImageListing" + this.model.get('id')),
-                container: this,
-                idProject: this.model.id,
-                project: this.model
-            }).render();
+            self.render();
         } else {
             console.log("this.imagesTabsView.refresh()");
             //this.imagesTabsView.refresh();
