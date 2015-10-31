@@ -79,7 +79,11 @@ class BootstrapUtilsService {
             if (user.validate()) {
                 log.info "Creating user ${user.username}..."
 
-                try {user.save(flush: true) } catch(Exception e) {println e}
+                try {
+                    user.save(flush: true)
+                } catch(Exception e) {
+                    log.info e
+                }
                 log.info "Save ${user.username}..."
 
                 usersCreated << user
@@ -162,7 +166,7 @@ class BootstrapUtilsService {
                 imageServer.save()
             } else {
                 imageServer.errors?.each {
-                    println it
+                    log.info it
                 }
             }
 
@@ -178,7 +182,7 @@ class BootstrapUtilsService {
                     mime.save(flush:true)
                 } else {
                     mime.errors?.each {
-                        println it
+                        log.info it
                     }
                 }
             }
@@ -187,8 +191,8 @@ class BootstrapUtilsService {
     }
 
     public def createMimeImageServers(def imageServerCollection, def mimeCollection) {
-        println imageServerCollection
-        println ImageServer.list()
+        log.info imageServerCollection
+        log.info ImageServer.list()
         imageServerCollection.each {
             ImageServer imageServer = ImageServer.findByName(it.name)
             if (imageServer) {
@@ -257,7 +261,7 @@ class BootstrapUtilsService {
                 imageServer.save()
             } else {
                 imageServer.errors?.each {
-                    println it
+                    log.info it
                 }
             }
 
@@ -302,7 +306,7 @@ class BootstrapUtilsService {
                     server.save()
                 } else {
                     server.errors?.each {
-                        println it
+                        log.info it
                     }
                 }
             }
@@ -328,7 +332,7 @@ class BootstrapUtilsService {
                 mbs.save()
             } else {
                 mbs.errors?.each {
-                    println it
+                    log.info it
                 }
             }
         }
@@ -380,7 +384,7 @@ class BootstrapUtilsService {
                 imageServer.save()
             } else {
                 imageServer.errors?.each {
-                    println it
+                    log.info it
                 }
             }
 
@@ -417,7 +421,6 @@ class BootstrapUtilsService {
 
     def checkImages2() {
         SpringSecurityUtils.reauthenticate "admin", null
-        def currentUser = cytomineService.getCurrentUser()
 
         def uploadedFiles = UploadedFile.findAllByPathLike("notfound").plus(UploadedFile.findAllByPathLike("/tmp/cytomine_buffer/")).plus(UploadedFile.findAllByPathLike("/tmp/imageserver_buffer"))
 
@@ -493,12 +496,12 @@ class BootstrapUtilsService {
                         path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),
                         contentType: abstractImage.mime.mimeType)
 
-                if (!uploadedFile.validate()) {
-                    uploadedFile.errors.each {
-                        println it
-                    }
-                } else {
+                if (uploadedFile.validate()) {
                     uploadedFile = uploadedFile.save()
+                } else {
+                    uploadedFile.errors.each {
+                        log.info it
+                    }
                 }
 
             }

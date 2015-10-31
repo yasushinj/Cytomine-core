@@ -135,15 +135,15 @@ class HttpClient {
     }
 
     public void printCookies() {
-        System.out.println("############# PRINT COOKIE #############");
+        log.info "############# PRINT COOKIE #############"
         List<Cookie> cookies = client.getCookieStore().getCookies();
-        System.out.println(cookies);
+        log.info cookies
         if(cookies != null)
         {
             for(Cookie cookie : cookies)
             {
                 String cookieString = cookie.getName() + "=" + cookie.getValue() + "; domain=" + cookie.getDomain();
-                System.out.println(cookieString);
+                log.info cookieString
             }
         }
     }

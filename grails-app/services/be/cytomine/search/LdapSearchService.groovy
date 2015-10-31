@@ -1,5 +1,7 @@
 package be.cytomine.search
 
+import be.cytomine.Exception.MiddlewareException
+
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
 *
@@ -33,9 +35,7 @@ class LdapSearchService {
     enum Conjunction {
         OR, AND
     };
-    private DirContext ctx;
     private Hashtable env = new Hashtable();
-    private boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
 
 
             {
@@ -58,13 +58,15 @@ class LdapSearchService {
 
     public Map<String, Map<String, String>> searchByUids(List<String> uids, String... keys){
 
+        DirContext ctx;
         try {
             ctx = new InitialDirContext(env);
         } catch (NamingException e) {
-            throw new RuntimeException(e);
+            throw new MiddlewareException(e);
         }
         Map<String, Map<String, String>> result = new HashMap<>();
 
+        boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
         if (ldapDisabled) throw new ObjectNotFoundException();
 
         NamingEnumeration results = null;
@@ -104,19 +106,19 @@ class LdapSearchService {
             // The base context was not found.
             // Just clean up and exit.
         } catch (NamingException e) {
-            throw new RuntimeException(e);
+            throw new MiddlewareException(e);
         } finally {
             if (results != null) {
                 try {
                     results.close();
-                } catch (Exception e) {
+                } catch (NamingException e) {
                     // Never mind this.
                 }
             }
             if (ctx != null) {
                 try {
                     ctx.close();
-                } catch (Exception e) {
+                } catch (NamingException e) {
                     // Never mind this.
                 }
             }
@@ -125,13 +127,15 @@ class LdapSearchService {
 
     public Map<String, String[]> searchByCn(String cn, String... keys){
 
+        DirContext ctx;
         try {
             ctx = new InitialDirContext(env);
         } catch (NamingException e) {
-            throw new RuntimeException(e);
+            throw new MiddlewareException(e);
         }
         Map<String, String[]> result = new HashMap<>();
 
+        boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
         if (ldapDisabled) throw new ObjectNotFoundException();
 
         NamingEnumeration results = null;
@@ -167,19 +171,19 @@ class LdapSearchService {
             // The base context was not found.
             // Just clean up and exit.
         } catch (NamingException e) {
-            throw new RuntimeException(e);
+            throw new MiddlewareException(e);
         } finally {
             if (results != null) {
                 try {
                     results.close();
-                } catch (Exception e) {
+                } catch (NamingException e) {
                     // Never mind this.
                 }
             }
             if (ctx != null) {
                 try {
                     ctx.close();
-                } catch (Exception e) {
+                } catch (NamingException e) {
                     // Never mind this.
                 }
             }

@@ -132,7 +132,7 @@ var OntologyTreeView = Backbone.View.extend({
 
         self.showColors();
 
-        //expand root, simpliest way ? 
+        //expand root, simpliest way ?
         $(this.el).find('.tree').dynatree("getRoot").visit(function (node) {
             if (node.data.key == self.model.id) {
                 node.expand(true);

@@ -31,7 +31,6 @@ var ImageReviewAction = Backbone.View.extend({
         });
         console.log(self.model)
         if (self.isNotReviewed()) {
-            
             el.find("#explore" + self.model.id).show();
             el.find("#review" + self.model.id).hide();
             el.find("#reviewCyto" + self.model.id).hide();

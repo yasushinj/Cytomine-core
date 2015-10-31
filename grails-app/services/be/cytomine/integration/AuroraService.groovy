@@ -1,5 +1,7 @@
 package be.cytomine.integration
 
+import be.cytomine.Exception.MiddlewareException
+
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
 *
@@ -37,12 +39,12 @@ class AuroraService {
     def propertyService
     def grailsApplication
 
-    public static String PATIENT_ID = "patient_id"
-    public static String SAMPLE_ID = "sample_type"
-    public static String IMAGE_TYPE = "image_type"
-    public static String VERSION = "version"
-    public static String NOTIFICATION = "notification"
-    public static String IMAGE = "image_id"
+    public final static String PATIENT_ID = "patient_id"
+    public final static String SAMPLE_ID = "sample_type"
+    public final static String IMAGE_TYPE = "image_type"
+    public final static String VERSION = "version"
+    public final static String NOTIFICATION = "notification"
+    public final static String IMAGE = "image_id"
 
     public void notifyImage() {
         println "notify Aurora!"
@@ -116,7 +118,7 @@ class AuroraService {
             byte[] digest = mac.doFinal(data.getBytes())
             return digest
         } catch (InvalidKeyException e) {
-            throw new RuntimeException("Invalid key exception while converting to HMac SHA256")
+            throw new MiddlewareException("Invalid key exception while converting to HMac SHA256")
         }
     }
 

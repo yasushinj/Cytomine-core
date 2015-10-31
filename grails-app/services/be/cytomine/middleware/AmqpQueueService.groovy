@@ -35,9 +35,9 @@ class AmqpQueueService extends ModelService {
 
     static transactionService = true
     boolean saveOnUndoRedoStack = true
-    static queuePrefixSoftware = "queueSoftware"
-    static channelPrefixSoftware = "channelSoftware"
-    static exchangePrefixSoftware = "exchangeSoftware"
+    final static queuePrefixSoftware = "queueSoftware"
+    final static channelPrefixSoftware = "channelSoftware"
+    final static exchangePrefixSoftware = "exchangeSoftware"
 
     def securityACLService
     def amqpQueueConfigInstanceService
@@ -146,15 +146,19 @@ class AmqpQueueService extends ModelService {
 
         for (AmqpQueueConfigInstance configInstance in parameters) {
             if (configInstance.config.isInMap) {
-                if (!configInstance.value)
+                if (!configInstance.value) {
                     propertiesMap.put(configInstance.config.name, amqpQueueConfigService.getValueCasted(configInstance.config.defaultValue, configInstance.config.type))
-                else
+                }
+                else {
                     propertiesMap.put(configInstance.config.name, amqpQueueConfigService.getValueCasted(configInstance.value, configInstance.config.type))
+                }
             } else {
-                if (!configInstance.value)
+                if (!configInstance.value) {
                     propertiesList.add(amqpQueueConfigService.getValueCasted(configInstance.config.defaultValue, configInstance.config.type))
-                else
+                }
+                else {
                     propertiesList.add(amqpQueueConfigService.getValueCasted(configInstance.value, configInstance.config.type))
+                }
             }
         }
 
@@ -248,10 +252,7 @@ class AmqpQueueService extends ModelService {
     }
 
     Boolean checkAmqpQueueDomainExists(String queueName) {
-        if(read(queueName))
-            return true
-        else
-            return false
+        return read(queueName)
     }
 
 }

@@ -55,7 +55,7 @@ class ImageProcessingService {
 
     BufferedImage crop(AnnotationDomain annotation, params) {
         String cropURL = annotation.toCropURL(params)
-        println cropURL
+        log.info cropURL
         return getImageFromURL(cropURL)
     }
 
@@ -88,7 +88,7 @@ class ImageProcessingService {
         HttpGet httpGet = new HttpGet(URL.toString());
         HttpResponse response = client.execute(targetHost, httpGet, localcontext);
         int code = response.getStatusLine().getStatusCode();
-        System.out.println("url="+url + " is " + code + "(OK="+HttpURLConnection.HTTP_OK +",MOVED="+HttpURLConnection.HTTP_MOVED_TEMP+")");
+        log.info "url="+url + " is " + code + "(OK="+HttpURLConnection.HTTP_OK +",MOVED="+HttpURLConnection.HTTP_MOVED_TEMP+")"
 
         boolean isOK = (code == HttpURLConnection.HTTP_OK);
         boolean isFound = (code == HttpURLConnection.HTTP_MOVED_TEMP);

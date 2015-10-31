@@ -27,7 +27,7 @@ var LeafletView = Backbone.View.extend({
      * Accept options used for initialization
      * @param options
      */
-    initialize: function (options) {        
+    initialize: function (options) {
         this.initCallback = options.initCallback;
         this.layers = [];
         this.layersLoaded = 0;
@@ -76,12 +76,9 @@ var LeafletView = Backbone.View.extend({
      * @param tpl
      */
     doLayout: function (tpl) {
-		
         var self = this;
 		this.mapID = "map" + this.divPrefixId + this.model.get('id');
 		this.divId = "tabs-image-" + window.app.status.currentProject + "-" + this.model.id + "-";
-        
-		
 
         var templateData = this.model.toJSON();
         templateData.project = window.app.status.currentProject;
@@ -102,24 +99,24 @@ var LeafletView = Backbone.View.extend({
         var dataName = 'data-name=<%= idImage %>';
 
         var tabs = $('#explorer-tab');
-        tabs.append(_.template(tabTpl, 
-			{ idProject: window.app.status.currentProject, 
-			  idImage: this.model.get('id'), 
+        tabs.append(_.template(tabTpl,
+			{ idProject: window.app.status.currentProject,
+			  idImage: this.model.get('id'),
 			  filename: this.model.getVisibleName(window.app.status.currentProjectModel.get('blindMode')),
 			  shortOriginalFilename: shortOriginalFilename
 			}
 		));
-		
+
         var dropdownTpl = '<li class="dropdown"><a href="#" id="' + self.divPrefixId + '-<%= idImage %>-dropdown" class="dropdown-toggle" data-toggle="dropdown"><b class="caret"></b></a><ul class="dropdown-menu"><li><a href="#tabs-dashboard-<%= idProject %>" data-toggle="tab" data-image="<%= idImage %>" class="closeTab" id="closeTab' + self.divPrefixId + '-<%= idImage %>"><i class="icon-remove" /> Close</a></li></ul></li>';
-        tabs.append(_.template(dropdownTpl, { idProject: window.app.status.currentProject, idImage: this.model.get('id'), filename: this.model.get('filename')}));       
-		
+        tabs.append(_.template(dropdownTpl, { idProject: window.app.status.currentProject, idImage: this.model.get('id'), filename: this.model.get('filename')}));
+
 		if (!this.review) {
             this.divPrefixId = "tabs-image";
         }
         else {
             this.divPrefixId = "tabs-review";
         }
-		
+
 		this.initMapContainer();
 		var map = this.initMap();
 		return this;
@@ -175,29 +172,25 @@ var LeafletView = Backbone.View.extend({
             map.css("height", height);
         });
 	},
-    initMap : function() {	
+    initMap : function() {
 		var self = this;
 		var map = L.map(this.mapID, {drawControl: true});
 		L.Util.requestAnimFrame(map.invalidateSize,map,!1,map._container);
-		map.setView(new L.LatLng(0,0), 0);	
+		map.setView(new L.LatLng(0,0), 0);
 		var imageSize = { width: self.model.get("width"), height: self.model.get("height")};
 		new ImageServerUrlsModel({id: self.model.get('baseImage')}).fetch({
-            success: function (model, response) {           
+            success: function (model, response) {
 				var layer = new ZoomifyLayer(model.get('imageServersURLs'), imageSize);
 				map.addLayer(layer);
 				self.initToolbar(map);
 				L.control.layers({"Original" : layer}, {}).addTo(map);
-				
             }
-        });	
+        });
 		return map;
-	},	
+	},
 	show: function (options) {
-        var self = this; 
-		L.Util.requestAnimFrame(map.invalidateSize,map,!1,map._container);      
+        var self = this;
+		L.Util.requestAnimFrame(map.invalidateSize,map,!1,map._container);
     }
-
 });
-
-
 

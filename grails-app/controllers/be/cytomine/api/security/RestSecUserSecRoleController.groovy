@@ -67,10 +67,10 @@ class RestSecUserSecRoleController extends RestController {
         User user = secUserService.read(params.long('user'));
         SecRole role = secRoleService.read(params.long('role'));
         SecUserSecRole secUserSecRole = secUserSecRoleService.get(user, role)
-        if (!secUserSecRole) {
-            responseNotFound("SecUserSecRole", params.user)
-        } else {
+        if (secUserSecRole) {
             responseSuccess(secUserSecRole)
+        } else {
+            responseNotFound("SecUserSecRole", params.user)
         }
     }
 

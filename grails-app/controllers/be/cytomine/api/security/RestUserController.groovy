@@ -453,21 +453,21 @@ class RestUserController extends RestController {
         boolean includeOffline = params.boolean('offline')
 
         List<SecUser> users
-        if (!includeOffline) {
-            if (project) {
-                //get user project online
-                users = secUserService.getAllFriendsUsersOnline(user, project)
-            } else {
-                //get friends online
-                users = secUserService.getAllFriendsUsersOnline(user)
-            }
-        } else {
+        if (includeOffline) {
             if (project) {
                 //get all user project list
                 users = secUserService.listUsers(project)
             } else {
                 //get all people that share common project with user
                 users = secUserService.getAllFriendsUsers(user)
+            }
+        } else {
+            if (project) {
+                //get user project online
+                users = secUserService.getAllFriendsUsersOnline(user, project)
+            } else {
+                //get friends online
+                users = secUserService.getAllFriendsUsersOnline(user)
             }
         }
         responseSuccess(users)

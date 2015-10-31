@@ -106,7 +106,7 @@ var AnnotationLayer = function (user,name, imageID, userID, color, ontologyTreeV
     this.user = user;
     this.ontologyTreeView = ontologyTreeView;
     this.pointRadius = window.localStorage.getItem("point_radius" + window.app.status.currentProject) || 8;
-    if(window.app.view.isMobile) this.pointRadius +=4;
+    if(window.app.view.isMobile) {this.pointRadius +=4;}
     this.name = name;
     this.map = map;
     this.imageID = imageID;
@@ -142,7 +142,7 @@ var AnnotationLayer = function (user,name, imageID, userID, color, ontologyTreeV
                     getLabel: function (feature) {
                         if (feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon") {
                             var count = feature.attributes.count
-                            if(count==undefined) count = "";
+                            if(count==undefined) {count = "";}
                             return count;
                         } else {
                             return "";
@@ -156,9 +156,9 @@ var AnnotationLayer = function (user,name, imageID, userID, color, ontologyTreeV
                     },
                     getStrokeColor: function (feature) {
                         var opacity = feature.attributes.opacity
-                        if(opacity==undefined) return '#000000';
-                        if(opacity<0.33) return "#B94A48"
-                        if(opacity<0.66) return "#C09853"
+                        if(opacity==undefined) {return '#000000';}
+                        else if(opacity<0.33) {return "#B94A48"}
+                        else if(opacity<0.66) {return "#C09853"}
                         //return "#468847"
                         return "#ff0000"
                     }
@@ -962,7 +962,7 @@ AnnotationLayer.prototype = {
         for (key in this.controls) {
             var control = this.controls[key];
             if (name == key || key == "select") {
-                if(!control.active) control.activate();
+                if(!control.active) {control.activate();}
 
                 if (control == this.controls.modify) {
                     for (var i in this.vectorsLayer.selectedFeatures) {
