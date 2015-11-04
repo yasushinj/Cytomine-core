@@ -29,13 +29,9 @@ class PersistentConnection extends CytomineDomain{
     static mapWith = "mongo"
 
     SecUser user
-    Date date
-    Project project
 
     static constraints = {
         user (nullable:false)
-        date (nullable: true)
-        project (nullable: true)
     }
 
     static mapping = {
