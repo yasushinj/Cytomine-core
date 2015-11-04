@@ -156,6 +156,21 @@ class SecUserService extends ModelService {
         return users
     }
 
+    boolean isUserInProject(User user, Project project) {
+        securityACLService.check(project,READ)
+        List<SecUser> users = SecUser.executeQuery("select count(secUser) from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, SecUser as secUser "+
+                "where aclObjectId.objectId = "+project.id+" and aclEntry.aclObjectIdentity = aclObjectId.id and aclEntry.sid = aclSid.id and aclSid.sid = secUser.username " +
+                "and secUser.class = 'be.cytomine.security.User' and secUser.id = "+user.id);
+        return (users.get(0) > 0)
+    }
+
+    void checkIsUserInProject(User user, Project project) {
+        boolean result = isUserInProject(user, project)
+        if(!result) throw new ConstraintException("Error: the user "+user.id+" is not into the project "+project.id)
+
+    }
+
+
     def listCreator(Project project) {
         securityACLService.check(project,READ)
         List<User> users = SecUser.executeQuery("select secUser from AclObjectIdentity as aclObjectId, AclSid as aclSid, SecUser as secUser where aclObjectId.objectId = "+project.id+" and aclObjectId.owner = aclSid.id and aclSid.sid = secUser.username and secUser.class = 'be.cytomine.security.User'")

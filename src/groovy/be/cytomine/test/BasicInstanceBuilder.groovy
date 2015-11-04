@@ -33,6 +33,7 @@ import be.cytomine.processing.*
 import be.cytomine.project.Discipline
 import be.cytomine.project.Project
 import be.cytomine.project.ProjectDefaultLayer
+import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.search.SearchEngineFilter
 import be.cytomine.security.*
 import be.cytomine.utils.AttachedFile
@@ -1614,6 +1615,26 @@ class BasicInstanceBuilder {
 
         def layer = new ProjectDefaultLayer(project: project, user: user, hideByDefault: false)
         save ? saveDomain(layer) : checkDomain(layer)
+    }
+
+    static ProjectRepresentativeUser getProjectRepresentativeUser() {
+        Project project = getProject();
+        User user = User.findByUsername(Infos.SUPERADMINLOGIN);
+        def ref = ProjectRepresentativeUser.findByUserAndProject(user, project)
+        if (!ref) {
+            //create if not exist
+            ref = new ProjectRepresentativeUser(project: project, user: user)
+            saveDomain(ref)
+        }
+        ref
+    }
+
+    static ProjectRepresentativeUser getProjectRepresentativeUserNotExist(boolean save = false, boolean hideByDefault = false) {
+        Project project = getProjectNotExist(true);
+        User user = User.findByUsername(Infos.SUPERADMINLOGIN);
+
+        def ref = new ProjectRepresentativeUser(project: project, user: user)
+        save ? saveDomain(ref) : checkDomain(ref)
     }
 
     static MessageBrokerServer getMessageBrokerServer() {
