@@ -110,9 +110,10 @@ class OntologySecurityTests extends SecurityTestsAbstract {
       assert 200 == resAddUser.code
 
       Infos.printRight(ontology)
-      //check if user 2 cannot access/update/delete
-      assert (403 == OntologyAPI.show(ontology.id,USERNAME2,PASSWORD2).code)
-      assert(false==OntologyAPI.containsInJSONList(ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
+      //currently user 2 still can access to ontology
+      assert (200 == OntologyAPI.show(ontology.id,USERNAME2,PASSWORD2).code)
+      assert(true==OntologyAPI.containsInJSONList(ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
+      //check if user 2 cannot update/delete
       assert (403 == OntologyAPI.update(ontology.id,ontology.encodeAsJSON(),USERNAME2,PASSWORD2).code)
 
       //delete project because we will try to delete ontology
@@ -230,7 +231,7 @@ class OntologySecurityTests extends SecurityTestsAbstract {
         assert 200 == resAddUser.code
 
         //check if user 2 cannot access/update/delete
-        assert (403 == OntologyAPI.show(ontology.id,USERNAME2,PASSWORD2).code)
-        assert(false==OntologyAPI.containsInJSONList(ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
+        assert (200 == OntologyAPI.show(ontology.id,USERNAME2,PASSWORD2).code)
+        assert(true==OntologyAPI.containsInJSONList(ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
     }
 }

@@ -62,10 +62,10 @@ class BasicInstanceBuilder {
      * @param domain Domain to check
      */
     static def checkDomain(def domain) {
-        println "check domain " + domain.id
+        log.debug "check domain " + domain.id
         boolean validate = domain.validate()
         if(!validate) {
-            println domain.errors
+            log.debug domain.errors
         }
         assert validate
         domain
@@ -1465,10 +1465,10 @@ class BasicInstanceBuilder {
             storage = new Storage()
             storage.basePath = "/data/test.cytomine.be/1"
             storage.name = "lrollus test storage"
-            storage.ip = "10.3.1.136" // still used? no, //unused
-            storage.password = "toto" //unused
-            storage.port = 22 //unused
-            storage.username = "username" //unused
+            //storage.ip = "10.3.1.136" // still used? no, //unused
+            //storage.password = "toto" //unused
+            //storage.port = 22 //unused
+            //storage.username = "username" //unused
             storage.user = User.findByUsername(Infos.SUPERADMINLOGIN)
             BasicInstanceBuilder.saveDomain(storage)
         }
@@ -1634,7 +1634,7 @@ class BasicInstanceBuilder {
     static AmqpQueue getAmqpQueue() {
         AmqpQueue amqpQueue = AmqpQueue.findByName("BasicAmqpQueue")
         if(!amqpQueue) {
-            amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "localhost", exchange: "exchange"+getRandomString())
+            amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "rabbitmq", exchange: "exchange"+getRandomString())
             saveDomain(amqpQueue)
         }
         amqpQueue
@@ -1642,7 +1642,7 @@ class BasicInstanceBuilder {
 
     static AmqpQueue getAmqpQueueNotExist(boolean save = false)
     {
-        AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "localhost", exchange: "exchange"+getRandomString())
+        AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "rabbitmq", exchange: "exchange"+getRandomString())
         save ? saveDomain(amqpQueue) : checkDomain(amqpQueue)
         amqpQueue
     }
@@ -1696,9 +1696,9 @@ class BasicInstanceBuilder {
 
     static Config getConfigNotExist(boolean save = false) {
         def config = new Config(key: getRandomString(), value: getRandomString())
-        println "add config "+ config.key
+        log.debug "add config "+ config.key
         Config.list().each {
-            println it.id + " " + it.version + " " + it.key
+            log.debug it.id + " " + it.version + " " + it.key
         }
 
         save ? saveDomain(config) : checkDomain(config)

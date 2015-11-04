@@ -108,13 +108,17 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
         User admin = getUserAdmin()
 
         Storage storage = BasicInstanceBuilder.getStorageNotExist(true)
-        Infos.addUserRight(user1.username,storage)
+        Infos.addUserRight(user1,storage)
         Storage storageForbiden = BasicInstanceBuilder.getStorageNotExist(true)
         //don't add acl to this storage
 
         //Add an image
         AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(true)
         AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(true)
+        // getAbstractImageNotExist create a storage & a storage_abstract_image
+        // => Replace the storage in image2 by the storage2 (& the link storage_abstract_image)
+        StorageAbstractImage.findByAbstractImage(image1).delete(flush: true)
+        StorageAbstractImage.findByAbstractImage(image2).delete(flush: true)
 
         //Add to storage
         StorageAbstractImage saa = new StorageAbstractImage(storage: storage,abstractImage: image1)

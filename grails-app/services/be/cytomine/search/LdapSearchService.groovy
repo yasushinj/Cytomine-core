@@ -58,6 +58,9 @@ class LdapSearchService {
 
     public Map<String, Map<String, String>> searchByUids(List<String> uids, String... keys){
 
+        boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
+        if (ldapDisabled) throw new ObjectNotFoundException();
+
         DirContext ctx;
         try {
             ctx = new InitialDirContext(env);
@@ -65,9 +68,6 @@ class LdapSearchService {
             throw new MiddlewareException(e);
         }
         Map<String, Map<String, String>> result = new HashMap<>();
-
-        boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
-        if (ldapDisabled) throw new ObjectNotFoundException();
 
         NamingEnumeration results = null;
         try {
@@ -127,16 +127,17 @@ class LdapSearchService {
 
     public Map<String, String[]> searchByCn(String cn, String... keys){
 
+        boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
+        if (ldapDisabled) throw new ObjectNotFoundException("LDAP is disabled");
+
         DirContext ctx;
         try {
             ctx = new InitialDirContext(env);
         } catch (NamingException e) {
-            throw new MiddlewareException(e);
+            throw new MiddlewareException("Error during LDAP context initialization");
         }
         Map<String, String[]> result = new HashMap<>();
 
-        boolean ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
-        if (ldapDisabled) throw new ObjectNotFoundException();
 
         NamingEnumeration results = null;
         try {
