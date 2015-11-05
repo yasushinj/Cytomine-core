@@ -182,12 +182,7 @@ BrowseImageView = Backbone.View.extend({
             var ctx = evt.tile.getCanvasContext();
             if (ctx) {
                 var imgd = ctx.getImageData(0, 0, evt.tile.size.w, evt.tile.size.h);
-                //process PIX
-                //Processing.Threshold.process({canvas :imgd, threshold : 165});
 
-                /*Processing.ColorChannel.process({canvas :imgd, channel : Processing.ColorChannel.GREEN});
-                 Processing.ColorChannel.process({canvas :imgd, channel : Processing.ColorChannel.BLUE});
-                 */
                 ctx.putImageData(imgd, 0, 0);
                 evt.tile.imgDiv.removeAttribute("crossorigin");
                 evt.tile.imgDiv.src = ctx.canvas.toDataURL();
@@ -229,22 +224,6 @@ BrowseImageView = Backbone.View.extend({
                         }, 1000);//select feature once layer is readed. Should be triggered by event...
                         options.goToAnnotation = undefined;
                     }
-//                    } else {
-//                        new UserModel({id: annotation.get('user')}).fetch({
-//                            success: function (userAlgo, response) {
-//                                console.log(userAlgo);
-//                                var layer = new AnnotationLayer(userAlgo,userAlgo.get('username'), self.model.get('id'), annotation.get('user'), "", self.ontologyPanel.ontologyTreeView, self, self.map, this.review);
-//                                layer.isOwner = false;
-//                                layer.loadAnnotations(self);
-//                                layer.registerEvents(self.map);
-//                                layer.showFeature(annotation.get("id"));
-//                                self.goToAnnotation(layer, annotation);
-//                                self.layerSwitcherPanel.initLayerSelection();
-//                                self.setLayerVisibility(layer, true);
-//                            }
-//                        });
-//
-//                    }
                 }
             });
         }
@@ -268,14 +247,8 @@ BrowseImageView = Backbone.View.extend({
                 return;
             }
             if (visibility) {
-//                if (!$(this).is(':checked')) {
-//                    this.click();
-//                }
                 self.layerSwitcherPanel.showLayer(layer.userID);
             } else {
-//                if ($(this).attr("checked") == "checked") {
-//                    this.click();
-//                }
                 self.layerSwitcherPanel.hideLayer(layer.userID);
             }
         });
@@ -337,47 +310,6 @@ BrowseImageView = Backbone.View.extend({
      * Callback used by AnnotationLayer at the end of theirs initializations
      * @param layer
      */
-//    layerLoadedCallback: function (layer) {
-//        var self = this;
-//        this.layersLoaded++;
-//
-//        if (self.review == false && this.layersLoaded == (window.app.models.userLayer.length + 1)) { //+1 for review layer in browse mode
-//
-//            //Init Controls on Layers
-//            var vectorLayers = _.map(this.layers, function (layer) {
-//                return layer.vectorsLayer;
-//            });
-//            var selectFeature = new OpenLayers.Control.SelectFeature(vectorLayers);
-//            _.each(this.layers, function (layer) {
-//                layer.initControls(self, selectFeature);
-//                layer.registerEvents(self.map);
-//                if (layer.isOwner) {
-//                    self.userLayer = layer;
-//                    layer.vectorsLayer.setVisibility(true);
-//                    layer.toggleIrregular();
-//                    //Simulate click on None toolbar
-//                    var toolbar = $("#" + self.divId).find('#toolbar' + self.model.get('id'));
-//                    toolbar.find('input[id=none' + self.model.get('id') + ']').click();
-//                } else {
-//                    //layer.toggleIrregular();
-//                    layer.controls.select.activate();
-//                    layer.vectorsLayer.setVisibility(false);
-//                }
-//            });
-//
-//            if (_.isFunction(self.initCallback)) {
-//                self.initCallback.call();
-//            }
-//
-//            self.initAutoAnnoteTools();
-//
-//        }  else {
-////            if (_.isFunction(self.initCallback)) {
-////                self.initCallback.call();
-////            }
-//        }
-//    },
-
     layerLoadedCallback: function (layer) {
         var self = this;
         if (self.review == false) { //+1 for review layer in browse mode
@@ -395,7 +327,6 @@ BrowseImageView = Backbone.View.extend({
                     console.log("ADD EVENTS layer"+layer.isOwner);
                     if (layer.isOwner) {
                         self.userLayer = layer;
-                        //                    layer.vectorsLayer.setVisibility(true);
                         layer.toggleIrregular();
                         //Simulate click on None toolbar
                         var toolbar = $("#" + self.divId).find('#toolbar' + self.model.get('id'));
@@ -405,7 +336,6 @@ BrowseImageView = Backbone.View.extend({
                         console.log("activate");
                         layer.controls.select.activate();
                         console.log("!activate");
-                        //                    layer.vectorsLayer.setVisibility(false);
                     }
                     layer.eventAlreadyLoaded=true;
                 }
@@ -468,7 +398,6 @@ BrowseImageView = Backbone.View.extend({
      */
     initMap: function () {
         var self = this;
-        //var mime = this.model.get('mime');
         self.initIIP(); //we can filter by mime and intialize other protocol if necessary
     },
     /**
@@ -646,11 +575,8 @@ BrowseImageView = Backbone.View.extend({
             self.createInformationPanel();
             self.createJobTemplatePanel();
             self.createMultiDimensionPanel();
-            //self.initImageFiltersPanel();
-            //var numZoomLevels =  metadata.nbZoom;
             /* Map with raster coordinates (pixels) from Zoomify image */
 
-            //this.nbDigitialZoom = Math.round(Math.log(320 / this.model.get('magnification')) / Math.log(2));
             var serverResolutions = [];
             for (var z = metadata.nbZoom - 1; z >= 0; z--) {
                 serverResolutions.push(Math.pow(2, z));
@@ -676,8 +602,6 @@ BrowseImageView = Backbone.View.extend({
                     }),
                     new OpenLayers.Control.Navigation({dragPanOptions: {enableKinetic: window.app.view.isMobile}}),
                     new OpenLayers.Control.ZoomPanel(),
-                    /*new OpenLayers.Control.MousePosition({
-                     }),*/
                     new OpenLayers.Control.KeyboardDefaults()],
                 eventListeners: {
 
@@ -756,7 +680,6 @@ BrowseImageView = Backbone.View.extend({
                 zoomify_urls,
                 new OpenLayers.Size(metadata.width, metadata.height)
             );
-            //baseLayer.tileOptions = {crossOriginKeyword: 'anonymous'};
             baseLayer.getURL = function (bounds) {
                 bounds = this.adjustBounds(bounds);
                 var res = this.getServerResolution();
@@ -819,7 +742,6 @@ BrowseImageView = Backbone.View.extend({
                     url,
                     new OpenLayers.Size(metadata.width, metadata.height));
                 layer.imageFilter = imageFilter;
-                //layer.transitionEffect = 'resize';
                 layer.getURL = function (bounds) {
                     bounds = this.adjustBounds(bounds);
                     var res = this.getServerResolution();
@@ -947,12 +869,6 @@ BrowseImageView = Backbone.View.extend({
 
             }
         });
-        /*new ProjectImageFilterCollection({ project: self.model.get("project")}).fetch({
-         success: function (imageFilters, response) {
-         initZoomifyLayer(metadata, "api/abstractimage/"+self.model.get('baseImage')+"/", imageFilters);
-         }
-         });*/
-
 
     },
     broadcastPosition: function (width,height) {
@@ -1038,7 +954,6 @@ BrowseImageView = Backbone.View.extend({
             var newCanvasHeight = tiles.length * tiles[0][0].size.h;
             newCanvas.width = newCanvasWidth;
             newCanvas.height = newCanvasHeight;
-            //newCanvas.display = 'none';
             document.body.appendChild(newCanvas);
             var mapContainerDiv = $("#maptabs-image" + self.model.id).children().children()[0];
             var viewPositionLeft = parseInt($(mapContainerDiv).css("left"), 10);
@@ -1419,9 +1334,6 @@ BrowseImageView = Backbone.View.extend({
             self.roi = false;
             self.freeHandUpdateAdd = false;
             self.freeHandUpdateRem = false;
-//            self.getUserLayer().controls.select.unselectAll(); //            self.getUserLayer().toggleControl("select");
-//            self.getUserLayer().deleteOnSelect = true;
-//            self.getUserLayer().disableHightlight();
             _.each(self.getUserLayerCanEdit(), function (layer) {
                 layer.controls.select.unselectAll();
                 layer.toggleControl("select");
@@ -1437,8 +1349,6 @@ BrowseImageView = Backbone.View.extend({
             self.freeHandUpdateAdd = false;
             self.freeHandUpdateRem = false;
             if (!self.review) {
-//                self.getUserLayer().toggleRotate();
-//                self.getUserLayer().disableHightlight();
                 _.each(self.getUserLayerCanEdit(), function (layer) {
                     layer.toggleRotate();
                     layer.disableHightlight();
@@ -1493,8 +1403,6 @@ BrowseImageView = Backbone.View.extend({
             self.freeHandUpdateAdd = false;
             self.freeHandUpdateRem = false;
             if (!self.review) {
-//                self.getUserLayer().toggleResize();
-//                self.getUserLayer().disableHightlight();
                 _.each(self.getUserLayerCanEdit(), function (layer) {
                     layer.toggleResize();
                     layer.disableHightlight();
@@ -1519,8 +1427,6 @@ BrowseImageView = Backbone.View.extend({
             self.freeHandUpdateAdd = false;
             self.freeHandUpdateRem = false;
             if (!self.review) {
-//                self.getUserLayer().toggleDrag();
-//                self.getUserLayer().disableHightlight();
                 _.each(self.getUserLayerCanEdit(), function (layer) {
                     layer.toggleDrag();
                     layer.disableHightlight();
@@ -1592,12 +1498,6 @@ BrowseImageView = Backbone.View.extend({
             });
         });
 
-
-        /*toolbar.find('input[id=irregular' + this.model.get('id') + ']').click(function () {
-         self.getUserLayer().toggleIrregular();
-         });
-         toolbar.find('input[id=irregular' + this.model.get('id') + ']').hide();*/
-
     },
     /**
      * Collect data and call appropriate methods in order to add Vector Layers on the Map
@@ -1605,21 +1505,6 @@ BrowseImageView = Backbone.View.extend({
     initVectorLayers: function (ontologyTreeView) {
         var self = this;
         if (!self.review) {
-//            var project = window.app.status.currentProjectModel;
-//            var projectUsers = window.app.models.projectUser.select(function (user) {
-//                return window.app.models.userLayer.get(user.id) != undefined;
-//            });
-//            _.each(projectUsers, function (user) {
-//                var layerAnnotation = new AnnotationLayer(user,user.prettyName(), self.model.get('id'), user.get('id'), user.get('color'), ontologyTreeView, self, self.map, self.review);
-//                layerAnnotation.isOwner = (user.get('id') == window.app.status.user.id);
-//                layerAnnotation.loadAnnotations(self);
-//            });
-//            //init review layer in explore mode
-//            var layerAnnotation = new AnnotationLayer(null,"Review layer", self.model.get('id'), "REVIEW", "", ontologyTreeView, self, self.map, self.review);
-
-            //            layerAnnotation.isOwner = false;
-//            layerAnnotation.loadAnnotations(self);
-            //            self.layerSwitcherPanel.initLayerSelection();
 
             new UserLayerCollection({project: window.app.status.currentProject, image: self.model.id}).fetch({
                 success: function (collection, response) {
@@ -1647,10 +1532,7 @@ BrowseImageView = Backbone.View.extend({
                     _.each(projectUsersJob, function (user) {
                         self.
                             layerSwitcherPanel.allVectorLayers.push({ id: user.id, user: user});
-                    });//             var layerAnnotation = new AnnotationLayer(null,"Review layer", self.model.get('id'), "REVIEW", "", ontologyTreeView, self, self.map, self.review);
-
-                    //             layerAnnotation.isOwner = false;
-//             layerAnnotation.loadAnnotations(self);
+                    });
                     console.log("### self.layerSwitcherPanel.allVectorLayers=" + self.layerSwitcherPanel.allVectorLayers.length);
 
                     new ProjectDefaultLayerCollection({project: window.app.status.currentProject}).fetch({

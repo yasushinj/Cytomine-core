@@ -254,6 +254,9 @@ var ApplicationController = Backbone.Router.extend({
         var day = (createdDate.getDate()) < 10 ? "0" + (createdDate.getDate()) : (createdDate.getDate());
         return year + "-" + month + "-" + day;
     },
+    isUndefined: function(variable){
+        return (typeof variable === "undefined" || variable === null);
+    },
     minString: function (string, maxFirstCar, maxLastCar) {
         if (string.length <= (maxFirstCar + maxLastCar + 5)) {
             return  string;

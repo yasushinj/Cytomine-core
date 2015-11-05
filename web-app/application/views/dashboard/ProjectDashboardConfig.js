@@ -145,7 +145,7 @@ var ProjectDashboardConfig = Backbone.View.extend({
 
 
         // Generation of the left menu
-        var menu = this.createConfigMenu(configs)
+        var menu = this.createConfigMenu(configs);
 
         $(this.el).append(menu);
         $(this.el).append(configList);
@@ -243,7 +243,7 @@ var GeneralConfigPanel = Backbone.View.extend({
         });
 
         $(self.el).find("#project-edit-name").on("input", function (x) {
-            if($(x.target).val() == self.model.get('name')) {
+            if($(x.target).val() === self.model.get('name')) {
                 $(self.el).find("#saveProjectNameButton").prop('disabled', true);
             } else {
                 $(self.el).find("#saveProjectNameButton").prop('disabled', false);
@@ -277,8 +277,8 @@ var GeneralConfigPanel = Backbone.View.extend({
         $(self.el).find("#retrievalproject").empty();
 
         projects.each(function (project) {
-            if (project.get('ontology') == self.model.get('ontology') && project.id != self.model.id) {
-                if (_.indexOf(self.model.get('retrievalProjects'), project.id) == -1) {
+            if (project.get('ontology') === self.model.get('ontology') && project.id !== self.model.id) {
+                if (_.indexOf(self.model.get('retrievalProjects'), project.id) === -1) {
                     $(self.el).find("#retrievalproject").append('<option value="' + project.id + '">' + project.get('name') + '</option>');
                 }
                 else {
@@ -351,7 +351,7 @@ var UsersConfigPanel = Backbone.View.extend({
     render: function() {
         var self = this;
         self.getValues(function() {
-            self.doLayout()
+            self.doLayout();
         });
         return this;
     },
@@ -434,7 +434,7 @@ var UsersConfigPanel = Backbone.View.extend({
 
             doLayout();
 
-        }
+        };
 
         new UserCollection({}).fetch({
             success: function (allUserCollection) {
@@ -467,10 +467,10 @@ var UsersConfigPanel = Backbone.View.extend({
             maxSelection:null
         });
         $(self.userMaggicSuggest).on('selectionchange', function(e,m){
-            self.projectUsers = this.getValue()
+            self.projectUsers = this.getValue();
             self.update(function() {
-                self.loadMultiSelectUser()
-            })
+                self.loadMultiSelectUser();
+            });
         });
 
         self.adminMaggicSuggest = $(self.el).find('#projecteditadmin').magicSuggest({
@@ -482,8 +482,8 @@ var UsersConfigPanel = Backbone.View.extend({
         });
         $(self.adminMaggicSuggest).on('selectionchange', function(e,m){
             self.update(function() {
-                self.loadMultiSelectUser()
-            })
+                self.loadMultiSelectUser();
+            });
         });
     },
     createMultiSelectUser: function() {
@@ -522,12 +522,12 @@ var UsersConfigPanel = Backbone.View.extend({
 
         // I need to restart multiselect to include to options append to the select
         var reload = function(currentUsers, groupUsers) {
-            if(currentUsers==null || groupUsers==null || currentUsers==undefined || groupUsers==undefined) {
+            if(window.app.isUndefined(currentUsers)  || window.app.isUndefined(groupUsers)) {
                 return;
             }
 
             currentUsers.each(function(user) {
-                if($.inArray( user.id, self.projectAdmins ) == -1){
+                if($.inArray( user.id, self.projectAdmins ) === -1){
                     $(self.el).find("#usersByGroup").append('<option value="' + user.id + '" selected>' + user.prettyName() + '</option>');
                 } else {
                     $(self.el).find("#usersByGroup").append('<option value="' + user.id + '" selected disabled>' + user.prettyName() + '</option>');
@@ -544,7 +544,7 @@ var UsersConfigPanel = Backbone.View.extend({
                 var optGroup = $(self.el).find("#usersByGroup optgroup").last();
                 for(var i=0; i<group.attributes.users.length ; i++) {
                     var currentUser = group.attributes.users[i];
-                    if($.inArray( currentUser.id, ids ) == -1){
+                    if($.inArray( currentUser.id, ids ) === -1){
                         optGroup.append('<option value="' + currentUser.id + '">' + currentUser.lastname + ' ' + currentUser.firstname + '(' + currentUser.username + ')' + '</option>');
                     } else {
                         optGroup.append('<option value="' + currentUser.id + '" disabled>' + currentUser.lastname + ' ' + currentUser.firstname + '(' + currentUser.username + ')' + '</option>');
@@ -579,13 +579,12 @@ var UsersConfigPanel = Backbone.View.extend({
     refreshUserList: function (reloadAllUsers) {
         var self = this;
         var projectUsers = null;
-        var allUsers = null;
         var reloadDone = false;
 
         var loadUser = function() {
 
             if(projectUsers == null || (reloadAllUsers && !reloadDone)) {
-                return
+                return;
             }
 
             var projectUserArray=[];
@@ -599,10 +598,10 @@ var UsersConfigPanel = Backbone.View.extend({
             self.userMaggicSuggest.setValue(projectUserArray);
 
             $(self.userMaggicSuggest).on('selectionchange', function(e,m){
-                self.projectUsers = this.getValue()
+                self.projectUsers = this.getValue();
                 self.update(function() {
-                    self.loadMultiSelectUser()
-                })
+                    self.loadMultiSelectUser();
+                });
             });
         };
 
@@ -622,9 +621,9 @@ var UsersConfigPanel = Backbone.View.extend({
                         allUserArray.push({id:user.id,label:user.prettyName()});
                     });
 
-                    self.userMaggicSuggest.setData(allUserArray)
-                    self.adminMaggicSuggest.setData(allUserArray)
-                    reloadDone = true
+                    self.userMaggicSuggest.setData(allUserArray);
+                    self.adminMaggicSuggest.setData(allUserArray);
+                    reloadDone = true;
                     loadUser();
                 }});
 
@@ -653,12 +652,11 @@ var UsersConfigPanel = Backbone.View.extend({
             success: function (model, response) {
                 console.log("1. Project edited!");
                 window.app.view.message("Project", response.message, "success");
-                var id = response.project.id;
-                if(callbackSuccess != null && callbackSuccess != undefined) {
-                    callbackSuccess()
+                if(!window.app.isUndefined(callbackSuccess)) {
+                    callbackSuccess();
                 }
                 // here, we need a refresh of the DefaultLayerPanel as the users have changed !!!
-                self.callback(users.concat(admins))
+                self.callback(users.concat(admins));
             },
             error: function (model, response) {
                 var json = $.parseJSON(response.responseText);
@@ -699,8 +697,9 @@ var AnnotationToolsConfig = Backbone.View.extend({
 
     initEvents: function () {
         var self = this;
-        var form = $(self.el).find("#mwToleranceForm")
-        var max_euclidian_distance = Math.ceil(Math.sqrt(255 * 255 + 255 * 255 + 255 * 255)) //between pixels
+        var form = $(self.el).find("#mwToleranceForm");
+        //between pixels
+        var max_euclidian_distance = Math.ceil(Math.sqrt(255 * 255 + 255 * 255 + 255 * 255));
         // Magic Wand Form
         form.on("submit", function (e) {
             e.preventDefault();
@@ -731,7 +730,7 @@ var AnnotationToolsConfig = Backbone.View.extend({
         });
 
         // Point Form
-        var form = $(self.el).find("#pointConfigForm")
+        var form = $(self.el).find("#pointConfigForm");
         form.on("submit", function (e) {
             e.preventDefault();
             var radiusValue = parseInt($(self.el).find("#input_radius").val());
@@ -789,7 +788,7 @@ var SoftwareProjectPanel = Backbone.View.extend({
 
         var softwares = $(self.el).find("#addedSoftwares");
 
-        var newSoft = softwareProject.toJSON()
+        var newSoft = softwareProject.toJSON();
 
         softwares.append(
                 '<div id="software'+newSoft.id+'" class="row">' +
@@ -849,10 +848,10 @@ var DefaultLayerPanel = Backbone.View.extend({
 
             var container = $(self.el).find('#availableprojectdefaultlayers')[0];
             var selected = container.options[container.options.selectedIndex];
-            if(selected.value != null && selected.value != undefined && selected.value != '') {
+            if(!window.app.isUndefined(selected.value) && selected.value != '') {
                 $(self.el).find("#selectedDefaultLayers").show();
                 // check if not already taken
-                if ($(self.el).find('#selectedDefaultLayers #defaultlayer' + selected.value).length == 0) {
+                if ($(self.el).find('#selectedDefaultLayers #defaultlayer' + selected.value).length === 0) {
                     $(self.el).find('#selectedDefaultLayers').append('<div class="col-md-3 col-md-offset-1"><input type="checkbox" id="hideByDefault' + selected.value + '" class="hideByDefault"> Hide layers by default</div>');
                     $(self.el).find('#selectedDefaultLayers').append('<div class="col-md-5"><p>' + selected.text + '</p></div>');
                     $(self.el).find('#selectedDefaultLayers').append('<div class="col-md-2"><a id="defaultlayer' + selected.value + '" class="projectremovedefaultlayersbutton btn btn-danger" href="javascript:void(0);">Remove</a></div>');
@@ -865,7 +864,7 @@ var DefaultLayerPanel = Backbone.View.extend({
             $(this).parent().prev().prev().remove();
             $(this).parent().prev().remove();
             $(this).parent().remove();
-            if($(self.el).find("#selectedDefaultLayers").children().length ==0){
+            if($(self.el).find("#selectedDefaultLayers").children().length === 0){
                 $(self.el).find("#selectedDefaultLayers").hide();
             }
             destroy(id);
@@ -875,7 +874,7 @@ var DefaultLayerPanel = Backbone.View.extend({
             var id = $(this).attr("id").replace("hideByDefault","");
             var chkb = $(this);
 
-            var layer = new ProjectDefaultLayerModel({id:id, project: self.model.id}).fetch({
+            new ProjectDefaultLayerModel({id:id, project: self.model.id}).fetch({
                 success: function (lModel) {
                     lModel.set('hideByDefault', chkb.is(":checked"));
                     lModel.save(null, {
@@ -939,7 +938,7 @@ var DefaultLayerPanel = Backbone.View.extend({
         // load existing default layers
         new ProjectDefaultLayerCollection({project: self.model.id}).fetch({
             success: function (collection) {
-                var defaultLayersArray=[]
+                var defaultLayersArray=[];
                 collection.each(function(layer) {
                     defaultLayersArray.push({id: layer.id, userId: layer.attributes.user, hideByDefault: layer.attributes.hideByDefault});
                 });
@@ -992,7 +991,7 @@ var ImageFiltersProjectPanel = Backbone.View.extend({
 
         var filters = $(self.el).find("#addedImageFilters");
 
-        var newFilter = imageFilter.toJSON()
+        var newFilter = imageFilter.toJSON();
 
         filters.append(
                 '<div id="imageFilter'+newFilter.id+'" class="row">' +
@@ -1070,15 +1069,15 @@ var CutomUIPanel = Backbone.View.extend({
 
                     console.log(eventData.target.id);
                     var currentButton = $(self.el).find("#"+eventData.target.id);
-                    var isActiveNow = self.obj[currentButton.data("component")][currentButton.data("role")]==true;
+                    var isActiveNow = self.obj[currentButton.data("component")][currentButton.data("role")];
                     currentButton.removeClass(isActiveNow? "btn-success" : "btn-danger");
                     currentButton.addClass(isActiveNow? "btn-danger" : "btn-success");
                     self.obj[currentButton.data("component")][currentButton.data("role")]=!self.obj[currentButton.data("component")][currentButton.data("role")];
                     self.addConfig();
-                })
+                });
 
             });
-        }
+        };
         self.retrieveConfig(fn);
     },
     createComponentConfig : function(component, template,mainElement) {

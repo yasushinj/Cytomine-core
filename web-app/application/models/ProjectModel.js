@@ -26,7 +26,7 @@ var ProjectModel = Backbone.Model.extend({
     url: function () {
         var base = 'api/project';
         var format = '.json';
-        if (this.task != null && this.task != undefined) {
+        if (!window.app.isUndefined(this.task)) {
             format = format+"?task="+this.task
         }
         if (this.isNew()) {
@@ -51,7 +51,7 @@ var ProjectModel = Backbone.Model.extend({
 
 var ProjectUserModel = Backbone.Model.extend({
     url: function () {
-        if (this.user == undefined) {
+        if (window.app.isUndefined(this.user)) {
             return "api/project/" + this.project + "/user.json";
         } else {
             return "api/project/" + this.project + "/user/" + this.user + ".json";
@@ -78,14 +78,14 @@ var OntologyProjectModel = PaginatedCollection.extend({
 var ProjectDefaultLayerModel = Backbone.Model.extend({
 
     url: function () {
-        if (this.get("project") != undefined) {
-            if (this.get("id") != undefined) {
-                return "api/project/" + this.get("project") + "/defaultlayer/" + this.get("id") + ".json";
-            } else {
-                return "api/project/" + this.get("project") + "/defaultlayer.json";
-            }
-        } else {
+        if (window.app.isUndefined(this.get("project"))) {
             return null;
+        } else {
+            if (window.app.isUndefined(this.get("id"))) {
+                return "api/project/" + this.get("project") + "/defaultlayer.json";
+            } else {
+                return "api/project/" + this.get("project") + "/defaultlayer/" + this.get("id") + ".json";
+            }
         }
     },
     initialize: function (options) {
@@ -99,7 +99,7 @@ var ProjectDefaultLayerModel = Backbone.Model.extend({
 
 var ProjectConnectionModel = Backbone.Model.extend({
     url: function () {
-        if (this.user == undefined) {
+        if (window.app.isUndefined(this.user)) {
             return '/api/project/'+this.project +'/userconnection.json';
         } else {
             return '/api/project/'+this.project +'/userconnection/'+this.user+'.json';
@@ -117,14 +117,14 @@ var ProjectDefaultLayerCollection = PaginatedCollection.extend({
     model: ProjectDefaultLayerModel,
     fullSize : -1,
     url: function () {
-        if (this.project != undefined) {
-            return "api/project/" + this.project + "/defaultlayer.json";
-        } else {
+        if (window.app.isUndefined(this.project)) {
             return null;
+        } else {
+            return "api/project/" + this.project + "/defaultlayer.json";
         }
     },
     initialize: function (options) {        this.initPaginator(options);
-        if (options != undefined) {
+        if (!window.app.isUndefined(options)) {
             this.project = options.project;
         }
     },
@@ -138,9 +138,9 @@ var ProjectCollection = PaginatedCollection.extend({
     model: ProjectModel,
     fullSize : -1,
     url: function () {
-        if (this.user != undefined) {
+        if (!window.app.isUndefined(this.user)) {
             return "api/user/" + this.user + "/project.json";
-        } else if (this.ontology != undefined) {
+        } else if (!window.app.isUndefined(this.ontology)) {
             return "api/ontology/" + this.ontology + "/project.json";
         } else {
             return "api/project.json";
@@ -148,7 +148,7 @@ var ProjectCollection = PaginatedCollection.extend({
     },
     initialize: function (options) {
         this.initPaginator(options);
-        if (options != undefined) {
+        if (!window.app.isUndefined(options)) {
             this.user = options.user;
             this.ontology = options.ontology;
         }
