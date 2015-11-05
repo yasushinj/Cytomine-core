@@ -19,9 +19,6 @@ var SearchController = Backbone.Router.extend({
         "search-:project-": "search" ,
         "search-": "search"
     },
-    search : function() {
-        this.search(null);
-    },
     search: function (project) {
         var self = this;
         if(project==undefined || project=="null") {

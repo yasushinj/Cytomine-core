@@ -172,20 +172,7 @@ var DashboardController = Backbone.Router.extend({
         }
         self.init(project, func);
     },
-    algos: function () {
-        console.log("algos");
-        this.algos(undefined,undefined,undefined);
-    },
-    algos: function (project) {
-        console.log("algos");
-        this.algos(project,undefined,undefined);
-    },
-    algos: function (project, software) {
-        console.log("algos");
-        this.algos(project,software,undefined);
-    },
     algos: function (project, software, job) {
-        console.log("algos");
         var self = this;
         console.log("DashBoard.algos");
         var func = function () {

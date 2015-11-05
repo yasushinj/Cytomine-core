@@ -28,15 +28,6 @@ var OntologyController = Backbone.Router.extend({
         "ontology/:idOntology": "ontology",
         "ontology/:idOntology/:idTerm": "ontology"
     },
-    ontology: function () {
-        this.ontology(0, 0, false);
-    },
-    ontology: function (idOntology) {
-        this.ontology(idOntology, 0, false);
-    },
-    ontology: function (idOntology, idTerm) {
-        this.ontology(idOntology, idTerm, false);
-    },
     ontology: function (idOntology, idTerm, refresh) {
         var self = this;
         if (!self.view || refresh) {

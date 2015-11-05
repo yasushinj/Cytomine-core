@@ -226,9 +226,6 @@ var ApplicationView = Backbone.View.extend({
 //        <li><a style="display:none;" id="hotkeysModalButton" href="#hotkeysModal"  data-toggle="modal"><i class="glyphicon glyphicon-question-sign" /> Help</a> <li>
 //            <li><a style="display:none;" id="feedback"><i class="glyphicon glyphicon-bullhorn" /> Feedback</a></li>
 //
-    printTaskEvolution: function (task, divToFill, timeout) {
-        this.printTaskEvolution(task, divToFill, timeout, false);
-    },
     printTaskEvolution: function (task, divToFill, timeout, reverse) {
         function checkTask() {
             //load all job data

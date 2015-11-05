@@ -151,9 +151,7 @@ var ShareAnnotationView = Backbone.View.extend({
                     annotationURL: annotationURL,
                     shareAnnotationURL: shareAnnotationURL,
                     by: window.app.status.serverURL,
-                    comment: comment,
                     subject: subject,
-                    annotationURL: annotationURL,
                     cid : "annotation" + self.model.id
                 }, {
                     success: function (model, response) {

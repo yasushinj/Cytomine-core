@@ -20,12 +20,6 @@ var ActivityController = Backbone.Router.extend({
         "activity-:project-": "activity" ,
         "activity-": "activity"
     },
-    activity : function() {
-        this.activity(null);
-    },
-    activity : function(project) {
-        this.activity(null,null);
-    },
     activity: function (project,user) {
         var self = this;
         if(project==undefined || project=="null") {
