@@ -183,32 +183,6 @@ class GroupTests  {
         }
     }
 
-//    void testLDAPWithoutCredential() {
-//
-//        def ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
-//        println "CREATE FROM LDAP"
-//        def groupToAdd = BasicInstanceBuilder.getGroupNotExist()
-//        groupToAdd.name = '1re an. master sc. mathématiques, fin.'
-//
-//        def result = GroupAPI.createFromLDAP(groupToAdd.encodeAsJSON(), Infos.BADLOGIN, Infos.BADPASSWORD)
-//
-//        if(ldapDisabled) {
-//            assert 404 == result.code
-//        } else {
-//            assert 401 == result.code
-//
-//
-//            println "CREATE FROM LDAP"
-//            result = GroupAPI.createFromLDAP(groupToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-//            assert 200 == result.code
-//            assert JSON.parse(result.data).name == '1re an. master sc. mathématiques, fin.'
-//
-//            println "IS IN LDAP"
-//            result = GroupAPI.isInLDAP(JSON.parse(result.data).id, Infos.BADLOGIN, Infos.BADPASSWORD)
-//            assert 401 == result.code
-//        }
-//    }
-
     void testLDAPResetNotLDAPGroup() {
 
         def ldapDisabled = Holders.getGrailsApplication().config.grails.plugin.springsecurity.ldap.active.toString()=="false"
@@ -216,7 +190,8 @@ class GroupTests  {
         if(!ldapDisabled) {
             def group = Group.findByName("BASICGROUP")
             if(group == null) {
-                group = Group.findByName("NEWNAME")
+                BasicInstanceBuilder.getGroup()
+                group = Group.findByName("BASICGROUP")
             }
             def id = group.id
             println "RESET FROM LDAP"
