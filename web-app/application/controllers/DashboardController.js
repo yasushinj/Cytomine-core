@@ -58,6 +58,12 @@ var DashboardController = Backbone.Router.extend({
                 this.createView(callback);
             }
             this.showView();
+
+            // here, save a no-sql line projectConnexion
+            new ProjectConnectionModel({
+                project: project
+            }).save();
+
         } else {
             callback.call();
             this.showView();
