@@ -9,6 +9,7 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.MapReduceCommand
 import grails.transaction.Transactional
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 @Transactional
 class UserProjectConnectionService extends ModelService {
@@ -22,6 +23,7 @@ class UserProjectConnectionService extends ModelService {
 
         SecUser user = cytomineService.getCurrentUser()
         Project project = Project.read(JSONUtils.getJSONAttrLong(json,"project",0))
+        securityACLService.check(project,READ)
         PersistentProjectConnection connection = new PersistentProjectConnection()
         connection.user = user
         connection.project = project
@@ -31,6 +33,7 @@ class UserProjectConnectionService extends ModelService {
     }
 
     def lastConnectionInProject(Project project){
+        securityACLService.check(project,READ)
         def connection = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc"/*, max: 1*/) {
             distinct("user")
             eq("project", project)
@@ -40,6 +43,7 @@ class UserProjectConnectionService extends ModelService {
     }
 
     def getConnectionByUserAndProject(User user, Project project, boolean all){
+        securityACLService.check(project,READ)
         def result;
         if(all){
             def connections = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc") {
@@ -59,6 +63,7 @@ class UserProjectConnectionService extends ModelService {
 
     def numberOfConnectionsByUserAndProject(User user ,Project project){
 
+        securityACLService.check(project,READ)
         def result;
         if(user) {
             def mResult = PersistentProjectConnection.createCriteria().get/*(sort: "created", order: "desc")*/ {
@@ -71,29 +76,22 @@ class UserProjectConnectionService extends ModelService {
             result = [[user : user.id,frequency: (int) mResult]]
         } else{
             // what we want
-            // db.persistentProjectConnection.mapReduce(function(){emit(this.user, this.project);}, function(key,values){return values.length}, { query :{project:ID_PROJECT}, out : {inline:1}})
+            // db.persistentProjectConnection.aggregate([{$match: {project : ID_PROJECT}}, { $group : { _id : {user:"$user"} , number : { $sum : 1 }}}])
 
             def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
 
-            String mapFunction = "function(){emit(this.user, this.project);}"
-            String reduceFunction = "function(key,values){return values.length}"
-            DBObject query = new BasicDBObject()
-            query.put("project",new BasicDBObject('$eq',project.id))
-
-            def out = db.persistentProjectConnection.mapReduce(
-                    mapFunction,
-                    reduceFunction,
-                    "tmpCollectionName", // try null
-                    MapReduceCommand.OutputType.INLINE,
-                    query
+            result = db.persistentProjectConnection.aggregate(
+                    [$match : [ project : project.id]],
+                    [$group : [_id : [ user: '$user'], "frequency":[$sum:1]]]
             )
 
-            def mResult = out.results()
-            result = []
-            out.drop()
-            for(int i =0;i<mResult.size();i++){
-                result << [user:mResult.get(i)._id,frequency:(int) mResult.get(i).value]
+            def usersWithPosition = []
+            result.results().each {
+                def userId = it["_id"]["user"]
+                def frequency = it["frequency"]
+                usersWithPosition << [user: userId, frequency: frequency]
             }
+            result = usersWithPosition
         }
         return result
     }
