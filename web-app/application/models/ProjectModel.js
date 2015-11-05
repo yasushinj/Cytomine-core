@@ -97,6 +97,21 @@ var ProjectDefaultLayerModel = Backbone.Model.extend({
     }
 });
 
+var ProjectConnectionModel = Backbone.Model.extend({
+    url: function () {
+        if (this.user == undefined) {
+            return '/api/project/'+this.project +'/userconnection.json';
+        } else {
+            return '/api/project/'+this.project +'/userconnection/'+this.user+'.json';
+        }
+    },
+    initialize: function (options) {
+        this.project = options.project;
+        this.user = options.user;
+    }
+});
+
+
 
 var ProjectDefaultLayerCollection = PaginatedCollection.extend({
     model: ProjectDefaultLayerModel,
