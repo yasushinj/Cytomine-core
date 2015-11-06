@@ -110,7 +110,7 @@ var AccountDetails = Backbone.View.extend({
             dataType:"json",
             success: function(response) {
                 self.isInLDAP = response.result;
-                if(self.isInLDAP == true) {
+                if(self.isInLDAP) {
                     $("#password_panel").remove();
                 }
             }

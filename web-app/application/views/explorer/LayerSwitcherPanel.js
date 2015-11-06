@@ -54,7 +54,8 @@ var LayerSwitcherPanel = SideBarPanel.extend({
     addBaseLayer: function (layer, model) {
         var self = this;
         var radioName = "layerSwitch-" + model.get("id");
-        var layerID = "layerSwitch-" + model.get("id") + "-" + new Date().getTime(); //index of the layer in this.layers array
+        //index of the layer in this.layers array
+        var layerID = "layerSwitch-" + model.get("id") + "-" + new Date().getTime();
         var liLayer = _.template("<li><input type='radio' id='<%=   id %>' name='<%=   radioName %>' checked/><span style='color : #ffffff;'> <%=   name %></span></li>", {id: layerID, radioName: radioName, name: layer.name.substr(0, 15)});
         $("#" + this.browseImageView.divId).find("#layerSwitcher" + this.model.get("id")).find(".baseLayers").append(liLayer);
         $("#" + layerID).change(function () {
@@ -63,28 +64,29 @@ var LayerSwitcherPanel = SideBarPanel.extend({
     },
     addVectorLayer: function (layer, model, userID) {
 
-        if(userID=="ROI") return;
+        if(userID=="ROI"){
+            return;
+        }
 
         console.log("### addVectorLayer");
         console.log(model);
         var self = this;
         this.vectorLayers.push({ id: userID, vectorsLayer: layer.vectorsLayer});
-        var layerID = "layerSwitch-" + model.get("id") + "-" + userID + "-" + new Date().getTime(); //index of the layer in this.layers array
+        //index of the layer in this.layers array
+        var layerID = "layerSwitch-" + model.get("id") + "-" + userID + "-" + new Date().getTime();
         var color = "#FFF";
         if (userID == "REVIEW") {
             color = "#5BB75B";
         }
-        var button = '<button class="btn btn-xs btn-default removeImageLayers" id="removeImageLayers' + userID + '" data-user="' + userID + '" style="height:18px;"> <i class="glyphicon glyphicon-trash"></i></button>'
+        var button = '<button class="btn btn-xs btn-default removeImageLayers" id="removeImageLayers' + userID + '" data-user="' + userID + '" style="height:18px;"> <i class="glyphicon glyphicon-trash"></i></button>';
 
 
         var layerOptionTpl;
         if (layer.isOwner) {
             layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox'  value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' disabled/><span style='color :<%=   color %>;'> <%=   name %> <span class='numberOfAnnotation'></span></span>" + button + "</li>", {id: layerID, name: layer.vectorsLayer.name, color: color, userID: userID});
-        } else if (userID != "REVIEW" && layer.user.get('algo') == true) {
-            /*layerOptionTpl = _.template("<li><input id='<%= id %>' type='checkbox' value='<%=   name %>' /> <span style='color : #ffffff;'><%=   name %></span> <a class='followUser' data-user-id='<%= userID %>' href='#'>Follow</a></li>", {userID : userID, id : layerID, name : layer.vectorsLayer.name, color : color});*/
+        } else if (userID != "REVIEW" && layer.user.get('algo')) {
             layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " <a href='#tabs-useralgo-<%= userID %>'>See job details...</a></li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
         } else {
-            /*layerOptionTpl = _.template("<li><input id='<%= id %>' type='checkbox' value='<%=   name %>' /> <span style='color : #ffffff;'><%=   name %></span> <a class='followUser' data-user-id='<%= userID %>' href='#'>Follow</a></li>", {userID : userID, id : layerID, name : layer.vectorsLayer.name, color : color});*/
             layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " </li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
         }
         $("#" + this.browseImageView.divId).find("#layerSwitcher" + model.get("id")).find("ul.annotationLayers").append(layerOptionTpl);
@@ -92,13 +94,15 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         console.log("add layer!!!");
 
         layer.vectorsLayer.setVisibility(true);
-        self.browseImageView.annotationProperties.updateAnnotationProperyLayers(); //update annotation proprety layers
+        //update annotation proprety layers
+        self.browseImageView.annotationProperties.updateAnnotationProperyLayers();
         $("#" + layerID).prop('checked', true);
 
         $("#" + layerID).click(function () {
             var checked = $(this).is(':checked');
             layer.vectorsLayer.setVisibility(checked);
-            self.browseImageView.annotationProperties.updateAnnotationProperyLayers(); //update annotation proprety layers
+            //update annotation proprety layers
+            self.browseImageView.annotationProperties.updateAnnotationProperyLayers();
         });
 
     },
@@ -114,7 +118,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         _.each(projectUsers, function (userID) {
             if (!_.include(onlineUsers, userID)) {
                 userList.find("li[data-id=" + userID + "]").find('span').css('color', 'white');
-                userList.find("li[data-id=" + userID + "]").find('input.followUser').attr("disabled", "disabled")
+                userList.find("li[data-id=" + userID + "]").find('input.followUser').attr("disabled", "disabled");
             }
         });
         _.each(onlineUsers, function (userID) {
@@ -165,8 +169,9 @@ var LayerSwitcherPanel = SideBarPanel.extend({
             var userToFollow = this;
             var followUser = $(this).is(':checked');
             $("#" + self.browseImageView.divId).find("#layerSwitcher" + self.model.get("id")).find('.followUser:checked').each(function () {
-                if (userToFollow != this)
+                if (userToFollow != this) {
                     $(this).attr('checked', false);
+                }
             });
             self.stopFollowing();
             if (!followUser) {
@@ -280,7 +285,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
                 if (!alreadyExist) {
                     //if not yet added, create layer
 
-                    var user = layer.user
+                    var user = layer.user;
 
                     self.addLayerEvent(user, false);
                     item = panel.find("#entry" + select.val());
@@ -294,9 +299,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
                 //force click on show layer to set layer visible = true
                 if (!item.find(".showUser").is(":checked")) {
 
-//                    console.log(item.find(".showUser"));
                     item.find(".showUser").click();
-//                    console.log(item.find(".showUser"));
 
                 }
                 console.log("layer is checked?="+item.find(".showUser").is(":checked"));
@@ -308,14 +311,13 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         });
         panel.find("#layerComp" + self.model.get("id")).show();
         panel.find(".removeImageLayers").show();
-//        }
 
         self.showDefaultLayers();
     },
     addLayerEvent: function (user, defaultLayer) {
 
         var self = this;
-        var layerAnnotation
+        var layerAnnotation;
 
         if(user!=null) {
             console.log("### create layer: "+user.prettyName());
@@ -371,7 +373,6 @@ var LayerSwitcherPanel = SideBarPanel.extend({
             var option = select.find("option[value=" + user + "]");
             var item = panel.find("#entry" + user);
             option.show();
-            //item.find(".showUser").attr("checked",false);
             if (!self.disableEvent) {
                 if (item.find(".showUser").is(":checked")) {
                     item.find(".showUser").click();

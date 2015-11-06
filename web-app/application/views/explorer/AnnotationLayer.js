@@ -43,14 +43,18 @@ AnnotationLayerUtils.createFeatureFromAnnotation = function (annotation) {
     }
 
 
-    var term = AnnotationStatus.NO_TERM; //no term associated
+    //no term associated
+    var term = AnnotationStatus.NO_TERM;
 
-    if (terms.length==1 && terms[0]==0) { //multiple term
+    //multiple term
+    if (terms.length==1 && terms[0]==0) {
         term = AnnotationStatus.NO_TERM;
-    } else if (terms.length > 1) { //multiple term
+    //multiple term
+    } else if (terms.length > 1) {
         term = AnnotationStatus.MULTIPLE_TERM;
     } else if (terms.length == 1) {
-        term = terms[0]; //put ID
+        //put ID
+        term = terms[0];
     }
     feature.attributes = {
         idAnnotation: annotation.id,
@@ -72,7 +76,8 @@ OpenLayers.Format.Cytomine = OpenLayers.Class(OpenLayers.Format, {
         var features = [];
         var nestedCollection = collection.collection;
         var termsToShow = this.annotationLayer.browseImageView.ontologyPanel.ontologyTreeView.getTermToShow();
-        var isTermRestriction = this.annotationLayer.browseImageView.ontologyPanel.ontologyTreeView.isTermRestriction(); // //just for perf
+        //just for perf
+        var isTermRestriction = this.annotationLayer.browseImageView.ontologyPanel.ontologyTreeView.isTermRestriction();
         _.each(nestedCollection, function (annotation) {
 
             if(!annotation.term) {
@@ -125,7 +130,8 @@ var AnnotationLayer = function (user,name, imageID, userID, color, ontologyTreeV
         elseFilter: true
     })];
 
-    var style = $.extend(true, {}, OpenLayers.Feature.Vector.style['default']); // get a copy of the default style
+    // get a copy of the default style
+    var style = $.extend(true, {}, OpenLayers.Feature.Vector.style['default']);
     style.label = "${getLabel}";
     style.fillOpacity = "${getOpacity}";
     style.strokeOpacity = "${getOpacityBorder}";
@@ -169,7 +175,6 @@ var AnnotationLayer = function (user,name, imageID, userID, color, ontologyTreeV
 
     var selectStyle = null;
 
-//    if(!reviewMode)  {
     selectStyle = new OpenLayers.Style({
         'fillColor': '#EEEEEE',
         'fillOpacity': .8,
@@ -270,19 +275,22 @@ AnnotationLayer.prototype = {
         }
         var symbolizers_lookup = {};
         var self = this;
-        symbolizers_lookup[AnnotationStatus.NO_TERM] = { //NO TERM ASSOCIATED
+        //NO TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.NO_TERM] = {
             'fillColor': "#EEEEEE",
             'strokeWidth': 3,
             'pointRadius': this.pointRadius,
             "strokeColor": strokeColor
         };
-        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = {
             'fillColor': "#CCCCCC",
             'strokeWidth': 3,
             'pointRadius': this.pointRadius,
             "strokeColor": strokeColor
         };
-        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = {
             'fillColor': "#FF0000",
             'strokeWidth': 5,
             'pointRadius': this.pointRadius,
@@ -311,7 +319,8 @@ AnnotationLayer.prototype = {
 
         var symbolizers_lookup = {};
         var self = this;
-        symbolizers_lookup[AnnotationStatus.NO_TERM] = { //NO TERM ASSOCIATED
+        //NO TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.NO_TERM] = {
             'fillColor': "#EEEEEE",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -319,7 +328,8 @@ AnnotationLayer.prototype = {
             'strokeOpacity': self.strokeOpacity,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = {
             'fillColor': "#CCCCCC",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -327,7 +337,8 @@ AnnotationLayer.prototype = {
             'strokeOpacity': self.strokeOpacity,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = {
             'fillColor': "#FF0000",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -335,7 +346,8 @@ AnnotationLayer.prototype = {
             'strokeOpacity': self.strokeOpacity,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.REVIEW] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.REVIEW] = {
             'fillColor': "#5BB75B",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -368,7 +380,8 @@ AnnotationLayer.prototype = {
 
         var symbolizers_lookup = {};
         var self = this;
-        symbolizers_lookup[AnnotationStatus.NO_TERM] = { //NO TERM ASSOCIATED
+        //NO TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.NO_TERM] = {
             'fillColor': "#EEEEEE",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -377,7 +390,8 @@ AnnotationLayer.prototype = {
             'pointRadius': this.pointRadius
 
         };
-        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = {
             'fillColor': "#CCCCCC",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -385,7 +399,8 @@ AnnotationLayer.prototype = {
             'strokeOpacity': self.strokeOpacity,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = {
             'fillColor': "#FF0000",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -393,7 +408,8 @@ AnnotationLayer.prototype = {
             'strokeOpacity': self.strokeOpacity,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.REVIEW] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.REVIEW] = {
             'fillColor': "#BD362F",
             "strokeColor": self.strokeColor,
             'fillOpacity': self.opacity,
@@ -421,22 +437,26 @@ AnnotationLayer.prototype = {
         }
         var symbolizers_lookup = {};
         var self = this;
-        symbolizers_lookup[AnnotationStatus.NO_TERM] = { //NO TERM ASSOCIATED
+        //NO TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.NO_TERM] = {
             'fillColor': "#FCF8E3",
             'strokeWidth': 3,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.MULTIPLE_TERM] = {
             'fillColor': "#FCF8E3",
             'strokeWidth': 3,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.TOO_SMALL] = {
             'fillColor': "#FCF8E3",
             'strokeWidth': 5,
             'pointRadius': this.pointRadius
         };
-        symbolizers_lookup[AnnotationStatus.REVIEW] = { //MULTIPLE TERM ASSOCIATED
+        //MULTIPLE TERM ASSOCIATED
+        symbolizers_lookup[AnnotationStatus.REVIEW] = {
             'fillColor': "#FCF8E3",
             'strokeWidth': 5,
             'pointRadius': this.pointRadius
@@ -460,16 +480,13 @@ AnnotationLayer.prototype = {
 
                 if (!self.measureOnSelect) {
                     self.ontologyTreeView.idAnnotation = evt.feature.attributes.idAnnotation;
-                    //if (!self.reviewLayer) {
-                        self.ontologyTreeView.refresh(evt.feature.attributes.idAnnotation);
-                    //}
+                    self.ontologyTreeView.refresh(evt.feature.attributes.idAnnotation);
 
                     if (self.deleteOnSelect == true) {
                         self.removeSelection(false);
                     } else {
                         self.showPopup(map, evt);
                         self.browseImageView.jobTemplatePanel.changeAnnotation(evt.feature.attributes.idAnnotation);
-                        //self.vectorsLayer.drawFeature(evt.feature);
                     }
                 }
                 else {
@@ -539,7 +556,6 @@ AnnotationLayer.prototype = {
         });
     },
     initControls: function (map, selectFeature) {
-        /*if (isOwner) { */
 
         this.controls = {
             'freehand': new OpenLayers.Control.DrawFeature(this.vectorsLayer, OpenLayers.Handler.Polygon, {
@@ -787,7 +803,6 @@ AnnotationLayer.prototype = {
             success: function (annotation, response) {
                 new AnnotationModel({id: response.annotation.id}).fetch({
                     success: function (annotation, response) {
-                        //annotation.set(response.annotation.id);
                         var message = response.message;
                         self.vectorsLayer.removeFeatures([feature]);
                         var newFeature = AnnotationLayerUtils.createFeatureFromAnnotation(annotation);
@@ -798,7 +813,6 @@ AnnotationLayer.prototype = {
                         var cropImage = _.template("<img src='<%=   url %>' alt='<%=   alt %>' style='max-width: 175px;max-height: 175px;' />", { url: cropURL, alt: cropURL});
                         var alertMessage = _.template("<p></p><div></div>", { message: message});
                         window.app.view.message("Annotation added", alertMessage, "success");
-                        //if(self.reviewMode) self.vectorsLayer.refresh();
                     }
                 });
 

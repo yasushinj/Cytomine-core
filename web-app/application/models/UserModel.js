@@ -91,17 +91,17 @@ var UserOnlineCollection = PaginatedCollection.extend({
 var UserCollection = PaginatedCollection.extend({
     model: UserModel,
     url: function () {
-        if (this.project != undefined && this.admin == true) {
+        if (!window.app.isUndefined(this.project) && this.admin) {
             return "api/project/" + this.project + "/admin.json";
-        } else if (this.project != undefined && this.creator == true) {
+        } else if (!window.app.isUndefined(this.project) && this.creator) {
             return "api/project/" + this.project + "/creator.json";
-        } else if (this.project != undefined && this.online == true) {
+        } else if (!window.app.isUndefined(this.project) && this.online) {
             return "api/project/" + this.project + "/user.json?online=true";
-        } else if (this.project != undefined) {
+        } else if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/user.json";
-        } else if (this.ontology != undefined && this.creator == true) {
+        } else if (!window.app.isUndefined(this.ontology) && this.creator) {
             return "api/ontology/" + this.ontology + "/creator.json";
-        } else if (this.ontology != undefined) {
+        } else if (!window.app.isUndefined(this.ontology)) {
             console.log("ontologyYYY=" + this.ontology);
             return "api/ontology/" + this.ontology + "/user.json";
         } else {
@@ -137,9 +137,9 @@ var UserCollection = PaginatedCollection.extend({
 
 var UserLayerCollection = PaginatedCollection.extend({
     url: function () {
-        if (this.project != undefined && this.image != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.image)) {
             return "api/project/" + this.project + "/userlayer.json?image="+this.image;
-        } else if (this.project != undefined) {
+        } else if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/userlayer.json";
         }
     },
@@ -153,7 +153,7 @@ var UserLayerCollection = PaginatedCollection.extend({
 
 var UserSecRole = Backbone.Model.extend({
     url: function () {
-        if (this.role != undefined || this.isNew()) {
+        if (!window.app.isUndefined(this.role) || this.isNew()) {
             return "api/user/" + this.user + "/role.json";
         } else {
             return "api/user/" + this.user + "/role/" + this.role + ".json";

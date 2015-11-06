@@ -24,9 +24,9 @@
 var StatsModel = Backbone.Model.extend({
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/term.json";
-        } else if (this.term != undefined) {
+        } else if (!window.app.isUndefined(this.term)) {
             return "api/term/" + this.term + "/project/stat.json";
         } else {
             return "api/stat.json";
@@ -40,7 +40,7 @@ var StatsModel = Backbone.Model.extend({
 
 var StatsProjectSoftwareModel = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/project/" + this.project + "/software/" + this.software + "/stats.json";
         }
     },
@@ -53,9 +53,9 @@ var StatsProjectSoftwareModel = Backbone.Model.extend({
 
 var StatsRetrievalSuggestionAVGModel = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/stats/retrieval/avg.json?project=" + this.project + "&software=" + this.software;
-        } else if (this.job != undefined) {
+        } else if (!window.app.isUndefined(this.job)) {
             return "api/stats/retrieval/avg.json?job=" + this.job;
         }
     },
@@ -69,9 +69,9 @@ var StatsRetrievalSuggestionAVGModel = Backbone.Model.extend({
 var StatsRetrievalSuggestionMatrixModel = Backbone.Model.extend({
     url: function () {
         console.log("StatsRetrievalSuggestionMatrixModel=" + this.project + "#" + this.software + "#" + this.job);
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/stats/retrieval/confusionmatrix.json?project=" + this.project + "&software=" + this.software;
-        } else if (this.job != undefined) {
+        } else if (!window.app.isUndefined(this.job)) {
             return "api/stats/retrieval/confusionmatrix.json?job=" + this.job;
         }
     },
@@ -84,9 +84,9 @@ var StatsRetrievalSuggestionMatrixModel = Backbone.Model.extend({
 
 var StatsRetrievalSuggestionWorstTermModel = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/stats/retrieval/worstTerm.json?project=" + this.project + "&software=" + this.software;
-        } else if (this.job != undefined) {
+        } else if (!window.app.isUndefined(this.job)) {
             return "api/stats/retrieval/worstTerm.json?job=" + this.job;
         }
     },
@@ -99,7 +99,7 @@ var StatsRetrievalSuggestionWorstTermModel = Backbone.Model.extend({
 
 var StatsRetrievalSuggestionWorstTermWithSuggest = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/stats/retrieval/worstTermWithSuggest.json?project=" + this.project + "&software=" + this.software;
         } else if (this.job != undefined) {
             return "api/stats/retrieval/worstTermWithSuggest.json?job=" + this.job;
@@ -115,9 +115,9 @@ var StatsRetrievalSuggestionWorstTermWithSuggest = Backbone.Model.extend({
 
 var StatsRetrievalSuggestionWorstAnnotationModel = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/stats/retrieval/worstAnnotation.json?project=" + this.project + "&software=" + this.software;
-        } else if (this.job != undefined) {
+        } else if (!window.app.isUndefined(this.job)) {
             return "api/stats/retrieval/worstAnnotation.json?job=" + this.job;
         }
     },
@@ -130,9 +130,9 @@ var StatsRetrievalSuggestionWorstAnnotationModel = Backbone.Model.extend({
 
 var StatsRetrievalSuggestionEvolutionModel = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software)) {
             return "api/stats/retrieval/evolution.json?project=" + this.project + "&software=" + this.software;
-        } else if (this.job != undefined) {
+        } else if (!window.app.isUndefined(this.job)) {
             return "api/stats/retrieval/evolution.json?job=" + this.job;
         }
     },
@@ -145,13 +145,13 @@ var StatsRetrievalSuggestionEvolutionModel = Backbone.Model.extend({
 
 var StatsRetrievalEvolutionModel = Backbone.Model.extend({
     url: function () {
-        if (this.project != undefined && this.software != undefined && this.term == undefined) {
+        if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software) && window.app.isUndefined(this.term)) {
             return "api/stats/retrieval-evolution/evolution.json?project=" + this.project + "&software=" + this.software;
-        } else if (this.project != undefined && this.software != undefined && this.term != undefined) {
+        } else if (!window.app.isUndefined(this.project) && !window.app.isUndefined(this.software) && !window.app.isUndefined(this.term)) {
             return "api/stats/retrieval-evolution/evolutionByTerm.json?project=" + this.project + "&software=" + this.software + "&term=" + this.term;
-        } else if (this.job != undefined && this.term == undefined) {
+        } else if (!window.app.isUndefined(this.job) && window.app.isUndefined(this.term)) {
             return "api/stats/retrieval-evolution/evolution.json?job=" + this.job;
-        } else if (this.job != undefined) {
+        } else if (!window.app.isUndefined(this.job)) {
             return "api/stats/retrieval-evolution/evolutionByTerm.json?job=" + this.job + "&term=" + this.term;
         }
     },
@@ -169,9 +169,9 @@ var StatsTermCollection = PaginatedCollection.extend({
     model: StatsModel,
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/term.json";
-        } else if (this.term != undefined) {
+        } else if (!window.app.isUndefined(this.term)) {
             return "api/term/" + this.term + "/project/stat.json";
         } else {
             return "api/stat.json";
@@ -189,7 +189,7 @@ var StatsUserCollection = PaginatedCollection.extend({
     model: StatsModel,
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/user.json";
         }
     },
@@ -203,7 +203,7 @@ var StatsUserAnnotationCollection = PaginatedCollection.extend({
     model: StatsModel,
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/userannotations.json";
         }
     },
@@ -217,7 +217,7 @@ var StatsTermSlideCollection = PaginatedCollection.extend({
     model: StatsModel,
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/termslide.json";
         }
     },
@@ -231,7 +231,7 @@ var StatsUserSlideCollection = PaginatedCollection.extend({
     model: StatsModel,
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/userslide.json";
         }
     },
@@ -245,7 +245,7 @@ var StatsAnnotationEvolutionCollection = PaginatedCollection.extend({
     model: StatsModel,
 
     url: function () {
-        if (this.project != undefined) {
+        if (!window.app.isUndefined(this.project)) {
             return "api/project/" + this.project + "/stats/annotationevolution.json?daysRange=" + this.daysRange + "&term=" + this.term;
         }
     },

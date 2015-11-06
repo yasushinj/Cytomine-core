@@ -57,7 +57,7 @@ var LaunchJobView = Backbone.View.extend({
         new JobTemplateCollection({project: this.project.get("id"), software: this.software.get("id")}).fetch({
             success: function (collection, response) {
                 console.log(collection);
-                if(collection.size()==0) {
+                if(collection.size()===0) {
                     $("#preFilledjobTemplate").replaceWith("(Not available: no Job template)");
                     $("#optionPrefilled").prop('disabled', 'disabled');
                 } else {
@@ -192,7 +192,7 @@ var LaunchJobView = Backbone.View.extend({
     printSoftwareParams: function () {
         var self = this;
 
-        if (self.software == undefined) {
+        if (window.app.isUndefined(self.software)) {
             return;
         }
 
@@ -593,7 +593,7 @@ var InputListView = Backbone.View.extend({
         var self = this;
         var success;
 
-        if (self.trElem.find("select").children().length == 0) {
+        if (self.trElem.find("select").children().length === 0) {
             success = false;
             self.changeStyle(self.trElem, success, "Field required");
         }
@@ -645,9 +645,9 @@ var InputListDomainView = Backbone.View.extend({
         //Check if collection data are still loaded in "currentCollection" (cache objet)
         var currentCollection = window.app.getFromCache(window.app.replaceVariable(self.param.uri));
         // if the currentCollection is empty or is a job, we will not use the cache.
-        var toReload = currentCollection == undefined || currentCollection.length == 0 || currentCollection.uri.indexOf("/api/job") >=0;
+        var toReload = window.app.isUndefined(currentCollection) || currentCollection.length === 0 || currentCollection.uri.indexOf("/api/job") >=0;
         if (toReload) {
-            if (self.collection == undefined || (self.collection.length > 0 && self.collection.at(0).id == undefined)) {
+            if (window.app.isUndefined(self.collection) || (self.collection.length > 0 && window.app.isUndefined(self.collection.at(0).id))) {
                 self.trElem.find("td#" + self.param.id).append('<div class="alert alert-info" style="margin-left : 10px;margin-right: 10px;"><i class="icon-refresh" /> Loading...</div>');
                 if (self.param.required) {
                     self.changeStyle(self.trElem, false, "Field required");
@@ -706,7 +706,8 @@ var InputListDomainView = Backbone.View.extend({
             width : 750,
             renderer: function(v){
                 var item
-                if (v.thumb) { //image/annotation model
+                //image/annotation model
+                if (v.thumb) {
                     item =  _.template('<div><div style="float:left; width : 128px;"><img src="<%= thumb %>" style="max-width : 64px; max-height : 64px;" /></div><div style="padding-left: 20px;"><%= name %></div></div><div style="clear:both;"></div>', { thumb : v.thumb, name : v[self.printAttribut]});
                 } else if (v['class'] == 'be.cytomine.processing.Job') {
                     item = _.template('<%= name %>', { name : v.softwareName+" "+ window.app.convertLongToDate(v.created) });
@@ -759,7 +760,7 @@ var InputListDomainView = Backbone.View.extend({
             length--;
         }
 
-        if (self.param.required && length == 0) {
+        if (self.param.required && length === 0) {
             self.changeStyle(self.trElem, false, "Field required");
         }
         else {
@@ -773,7 +774,7 @@ var InputListDomainView = Backbone.View.extend({
 
         var values = self.getValue();
 
-        if (self.param.required && values.length == 0) {
+        if (self.param.required && values.length === 0) {
             success = false;
             self.changeStyle(self.trElem, success, "Field required");
         }
@@ -786,10 +787,11 @@ var InputListDomainView = Backbone.View.extend({
     getValue: function () {
         var self = this;
 
-        if (!self.elemSuggest) return []; //collection may not be yet loaded
+        //collection may not be yet loaded
+        if (!self.elemSuggest) return [];
 
         var values = self.elemSuggest.getValue();
-        if (values == undefined) {
+        if (window.app.isUndefined(values)) {
             return [];
         }
         else {
@@ -799,7 +801,7 @@ var InputListDomainView = Backbone.View.extend({
     getStringValue: function () {
         var self = this;
         var values = self.getValue();
-        if (values == undefined) {
+        if (window.app.isUndefined(values)) {
             return "";
         }
         else {

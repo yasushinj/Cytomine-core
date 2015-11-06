@@ -24,7 +24,6 @@
 // - `interval` interval to polling the server (in milliseconds)
 var Watcher = function (model, callback, interval) {
     _.bindAll(this, 'fetch', 'destroy');
-    var that = this;
     this.model = model;
     this.callback = callback;
     this.interval = interval || 1000;
@@ -73,7 +72,7 @@ Status.prototype.start = function () {
     var ajaxFn = function () {
 
         var project = window.app.status.currentProject;
-        if (project == undefined) {
+        if (window.app.isUndefined(project)) {
             project = "null";
         }
         new PingModel({project: project}).save({}, {
@@ -87,7 +86,6 @@ Status.prototype.start = function () {
         );
     };
     if (!this.watcher) {
-        var that = this;
         this.watcher = setInterval(ajaxFn, this.interval);
     }
 };

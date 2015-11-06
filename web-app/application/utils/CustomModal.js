@@ -60,10 +60,10 @@ var CustomModal = Backbone.View.extend({
                     modal.append(htmlModal);
 
                     if(self.width) {
-                        $('#'+self.idModal).css("width",self.width)
+                        $('#'+self.idModal).css("width",self.width);
                     }
                     if(self.height) {
-                        $('#'+self.idModal).css("height",self.height)
+                        $('#'+self.idModal).css("height",self.height);
                     }
                     _.each(self.buttons, function (b) {
                         $("#" + b.id).click(function () {
@@ -151,7 +151,7 @@ var DescriptionModal = {
                     }
                 });
             });
-        }
+        };
 
 
         var modal = new CustomModal({
@@ -208,7 +208,7 @@ var DescriptionModal = {
     },
     initDescriptionView: function (domainIdent, domainClassName, container, maxPreviewCharNumber, callbackGet, callbackUpdate) {
         var self = this;
-        self.editable = !window.app.status.currentProjectModel.isReadOnly(window.app.models.projectAdmin)
+        self.editable = !window.app.status.currentProjectModel.isReadOnly(window.app.models.projectAdmin);
 
         new DescriptionModel({domainIdent: domainIdent, domainClassName: domainClassName}).fetch(
                 {success: function (description, response) {
@@ -246,7 +246,7 @@ var DescriptionModal = {
                 }});
 
     }
-}
+};
 
 
 var ImportAnnotationModal = {
@@ -269,12 +269,12 @@ var ImportAnnotationModal = {
 
                 $.get("/api/imageinstance/" + idImage + "/sameimagedata.json",function (data) {
                     $("#layersSelection" + idImage).empty();
-                    if (data.collection.length == 0) {
+                    if (data.collection.length === 0) {
                         $("#layersSelection" + idImage).append("This image has no other layers in other projects.");
                     } else {
                         $("#layersSelection" + idImage).append('<input type="checkbox" id="giveMeAnnotations"> Copy all annotations on my layer (if not checked, annotation will stay on the same layers) </input><br/><br/><br/> ');
                         _.each(data.collection, function (item) {
-                            var layer = item.image + "_" + item.user
+                            var layer = item.image + "_" + item.user;
                             var templ = '<input type="checkbox" class="layerSelection" id="' + layer + '"> Import annotation from project ' + item.projectName + ' -> ' + item.lastname + " " + item.firstname + ' (' + item.username + ') <br/>';
                             $("#layersSelection" + idImage).append(templ);
                         });
@@ -288,10 +288,10 @@ var ImportAnnotationModal = {
 
                     $("#closeImportLayer" + idImage).hide();
                     $("#importLayersButton" + idImage).hide();
-                    var layers = []
+                    var layers = [];
                     _.each($("#importLayer" + idImage).find("input.layerSelection"), function (item) {
                         if ($(item).is(':checked')) {
-                            layers.push(item.id)
+                            layers.push(item.id);
                         }
                     });
                     var giveMe = $("#giveMeAnnotations").is(':checked');
@@ -326,7 +326,7 @@ var ImportAnnotationModal = {
         modal.addButtons("closeImportLayer" + idImage, "Close", false, true);
 
     }
-}
+};
 
 
 var copyImageModal = {
@@ -348,13 +348,13 @@ var copyImageModal = {
             width: width,
             height: height,
             callBack: function () {
-                var modal = $("#importLayer" + idImage)
+                var modal = $("#importLayer" + idImage);
                 $("#importLayersButton" + idImage).hide();
                 window.app.models.projects.fetch({
                     success: function (collection1, response) {
                         window.app.models.projects = collection1;
                         modal.find("#projectSelection" + idImage).empty();
-                        modal.find("#projectSelection" + idImage).append('<select></select><br/><br/><button class="btn copytoproject">Copy to project</button>')
+                        modal.find("#projectSelection" + idImage).append('<select></select><br/><br/><button class="btn copytoproject">Copy to project</button>');
 
 
                         window.app.models.projects.each(function (project) {
@@ -369,7 +369,7 @@ var copyImageModal = {
 
 
 
-                                    var newImageId = image.get('imageinstance').id
+                                    var newImageId = image.get('imageinstance').id;
 
                                     $.post("/api/imageinstance/" + newImageId + "/copymetadata.json?based=" + idImage,function (data) {
 
@@ -379,7 +379,7 @@ var copyImageModal = {
 
 
                                             $("#closeImportLayer" + idImage).show();
-                                            if (data.collection.length == 0) {
+                                            if (data.collection.length === 0) {
                                                 $("#layersSelection" + idImage).append("This image has no other layers with annotations and commons layers with the selected project in the current project.");
                                             } else {
                                                 $("#importLayersButton" + idImage).show();
@@ -388,7 +388,7 @@ var copyImageModal = {
 
                                                 $("#layersSelection" + idImage).append('<input type="checkbox" id="giveMeAnnotations"> Copy all annotations on my layer (if not checked, annotation will stay on the same layers) </input><br/><br/><br/> ');
                                                 _.each(data.collection, function (item) {
-                                                    var layer = item.image + "_" + item.user
+                                                    var layer = item.image + "_" + item.user;
                                                     var templ = '<input type="checkbox" class="layerSelection" id="' + layer + '"> Import annotation from project ' + item.projectName + ' -> ' + item.lastname + " " + item.firstname + ' (' + item.username + ') <br/>';
                                                     $("#layersSelection" + idImage).append(templ);
                                                 });
@@ -403,10 +403,10 @@ var copyImageModal = {
 
                                             $("#closeImportLayer" + idImage).hide();
                                             $("#importLayersButton" + idImage).hide();
-                                            var layers = []
+                                            var layers = [];
                                             _.each($("#importLayer" + idImage).find("input.layerSelection"), function (item) {
                                                 if ($(item).is(':checked')) {
-                                                    layers.push(item.id)
+                                                    layers.push(item.id);
                                                 }
                                             });
                                             var giveMe = $("#giveMeAnnotations").is(':checked');
@@ -460,7 +460,7 @@ var copyImageModal = {
         modal.addButtons("closeImportLayer" + idImage, "Close", false, true);
 
     }
-}
+};
 
 var UpdateTextFiedsModal = {
 
@@ -469,7 +469,7 @@ var UpdateTextFiedsModal = {
         // create a text with a loop on tab [{field, nom, value}]
         var body = '<p>'+text+'</p>';
         for(var i=0;i<values.length;i++){
-            body = body + '<br/>'
+            body = body + '<br/>';
             body = body + '<div class="row"><div class="col-md-3 col-md-offset-1"> '+values[i].name +'</div>';
             body = body + '<div class="col-md-7"><input type="text" class="form-control" id="'+values[i].field + id +'" value="'+values[i].value+'"></div></div>';
         }
@@ -494,9 +494,10 @@ var UpdateTextFiedsModal = {
         modal.addButtons("closeUpdateFields" + id, "Close", false, true);
 
         modal.render();
-        $('#updateModal' + type + id).modal();// display the dialog box
+        // display the dialog box
+        $('#updateModal' + type + id).modal();
     }
-}
+};
 
 
 // if a more custom dialogbox is required, check for http://bootboxjs.com/ (user CustomDialog to create our dialog box)
@@ -511,13 +512,13 @@ var DialogModal = {
         var header;
         if(level == 'WARNING' || level == 'CONFIRMATIONWARNING'){
             body = '<div class="alert alert-warning">';
-            header = "Be carefull !"
+            header = "Be carefull !";
         } else if(level == 'INFO'){
             body = '<div class="alert alert-info">';
-            header = "Information"
+            header = "Information";
         } else {
             body = '<div class="alert alert-error">';
-            header = "Error"
+            header = "Error";
         }
         body = body + '<div id="'+ type +'DialogBox' + id + '">' + text + '</div></div>';
 
@@ -534,6 +535,7 @@ var DialogModal = {
             modal.addButtons("DialogBoxOkButton", "Ok", true, true, callbackYes);
         }
         modal.render();
-        $('#' + type + 'DialogModal' + id).modal();// display the dialog box
+        // display the dialog box
+        $('#' + type + 'DialogModal' + id).modal();
     }
 };

@@ -5,9 +5,6 @@ import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
-import com.mongodb.BasicDBObject
-import com.mongodb.DBObject
-import com.mongodb.MapReduceCommand
 import grails.transaction.Transactional
 import static org.springframework.security.acls.domain.BasePermission.READ
 

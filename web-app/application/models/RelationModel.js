@@ -16,16 +16,16 @@
 
 var RelationTermModel = Backbone.Model.extend({
     url: function () {
-        if (this.term != undefined) {
+        if (!window.app.isUndefined(this.term)) {
             return  'api/relation/term/' + this.term + '.json';
         }
-        else if (this.relation != undefined && this.term1 != undefined && this.term2 != undefined) {
+        else if (!window.app.isUndefined(this.relation) && !window.app.isUndefined(this.term1) && !window.app.isUndefined(this.term2)) {
             return 'api/relation/' + this.relation + '/term1/' + this.term1 + "/term2/" + this.term2 + ".json";
         }
-        else if (this.relation == undefined && this.term1 == undefined && this.term2 == undefined) {
+        else if (window.app.isUndefined(this.relation) && window.app.isUndefined(this.term1) && window.app.isUndefined(this.term2)) {
             return 'api/relation/parent/term.json';
         }
-        else if (this.term1 == undefined && this.term2 == undefined) {
+        else if (window.app.isUndefined(this.term1) && window.app.isUndefined(this.term2)) {
             return 'api/relation/' + this.relation + '/term.json';
         }
         else {
@@ -43,7 +43,7 @@ var RelationTermModel = Backbone.Model.extend({
 var RelationTermCollection = PaginatedCollection.extend({
     model: RelationTermModel,
     url: function () {
-        if (this.term != undefined) {
+        if (!window.app.isUndefined(this.term)) {
             return  'api/relation/term/' + this.term + '.json';
         }
         else {

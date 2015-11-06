@@ -40,7 +40,7 @@ var ProjectDashboardProperties = Backbone.View.extend({
     refresh: function (idDomain, nameDomain) {
         var self = this;
 
-        if (nameDomain != undefined) {
+        if (!window.app.isUndefined(nameDomain)) {
             self.nameDomain = nameDomain;
         }
 
@@ -270,9 +270,9 @@ var ProjectDashboardProperties = Backbone.View.extend({
                 }
             }
 
-            if (idExist == true) {
+            if (idExist) {
                 select.val(id);
-            } else if (idExist == false) {
+            } else {
                 self.idDomain = undefined;
             }
 
@@ -376,7 +376,7 @@ var ProjectDashboardProperties = Backbone.View.extend({
         }
 
         var loopCollection = function (collection) {
-            if (collection.size() == 0) {
+            if (collection.size() === 0) {
                 $("#infoDisplayTable").empty();
                 var noDataAlert = _.template("<div class='alert alert-block'>No data to display</div>", {});
                 $("#infoDisplayTable").append(noDataAlert);
@@ -523,7 +523,8 @@ var ProjectDashboardProperties = Backbone.View.extend({
 
     loadAutocomplete: function () {
         var self = this;
-        var keyNameArray = []; //array for autocompletion
+        //array for autocompletion
+        var keyNameArray = [];
         var domainName = null;
 
         if (self.nameDomain == "Annotation") {

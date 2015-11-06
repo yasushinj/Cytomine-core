@@ -65,7 +65,7 @@ var UserDashboardView = Backbone.View.extend({
         var self = this;
         $.get("/api/config/key/WELCOME.json", function(data) {
             self.el.find("#welcomeMessage").html(data.value);
-            if(self.el.find("#welcomeMessage").text() == "" || self.el.find("#welcomeMessage").text()==null || self.el.find("#welcomeMessage").text() == undefined) {
+            if(self.el.find("#welcomeMessage").text() == "" || window.app.isUndefined(self.el.find("#welcomeMessage").text())) {
                 $("#communicationRow").hide();
             } else {
                 $("#communicationRow").show();

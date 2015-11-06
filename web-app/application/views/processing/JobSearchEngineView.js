@@ -172,7 +172,7 @@ var JobSearchEngineView = Backbone.View.extend({
     },
     searchById: function (jobs, num) {
         console.log("Before searchById:" + jobs.length + " value=" + num);
-        if (num == undefined || num == null || num.trim() == "") {
+        if (window.app.isUndefined(num) || num.trim() == "") {
             return jobs;
         }
         var filterJobs = [];
@@ -187,7 +187,7 @@ var JobSearchEngineView = Backbone.View.extend({
     },
     searchByNumber: function (jobs, num) {
         console.log("Before searchByNumber:" + jobs.length + " value=" + num);
-        if (num == undefined || num == null || num.trim() == "") {
+        if (window.app.isUndefined(num) || num.trim() == "") {
             return jobs;
         }
         var filterJobs = [];
@@ -201,7 +201,7 @@ var JobSearchEngineView = Backbone.View.extend({
     },
     searchByCreationDateAfter: function (jobs, datetime) {
         console.log("Before searchByCreationDateAfter:" + jobs.length + " datetime=" + datetime);
-        if (datetime == undefined || datetime == null) {
+        if (window.app.isUndefined(datetime)) {
             return jobs;
         }
         var filterJobs = [];
@@ -215,7 +215,7 @@ var JobSearchEngineView = Backbone.View.extend({
     },
     searchByCreationDateBefore: function (jobs, datetime) {
         console.log("Before searchByCreationDateBefore:" + jobs.length + " datetime=" + datetime);
-        if (datetime == undefined || datetime == null) {
+        if (window.app.isUndefined(datetime)) {
             return jobs;
         }
         var filterJobs = [];
@@ -245,17 +245,17 @@ var JobSearchEngineView = Backbone.View.extend({
     searchByParam: function (jobs, paramName, paramValue) {
         var self = this;
         console.log("Before searchByParam:" + jobs.length + " paramName=" + paramName + " paramValue=" + paramValue);
-        if (paramValue == undefined || paramValue == null || paramValue.trim() == "") {
+        if (window.app.isUndefined(paramValue) || paramValue.trim() == "") {
             return jobs;
         }
         var filterJobs = [];
 
         _.each(jobs, function (job) {
             var jobParam = self.getJobParam(job, paramName);
-            if (jobParam != undefined) {
+            if (!window.app.isUndefined(jobParam)) {
                 console.log("jobParam.value=" + jobParam.value);
             }
-            if (jobParam != undefined && jobParam != null && self.isJobParamCorrect(jobParam, paramValue)) {
+            if (!window.app.isUndefined(jobParam) && self.isJobParamCorrect(jobParam, paramValue)) {
                 filterJobs.push(job);
             }
         });
@@ -524,7 +524,7 @@ var InputListDomainViewSearch = Backbone.View.extend({
         self.trElem = tbody.find('tr#' + self.param.id);
         console.log("### " + window.app.replaceVariable(self.param.uri) + " ###" + self.param.uriSortAttribut);
         self.collection = new SoftwareParameterModelCollection({uri: window.app.replaceVariable(self.param.uri), sortAttribut: self.param.uriSortAttribut});
-        if (self.collection == undefined || (self.collection.length > 0 && self.collection.at(0).id == undefined)) {
+        if (window.app.isUndefined(self.collection) || (self.collection.length > 0 && window.app.isUndefined(self.collection.at(0).id))) {
             self.collection.fetch({
                 success: function (collection, response) {
                     console.log(collection);
@@ -619,7 +619,7 @@ var InputListDomainViewSearch = Backbone.View.extend({
     getValue: function () {
         var self = this;
         var values = self.trElem.find(".domainList").val();
-        if (values == undefined) {
+        if (window.app.isUndefined(values)) {
             return [];
         }
         else {
@@ -629,7 +629,7 @@ var InputListDomainViewSearch = Backbone.View.extend({
     getStringValue: function () {
         var self = this;
         var values = self.trElem.find(".domainList").val();
-        if (values == undefined) {
+        if (window.app.isUndefined(values)) {
             return "";
         }
         else {

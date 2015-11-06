@@ -57,7 +57,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
 
 
 
-                self.createPopup(tpl,annotation)
+                self.createPopup(tpl,annotation);
                 self.browseImageView.showAnnotationInReviewPanel(annotation);
 
                 self.initTooglePanel("annotation-info-panel",".toggle-content-info");
@@ -82,7 +82,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
     createPopup : function(tpl,annotation) {
         var self = this;
         var user = window.app.models.projectUser.get(annotation.get("user"));
-        if (user == undefined) {
+        if (window.app.isUndefined(user)) {
             user = window.app.models.projectUserJob.get(annotation.get("user"));
         }
         annotation.set({"username": user.prettyName()});
@@ -114,7 +114,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
 
         annotation.set({"terms": terms.join(", ")});
 
-        if (annotation.get("nbComments") == undefined) {
+        if (window.app.isUndefined(annotation.get("nbComments"))) {
             annotation.set({"nbComments": 0});
         }
         annotation.set({"smallCropURL": annotation.get("smallCropURL")+"&time="+Date.now()});
@@ -129,9 +129,9 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         var isSameUser =  annotation.get("user")==window.app.status.user.id
 
         if(!isProjectAdmin && !isSameUser) {
-            $("#messageAnnotationCreator").html('<span class="label label-warning"> <i class=" glyphicon glyphicon-remove"/> You cannot edit this annotation</span>')
+            $("#messageAnnotationCreator").html('<span class="label label-warning"> <i class=" glyphicon glyphicon-remove"/> You cannot edit this annotation</span>');
         } else {
-            $("#messageAnnotationCreator").html('<span class="label label-success"> <i class="glyphicon glyphicon-ok"/> You can edit this annotation</span>')
+            $("#messageAnnotationCreator").html('<span class="label label-success"> <i class="glyphicon glyphicon-ok"/> You can edit this annotation</span>');
         }
 
         if (window.app.status.currentProjectModel.get('hideUsersLayer') || window.app.status.currentProjectModel.get('hideAdminsLayer') ||  window.app.status.currentProjectModel.get('retrievalDisable')) {
@@ -146,7 +146,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
     showSimilarAnnotation: function (model) {
         var self = this;
         console.log('showSimilarAnnotation');
-        if (window.app.status.currentTermsCollection == undefined || (window.app.status.currentTermsCollection.length > 0 && window.app.status.currentTermsCollection.at(0).id == undefined)) {
+        if (window.app.isUndefined(window.app.status.currentTermsCollection) || (window.app.status.currentTermsCollection.length > 0 && window.app.isUndefined(window.app.status.currentTermsCollection.at(0).id))) {
             new TermCollection({idOntology: window.app.status.currentProjectModel.get('ontology')}).fetch({
                 success: function (terms, response) {
                     window.app.status.currentTermsCollection = terms;
@@ -172,10 +172,10 @@ var AnnotationPopupPanel = SideBarPanel.extend({
 
                 _.each(termsList, function (term) {
                     sum = sum + term.rate;
-                    if (i == 0) {
+                    if (i === 0) {
                         bestTerm1Object = term;
                     }
-                    if (i == 1) {
+                    if (i === 1) {
                         bestTerm2Object = term;
                     }
                     i++;
@@ -185,14 +185,14 @@ var AnnotationPopupPanel = SideBarPanel.extend({
                 var bestTerm2;
                 var bestTerm1Value = 0;
                 var bestTerm2Value = 0;
-                if (bestTerm1Object != undefined) {
+                if (!window.app.isUndefined(bestTerm1Object)) {
                     bestTerm1 = bestTerm1Object.id;
                     bestTerm1Value = bestTerm1Object.rate;
                     if (bestTerm1Value == 0) {
                         bestTerm1 = undefined;
                     }
                 }
-                if (bestTerm2Object != undefined) {
+                if (!window.app.isUndefined(bestTerm2Object)) {
                     bestTerm2 = bestTerm2Object.id;
                     bestTerm2Value = bestTerm2Object.rate;
                     if (bestTerm2Value == 0) {
@@ -213,10 +213,10 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         var self = this;
         var suggestedTerm = "";
         var suggestedTerm2 = "";
-        if (bestTerm1 != undefined) {
+        if (!window.app.isUndefined(bestTerm1)) {
             suggestedTerm += "<span id=\"changeBySuggest" + bestTerm1.id + "\" style=\"display : inline\"><u>" + bestTerm1.get('name') + "</u> (" + Math.round(bestTerm1Value) + "%)<span>";
         }
-        if (bestTerm2 != undefined) {
+        if (!window.app.isUndefined(bestTerm2)) {
             suggestedTerm2 += " or " + "<span id=\"changeBySuggest" + bestTerm2.id + "\" style=\"display : inline\"><u>" + bestTerm2.get('name') + "</u> (" + Math.round(bestTerm2Value) + "%)<span>";
         }
 
@@ -224,11 +224,11 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         $("#suggTerm" + annotation.id).append("<b>Suggested term</b> : ");
         $("#suggTerm" + annotation.id).append(suggestedTerm);
         $("#suggTerm" + annotation.id).append(suggestedTerm2);
-        if (bestTerm1 != undefined) {
+        if (!window.app.isUndefined(bestTerm1)) {
             self.createSuggestedTermLink(bestTerm1, annotation);
         }
 
-        if (bestTerm2 != undefined) {
+        if (!window.app.isUndefined(bestTerm2)) {
             self.createSuggestedTermLink(bestTerm2, annotation);
         }
 

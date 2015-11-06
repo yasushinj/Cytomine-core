@@ -63,7 +63,7 @@ var AnnotationTermCollection = PaginatedCollection.extend({
         if (this.idUser == null) {
             return 'api/annotation/' + this.idAnnotation + '/term.json';
         }
-        else if (this.idUser != undefined) {
+        else if (!window.app.isUndefined(this.idUser)) {
             return 'api/annotation/' + this.idAnnotation + '/user/' + this.idUser + '/term.json';
         }
     },
@@ -108,16 +108,16 @@ var TermCollection = PaginatedCollection.extend({
     model: TermModel,
     CLASS_NAME: "be.cytomine.ontology.Term",
     url: function () {
-        if (this.idProject != undefined) {
+        if (!window.app.isUndefined(this.idProject)) {
             return 'api/project/' + this.idProject + '/term.json';
         }
         else if (this.idOntology == undefined && this.idAnnotation == undefined) {
             return 'api/term.json';
         }
-        else if (this.idOntology != undefined && this.idAnnotation == undefined) {
+        else if (!window.app.isUndefined(this.idOntology) && window.app.isUndefined(this.idAnnotation)) {
             return 'api/ontology/' + this.idOntology + '/term.json';
         }
-        else if (this.idOntology != undefined && this.idAnnotation != undefined) {
+        else if (!window.app.isUndefined(this.idOntology) && !window.app.isUndefined(this.idAnnotation)) {
             return 'api/annotation/' + this.idAnnotation + '/ontology/' + this.idOntology + '/term.json';
         }
     },
