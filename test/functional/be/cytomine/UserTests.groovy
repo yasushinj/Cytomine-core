@@ -23,7 +23,7 @@ import be.cytomine.test.HttpClient
 import be.cytomine.test.Infos
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAPI
-import be.cytomine.test.http.UserProjectConnectionAPI
+import be.cytomine.test.http.ProjectConnectionAPI
 import be.cytomine.utils.UpdateData
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -606,7 +606,7 @@ class UserTests  {
         def project = BasicInstanceBuilder.getProject()
         def json = JSON.parse("{project:${project.id}}");
 
-        def result = UserProjectConnectionAPI.create(project.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ProjectConnectionAPI.create(project.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         result = UserAPI.listUsersWithLastActivity(project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
