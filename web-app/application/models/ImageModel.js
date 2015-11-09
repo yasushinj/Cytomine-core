@@ -159,7 +159,7 @@ var ImageInstanceModel = Backbone.Model.extend({
         if (isAdmin) {
             var result = [this.get('instanceFilename')];
             if(hideName) {
-                result.push("[BLIND]" + this.get('id'));
+                result.push("[BLIND]" + this.get('baseImage'));
             }
             return result;
 
@@ -167,7 +167,7 @@ var ImageInstanceModel = Backbone.Model.extend({
         if(!hideName) {
             return this.get('instanceFilename');
         } else {
-            return "[BLIND]" + this.get('id');
+            return "[BLIND]" + this.get('baseImage');
         }
     }
 });
