@@ -18,7 +18,7 @@ package be.cytomine.test.http
 
 import be.cytomine.test.Infos
 
-class UserProjectConnectionAPI extends DomainAPI {
+class ProjectConnectionAPI extends DomainAPI {
 
     static def getConnectionByUserAndProject(Long idUser, Long idProject,String username, String password) {
         String URL = Infos.CYTOMINEURL + "/api/project/$idProject/userconnection/${idUser}.json"
@@ -35,7 +35,7 @@ class UserProjectConnectionAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def numberOfConnectionsByUserAndProject(Long idUser,Long idProject,String username, String password) {
+    static def numberOfConnectionsByProjectAndUser(Long idProject,Long idUser,String username, String password) {
         String URL = Infos.CYTOMINEURL + "/api/project/$idProject/connectionFrequency/${idUser}.json"
         return doGET(URL, username, password)
     }

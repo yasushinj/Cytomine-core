@@ -24,6 +24,7 @@ import be.cytomine.project.Project
 import be.cytomine.security.Group
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.SecurityUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -48,6 +49,8 @@ class RestUserController extends RestController {
     def mongo
     def noSQLCollectionService
     def reportService
+    def projectConnectionService
+    def userPositionService
 
     /**
      * Get all project users
@@ -558,6 +561,74 @@ class RestUserController extends RestController {
         }
         responseSuccess(usersWithPosition)
 //        responseSuccess([])
+    }
+
+    @RestApiMethod(description="List all the users of a project with their last activity (opened project & image)", listing = true)
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
+    ])
+    def listUsersWithLastActivity() {
+
+        Project project = projectService.read(params.long('id'))
+
+        def results = []
+
+        // TODO try to optimize with max & offset in db call in secUserService.listUsers method
+        List<SecUser> users = secUserService.listUsers(project);
+
+        Integer offset = params.offset != null ? params.getInt('offset') : 0
+        Integer max = (params.max != null && params.getInt('max')!=0) ? params.getInt('max') : Integer.MAX_VALUE
+        def maxForCollection = Math.min(users.size() - offset, max)
+
+        // avoid subList if unwanted
+        if(offset > 0 || users.size() > maxForCollection) {
+            users = users.subList(offset,offset + maxForCollection)
+        }
+
+        def connections = projectConnectionService.lastConnectionInProject(project)
+        def frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project)
+        def images = userPositionService.lastImageOfUsersByProject(project)
+        // can be done in the service ?
+        connections.sort {it.user}
+        frequencies.sort {it.user}
+        images.sort {it.user}
+
+        // we sorted to apply binary search instead of a simple "find" method. => performance
+        def binSearchI = { aList, property, target ->
+            def a = aList
+            def offSet = 0
+            while (!a.empty) {
+                def n = a.size()
+                def m = n.intdiv(2)
+                if(a[m]."$property" > target) {
+                    a = a[0..<m]
+                } else if (a[m]."$property" < target) {
+                    a = a[(m + 1)..<n]
+                    offSet += m + 1
+                } else {
+                    return (offSet + m)
+                }
+            }
+            return -1
+        }
+
+        for(SecUser user : users) {
+
+            int index = binSearchI(connections, "user", user.id)
+            def connection = index >= 0 ? connections[index]:null
+            index = binSearchI(frequencies, "user", user.id)
+            def frequency = index >= 0 ? frequencies[index]:null
+            index = binSearchI(images, "user", user.id)
+            def image = index >= 0 ? images[index]:null
+
+
+            boolean ldap = CASLdapUserDetailsService.isInLdap(user.username)
+            def userInfo = [id : user.id, username : user.username, firstname : user.firstname, lastname : user.lastname, email: user.email,
+                        LDAP : ldap,lastImageId : image?.image, lastImageName : image?.imageName,
+                        lastConnection : connection?.created, frequency : frequency?.frequency]
+            results << userInfo
+        }
+        responseSuccess(results)
     }
 
     def CASLdapUserDetailsService

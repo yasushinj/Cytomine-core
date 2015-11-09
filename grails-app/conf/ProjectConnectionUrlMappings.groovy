@@ -14,23 +14,23 @@
 * limitations under the License.
 */
 
-class UserProjectConnectionUrlMappings {
+class ProjectConnectionUrlMappings {
 
     static mappings = {
-        "/api/project/$project/userconnection.$format" (controller : "restUserProjectConnection") {
+        "/api/project/$project/userconnection.$format" (controller : "restProjectConnection") {
             action = [POST:"add"]
         }
-        "/api/project/$project/userconnection/$user.$format" (controller : "restUserProjectConnection") {
+        "/api/project/$project/userconnection/$user.$format" (controller : "restProjectConnection") {
             action = [GET:"getConnectionByUserAndProject"]
         }
-        "/api/project/$project/lastconnections.$format" (controller : "restUserProjectConnection") {
+        "/api/project/$project/lastconnections.$format" (controller : "restProjectConnection") {
             action = [GET:"lastConnectionInProject"]
         }
-        "/api/project/$project/connectionFrequency.$format"(controller:"restUserProjectConnection") {
-            action = [GET : "numberOfConnectionsByUserAndProject"]
+        "/api/project/$project/connectionFrequency.$format"(controller:"restProjectConnection") {
+            action = [GET : "numberOfConnectionsByProjectAndUser"]
         }
-        "/api/project/$project/connectionFrequency/$user.$format"(controller:"restUserProjectConnection") {
-            action = [GET : "numberOfConnectionsByUserAndProject"]
+        "/api/project/$project/connectionFrequency/$user.$format"(controller:"restProjectConnection") {
+            action = [GET : "numberOfConnectionsByProjectAndUser"]
         }
 
     }

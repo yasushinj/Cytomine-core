@@ -9,7 +9,7 @@ import grails.transaction.Transactional
 import static org.springframework.security.acls.domain.BasePermission.READ
 
 @Transactional
-class UserProjectConnectionService extends ModelService {
+class ProjectConnectionService extends ModelService {
 
     def securityACLService
     def dataSource
@@ -31,12 +31,17 @@ class UserProjectConnectionService extends ModelService {
 
     def lastConnectionInProject(Project project){
         securityACLService.check(project,READ)
-        def connection = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc"/*, max: 1*/) {
-            distinct("user")
-            eq("project", project)
+
+        def results = []
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def connection = db.persistentProjectConnection.aggregate(
+                [$match:[project : project.id]],
+                [$group : [_id : '$user', created : [$max :'$created']]])
+
+        connection.results().each {
+            results << [user: it["_id"], created : it["created"]]
         }
-        def result = (connection.size() > 0) ? connection : []
-        return result
+        return results
     }
 
     def getConnectionByUserAndProject(User user, Project project, boolean all){
@@ -58,7 +63,7 @@ class UserProjectConnectionService extends ModelService {
         return result
     }
 
-    def numberOfConnectionsByUserAndProject(User user ,Project project){
+    def numberOfConnectionsByProjectAndUser(Project project, User user = null){
 
         securityACLService.check(project,READ)
         def result;

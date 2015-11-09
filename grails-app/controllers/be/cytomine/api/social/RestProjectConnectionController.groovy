@@ -23,18 +23,18 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 
 /**
- * Controller for user connection to a project
+ * Controller for an user connection to a project
  */
-class RestUserProjectConnectionController extends RestController {
+class RestProjectConnectionController extends RestController {
 
     def cytomineService
     def secUserService
     def projectService
-    def userProjectConnectionService
+    def projectConnectionService
 
     def add = {
         try {
-            responseSuccess(userProjectConnectionService.add(request.JSON))
+            responseSuccess(projectConnectionService.add(request.JSON))
         } catch (CytomineException e) {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
@@ -43,20 +43,20 @@ class RestUserProjectConnectionController extends RestController {
 
     def lastConnectionInProject = {
         Project project = projectService.read(params.project)
-        responseSuccess(userProjectConnectionService.lastConnectionInProject(project));
+        responseSuccess(projectConnectionService.lastConnectionInProject(project));
     }
 
     def getConnectionByUserAndProject = {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
         boolean all = params.all
-        responseSuccess(userProjectConnectionService.getConnectionByUserAndProject(user, project, all))
+        responseSuccess(projectConnectionService.getConnectionByUserAndProject(user, project, all))
     }
 
-    def numberOfConnectionsByUserAndProject = {
+    def numberOfConnectionsByProjectAndUser = {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
 
-        responseSuccess(userProjectConnectionService.numberOfConnectionsByUserAndProject(user, project))
+        responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
     }
 }

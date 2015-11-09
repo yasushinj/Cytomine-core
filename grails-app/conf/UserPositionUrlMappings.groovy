@@ -32,9 +32,13 @@ class UserPositionUrlMappings {
          "/api/imageinstance/$id/online.$format"(controller: "restUserPosition"){
              action = [GET:"listOnlineUsersByImage"]
          }
-         "/api/project/$id/online.$format"(controller:"restUserPosition") {
+         "/api/project/$project/online.$format"(controller:"restUserPosition") {
              action = [GET : "listLastUserPositionsByProject"]
          }
+        "/api/project/$project/lastImages.$format"(controller:"restUserPosition") {
+            action = [GET : "lastImageOfUsersByProject"]
+        }
+
 
     }
 }
