@@ -213,4 +213,13 @@ var UserOnlineModel = Backbone.Model.extend({
     }
 });
 
+var ImageConsultationModel = Backbone.Model.extend({
+    url: function () {
+        return '/api/imageinstance/'+this.imageinstance +'/consultation.json';
+    },
+    initialize: function (options) {
+        this.imageinstance = options.imageinstance;
+        this.mode = options.mode;
+    }
+});
 

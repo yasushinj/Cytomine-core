@@ -76,6 +76,12 @@ var ExplorerController = Backbone.Router.extend({
             self.tabs.addBrowseImageView(idImage, browseImageViewInitOptions,merge,callback);
             self.showView();
 
+            // record the image consultation for the current user
+            new ImageConsultationModel({
+                imageinstance: idImage,
+                mode : "view"
+            }).save();
+
             if($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.image}))<0) {
                 window.app.status.currentImages.push({image: idImage, review:false});
             }
@@ -120,6 +126,12 @@ var ExplorerController = Backbone.Router.extend({
             console.log("showView");
 
             self.showView();
+
+            // record the image consultation for the current user
+            new ImageConsultationModel({
+                imageinstance: idImage,
+                mode : "review"
+            }).save();
 
             if($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.image}))<0) {
                 window.app.status.currentImages.push({image: idImage, review:true});
