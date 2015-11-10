@@ -42,6 +42,7 @@ class PersistentImageConsultation extends CytomineDomain {
     Project project
 
     String imageName
+    String mode
 
     static constraints = {
         project nullable: true
@@ -64,6 +65,7 @@ class PersistentImageConsultation extends CytomineDomain {
         returnArray.created = domain?.created
         returnArray.user = domain?.user?.id
         returnArray.image = domain?.image?.id
+        returnArray.mode = domain?.mode
         returnArray.project = domain?.project?.id
         returnArray
     }

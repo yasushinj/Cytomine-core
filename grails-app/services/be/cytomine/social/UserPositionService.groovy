@@ -81,26 +81,4 @@ class UserPositionService extends ModelService {
         )
         return result.results().collect{it['_id']}.collect{[it["image"],it["user"]]}
     }
-
-    def lastImageOfUsersByProject(Project project){
-
-        securityACLService.check(project,READ)
-
-        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-
-        def results = []
-        def images = db.persistentUserPosition.aggregate(
-                [$match:[project : project.id]],
-                [$sort : [created:-1]],
-                [$group : [_id : '$user', created : [$max :'$created'], image : [$first: '$image'], imageName : [$first: '$imageName'], user : [$first: '$user']]]);
-
-
-        images.results().each {
-            results << [user: it["_id"], created : it["created"], image : it["image"], imageName: it["imageName"]]
-        }
-        return results
-    }
-
-
-
 }

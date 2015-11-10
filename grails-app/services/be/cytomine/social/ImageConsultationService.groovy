@@ -21,11 +21,12 @@ class ImageConsultationService extends ModelService {
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
-        ImageInstance image = ImageInstance.read(JSONUtils.getJSONAttrLong(json,"image",0))
+        ImageInstance image = ImageInstance.read(JSONUtils.getJSONAttrLong(json,"imageinstance",0))
         PersistentImageConsultation consultation = new PersistentImageConsultation()
         consultation.user = user
         consultation.image = image
         consultation.project = image.project
+        consultation.mode = JSONUtils.getJSONAttrStr(json,"mode",true)
         consultation.created = new Date()
         consultation.imageName = image.getFileName()
         consultation.insert(flush:true) //don't use save (stateless collection)
@@ -51,7 +52,4 @@ class ImageConsultationService extends ModelService {
         }
         return results
     }
-
-
-
 }

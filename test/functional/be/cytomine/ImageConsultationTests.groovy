@@ -27,12 +27,17 @@ class ImageConsultationTests {
 
     void testAddConsultation() {
         def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{image:${image.id},lon:100,lat:100, zoom: 1}")
+        def json = JSON.parse("{image:${image.id},mode:test}")
 
         def result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert "test" == json.mode
+        assert image.id == json.image
 
          //same re-opening image
+        json = JSON.parse("{image:${image.id},mode:test}")
         result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
@@ -40,7 +45,7 @@ class ImageConsultationTests {
 
     void testLastImageOfUsersByProject() {
         def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{image:${image.id},lon:100,lat:100,zoom:1}")
+        def json = JSON.parse("{image:${image.id},mode:test}}")
 
         def result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -54,7 +59,7 @@ class ImageConsultationTests {
     }
     void testGetLastOpenedImage() {
         def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{image:${image.id},lon:100,lat:100,zoom:1}")
+        def json = JSON.parse("{image:${image.id},mode:test}}")
 
         def result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

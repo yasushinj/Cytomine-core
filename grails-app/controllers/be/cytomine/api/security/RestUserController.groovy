@@ -49,7 +49,7 @@ class RestUserController extends RestController {
     def noSQLCollectionService
     def reportService
     def projectConnectionService
-    def userPositionService
+    def imageConsultationService
 
     /**
      * Get all project users
@@ -552,7 +552,7 @@ class RestUserController extends RestController {
 
         def connections = projectConnectionService.lastConnectionInProject(project)
         def frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project)
-        def images = userPositionService.lastImageOfUsersByProject(project)
+        def images = imageConsultationService.lastImageOfUsersByProject(project)
         // can be done in the service ?
         connections.sort {it.user}
         frequencies.sort {it.user}
