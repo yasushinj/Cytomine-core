@@ -443,16 +443,15 @@ class BootstrapUtilsService {
                     max++
                 }
             }
-            if (!abstractImage) {
-                log.error "DID NOT FIND AN ABSTRACT_IMAGE for uploadedFile $uploadedFile"
-            } else {
+            if (abstractImage) {
                 def data = StorageAbstractImage.findByAbstractImage(abstractImage)
                 if(data) {
                     Storage storage = data.storage
                     uploadedFile.path = storage.getBasePath()
                     uploadedFile = uploadedFile.save()
                 }
-
+            } else {
+                log.error "DID NOT FIND AN ABSTRACT_IMAGE for uploadedFile $uploadedFile"
             }
         }
 

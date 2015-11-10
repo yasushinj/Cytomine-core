@@ -17,34 +17,41 @@ package be.cytomine.social
 */
 
 import be.cytomine.CytomineDomain
+import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import com.vividsolutions.jts.geom.Coordinate
+import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom.LinearRing
+import com.vividsolutions.jts.geom.Polygon
 
 /**
- * Info on user connection for a project
- * ex : User x connect to project y the 2013/01/01 at xxhyymin
+ * Info on user consultation of an image in a project
+ * ex : User x consulted image y the 2013/01/01 at xxhyymin
  */
-class PersistentProjectConnection extends CytomineDomain{
+class PersistentImageConsultation extends CytomineDomain {
 
     static mapWith = "mongo"
 
     static transients = ['id','updated','deleted','class']
 
-    static belongsTo = [user : SecUser, project: Project]
+    static belongsTo = [user : SecUser, image : ImageInstance, project: Project]
 
     SecUser user
+    ImageInstance image
     Project project
 
+    String imageName
+
     static constraints = {
-        user (nullable:false)
-        project (nullable: false)
+        project nullable: true
     }
 
     static mapping = {
         version false
         stateless true //don't store data in memory after read&co. These data don't need to be update.
-        project index:true
-        compoundIndex project:1, created:-1
+        image index:true
+        compoundIndex user:1, image:1, created:-1
     }
 
     /**
@@ -56,6 +63,7 @@ class PersistentProjectConnection extends CytomineDomain{
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray.created = domain?.created
         returnArray.user = domain?.user?.id
+        returnArray.image = domain?.image?.id
         returnArray.project = domain?.project?.id
         returnArray
     }

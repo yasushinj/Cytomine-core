@@ -20,20 +20,16 @@
  * Date: 10/10/11
  * Time: 13:49
  */
-class UserPositionUrlMappings {
+class ImageConsultationUrlMappings {
 
     static mappings = {
-        "/api/imageinstance/$id/position.$format" (controller : "restUserPosition") {
+        "/api/imageinstance/$id/consultation.$format" (controller : "restImageConsultation") {
              action = [POST:"add"]
          }
-         "/api/imageinstance/$id/position/$user.$format" (controller : "restUserPosition") {
-             action = [GET:"lastPositionByUser"]
-         }
-         "/api/imageinstance/$id/online.$format"(controller: "restUserPosition"){
-             action = [GET:"listOnlineUsersByImage"]
-         }
-         "/api/project/$project/online.$format"(controller:"restUserPosition") {
-             action = [GET : "listLastUserPositionsByProject"]
-         }
+        "/api/project/$project/lastImages.$format"(controller:"restImageConsultation") {
+            action = [GET : "lastImageOfUsersByProject"]
+        }
+
+
     }
 }

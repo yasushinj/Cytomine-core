@@ -22,13 +22,6 @@ import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
-import be.cytomine.social.LastUserPosition
-import be.cytomine.social.PersistentUserPosition
-import be.cytomine.social.UserPosition
-import be.cytomine.utils.JSONUtils
-import org.joda.time.DateTime
-
-import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Controller for user position
@@ -42,14 +35,12 @@ class RestUserPositionController extends RestController {
     def dataSource
     def projectService
     def mongo
-    def noSQLCollectionService
     def userPositionService
 
     /**
      * Add new position for user
      */
     def add = {
-
         try {
             responseSuccess(userPositionService.add(request.JSON))
         } catch (CytomineException e) {

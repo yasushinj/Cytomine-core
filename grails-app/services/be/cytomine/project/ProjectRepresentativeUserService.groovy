@@ -30,7 +30,6 @@ import static org.springframework.security.acls.domain.BasePermission.WRITE
 class ProjectRepresentativeUserService extends ModelService {
 
     static transactional = true
-    boolean saveOnUndoRedoStack = true
 
     def springSecurityService
     def transactionService
@@ -65,8 +64,6 @@ class ProjectRepresentativeUserService extends ModelService {
      */
     def add(def json) throws CytomineException {
 
-        println "DANS LE ADD"
-
         securityACLService.check(json.project,Project,WRITE)
         User user = User.get(json.user)
         Project project = Project.get(json.project)
@@ -83,7 +80,7 @@ class ProjectRepresentativeUserService extends ModelService {
      * @param printMessage Flag if client will print or not confirm message
      * @return Response structure (code, old domain,..)
      */
-    def delete(ProjectRepresentativeUser domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+    def delete(ProjectRepresentativeUser domain, Transaction transaction = null, Task task = null) {
         securityACLService.check(domain.getProject(),WRITE)
         User user = domain.getUser()
         Command c = new DeleteCommand(user: user,transaction:transaction)

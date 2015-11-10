@@ -37,9 +37,6 @@ class ProjectRepresentativeUserAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/project/" + JSON.parse(json)["project"] + "/representative.json"
         def result = doPOST(URL,json,username,password)
 
-        println result
-        println JSON.parse(result.data)
-
         result.data = ProjectRepresentativeUser.get(JSON.parse(result.data)?.projectrepresentativeuser?.id)
         return result
     }

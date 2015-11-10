@@ -66,21 +66,4 @@ class UserPositionTests  {
         result = UserPositionAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
-
-
-    void testGetLastOpenedImage() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{image:${image.id},lon:100,lat:100,zoom:1}")
-
-        def result = UserPositionAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-
-        result = ImageInstanceAPI.listLastOpened(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        json = JSON.parse(result.data)
-        assert ImageInstanceAPI.containsInJSONList(image.id,json)
-
-    }
-
-
 }

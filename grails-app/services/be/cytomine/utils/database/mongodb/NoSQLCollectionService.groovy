@@ -48,6 +48,7 @@ class NoSQLCollectionService {
         db.persistentUserPosition.drop()
         db.lastUserPosition.drop()
         db.persistentProjectConnection.drop()
+        db.persistentImageConsultation.drop()
     }
 
 

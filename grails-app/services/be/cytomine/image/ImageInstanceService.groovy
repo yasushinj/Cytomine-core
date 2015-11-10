@@ -127,7 +127,7 @@ class ImageInstanceService extends ModelService {
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
 
-        def result = db.persistentUserPosition.aggregate(
+        def result = db.persistentImageConsultation.aggregate(
                 [$match : [ user : user.id]],
                 [$group : [_id : '$image', "date":[$max:'$created']]],
                 [$sort : [ date : -1]],

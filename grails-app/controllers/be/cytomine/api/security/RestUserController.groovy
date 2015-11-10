@@ -24,7 +24,6 @@ import be.cytomine.project.Project
 import be.cytomine.security.Group
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
-import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.SecurityUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -485,40 +484,6 @@ class RestUserController extends RestController {
     ])
     @RestApiResponseObject(objectIdentifier = "List of [id: %idUser%,image: %idImage%, filename: %Image path%, originalFilename:%Image filename%, date: %Last position date%]")
     def listOnlineFriendsWithPosition() {
-//        Project project = projectService.read(params.long('id'))
-//
-//        //Get all project user online
-//        def users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
-//        def usersId = users.collect {it.id}
-//
-//        Get all user oonline and their pictures
-//        List<SecUser> userPositions = SecUser.executeQuery(
-//                "SELECT userPosition.user.id,imageInstance.id, abstractImage.originalFilename, max(userPosition.updated) from UserPosition as userPosition, ImageInstance as imageInstance, AbstractImage as abstractImage " +
-//                        "where userPosition.project.id = ${project.id} and userPosition.updated > ? and imageInstance.id = userPosition.image.id and imageInstance.baseImage.id = abstractImage.id group by userPosition.user.id,imageInstance.id,abstractImage.originalFilename order by userPosition.user.id", [someSecondesBefore])
-//
-//
-//        def usersWithPosition = []
-//        def userInfo = [:]
-//        long previousUser = -1
-//        userPositions.each {
-//            long currenUser = it[0]
-//            if (previousUser != currenUser) {
-//                //new user, create a new line
-//                userInfo = [id: currenUser, position: []]
-//                usersWithPosition << userInfo
-//                usersId.remove(currenUser)
-//            }
-//            //add position to the current user
-//            userInfo['position'] << [id: it[1],image: it[1], filename: it[2], originalFilename:it[2], date: it[3]]
-//            previousUser = currenUser
-//        }
-//        //user online with no image open
-//        usersId.each {
-//            usersWithPosition << [id: it, position: []]
-//        }
-//        responseSuccess(usersWithPosition)
-//        responseSuccess([])
-
         Project project = projectService.read(params.long('id'))
 
         //Get all project user online

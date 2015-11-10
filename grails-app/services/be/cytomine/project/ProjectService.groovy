@@ -96,8 +96,8 @@ class ProjectService extends ModelService {
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
 
-        def result = db.persistentConnection.aggregate(
-                [$match : [ user : user.id, project : [$ne:null] ]],
+        def result = db.persistentProjectConnection.aggregate(
+                [$match : [ user : user.id ]],
                 [$group : [_id : '$project', "date":[$max:'$created']]],
                 [$sort : [ date : -1]],
                 [$limit: (max==null? 5 : max)]
@@ -131,37 +131,6 @@ class ProjectService extends ModelService {
         data = data.sort{-it.date.getTime()}
         return data
     }
-
-//    def listLastOpened(User user,def max) {
-//
-//        def data = []
-//
-//        List<PersistentConnection> cons = PersistentConnection.findAllByUserAndProjectIsNotNull(user,[max:max,sort:"created", order:"desc"])
-//        cons.each {
-//            data << [id:it.id, date:it.date, opened: true]
-//        }
-//
-//        def sql = new Sql(dataSource)
-//        if(data.size()<max) {
-//            //user has open less than max project, so we add last created project
-//
-//            String request2 = """
-//                SELECT id, created as date
-//                FROM project
-//                WHERE deleted IS NULL AND ${data.isEmpty()? "true": "id NOT IN (${data.collect{it.id}.join(',')})"}
-//                ORDER BY date desc
-//            """
-//
-//            sql = new Sql(dataSource)
-//            sql.eachRow(request2,[]) {
-//                data << [id:it.id, date:it.date, opened: false]
-//            }
-//            try {
-//                sql.close()
-//            }catch (Exception e) {}
-//        }
-//        return data
-//    }
 
     def list() {
         securityACLService.checkAdmin(cytomineService.currentUser)
@@ -574,14 +543,6 @@ class ProjectService extends ModelService {
 //        project.retrievalProjects?.clear()
 //    }
 //
-//    def deleteDependentUserPosition(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${UserPosition.countByProject(project)} user position information":"")
-//
-//        UserPosition.findAllByProject(project).each {
-//              it.delete()
-//        }
-//    }
 ////
 ////    def deleteDependentTask(Project project, Transaction transaction,Task task=null) {
 ////

@@ -356,7 +356,6 @@ class BasicInstanceBuilder {
 
     //getAlgoAnnotationTermForAlgoAnnotation
     static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(AnnotationDomain annotation, Term term,boolean save = false) {
-        Job job = getJob()
         UserJob userJob = getUserJob()
         def algoannotationTerm = new AlgoAnnotationTerm(term:term,userJob:userJob, expectedTerm: term, rate:1d)
         algoannotationTerm.setAnnotation(annotation)
@@ -894,7 +893,6 @@ class BasicInstanceBuilder {
     }
 
     static JobTemplateAnnotation getJobTemplateAnnotationNotExist(boolean save = false) {
-        RoiAnnotation annotation = saveDomain(getRoiAnnotation())
         JobTemplateAnnotation jobTemplateAnnotation =  new JobTemplateAnnotation(jobTemplate:saveDomain(getJobTemplate()))
         jobTemplateAnnotation.setAnnotation(getRoiAnnotation())
         save ? saveDomain(jobTemplateAnnotation) : checkDomain(jobTemplateAnnotation)
@@ -1586,11 +1584,6 @@ class BasicInstanceBuilder {
     }
 
     static SearchEngineFilter getSearchEngineFilterNotExist(boolean save = false) {
-        def words = ["Test", "hello"]
-        def domains = []
-        def attributes = []
-        def projects = []
-
         def json = ([words:["Test", "hello"], domains:["project"], attributes:[], projects:[], order : null, sort : "desc", op : "AND"] as JSON).toString()
 
         def filter = new SearchEngineFilter(name: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN), filters: json)
@@ -1629,7 +1622,7 @@ class BasicInstanceBuilder {
         ref
     }
 
-    static ProjectRepresentativeUser getProjectRepresentativeUserNotExist(boolean save = false, boolean hideByDefault = false) {
+    static ProjectRepresentativeUser getProjectRepresentativeUserNotExist(boolean save = false) {
         Project project = getProjectNotExist(true);
         User user = User.findByUsername(Infos.SUPERADMINLOGIN);
 

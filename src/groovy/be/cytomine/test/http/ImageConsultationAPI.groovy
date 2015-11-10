@@ -1,4 +1,4 @@
-package be.cytomine.social
+package be.cytomine.test.http
 
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
@@ -16,26 +16,18 @@ package be.cytomine.social
 * limitations under the License.
 */
 
-import be.cytomine.CytomineDomain
-import be.cytomine.security.SecUser
+import be.cytomine.test.Infos
 
-/**
- * Info on last user connection for a project
- * User x connect to poject y the 2013/01/01 at xxhyymin
- */
-class PersistentConnection extends CytomineDomain{
+class ImageConsultationAPI extends DomainAPI {
 
-    static mapWith = "mongo"
-
-    SecUser user
-
-    static constraints = {
-        user (nullable:false)
+    static def lastImageOfUsersByProject(Long idProject,String username, String password) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$idProject/lastImages.json"
+        return doGET(URL, username, password)
     }
 
-    static mapping = {
-        id(generator: 'assigned', unique: true)
-        sort "id"
-        compoundIndex user:1, created:-1
+    static def create(Long idImage, def json, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/consultation.json"
+        def result = doPOST(URL,json,username,password)
+        return result
     }
 }

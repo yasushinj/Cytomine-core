@@ -458,7 +458,6 @@ class ProjectTests  {
     void testLastOpened() {
         Project project1 = BasicInstanceBuilder.getProjectNotExist(true)
         Project project2 = BasicInstanceBuilder.getProjectNotExist(true)
-        Project project3 = BasicInstanceBuilder.getProjectNotExist(true)
 
         def result = ProjectAPI.doPing(project1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
