@@ -300,6 +300,11 @@ div .annotations-panel-mini {
     bottom : 0px;
 }
 
+.row .vcenter {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+}
 
 .tree > ul.dynatree-container
 {
@@ -1090,6 +1095,20 @@ div.olControlZoomPanel .olControlZoomToMaxExtentItemInactive {
 
 .termHovered {
     border-color:#3fb618;
+}
+
+.led-red {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-image: -webkit-radial-gradient(5px 5px, circle cover, orange, red);
+}
+
+.led-green {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-image: -webkit-radial-gradient(5px 5px, circle cover, yellow, green);
 }
 
 /* Main stats up of screen */
