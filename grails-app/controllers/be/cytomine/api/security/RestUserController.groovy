@@ -534,20 +534,69 @@ class RestUserController extends RestController {
     ])
     def listUsersWithLastActivity() {
 
+        //asc = 1; desc = -1
+        int order = 1;
+        boolean sorted = false;
+        def field = null;
+        String _search;
+
+        if(params.datatables) {
+            params.max = params.iDisplayLength ? params.iDisplayLength as int : 10;
+            params.offset = params.iDisplayStart ? params.iDisplayStart as int : 0;
+
+            _search = params.sSearch ? ".*"+params.sSearch.toLowerCase()+".*" : ".*"
+
+            def col = params.get("iSortCol_0");
+            def sortArg = params.get("sSortDir_0")
+            def sortProperty = "mDataProp_"+col
+
+            field = params.get(sortProperty)
+
+            if (sortArg.equals("desc")) {
+                order = -1;
+            }
+
+        }
+
         Project project = projectService.read(params.long('id'))
+
+        boolean online = params.boolean('onlineOnly');
 
         def results = []
 
-        // TODO try to optimize with max & offset in db call in secUserService.listUsers method
-        List<SecUser> users = secUserService.listUsers(project);
+        List<SecUser> users;
+
+        if (online) {
+            users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
+        } else {
+            users = secUserService.listUsers(project)
+        }
+
+        if(_search) {
+            users = users.findAll{
+                it.lastname.toLowerCase().matches(_search) ||
+                        it.firstname.toLowerCase().matches(_search) ||
+                        it.username.toLowerCase().matches(_search)}
+        }
 
         Integer offset = params.offset != null ? params.getInt('offset') : 0
         Integer max = (params.max != null && params.getInt('max')!=0) ? params.getInt('max') : Integer.MAX_VALUE
         def maxForCollection = Math.min(users.size() - offset, max)
 
-        // avoid subList if unwanted
-        if(offset > 0 || users.size() > maxForCollection) {
-            users = users.subList(offset,offset + maxForCollection)
+        if(field && ["email","Username"].contains(field)) {
+            users.sort { a,b->
+                if(field.equals("email")) {
+                    (order)*(a.email <=>b.email)
+                } else if(field.equals("Username")) {
+                    (order)*(a.username.toLowerCase() <=>b.username.toLowerCase() )
+                }
+            }
+            sorted = true;
+
+            // avoid subList if unwanted ==> work only of we have already sorted on a user field.
+            if(offset > 0 || users.size() > maxForCollection) {
+                users = users.subList(offset,offset + maxForCollection)
+            }
         }
 
         def connections = projectConnectionService.lastConnectionInProject(project)
@@ -590,9 +639,26 @@ class RestUserController extends RestController {
             boolean ldap = CASLdapUserDetailsService.isInLdap(user.username)
             def userInfo = [id : user.id, username : user.username, firstname : user.firstname, lastname : user.lastname, email: user.email,
                         LDAP : ldap,lastImageId : image?.image, lastImageName : image?.imageName,
-                        lastConnection : connection?.created, frequency : frequency?.frequency]
+                        lastConnection : connection?.created, frequency : frequency?.frequency?: 0]
             results << userInfo
         }
+
+        // sort if not already done
+        if(field && !sorted) {
+            results.sort { a,b->
+                if(field.equals("LastConnexion")) {
+                    (order)*(a.lastConnection <=>b.lastConnection)
+                } else if(field.equals("LDAP")) {
+                    (order)*(a.ldap <=>b.ldap )
+                } else if(field.equals("nbVisit")) {
+                    (order)*(a.frequency <=>b.frequency )
+                } else {
+                    a.id <=>b.id
+                }
+            }
+            sorted = true;
+        }
+
         responseSuccess(results)
     }
 

@@ -100,6 +100,9 @@ var ProjectDefaultLayerModel = Backbone.Model.extend({
 var ProjectConnectionModel = Backbone.Model.extend({
     url: function () {
         if (window.app.isUndefined(this.user)) {
+            if (!window.app.isUndefined(this.heatmap)) {
+                return '/api/project/'+this.project +'/connectionFrequency.json?heatmap='+this.heatmap;
+            }
             return '/api/project/'+this.project +'/userconnection.json';
         } else {
             return '/api/project/'+this.project +'/userconnection/'+this.user+'.json';
@@ -108,6 +111,7 @@ var ProjectConnectionModel = Backbone.Model.extend({
     initialize: function (options) {
         this.project = options.project;
         this.user = options.user;
+        this.heatmap = options.heatmap;
     }
 });
 

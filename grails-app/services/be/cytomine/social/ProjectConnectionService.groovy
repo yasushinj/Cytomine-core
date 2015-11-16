@@ -7,6 +7,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 @Transactional
 class ProjectConnectionService extends ModelService {
@@ -30,7 +31,7 @@ class ProjectConnectionService extends ModelService {
     }
 
     def lastConnectionInProject(Project project){
-        securityACLService.check(project,READ)
+        securityACLService.check(project,WRITE)
 
         def results = []
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
@@ -45,7 +46,7 @@ class ProjectConnectionService extends ModelService {
     }
 
     def getConnectionByUserAndProject(User user, Project project, boolean all){
-        securityACLService.check(project,READ)
+        securityACLService.check(project,WRITE)
         def result;
         if(all){
             def connections = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc") {
@@ -65,7 +66,7 @@ class ProjectConnectionService extends ModelService {
 
     def numberOfConnectionsByProjectAndUser(Project project, User user = null){
 
-        securityACLService.check(project,READ)
+        securityACLService.check(project,WRITE)
         def result;
         if(user) {
             def mResult = PersistentProjectConnection.createCriteria().get/*(sort: "created", order: "desc")*/ {
@@ -97,4 +98,57 @@ class ProjectConnectionService extends ModelService {
         }
         return result
     }
+
+    def numberOfConnectionsByProjectOrderedByHourAndDays(Project project, Long afterThan = null, User user = null){
+
+        securityACLService.check(project,WRITE)
+        // what we want
+        //db.persistentProjectConnection.aggregate( {"$match": {$and: [{project : ID_PROJECT}, {created : {$gte : new Date(AFTER) }}]}}, { "$project": { "created": {  "$subtract" : [  "$created",  {  "$add" : [  {"$millisecond" : "$created"}, { "$multiply" : [ {"$second" : "$created"}, 1000 ] }, { "$multiply" : [ {"$minute" : "$created"}, 60, 1000 ] } ] } ] } }  }, { "$project": { "y":{"$year":"$created"}, "m":{"$month":"$created"}, "d":{"$dayOfMonth":"$created"}, "h":{"$hour":"$created"}, "time":"$created" }  },  { "$group":{ "_id": { "year":"$y","month":"$m","day":"$d","hour":"$h"}, time:{"$first":"$time"},  "total":{ "$sum": 1}  }});
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+
+        def result;
+        def match
+        def projection1 = [$project : [ created : [$subtract:['$created', [$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]] ]]]]]]
+        def projection2 = [$project : [ y : [$year:'$created'], m : [$month:'$created'], d : [$dayOfMonth:'$created'], h : [$hour:'$created'], time : '$created']]
+        def group = [$group : [_id : [ year: '$y', month: '$m', day: '$d', hour: '$h'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+        if(afterThan) {
+            match = [$match : [$and : [[ created : [$gte : new Date(afterThan)]],[ project : project.id]]]]
+        } else {
+            match = [$match : [ project : project.id]]
+        }
+
+        result = db.persistentProjectConnection.aggregate(
+                match,
+                projection1,
+                projection2,
+                group
+        )
+
+
+        def connections = []
+        result.results().each {
+
+            // TODO evolve when https://jira.mongodb.org/browse/SERVER-6310 is resolved
+            // as we groupBy hours in UTC, the GMT + xh30 have problems.
+
+            /*def year = it["_id"]["year"]
+            def month = it["_id"]["month"]
+            def day = it["_id"]["day"]
+            def hour = it["_id"]["hour"]*/
+            def time = it["time"]
+            def frequency = it["frequency"]
+
+
+            /*Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, hour);
+            cal.set(Calendar.YEAR, year);
+            cal.set(Calendar.DAY_OF_MONTH, day);
+            cal.set(Calendar.MONTH, month);*/
+
+            connections << [/*year: year, month: month, day: day, hour: hour, */time : time, frequency: frequency]
+        }
+        result = connections
+        return result
+    }
+
 }

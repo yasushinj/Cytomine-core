@@ -56,7 +56,12 @@ class RestProjectConnectionController extends RestController {
     def numberOfConnectionsByProjectAndUser = {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
+        Long afterThan = params.long("afterThan");
 
-        responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
+        if(params.boolean('heatmap')) {
+            responseSuccess(projectConnectionService.numberOfConnectionsByProjectOrderedByHourAndDays(project, afterThan, user))
+        } else {
+            responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
+        }
     }
 }

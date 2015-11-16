@@ -117,19 +117,52 @@ var UserCollection = PaginatedCollection.extend({
         this.online = options.online;
     },
     comparator: function (user) {
-            if (user.get("lastname") != undefined) {
-                return user.get("lastname") + " " + user.get("firstname")
+        if (user.get("lastname") != undefined) {
+            return user.get("lastname") + " " + user.get("firstname")
+        }
+        else {
+            if(user.get("username")==undefined) {
+                return -1;
+            } else{
+                return user.get("username").toLowerCase();
             }
-            else {
-                if(user.get("username")==undefined) {
-                    return -1;
-                } else{
-                    return user.get("username").toLowerCase();
-                }
-            }
-     }
+        }
+    }
 });
 
+var UserActivitiesCollection = PaginatedCollection.extend({
+    model: UserModel,
+    url: function () {
+        var url= "api/project/" + this.project + "/usersActivity.json";
+        if (!window.app.isUndefined(this.online) && this.online) {
+            url+= "?onlineOnly=true"
+            if (!window.app.isUndefined(this.admins) && this.admins) {
+                url+= "&adminsOnly=true"
+            }
+        } else if (!window.app.isUndefined(this.admins) && this.admins) {
+            url+= "?adminsOnly=true"
+        }
+        return url
+    },
+    initialize: function (options) {
+        this.initPaginator(options);
+        this.project = options.project;
+        this.admins = options.admins;
+        this.online = options.online;
+    },
+    comparator: function (user) {
+        if (user.get("lastname") != undefined) {
+            return user.get("lastname") + " " + user.get("firstname")
+        }
+        else {
+            if(user.get("username")==undefined) {
+                return -1;
+            } else{
+                return user.get("username").toLowerCase();
+            }
+        }
+    }
+});
 
 
 
