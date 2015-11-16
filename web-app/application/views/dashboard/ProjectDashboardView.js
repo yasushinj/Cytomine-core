@@ -105,6 +105,17 @@ var ProjectDashboardView = Backbone.View.extend({
         this.ProjectDashboardConfig.refresh();
 
     },
+    /*refreshUsersConfig: function () {
+        if (this.ProjectDashboardUsersConfig == null) {
+            this.ProjectDashboardUsersConfig = new ProjectDashboardUsersConfig({
+                model: this.model,
+                el: $("#projectUsersConfiguration")
+            });
+        }
+
+        this.ProjectDashboardUsersConfig.render();
+
+    },*/
     refreshReview: function (image,user,term) {
         if (this.projectDashboardReview == null || this.projectDashboardReview.image!=image) {
 

@@ -212,7 +212,9 @@ body {
 
 
 <!-- View -->
+<!--<script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>-->
 <script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
+
 <script type="text/javascript" src="application/views/activity/ActivityView.js" ></script>
 <script type="text/javascript" src="application/views/search/SearchEngineFilterView.js" ></script>
 <script type="text/javascript" src="application/views/search/SearchView.js" ></script>
@@ -237,6 +239,8 @@ body {
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardAnnotations.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardAlgos.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardConfig.js" ></script>
+<!--<script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
+<script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersStatsView.js" ></script>-->
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
 
 <script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>
