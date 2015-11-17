@@ -17,6 +17,7 @@ package be.cytomine.processing
 */
 
 import be.cytomine.AnnotationDomain
+import be.cytomine.Exception.ServerException
 import be.cytomine.image.server.RetrievalServer
 import be.cytomine.ontology.Ontology
 import be.cytomine.ontology.Term
@@ -27,6 +28,7 @@ import be.cytomine.test.HttpClient
 import be.cytomine.utils.ValueComparator
 import grails.converters.JSON
 import groovy.sql.Sql
+import org.apache.http.NoHttpResponseException
 import org.apache.http.entity.mime.MultipartEntity
 import org.apache.http.entity.mime.content.ByteArrayBody
 import org.springframework.security.access.AccessDeniedException
@@ -217,7 +219,6 @@ class ImageRetrievalService {
         HttpClient client = new HttpClient()
 
         log.info "url=$url"
-        log.info "username=$username password=$password"
 
         client.connect(url,username,password)
 
@@ -255,51 +256,75 @@ class ImageRetrievalService {
      * Get missing annotation
      */
     public void indexMissingAnnotation() {
+
+        RetrievalServer server = RetrievalServer.findByDeletedIsNull()
+        if(server==null) {
+            throw ServerException("No retrieval found!")
+        }
+
         //Get indexed resources
         List<Long> resources = getIndexedResource()
+        log.info "Size of indexed resources : " + resources.size()
         Set<Long> ressourcesSet = new HashSet<Long>(resources)
         //Check if each annotation is well indexed
         def annotations = UserAnnotationService.extractAnnotationForRetrieval(dataSource)
-        int i = 1
+        int i = 0
         def data = []
+        int count = 0;
+        int totalSize = annotations.size();
+        int limit = 1000;
+        int indexFirstAnnot;
 
-            annotations.each { annotation ->
-                log.info "Annotation $i/" + annotations.size()
-                if (!ressourcesSet.contains(annotation.id)) {
-                    log.debug "Annotation $annotation.id IS NOT INDEXED"
-                    try {
+        while(i < totalSize) {
+            def annotation = annotations[i];
+            log.info "Annotation "+(i+1)+"/" + totalSize
+            if (!ressourcesSet.contains(annotation.id)) {
+                log.debug "Annotation $annotation.id IS NOT INDEXED"
+                try {
 
-                        def cropUrl = AnnotationDomain.getAnnotationDomain(annotation.id).urlImageServerCrop(abstractImageService)
-                        data << [id:annotation.id,storage:annotation.container,url:cropUrl]
-
-                    } catch (Exception e) {log.error e}
-                } else {
-                    log.debug "Annotation $annotation.id IS INDEXED"
-                }
-                i++
-            }
-
-            RetrievalServer server = RetrievalServer.findByDeletedIsNull()
-            String jsonData = (data as JSON).toString(true)
-            log.info jsonData.substring(0,Math.min(100,jsonData.length()-1))
-            if(server!=null) {
-                log.info "Server $server!"
-                //log.info "jsonData $jsonData!"
-                String url = server.url + "/api/index/full"
-                HttpClient client = new HttpClient()
-                client.connect(url,server.username,server.password)
-                client.post(jsonData)
-                String response = client.getResponseData()
-                int code = client.getResponseCode()
-                log.info "code $code!"
-                log.info "response $response!"
+                    def cropUrl = AnnotationDomain.getAnnotationDomain(annotation.id).urlImageServerCrop(abstractImageService)
+                    if(data.size() == 0) {
+                        indexFirstAnnot = i;
+                    }
+                    data << [id:annotation.id,storage:annotation.container,url:cropUrl]
+                    count++;
+                    if(count >= limit) {
+                        callIndexFullOnRetrieval(server, data);
+                        count = 0;
+                        data = [];
+                    }
+                } catch (NoHttpResponseException e) {
+                    log.error "Retrieval throw a NoHttpResponseException with $limit items"
+                    log.info "Retry with smaller sets"
+                    i = indexFirstAnnot;
+                    limit /=2;
+                    data = [];
+                    count = 0;
+                } catch (Exception e) {log.error e}
             } else {
-                log.warn "No retrieval found!"
+                log.debug "Annotation $annotation.id IS INDEXED"
             }
-//        } else {
-//            throw new ForbiddenException("YOU MUST BE ADMIN!!!!")
-//        }
+            i++
+        }
 
+        callIndexFullOnRetrieval(server, data)
+
+    }
+
+    private void  callIndexFullOnRetrieval(RetrievalServer server, def data) {
+        log.info "Size of resources to index : " + data.size()
+        String jsonData = (data as JSON).toString(true)
+        log.info jsonData.substring(0,Math.min(500,jsonData.length()-1))
+
+        log.info "Server $server!"
+        String url = server.url + "/api/index/full"
+        HttpClient client = new HttpClient()
+        client.connect(url,server.username,server.password)
+        client.post(jsonData)
+        String response = client.getResponseData()
+        int code = client.getResponseCode()
+        log.info "code $code!"
+        log.info "response $response!"
     }
 
 
@@ -338,7 +363,9 @@ class ImageRetrievalService {
      */
     private List<Long> getIndexedResource() {
         RetrievalServer server = RetrievalServer.findByDeletedIsNull()
+        println "server is $server"
         String URL = server.url+"/api/images"
+        println "URL is $URL"
         List json = JSON.parse(getGetResponse(URL,server.username,server.password))
         List<Long> resources = new ArrayList<Long>()
         json.each { image ->
@@ -405,7 +432,6 @@ class ImageRetrievalService {
         HttpClient client = new HttpClient()
 
         log.info "url=$url"
-        log.info "username=$username password=$password"
 
         client.connect(url,username,password)
 
