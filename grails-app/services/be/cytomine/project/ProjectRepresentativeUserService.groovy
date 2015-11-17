@@ -80,7 +80,7 @@ class ProjectRepresentativeUserService extends ModelService {
      * @param printMessage Flag if client will print or not confirm message
      * @return Response structure (code, old domain,..)
      */
-    def delete(ProjectRepresentativeUser domain, Transaction transaction = null, Task task = null) {
+    def delete(ProjectRepresentativeUser domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         securityACLService.check(domain.getProject(),WRITE)
         User user = domain.getUser()
         Command c = new DeleteCommand(user: user,transaction:transaction)
