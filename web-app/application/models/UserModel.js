@@ -135,14 +135,14 @@ var UserActivitiesCollection = PaginatedCollection.extend({
     url: function () {
         var url= "api/project/" + this.project + "/usersActivity.json";
         if (!window.app.isUndefined(this.online) && this.online) {
-            url+= "?onlineOnly=true"
+            url+= "?onlineOnly=true";
             if (!window.app.isUndefined(this.admins) && this.admins) {
-                url+= "&adminsOnly=true"
+                url+= "&adminsOnly=true";
             }
         } else if (!window.app.isUndefined(this.admins) && this.admins) {
-            url+= "?adminsOnly=true"
+            url+= "?adminsOnly=true";
         }
-        return url
+        return url;
     },
     initialize: function (options) {
         this.initPaginator(options);
@@ -151,11 +151,11 @@ var UserActivitiesCollection = PaginatedCollection.extend({
         this.online = options.online;
     },
     comparator: function (user) {
-        if (user.get("lastname") != undefined) {
+        if (!window.app.isUndefined(user.get("lastname"))) {
             return user.get("lastname") + " " + user.get("firstname")
         }
         else {
-            if(user.get("username")==undefined) {
+            if(window.app.isUndefined(user.get("username"))) {
                 return -1;
             } else{
                 return user.get("username").toLowerCase();

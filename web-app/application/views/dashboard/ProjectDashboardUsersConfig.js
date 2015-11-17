@@ -67,7 +67,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             { "mDataProp": "LastConnexion", sDefaultContent: "", "bSearchable": false,"fnRender" : function(o) {
                 var last = o.aData["lastConnection"];
                 if(last === null) {
-                    last = "No record"
+                    last = "No record";
                 } else {
                     last = window.app.convertLongToPrettyDate(last);
                 }
@@ -76,17 +76,17 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             { "mDataProp": "LastImg", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 var last = o.aData["lastImageName"];
                 if(last === null) {
-                    last = "No record"
+                    last = "No record";
                 } else {
                     // TODO Put a link to the image ? or display the image ?
                 }
-                return last
+                return last;
             }},
             { "mDataProp": "LDAP", sDefaultContent: "", "bSearchable": false,"fnRender" : function(o) {
                 if(o.aData["LDAP"]){
-                    return "<div class = 'led-green'></div>"
+                    return "<div class = 'led-green'></div>";
                 } else {
-                    return "<div class = 'led-red'></div>"
+                    return "<div class = 'led-red'></div>";
                 }
             }},
             { "mDataProp": "email", "bSearchable": false,"bSortable": true },
@@ -115,7 +115,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 if (id == "41") {
                     $('td', $nRow).css({"background-color":"red"});
                 }
-                return nRow
+                return nRow;
             },
 
             "fnDrawCallback": function(oSettings, json) {
@@ -166,7 +166,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
             callBack();
 
-        }
+        };
 
         new UserCollection({project: self.model.id}).fetch({
             success: function (projectUserCollection) {
@@ -191,11 +191,10 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         var self = this;
 
         // table
-        var view = _.template(imageTableTemplate, {id : self.model.get('id')})
-        $(this.el).append(view)
+        var view = _.template(imageTableTemplate, {id : self.model.get('id')});
+        $(this.el).append(view);
 
         $(this.el).find("#UserRefresh"+self.model.get('id')).on("click", function() {
-            console.log("refresh button")
             self.update();
         });
 

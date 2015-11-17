@@ -6,7 +6,6 @@ import be.cytomine.security.SecUser
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
-import org.joda.time.DateTime
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 

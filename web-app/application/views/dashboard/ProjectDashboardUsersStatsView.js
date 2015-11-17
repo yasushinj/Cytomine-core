@@ -107,7 +107,7 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
             var toRotate = days.slice(pivot);
             days = days.slice(0,pivot);
             for(var i = toRotate.length-1; i>=0 ;i--) {
-                days.unshift(toRotate[i])
+                days.unshift(toRotate[i]);
             }
         }
 
@@ -133,25 +133,27 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
 
         var lastDay = new Date();
         lastDay.setHours(23);
-        lastDay.setMinutes(00);
-        lastDay.setSeconds(00);
+        lastDay.setMinutes(0);
+        lastDay.setSeconds(0);
         var firstDay = new Date();
         firstDay.setDate(lastDay.getDate()-6);
-        firstDay.setHours(00);
-        firstDay.setMinutes(00);
-        firstDay.setSeconds(00);
+        firstDay.setHours(0);
+        firstDay.setMinutes(0);
+        firstDay.setSeconds(0);
 
         // TODO use one Model.url() instead
         d3.json("api/project/" + self.model.get('id') + "/connectionFrequency.json?heatmap=true&afterThan="+firstDay.getTime(), function(error, data) {
 
             data = data.collection;
 
-            data.sort(function(a, b){return a.time-b.time});
+            data.sort(function(a, b){
+                return a.time-b.time;
+            });
 
             // nb of rect
             var arrSize = (Math.floor((lastDay-firstDay)/(1000*60*60*24))+1)*24;
 
-            var newData = []
+            var newData = [];
             for(var i =0;i<arrSize;i++){
                 newData.push(null);
             }
@@ -241,14 +243,16 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
                         .style("left", (d3.event.pageX) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                 })
-                .on("mouseout", function(d) {
+                .on("mouseout", function() {
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
                 });
 
             cards.transition().duration(1000)
-                .style("fill", function(d) { return colorScale(d.value); });
+                .style("fill", function(d) {
+                    return colorScale(d.value);
+                });
 
             cards.select("title").text(function(d) { return d.value; });
 

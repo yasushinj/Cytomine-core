@@ -87,12 +87,12 @@ var AddUserToProjectDialog = Backbone.View.extend({
         };
 
         self.getValues(function() {
-            creation()
+            creation();
         });
 
         $('#addUserToProject').on('hidden.bs.modal', function () {
             self.closeCallback();
-        })
+        });
 
         $("#addUserToProject").modal('show');
     },
@@ -127,7 +127,7 @@ var AddUserToProjectDialog = Backbone.View.extend({
 
             doLayout();
 
-        }
+        };
 
         new UserCollection({}).fetch({
             success: function (allUserCollection) {
@@ -163,10 +163,10 @@ var AddUserToProjectDialog = Backbone.View.extend({
             maxSelection:null
         });
         $(self.userMaggicSuggest).on('selectionchange', function(e,m){
-            self.projectUsers = this.getValue()
+            self.projectUsers = this.getValue();
             self.update(function() {
-                self.loadMultiSelectUser()
-            })
+                self.loadMultiSelectUser();
+            });
         });
     },
     createMultiSelectUser: function() {
@@ -210,7 +210,7 @@ var AddUserToProjectDialog = Backbone.View.extend({
             }
 
             currentUsers.each(function(user) {
-                if($.inArray( user.id, self.projectAdmins ) == -1){
+                if($.inArray( user.id, self.projectAdmins ) === -1){
                     $(self.el).find("#usersByGroup").append('<option value="' + user.id + '" selected>' + user.prettyName() + '</option>');
                 } else {
                     $(self.el).find("#usersByGroup").append('<option value="' + user.id + '" selected disabled>' + user.prettyName() + '</option>');
@@ -227,7 +227,7 @@ var AddUserToProjectDialog = Backbone.View.extend({
                 var optGroup = $(self.el).find("#usersByGroup optgroup").last();
                 for(var i=0; i<group.attributes.users.length ; i++) {
                     var currentUser = group.attributes.users[i];
-                    if($.inArray( currentUser.id, ids ) == -1){
+                    if($.inArray( currentUser.id, ids ) === -1){
                         optGroup.append('<option value="' + currentUser.id + '">' + currentUser.lastname + ' ' + currentUser.firstname + '(' + currentUser.username + ')' + '</option>');
                     } else {
                         optGroup.append('<option value="' + currentUser.id + '" disabled>' + currentUser.lastname + ' ' + currentUser.firstname + '(' + currentUser.username + ')' + '</option>');
@@ -268,7 +268,7 @@ var AddUserToProjectDialog = Backbone.View.extend({
         var loadUser = function() {
 
             if(projectUsers == null || (reloadAllUsers && !reloadDone)) {
-                return
+                return;
             }
 
             var projectUserArray=[];
@@ -282,10 +282,10 @@ var AddUserToProjectDialog = Backbone.View.extend({
             self.userMaggicSuggest.setValue(projectUserArray);
 
             $(self.userMaggicSuggest).on('selectionchange', function(e,m){
-                self.projectUsers = this.getValue()
+                self.projectUsers = this.getValue();
                 self.update(function() {
-                    self.loadMultiSelectUser()
-                })
+                    self.loadMultiSelectUser();
+                });
             });
         };
 
@@ -305,8 +305,8 @@ var AddUserToProjectDialog = Backbone.View.extend({
                         allUserArray.push({id:user.id,label:user.prettyName()});
                     });
 
-                    self.userMaggicSuggest.setData(allUserArray)
-                    reloadDone = true
+                    self.userMaggicSuggest.setData(allUserArray);
+                    reloadDone = true;
                     loadUser();
                 }});
 
@@ -326,12 +326,11 @@ var AddUserToProjectDialog = Backbone.View.extend({
             success: function (model, response) {
                 console.log("1. Project edited!");
                 window.app.view.message("Project", response.message, "success");
-                var id = response.project.id;
                 if(callbackSuccess != null && callbackSuccess != undefined) {
-                    callbackSuccess()
+                    callbackSuccess();
                 }
                 // here, we need a refresh of the DefaultLayerPanel as the users have changed !!!
-                self.callback(users)
+                self.callback(users);
             },
             error: function (model, response) {
                 var json = $.parseJSON(response.responseText);
