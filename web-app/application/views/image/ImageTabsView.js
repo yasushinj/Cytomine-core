@@ -38,9 +38,13 @@ var ImageTabsView = Backbone.View.extend({
         var self = this;
         require(["text!application/templates/image/ImageReviewAction.tpl.html"], function (actionMenuTpl) {
             self.doLayout(actionMenuTpl);
-            $("#imageAdd"+self.idProject).click(function() {
-                new AddImageToProjectDialog({el: "#dialogs", model: self.project}).render();
-            });
+            if(window.app.status.user.model.get('guest')){
+                $("#imageAdd"+self.idProject).hide()
+            } else {
+                $("#imageAdd"+self.idProject).click(function() {
+                    new AddImageToProjectDialog({el: "#dialogs", model: self.project}).render();
+                });
+            }
             $("#imageRefresh"+self.idProject).click(function() {
                 self.refresh();
             });
