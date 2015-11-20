@@ -67,11 +67,11 @@ class ImagePropertiesService implements Serializable{
         //Width
         def widthProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.width")
         if (widthProperty) image.setWidth(Integer.parseInt(widthProperty.getValue()))
-        else log.info "widthProperty is null"
+        else log.error "widthProperty is null"
         //Height
         def heightProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.height")
         if (heightProperty) image.setHeight(Integer.parseInt(heightProperty.getValue()))
-        else log.info "heightProperty is null"
+        else log.error "heightProperty is null"
         //Resolution
         def resolutionProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.resolution")
         if (resolutionProperty) image.setResolution(Float.parseFloat(resolutionProperty.getValue()))
