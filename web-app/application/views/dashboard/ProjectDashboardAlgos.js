@@ -377,12 +377,13 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         var width = $('#panelSoftwareLastRunList').find('#' + job.id).width() - 5;
         require(["text!application/templates/processing/JobInfo.tpl.html"], function (tpl) {
             var jobIcon = job.isSuccess() ? "icon-star" : "icon-star-empty";
+            var hasFailed = job.isFailed();
             job.set({
                 created: window.app.convertLongToDate(job.get("created")),
                 status: self.getStatusElement(job, width),
                 icon: jobIcon
             });
-            var tpl_data = $.extend({}, {idProject: self.model.id, idSoftware: self.software.id }, job.toJSON());
+            var tpl_data = $.extend({}, {idProject: self.model.id, idSoftware: self.software.id, hasFailed: hasFailed }, job.toJSON());
             elem.append(_.template(tpl, tpl_data));
         });
     },

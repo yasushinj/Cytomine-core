@@ -8,6 +8,10 @@
     <dd><%= created %></dd>
     <dt>Status</dt>
     <dd><%= status %></dd>
+    <% if (hasFailed && statusComment) { %>
+    <dt>Caused by</dt>
+    <dd><%= statusComment %></dd>
+    <% } %>
     <dt>Data</dt>
     <dd><a href="#tabs-annotations-<%= idProject %>-all-<%= userJob %>">Annotations</a></dd>
     <!--<dd><a id="launchComparator"><i class="icon-th-large"></i> Compare this job</a></dd>-->
