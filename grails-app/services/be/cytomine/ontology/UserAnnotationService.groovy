@@ -18,6 +18,7 @@ package be.cytomine.ontology
 
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
@@ -381,7 +382,11 @@ class UserAnnotationService extends ModelService {
 
     def deleteDependentAnnotationTerm(UserAnnotation ua, Transaction transaction, Task task = null) {
         AnnotationTerm.findAllByUserAnnotation(ua).each {
-            annotationTermService.delete(it,transaction,null,false)
+            try {
+                annotationTermService.delete(it,transaction,null,false)
+            } catch (ForbiddenException fe) {
+                throw new ForbiddenException("This annotation has been linked to the term "+it.term+" by "+it.userDomainCreator()+". "+it.userDomainCreator()+" must unlink its term before you can delete this annotation.")
+            }
         }
     }
 
