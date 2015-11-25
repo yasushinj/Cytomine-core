@@ -300,6 +300,9 @@ BrowseImageView = Backbone.View.extend({
         zoom = Math.max(0, zoom - 1);
         self.map.moveTo(new OpenLayers.LonLat(geom.getCentroid().x, geom.getCentroid().y), Math.max(0, zoom));
     },
+    goToLocation: function (x, y, zoom) {
+        this.map.moveTo(new OpenLayers.LonLat(x, y), zoom);
+    },
     getFeature: function (idAnnotation) {
         return this.userLayer.getFeature(idAnnotation);
     },
@@ -887,13 +890,13 @@ BrowseImageView = Backbone.View.extend({
             zoom: zoom,
             image: image,
             topLeftX: mapArea.left,
-            topLeftY: height-mapArea.top,
+            topLeftY: mapArea.bottom,
             topRightX: mapArea.right,
-            topRightY: height-mapArea.top,
+            topRightY: mapArea.bottom,
             bottomRightX: mapArea.right,
-            bottomRightY: height-mapArea.bottom,
+            bottomRightY: mapArea.top,
             bottomLeftX: mapArea.left,
-            bottomLeftY: height-mapArea.bottom
+            bottomLeftY: mapArea.top
         }).save();
     },
     reloadAnnotation: function (idAnnotation) {

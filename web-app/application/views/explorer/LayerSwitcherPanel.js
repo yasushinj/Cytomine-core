@@ -130,20 +130,24 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         var self = this;
         window.app.view.message("", "Start following " + window.app.models.projectUser.get(self.userFollowed).prettyName(), "success");
         var image = this.model.get("id");
+        var project = this.model.get("project");
         this.followInterval = setInterval(function () {
-            new UserPositionModel({ image: image, user: self.userFollowed }).fetch({
-                success: function (model, response) {
-                    self.browseImageView.map.moveTo(new OpenLayers.LonLat(model.get("longitude"), model.get("latitude")), model.get("zoom"));
-                    var layerWrapper = _.detect(self.vectorLayers, function (item) {
-                        return item.id == self.userFollowed;
-                    });
-                    if (layerWrapper) {
-                        layerWrapper.vectorsLayer.refresh();
+            // horrible hack. only do GET if we are currently looking at the image
+            if($("#tabs-image-"+project+"-"+image+"-").hasClass("active")){
+                new UserPositionModel({ image: image, user: self.userFollowed }).fetch({
+                    success: function (model, response) {
+                        self.browseImageView.goToLocation(model.get("x"), model.get("y"), model.get("zoom"));
+                        var layerWrapper = _.detect(self.vectorLayers, function (item) {
+                            return item.id == self.userFollowed;
+                        });
+                        if (layerWrapper) {
+                            layerWrapper.vectorsLayer.refresh();
+                        }
+                    },
+                    error: function (model, response) {
                     }
-                },
-                error: function (model, response) {
-                }
-            });
+                });
+            }
         }, 1000);
     },
     stopFollowing: function () {
