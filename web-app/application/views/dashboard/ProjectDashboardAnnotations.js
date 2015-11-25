@@ -47,6 +47,13 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
 
         self.ontology = window.app.status.currentOntologyModel;
 
+        $(self.el).find("#treeUserListing").empty();
+        $(self.el).find("#treeUserListing").append('<img class="img-responsive center-block" src="images/loadingbig.gif"/></div>');
+        $(self.el).find("#treeJobListing").empty();
+        $(self.el).find("#treeJobListing").append('<img class="img-responsive center-block" src="images/loadingbig.gif"/></div>');
+        $(self.el).find("#treeAnnotationListing").empty();
+        $(self.el).find("#treeAnnotationListing").append('<img class="img-responsive center-block" src="images/loadingbig.gif"/></div>');
+
         $(self.el).find("input.allAnnotationsCheckbox,input.onlyReviewedAnnotationsCheckbox").change(function () {
             self.refreshSelectedTermsWithUserFilter();
         });
