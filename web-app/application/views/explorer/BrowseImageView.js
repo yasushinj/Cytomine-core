@@ -1571,7 +1571,8 @@ BrowseImageView = Backbone.View.extend({
         this.annotationsPanel = new AnnotationsPanel({
             el: this.el,
             model: this.model,
-            browseImageView: this
+            browseImageView: this,
+            review : this.review
         }).render();
 
     },

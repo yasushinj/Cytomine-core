@@ -36,9 +36,12 @@ var AnnotationView = Backbone.View.extend({
                 $(self.el).empty();
                 self.model = collection;
                 self.nbAnnotation = collection.fullSize;
-                self.initPagination();
-                self.appendThumbs(self.page);
-
+                if(self.nbAnnotation > 0) {
+                    self.initPagination();
+                    self.appendThumbs(self.page);
+                } else {
+                    $(self.el).append('<div style="text-align: center; padding:50px;"><span class="label label-info">No available annotations</span></div>');
+                }
             }});
 
         return this;

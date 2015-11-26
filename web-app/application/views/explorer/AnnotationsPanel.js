@@ -24,6 +24,7 @@
 
 var AnnotationsPanel = Backbone.View.extend({
     tagName: "div",
+    review: false,
 
     /**
      * AnnotationsPanel constructor
@@ -32,6 +33,9 @@ var AnnotationsPanel = Backbone.View.extend({
     initialize: function (options) {
         this.refreshAnnotationsTabsFunc = [];
         this.browseImageView = options.browseImageView;
+        if (options.review != undefined) {
+            this.review = options.review;
+        }
     },
     /**
      * Grab the layout and call ask for render
@@ -93,7 +97,7 @@ var AnnotationsPanel = Backbone.View.extend({
         }
     },
     refreshAnnotations: function (idTerm, el) {
-        new AnnotationCollection({image: this.model.id, term: idTerm}).fetch({
+        new AnnotationCollection({image: this.model.id, term: idTerm, reviewed:this.review}).fetch({
             success: function (collection, response) {
                 el.empty();
                 var view = new AnnotationView({
@@ -113,7 +117,7 @@ var AnnotationsPanel = Backbone.View.extend({
         var self = this;
         var el = $("#" + self.browseImageView.divId).find('#annotationsPanel' + self.model.get('id'));
 
-        el.html(_.template(tpl, {id: self.model.get('id')}));
+        el.html(_.template(tpl, {id: self.model.get('id'), title : (self.review ? "Reviewed ": "")+"Annotations"}));
         new ProjectModel({id: window.app.status.currentProject}).fetch({
             success: function (model, response) {
                 self.createTabs(model.get("ontology"));
