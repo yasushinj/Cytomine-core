@@ -6,109 +6,28 @@ If you use Cytomine in scientific publications, please cite it properly with bot
 - Scientific paper:
 Marée et al., Collaborative analysis of multi-gigapixel images using Cytomine, Submitted, 2015.
 
+## Presentation
+
+[Cytomine](http://cytomine.be) is, to the best of our knowledge, the first open-source rich internet application to enable highly collaborative and multidisciplinary analysis of multi-gigapixel imaging data.
+
+Build at University of Liège, it supports both remote visualization, collaborative semantic annotation, and semi-automated analysis through the web, making it an ideal tool for collaborative research, teaching and diagnosis in every large-image related topics.
+
+Its design was driven by life science and bioimage informatics research needs: software versatility, interoperability, modularity and extensibility, image recognition tailored via learning from ground-truth data and proofreading tools, reproducible research, and data accessibility and reusability.
+
+It is being used for years by our collaborators working with large sets of bioimages in numerous domains including cancer research, development, and toxicology, and is now adapted for pedagogical purposes.
+
+Overall, we believe Cytomine is an important new tool of broad interest to foster active communication and distributed collaboration between life, computer and citizen scientists, but also physicians, teachers and
+students, in an unprecedented way using machine learning and web communication mechanisms.
 
 
-## Prerequisites
-
-This module requires these dependencies :
+Requirements:
+* Java 1.7+
 * PostgreSQL >= 9.2
 * Postgis >= 1.5
-* Grails >= 2.3.5
+* Grails 2.4+ (only for development)
 
-### Install PostgreSQL
+Full documentation can be found [online](http://doc.cytomine.be)
 
-#### On Max OS X
+## How to install it
 
-First, install Homebrew (http://brew.sh/) and follow the instructions : 
- ```bash
-ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
- ```
-then install Postgis (will instal PostgreSQL as a dependencies):
- ```bash
-brew install postgis 
- ```
-	
-#### On Linux (Ubuntu/Debian)
-
- ```bash
-apt-get install postgis
- ```
-
-### Install Grails
-
-Install GVM (http://gvmtool.net/)
- ```bash
-curl -s get.gvmtool.net | bash
- ```
- Install Grails :
- ```bash
-gvm install grails 2.3.5
- ```
-[Grails Documentation](http://grails.org/doc/2.3.x/guide/)
-
-## Init databases 
-
-These are different possible environment while running Cytomine Core 
-* cytomine : dev environment
-* cytomineempty : scratch environment (dev environment with an empty database at start)
-* cytomineprod : production environment
-* cytominetest : test environment (for running integration tests)
-
-Then create all these 4 database
- ```bash
- createdb $DATABASE_NAME;
- psql -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
-  ```
-
-## Run Cytomine Core
-
-[Grails Command Line Documentation](http://grails.org/doc/2.3.x/guide/commandLine.html)
-
-#### In dev mode :
-```bash
-export GRAILS_OPTS="-Xmx1G -Xms256m -XX:MaxPermSize=256m -server"
-grails -Dserver.port=8080 run-app
-```
-
-####  In scratch mode :
-```bash
-# free cytominempty
-dropdb cytomineempty;
-createdb cytomineempty;
-psql -d $cytomineempty -c "CREATE EXTENSION postgis;"
- 
-# start grails with scratch environment
-export GRAILS_OPTS="-Xmx1G -Xms256m -XX:MaxPermSize=256m"
-grails  -Dgrails.env=scratch -Dserver.port=8080 run-app
-```
-
-####  In prod mode :
-```bash
-export GRAILS_OPTS="-Xmx1G -Xms256m -XX:MaxPermSize=256m"
-grails prod -Dserver.port=8080 run-app
-```
-
-####  In test mode :
-```bash
-export GRAILS_OPTS="-Xmx1G -Xms256m -XX:MaxPermSize=256m -server -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog -Dorg.apache.commons.logging.simplelog.showdatetime=true -Dorg.apache.commons.logging.simplelog.log.org.apache.http=DEBUG"
-grails -Dserver.port=8090 test-app functional:functional -echoOut -coverage
-```
-
-## Deployment : generate the WAR
-
-As simple as :
-```bash
-grails war
-```
-
-This command will generate `./target/cytomine.war`
-
-## Generate the documentation
-
-As simple as 
-```bash
-grails doc
-```
-
-This command will generate `./target/docs/index.html`
-
+See our [Cytomine-bootstrap](https://github.com/cytomine/Cytomine-bootstrap) project to install it with Docker
