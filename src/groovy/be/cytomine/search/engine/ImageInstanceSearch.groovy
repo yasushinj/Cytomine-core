@@ -25,8 +25,8 @@ class ImageInstanceSearch extends EngineSearch {
 
     public String createRequestOnAttributes(List<String> words) {
         return """
-            SELECT ii.id as id,'${ImageInstance.class.name}' as type ${getMatchingValue("ai.original_filename")} ${
-            getName("ai.original_filename")
+            SELECT ii.id as id,'${ImageInstance.class.name}' as type ${getMatchingValue("ii.instance_filename")} ${
+            getName("ii.instance_filename")
         }
             FROM image_instance ii, abstract_image ai, acl_object_identity as aoi, acl_sid as sid, acl_entry as ae
             WHERE ii.base_image_id = ai.id
@@ -36,7 +36,7 @@ class ImageInstanceSearch extends EngineSearch {
             AND sid.sid = '${currentUser.username}'
             AND ae.acl_object_identity = aoi.id
             AND ae.sid = sid.id
-            AND ${formatCriteriaToWhere(words, "ai.original_filename")}
+            AND ${formatCriteriaToWhere(words, "ii.instance_filename")}
             AND ii.deleted IS NULL
         """
     }
@@ -45,7 +45,7 @@ class ImageInstanceSearch extends EngineSearch {
         return """
             SELECT property.domain_ident as id, property.domain_class_name as type ${
             getMatchingValue("property.key || ': ' || property.value")
-        } ${getName("ai.original_filename")}
+        } ${getName("ii.instance_filename")}
             FROM property property, image_instance ii, abstract_image ai, acl_object_identity as aoi, acl_sid as sid, acl_entry as ae
             WHERE property.domain_class_name like '${ImageInstance.class.name}'
             ${getRestrictedIdForm("property.domain_ident")}
@@ -66,7 +66,7 @@ class ImageInstanceSearch extends EngineSearch {
         return """
             SELECT description.domain_ident as id, description.domain_class_name as type ${
             getMatchingValue("description.data")
-        } ${getName("ai.original_filename")}
+        } ${getName("ii.instance_filename")}
             FROM description description, image_instance ii, abstract_image ai,acl_object_identity as aoi, acl_sid as sid, acl_entry as ae
             WHERE description.domain_class_name like '${ImageInstance.class.name}'
             ${getRestrictedIdForm("description.domain_ident")}
