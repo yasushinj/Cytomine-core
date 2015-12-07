@@ -31,11 +31,6 @@ class UserPositionAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def listLastByProject(Long idProject,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "/api/project/$idProject/online.json"
-        return doGET(URL, username, password)
-    }
-
     static def listLastByImage(Long idImage,String username, String password) {
         String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/online.json"
         return doGET(URL, username, password)

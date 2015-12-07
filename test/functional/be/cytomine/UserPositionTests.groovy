@@ -38,12 +38,6 @@ class UserPositionTests  {
        assert 200 == result.code
    }
 
-    void testListByProject() {
-        def image = BasicInstanceBuilder.getImageInstance()
-       def result = UserPositionAPI.listLastByProject(image.project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       assert 200 == result.code
-   }
-
     void testListByImage() {
         def image = BasicInstanceBuilder.getImageInstance()
        def result = UserPositionAPI.listLastByImage(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -57,8 +51,6 @@ class UserPositionTests  {
         def result = UserPositionAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         result = UserPositionAPI.listLastByUser(image.id,BasicInstanceBuilder.user1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        result = UserPositionAPI.listLastByProject(image.project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         result = UserPositionAPI.listLastByImage(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

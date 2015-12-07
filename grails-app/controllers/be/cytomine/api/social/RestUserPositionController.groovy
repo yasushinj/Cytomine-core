@@ -22,6 +22,10 @@ import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import org.restapidoc.annotation.RestApiMethod
+import org.restapidoc.annotation.RestApiParam
+import org.restapidoc.annotation.RestApiParams
+import org.restapidoc.pojo.RestApiParamType
 
 /**
  * Controller for user position
@@ -37,10 +41,20 @@ class RestUserPositionController extends RestController {
     def mongo
     def userPositionService
 
-    /**
-     * Add new position for user
-     */
-    def add = {
+    @RestApiMethod(description="Record the position of the current user on an image.")
+    @RestApiParams(params=[
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.QUERY, description = "The image id (Mandatory)"),
+            @RestApiParam(name="topLeftX", type="double", paramType = RestApiParamType.QUERY, description = "Top Left X coordinate of the user viewport"),
+            @RestApiParam(name="topRightX", type="double", paramType = RestApiParamType.QUERY, description = "Top Right X coordinate of the user viewport"),
+            @RestApiParam(name="bottomLeftX", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Left X coordinate of the user viewport"),
+            @RestApiParam(name="bottomRightX", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Right X coordinate of the user viewport"),
+            @RestApiParam(name="topLeftY", type="double", paramType = RestApiParamType.QUERY, description = "Top Left Y coordinate of the user viewport"),
+            @RestApiParam(name="topRightY", type="double", paramType = RestApiParamType.QUERY, description = "Top Right Y coordinate of the user viewport"),
+            @RestApiParam(name="bottomLeftY", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Left Y coordinate of the user viewport"),
+            @RestApiParam(name="bottomRightY", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Right Y coordinate of the user viewport"),
+            @RestApiParam(name="zoom", type="integer", paramType = RestApiParamType.QUERY, description = "Zoom level in the user viewport")
+    ])
+    def add() {
         try {
             responseSuccess(userPositionService.add(request.JSON))
         } catch (CytomineException e) {
@@ -50,34 +64,23 @@ class RestUserPositionController extends RestController {
     }
 
 
-    /**
-     * Get the last position for a user and an image
-     */
-    def lastPositionByUser = {
+    @RestApiMethod(description="Get the last position for a user and an image.")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id (Mandatory)")
+    ])
+    def lastPositionByUser() {
         ImageInstance image = imageInstanceService.read(params.id)
         SecUser user = secUserService.read(params.user)
         responseSuccess(userPositionService.lastPositionByUser(image, user))
     }
 
-    /**
-     * Get users that have opened an image now
-     */
-    def listOnlineUsersByImage = {
+    @RestApiMethod(description="Get users that have opened an image recently.")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
+    ])
+    def listOnlineUsersByImage() {
         ImageInstance image = imageInstanceService.read(params.id)
         responseSuccess(userPositionService.listOnlineUsersByImage(image))
     }
-
-    /**
-     * Get online users
-     */
-    def listLastUserPositionsByProject = {
-        Project project = projectService.read(params.project)
-        responseSuccess(userPositionService.listLastUserPositionsByProject(project))
-    }
-
-    def lastImageOfUsersByProject = {
-        Project project = projectService.read(params.project)
-        responseSuccess(userPositionService.lastImageOfUsersByProject(project))
-    }
-
 }

@@ -19,11 +19,14 @@ package be.cytomine.social
 import be.cytomine.CytomineDomain
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import org.restapidoc.annotation.RestApiObject
+import org.restapidoc.annotation.RestApiObjectField
 
 /**
  * Info on user connection for a project
- * ex : User x connect to project y the 2013/01/01 at xxhyymin
+ * ex : User x connect to project y the 2013/01/01 at time y
  */
+@RestApiObject(name = "project connection", description = "Each PersistentProjectConnection represent when an user opened a project.")
 class PersistentProjectConnection extends CytomineDomain{
 
     static mapWith = "mongo"
@@ -32,7 +35,9 @@ class PersistentProjectConnection extends CytomineDomain{
 
     static belongsTo = [user : SecUser, project: Project]
 
+    @RestApiObjectField(description = "The user")
     SecUser user
+    @RestApiObjectField(description = "The consultated project")
     Project project
 
     static constraints = {

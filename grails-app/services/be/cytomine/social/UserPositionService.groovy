@@ -46,6 +46,7 @@ class UserPositionService extends ModelService {
     }
 
     def lastPositionByUser(ImageInstance image, SecUser user){
+        securityACLService.check(image,READ)
         def userPositions = LastUserPosition.createCriteria().list(sort: "created", order: "desc", max: 1) {
             eq("user", user)
             eq("image", image)
@@ -66,19 +67,5 @@ class UserPositionService extends ModelService {
         }.collect { it.user.id }.unique()
         def result = ["users": userPositions.join(",")]
         return result
-    }
-
-    def listLastUserPositionsByProject(Project project){
-
-        securityACLService.check(project,READ)
-        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        DateTime thirtySecondsAgo = new DateTime().minusSeconds(30)
-
-        def result = db.lastUserPosition.aggregate(
-                [$match : [ project : project.id, created:[$gt:thirtySecondsAgo.toDate()]]],
-                [$project:[user:1,"image":1]],
-                [$group : [_id : [ user: '$user', image: '$image']]]
-        )
-        return result.results().collect{it['_id']}.collect{[it["image"],it["user"]]}
     }
 }
