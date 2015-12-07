@@ -23,6 +23,7 @@
 class StatsUrlMappings {
 
     static mappings = {
+        // project dependant
         "/api/project/$id/stats/term.$format"(controller:"stats"){
             action = [GET:"statTerm"]
         }
@@ -45,6 +46,7 @@ class StatsUrlMappings {
             action = [GET:"statAnnotationEvolution"]
         }
 
+        //retrieval
         "/api/stats/retrieval/avg.$format"(controller:"retrievalSuggestStats"){
             action = [GET:"statRetrievalAVG"]
         }
@@ -72,8 +74,10 @@ class StatsUrlMappings {
             action = [GET:"statRetrievalEvolutionByTerm"]
         }
 
-
-
+        // global
+        "/api/total/$domain.$format"(controller:"stats"){
+            action = [GET:"totalDomains"]
+        }
 
     }
 }

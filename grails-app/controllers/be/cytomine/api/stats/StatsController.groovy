@@ -1,5 +1,8 @@
 package be.cytomine.api.stats
 
+import be.cytomine.CytomineDomain
+import be.cytomine.Exception.WrongArgumentException
+
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
 *
@@ -21,9 +24,17 @@ import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
+import org.restapidoc.annotation.RestApiMethod
+import org.restapidoc.annotation.RestApiParam
+import org.restapidoc.annotation.RestApiParams
+import org.restapidoc.pojo.RestApiParamType
+
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 class StatsController extends RestController {
 
+    def cytomineService
+    def securityACLService
     def termService
     def jobService
     def secUserService
@@ -338,5 +349,21 @@ class StatsController extends RestController {
             current = cal.getTime();
         }
         responseSuccess(data)
+    }
+
+    @RestApiMethod(description="Get the total of the domains made on this instance.")
+    @RestApiParams(params=[
+            @RestApiParam(name="domain", type="string", paramType = RestApiParamType.PATH, description = "The domain name")
+    ])
+    def totalDomains() {
+
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        def clazz = grailsApplication.domainClasses.find { it.clazz.simpleName.toLowerCase() == params.domain.toLowerCase() }
+        if(!clazz){
+            throw new WrongArgumentException("This domain doesn't exist!")
+        }
+        Integer total = clazz.clazz.count
+
+        responseSuccess(["total" : total]);
     }
 }
