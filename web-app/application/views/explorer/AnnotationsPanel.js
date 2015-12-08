@@ -33,7 +33,7 @@ var AnnotationsPanel = Backbone.View.extend({
     initialize: function (options) {
         this.refreshAnnotationsTabsFunc = [];
         this.browseImageView = options.browseImageView;
-        if (options.review != undefined) {
+        if (!window.app.isUndefined(options.review)) {
             this.review = options.review;
         }
     },

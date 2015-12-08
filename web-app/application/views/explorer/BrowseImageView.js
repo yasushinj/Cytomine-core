@@ -1160,6 +1160,9 @@ BrowseImageView = Backbone.View.extend({
                 self.layerSwitcherPanel.roiLayer.toggleControl("select");
             }
 
+            _.each(self.getUserLayerCanEdit(), function (layer) {
+                layer.toggleControl("select");
+            });
         });
         toolbar.find('button[id=point' + this.model.get('id') + ']').click(function () {
             if(self.getUserLayer().isVisible()){
@@ -1185,7 +1188,6 @@ BrowseImageView = Backbone.View.extend({
                 self.getUserLayer().disableHightlight();
             }
         });
-
         toolbar.find('button[id=irregular4' + this.model.get('id') + ']').click(function () {
             if(self.getUserLayer().isVisible()){
                 cssActivate(this);
@@ -1202,7 +1204,6 @@ BrowseImageView = Backbone.View.extend({
                 self.getUserLayer().disableHightlight();
             }
         });
-
         toolbar.find('button[id=irregular30' + this.model.get('id') + ']').click(function () {
             if(self.getUserLayer().isVisible()){
                 cssActivate(this);
