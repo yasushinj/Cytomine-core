@@ -127,19 +127,20 @@ class GroupTests  {
         if(ldapDisabled) {
             assert 404 == result.code
         } else {
-            assert 200 == result.code
-            assert JSON.parse(result.data).name == '2e an. master sc. mathématiques, fin. appr.'
+            if(200 == result.code){
+                assert JSON.parse(result.data).name == '2e an. master sc. mathématiques, fin. appr.'
 
-            def group = Group.read(JSON.parse(result.data).id)
+                def group = Group.read(JSON.parse(result.data).id)
 
-            def id = group.id
-            result = GroupAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-            assert 200 == result.code
+                def id = group.id
+                result = GroupAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+                assert 200 == result.code
 
-            assert 0 == UserGroup.findAllByGroup(group).size()
+                assert 0 == UserGroup.findAllByGroup(group).size()
 
-            def showResult = GroupAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-            assert 404 == showResult.code
+                def showResult = GroupAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+                assert 404 == showResult.code
+            }
         }
     }
 
@@ -159,27 +160,28 @@ class GroupTests  {
         if(ldapDisabled) {
             assert 404 == result.code
         } else {
-            assert 200 == result.code
-            assert JSON.parse(result.data).name == '2e an. master sc. math., fin. spéc. infor.'
+            if(200 == result.code) {
+                assert JSON.parse(result.data).name == '2e an. master sc. math., fin. spéc. infor.'
 
-            println "userGroup size"
-            def normalSize;
-            def group = Group.read(JSON.parse(result.data).id)
-            def userGroup = UserGroup.findByGroup(group)
-            normalSize = UserGroup.findAllByGroup(group).size()
-            println normalSize
-            UserGroupAPI.delete(userGroup.user.id, group.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-            println UserGroup.findAllByGroup(group).size()
+                println "userGroup size"
+                def normalSize;
+                def group = Group.read(JSON.parse(result.data).id)
+                def userGroup = UserGroup.findByGroup(group)
+                normalSize = UserGroup.findAllByGroup(group).size()
+                println normalSize
+                UserGroupAPI.delete(userGroup.user.id, group.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+                println UserGroup.findAllByGroup(group).size()
 
-            println "RESET FROM LDAP"
-            result = GroupAPI.resetFromLDAP(JSON.parse(result.data).id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-            assert 200 == result.code || 409 == result.code
-            assert normalSize == UserGroup.findAllByGroup(group).size()
+                println "RESET FROM LDAP"
+                result = GroupAPI.resetFromLDAP(JSON.parse(result.data).id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+                assert 200 == result.code || 409 == result.code
+                assert normalSize == UserGroup.findAllByGroup(group).size()
 
-            println "IS IN LDAP"
-            result = GroupAPI.isInLDAP(JSON.parse(result.data).id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-            assert 200 == result.code
-            assert JSON.parse(result.data).result == true
+                println "IS IN LDAP"
+                result = GroupAPI.isInLDAP(JSON.parse(result.data).id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+                assert 200 == result.code
+                assert JSON.parse(result.data).result == true
+            }
         }
     }
 

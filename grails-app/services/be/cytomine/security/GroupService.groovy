@@ -162,7 +162,7 @@ class GroupService extends ModelService {
 
         def map = ldapSearchService.searchByCn(json.name, "uid", "member");
 
-        if (map.isEmpty()) throw ObjectNotFoundException;
+        if (map.isEmpty()) throw new ObjectNotFoundException("Object with cn="+json.name+"not found in LDAP");
 
         Group result = new Group();
         result.name = json.name
@@ -197,7 +197,7 @@ class GroupService extends ModelService {
 
         def map = ldapSearchService.searchByUid(group.gid, "cn", "uid", "member");
 
-        if (map.isEmpty()) throw ObjectNotFoundException;
+        if (map.isEmpty()) throw new ObjectNotFoundException("Object with id="+group.gid+"not found in LDAP");
 
         def json = JSON.parse(group.encodeAsJSON());
         json["cn"] = map.get("cn")[0]
