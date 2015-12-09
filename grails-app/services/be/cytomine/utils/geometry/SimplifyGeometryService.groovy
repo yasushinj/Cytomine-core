@@ -120,7 +120,7 @@ class SimplifyGeometryService {
     def simplifyPolygonTextSize(String location) {
         String result = location
         //limit the size (text) for the geometry (url max lenght)
-        println "simplify..."
+        log.info "simplify..."
 
         if (new WKTReader().read(location).numPoints < 100) {
             return result
@@ -131,7 +131,7 @@ class SimplifyGeometryService {
         int max = 1000
         while (index < max) {
             def geom = TopologyPreservingSimplifier.simplify(new WKTReader().read(location), index)
-            println index + " = " + geom.numPoints
+            log.info index + " = " + geom.numPoints
             result = geom.toText()
             if (geom.numPoints < 150) {
                 break

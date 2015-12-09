@@ -809,8 +809,6 @@ AnnotationLayer.prototype = {
                         self.addFeature(newFeature);
                         self.controls.select.unselectAll();
                         self.controls.select.select(newFeature);
-                        var cropURL = annotation.get('cropURL');
-                        var cropImage = _.template("<img src='<%=   url %>' alt='<%=   alt %>' style='max-width: 175px;max-height: 175px;' />", { url: cropURL, alt: cropURL});
                         var alertMessage = _.template("<p></p><div></div>", { message: message});
                         window.app.view.message("Annotation added", alertMessage, "success");
                     }

@@ -297,16 +297,18 @@ class UserAnnotationService extends ModelService {
      */
     private indexRetrievalAnnotation(Long id) {
         //index in retrieval
-            log.info "index userAnnotation $id"
-            AnnotationDomain annotation = UserAnnotation.read(id)
 
-            log.info "urlCrop=${annotation.urlImageServerCrop(abstractImageService)}"
-            imageRetrievalService.indexImageAsync(
-                    ImageIO.read(new URL(annotation.urlImageServerCrop(abstractImageService))),
-                    id+"",
-                    annotation.project.id+"",
-                    [:]
-            )//indexAnnotationAsynchronous(UserAnnotation.read(id), retrieval)
+        log.info "index userAnnotation $id"
+        AnnotationDomain annotation = UserAnnotation.read(id)
+
+        def url = annotation.urlImageServerCrop(abstractImageService)
+        log.info "urlCrop=${url}"
+        imageRetrievalService.indexImageAsync(
+                new URL(url),
+                id+"",
+                annotation.project.id+"",
+                [:]
+        )//indexAnnotationAsynchronous(UserAnnotation.read(id), retrieval)
     }
 
     /**

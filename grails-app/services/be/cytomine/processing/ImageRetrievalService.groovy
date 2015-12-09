@@ -54,14 +54,14 @@ class ImageRetrievalService {
     def abstractImageService
 
 
-    public void indexImageAsync(BufferedImage image,String id, String storage, Map<String,String> properties) {
+    public void indexImageAsync(URL url,String id, String storage, Map<String,String> properties) {
         log.info "Index image async:$id $storage"
 
         if(!RetrievalServer.list().isEmpty()) {
             RetrievalServer server = RetrievalServer.list().get(0)
             def process = task {
                 println "index - starting"
-                indexImage(image,id,storage,properties,server.url,server.username,server.password)
+                indexImage(ImageIO.read(url),id,storage,properties,server.url,server.username,server.password)
                 println "index - ending"
             }
         } else {
