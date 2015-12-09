@@ -64,14 +64,17 @@ var JobTemplatePanel = SideBarPanel.extend({
     },
     changeAnnotation : function(idAnnotation) {
         var self = this;
-        self.currentAnnotation = idAnnotation;
-        var panel = $('#jobTemplatePanel' + self.model.get('id'));
-        panel.find(".jobTemplateInfo").empty();
-        console.log("get crop at /api/annotation/"+idAnnotation+ "/crop.png?maxSize=128&draw=true");
-        panel.find(".jobTemplateInfo").append('<img src="'+window.location.origin+'/api/annotation/'+idAnnotation+ '/crop.png?maxSize=128&draw=true" /><br/>');
-        panel.find(".jobTemplateInfo").append("Annotation " + idAnnotation + "<br/>");
+        // load image only if we can see it
+        if(window.app.status.customUI["project-explore-job"]) {
+            self.currentAnnotation = idAnnotation;
+            var panel = $('#jobTemplatePanel' + self.model.get('id'));
+            panel.find(".jobTemplateInfo").empty();
+            console.log("get crop at /api/annotation/"+idAnnotation+ "/crop.png?maxSize=128&draw=true");
+            panel.find(".jobTemplateInfo").append('<img src="'+window.location.origin+'/api/annotation/'+idAnnotation+ '/crop.png?maxSize=128&draw=true" /><br/>');
+            panel.find(".jobTemplateInfo").append("Annotation " + idAnnotation + "<br/>");
 
-        panel.find(".jobTemplateROI").css("border-color","#47a447");
+            panel.find(".jobTemplateROI").css("border-color","#47a447");
+        }
 
     },
     linkTemplateToAnntation : function() {
