@@ -236,10 +236,11 @@ class SearchEngineTests {
         ImageInstance image2 = createImageInstance(projectA)
         image2.baseImage = createAbstractImage()
         image2.baseImage.originalFilename = "zzzzworldfffff"
+        image2.instanceFilename = "zzzzworldfffff"
         BasicInstanceBuilder.saveDomain(image2.baseImage)
         BasicInstanceBuilder.saveDomain(image2)
 
-        //abstracimage1 has propertyname hello/world
+        //abstractimage1 has propertyname hello/world
         AbstractImage abstractImage1 = createAbstractImage()
         abstractImage1.originalFilename = "blablabla_hello_World.jpg"
         BasicInstanceBuilder.saveDomain(abstractImage1)
