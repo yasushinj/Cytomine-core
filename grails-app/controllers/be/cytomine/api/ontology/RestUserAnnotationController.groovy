@@ -296,8 +296,8 @@ class RestUserAnnotationController extends RestController {
             responseNotFound("UserAnnotation", params.id)
         } else {
             params.mask = true
+            // redirect to AbstractImageController crop
             redirect (url : annotation.toCropURL(params))
-            //responseBufferedImage(imageProcessingService.getMaskImage(annotation, params, false))
         }
 
     }
@@ -309,8 +309,8 @@ class RestUserAnnotationController extends RestController {
             responseNotFound("UserAnnotation", params.id)
         } else {
             params.alphaMask = true
+            // redirect to AbstractImageController crop
             redirect (url : annotation.toCropURL(params))
-            //responseBufferedImage(imageProcessingService.getMaskImage(annotation, params, true))
         }
 
     }

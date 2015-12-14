@@ -43,7 +43,7 @@ var AddImageToProjectDialog = Backbone.View.extend({
         var columns = [
             { sClass: 'center', "mData": "id", "bSearchable": false,"bSortable": true},
             { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
-                return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-'><img src='<%= thumb %>' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
+                return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-'><img src='<%= thumb %>?maxSize=128' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
                     {
                         project : self.model.id,
                         id : o.aData.id,
