@@ -730,7 +730,7 @@ var UploadFormView = Backbone.View.extend({
              ],*/
             "aoColumnDefs": [
                 {
-                    "mData": "thumbURL",
+                    "mData": "thumbURL","bSearchable": false,"bSortable": false,
                     fnRender : function (o, thumb) {
                         if (o.aData.image == null) {
                             return 'No preview available';
@@ -752,7 +752,7 @@ var UploadFormView = Backbone.View.extend({
                     "aTargets": [ 2 ]
                 },
                 {
-                    "mData": "size",
+                    "mData": "size","bSearchable": false,"bSortable": false,
                     fnRender : function (o, size) {
                         var mbSize = (size / (1024 * 1024)).toFixed(2);
                         return mbSize + "Mo";
@@ -771,7 +771,7 @@ var UploadFormView = Backbone.View.extend({
                     "aTargets": [ 5 ]
                 },
                 {
-                    "mData": "image",
+                    "mData": "image","bSearchable": false,"bSortable": false,
                     fnRender: function (o, image) {
                         if(o.aData.to_deploy || o.aData.error_format || o.aData.error_convert){
                             // we allow deletion of non deployed image after a security gap of 24h.
