@@ -97,7 +97,7 @@ var ExplorerController = Backbone.Router.extend({
 
     refreshImage: function (idImage){
         var self = this;
-        if($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.id}))>=0) {
+        if($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return Number(a.image)}))>=0) {
             self.tabs.refreshBrowseImageView(idImage);
         }
     },
