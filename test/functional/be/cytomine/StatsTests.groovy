@@ -19,9 +19,16 @@ package be.cytomine
 import be.cytomine.ontology.Term
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.HttpClient
 import be.cytomine.test.Infos
+import be.cytomine.test.http.ProjectAPI
+import be.cytomine.test.http.StatsAPI
+import be.cytomine.test.http.TermAPI
+import be.cytomine.test.http.UserAnnotationAPI
+import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONArray
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,6 +38,243 @@ import be.cytomine.test.Infos
  * To change this template use File | Settings | File Templates.
  */
 class StatsTests  {
+
+
+    void testStatTerm() {
+        Project project = BasicInstanceBuilder.getProject()
+
+        def result;
+
+        result = StatsAPI.statTerm(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        int total = json.collection.size()
+
+
+        // we add a terme with an annotation
+
+        Term termToAdd = BasicInstanceBuilder.getTermNotExist()
+        result = TermAPI.create(termToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
+        Term term2 = BasicInstanceBuilder.getTermNotExist()
+        term2.ontology = project.ontology
+        BasicInstanceBuilder.saveDomain(term2)
+
+        def annotationWithTerm = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        annotationWithTerm.term = [term2.id]
+
+        result = UserAnnotationAPI.create(annotationWithTerm.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+
+
+
+        result = StatsAPI.statTerm(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.size() == total+1
+
+
+        result = StatsAPI.statTerm(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
+
+    void testStatUser() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result;
+
+        result = StatsAPI.statUser(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        int total = json.collection.size()
+
+        User user = BasicInstanceBuilder.getUser2();
+        ProjectAPI.addUserProject(project.id, user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = StatsAPI.statUser(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.size() == total+1
+
+        result = StatsAPI.statUser(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+
+    }
+
+
+    void testStatsTermslide() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result;
+
+        result = StatsAPI.statTermSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        int total = json.collection.size()
+
+        // we add a terme with an annotation
+
+        Term termToAdd = BasicInstanceBuilder.getTermNotExist()
+        result = TermAPI.create(termToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
+        Term term2 = BasicInstanceBuilder.getTermNotExist()
+        term2.ontology = project.ontology
+        BasicInstanceBuilder.saveDomain(term2)
+
+        def annotationWithTerm = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        annotationWithTerm.term = [term2.id]
+
+        result = UserAnnotationAPI.create(annotationWithTerm.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+
+
+        result = StatsAPI.statTermSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.size() == total+1
+
+
+        result = StatsAPI.statTermSlide(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+
+    }
+
+    void testStatsUserAnnotation() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        def result;
+        User admin = BasicInstanceBuilder.getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = StatsAPI.statUserAnnotations(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        int total = json.collection.find{it.key == admin.firstname + " " + admin.lastname}.terms.size()
+
+        // we add a terme with an annotation
+
+        Term termToAdd = BasicInstanceBuilder.getTermNotExist()
+        result = TermAPI.create(termToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
+        Term term2 = BasicInstanceBuilder.getTermNotExist()
+        term2.ontology = project.ontology
+        BasicInstanceBuilder.saveDomain(term2)
+
+        def annotationWithTerm = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        annotationWithTerm.term = [term2.id]
+
+        result = UserAnnotationAPI.create(annotationWithTerm.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+
+
+
+        result = StatsAPI.statUserAnnotations(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.find{it.key == admin.firstname + " " + admin.lastname}.terms.size() == total+1
+
+
+        result = StatsAPI.statUserAnnotations(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
+
+    void testStatsUserSlide() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        def result;
+        //User admin = BasicInstanceBuilder.getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = StatsAPI.statUserSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        int total = json.collection.size()
+
+        User user = BasicInstanceBuilder.getUser2();
+        ProjectAPI.addUserProject(project.id, user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = StatsAPI.statUser(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.size() == total+1
+
+        result = StatsAPI.statUser(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+
+
+    }
+
+    void testStatsEvolution() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result;
+
+        result = StatsAPI.statAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatAnnotationTermedByProject() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        Term term = BasicInstanceBuilder.getTermNotExist(project.ontology,true)
+        def result;
+
+        result = StatsAPI.statAnnotationTermedByProject(term.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        int total = json.collection.find{it.key == project.name}.value
+
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
+
+        def annotationWithTerm = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        annotationWithTerm.term = [term.id]
+
+        result = UserAnnotationAPI.create(annotationWithTerm.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+
+        result = StatsAPI.statAnnotationTermedByProject(term.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.find{it.key == project.name}.value == total +1
+    }
+
 
     private void doGET(String URL, int expect) {
         HttpClient client = new HttpClient();
@@ -57,7 +301,7 @@ class StatsTests  {
         doGET(URL,200)
 
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval/avg.json?job=-99"
-                doGET(URL,404)
+        doGET(URL,404)
     }
 
 
@@ -67,7 +311,7 @@ class StatsTests  {
         doGET(URL,200)
 
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval/confusionmatrix.json?job=-99"
-                doGET(URL,404)
+        doGET(URL,404)
     }
 
     void testRetrievalWorstTerm() {
@@ -75,7 +319,7 @@ class StatsTests  {
         String URL = Infos.CYTOMINEURL + "/api/stats/retrieval/worstTerm.json?job=${job.id}"
         doGET(URL,200)
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval/worstTerm.json?job=-99"
-                doGET(URL,404)
+        doGET(URL,404)
     }
 
     void testRetrievalWorstAnnotation() {
@@ -83,7 +327,7 @@ class StatsTests  {
         String URL = Infos.CYTOMINEURL + "/api/stats/retrieval/worstAnnotation.json?job=${job.id}"
         doGET(URL,200)
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval/worstAnnotation.json?job=${job.id}"
-                doGET(URL,200)
+        doGET(URL,200)
     }
 
     void testRetrievalWorstTermWithSuggest() {
@@ -91,7 +335,7 @@ class StatsTests  {
         String URL = Infos.CYTOMINEURL + "/api/stats/retrieval/worstTermWithSuggest.json?job=${job.id}"
         doGET(URL,200)
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval/worstTermWithSuggest.json?job=-99"
-                doGET(URL,404)
+        doGET(URL,404)
     }
 
     void testRetrievalEvolution() {
@@ -99,7 +343,7 @@ class StatsTests  {
         String URL = Infos.CYTOMINEURL + "/api/stats/retrieval/evolution.json?job=${job.id}"
         doGET(URL,200)
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval/evolution.json?job=-99"
-                doGET(URL,404)
+        doGET(URL,404)
     }
 
     void testRetrievalEvolutionAlgo() {
@@ -107,7 +351,7 @@ class StatsTests  {
         String URL = Infos.CYTOMINEURL + "/api/stats/retrieval-evolution/evolution.json?job=${job.id}"
         doGET(URL,200)
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval-evolution/evolution.json?job=-99"
-                doGET(URL,404)
+        doGET(URL,404)
     }
 
     void testRetrievalEvolutionAlgoForTerm() {
@@ -115,60 +359,8 @@ class StatsTests  {
         String URL = Infos.CYTOMINEURL + "/api/stats/retrieval-evolution/evolutionByTerm.json?job=${job.id}&term=${Term.findByOntology(job.project.ontology).id}"
         doGET(URL,200)
         URL = Infos.CYTOMINEURL + "/api/stats/retrieval-evolution/evolutionByTerm.json?job=-99&term=${Term.findByOntology(job.project.ontology).id}"
-         doGET(URL,404)
-    }
-
-
-
-    void testStatTerm() {
-        Project project = BasicInstanceBuilder.getProject()
-        String URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/term.json"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/-99/stats/term.json"
-         doGET(URL,404)
-    }
-
-    void testStatUser() {
-        Project project = BasicInstanceBuilder.getProject()
-        String URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/user.json"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/-99/stats/user.json"
-         doGET(URL,404)
-    }
-
-
-    void testStatsTermslide() {
-        Project project = BasicInstanceBuilder.getProject()
-        String URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/termslide.json"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/-99/stats/termslide.json"
-         doGET(URL,404)
-    }
-
-    void testStatsUserAnnotation() {
-        Project project = BasicInstanceBuilder.getProject()
-        String URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/userannotations.json"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/-99/stats/userannotations.json"
         doGET(URL,404)
     }
 
-    void testStatsUserSlide() {
-        Project project = BasicInstanceBuilder.getProject()
-        String URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/userslide.json"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/-99/stats/userslide.json"
-        doGET(URL,404)
-    }
-
-    void testStatsEvolution() {
-        Project project = BasicInstanceBuilder.getProject()
-        String URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/annotationevolution.json"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/${project.id}/stats/annotationevolution.json?term=${project.ontology.leafTerms().first()}"
-        doGET(URL,200)
-        URL = Infos.CYTOMINEURL + "/api/project/-99/stats/annotationevolution.json"
-        doGET(URL,404)
-    }
 
 }

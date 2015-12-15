@@ -49,11 +49,6 @@ class TermAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def statsTerm(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/term/$id/project/stat.json"
-        return doGET(URL, username, password)
-    }
-
     static def create(def jsonTerm, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/term.json"
         def result = doPOST(URL,jsonTerm,username,password)

@@ -33,9 +33,6 @@ class TermUrlMappings {
         "/api/project/$idProject/term.$format"(controller:"restTerm"){
             action = [GET:"listAllByProject"]
         }
-        "/api/term/$id/project/stat.$format"(controller:"restTerm"){
-            action = [GET:"statProject"]
-        }
         "/api/ontology/$idontology/term.$format"(controller:"restTerm"){
             action = [GET:"listByOntology"]
         }

@@ -107,37 +107,6 @@ class TermService extends ModelService {
         return data
     }
 
-    def statProject(Term term) {
-        securityACLService.check(term.container(),READ)
-        def projects = Project.findAllByOntology(term.ontology)
-        def count = [:]
-        def percentage = [:]
-
-        //init list
-        projects.each { project ->
-            count[project.name] = 0
-            percentage[project.name] = 0
-        }
-
-        projects.each { project ->
-            def layers = secUserService.listLayers(project)
-            if(!layers.isEmpty()) {
-                def annotations = UserAnnotation.createCriteria().list {
-                    eq("project", project)
-                    inList("user", layers)
-                }
-                annotations.each { annotation ->
-                    if (annotation.terms().contains(term)) {
-                        count[project.name] = count[project.name] + 1;
-                    }
-                }
-            }
-        }
-
-        //convert data map to list and merge term name and color
-        return convertHashToList(count)
-    }
-
     private List convertHashToList(HashMap<String, Integer> map) {
         def list = []
         map.each {

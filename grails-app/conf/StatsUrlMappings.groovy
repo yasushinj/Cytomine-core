@@ -39,11 +39,13 @@ class StatsUrlMappings {
         "/api/project/$id/stats/userannotations.$format"(controller:"stats"){
             action = [GET:"statUserAnnotations"]
         }
-        "/api/project/$id/stats/retrievalsuggestion.$format"(controller:"stats"){
-            action = [GET:"statRetrievalsuggestion"]
-        }
         "/api/project/$id/stats/annotationevolution.$format"(controller:"stats"){
             action = [GET:"statAnnotationEvolution"]
+        }
+
+        // term
+        "/api/term/$id/project/stat.$format"(controller:"stats"){
+            action = [GET:"statAnnotationTermedByProject"]
         }
 
         //retrieval

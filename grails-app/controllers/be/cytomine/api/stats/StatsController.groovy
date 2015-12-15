@@ -53,6 +53,8 @@ class StatsController extends RestController {
             return
         }
 
+        securityACLService.check(project,READ)
+
         //Get project terms
         def terms = Term.findAllByOntology(project.getOntology())
         if(terms.isEmpty()) {
@@ -118,6 +120,8 @@ class StatsController extends RestController {
             return
         }
 
+        securityACLService.check(project,READ)
+
         //compute number of annotation for each user
         def userAnnotations = UserAnnotation.createCriteria().list {
             eq("project", project)
@@ -157,6 +161,8 @@ class StatsController extends RestController {
             responseNotFound("Project", params.id)
             return
         }
+
+        securityACLService.check(project,READ)
 
         //Get leaf term (parent term cannot be map with annotation)
         def terms = project.ontology.leafTerms()
@@ -204,6 +210,9 @@ class StatsController extends RestController {
             responseNotFound("Project", params.id)
             return
         }
+
+
+        securityACLService.check(project,READ)
 
         //Get project term
         def terms = Term.findAllByOntology(project.getOntology())
@@ -255,6 +264,9 @@ class StatsController extends RestController {
             responseNotFound("Project", params.id)
             return
         }
+
+        securityACLService.check(project,READ)
+
         def terms = Term.findAllByOntology(project.getOntology())
         if(terms.isEmpty()) {
             responseSuccess([])
@@ -306,6 +318,8 @@ class StatsController extends RestController {
             return
         }
 
+        securityACLService.check(project,READ)
+
         int daysRange = params.daysRange!=null ? params.getInt('daysRange') : 1
         Term term = Term.read(params.getLong('term'))
 
@@ -349,6 +363,49 @@ class StatsController extends RestController {
             current = cal.getTime();
         }
         responseSuccess(data)
+    }
+
+    @RestApiMethod(description="Get the total of annotations with a term by project.")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The term id")
+    ])
+    def statAnnotationTermedByProject() {
+        Term term = Term.read(params.id)
+        if (!term) {
+            responseNotFound("Term", params.id)
+            return
+        }
+        securityACLService.check(term.container(),READ)
+        def projects = Project.findAllByOntology(term.ontology)
+        def count = [:]
+        def percentage = [:]
+
+        //init list
+        projects.each { project ->
+            count[project.name] = 0
+            percentage[project.name] = 0
+        }
+
+        projects.each { project ->
+            def layers = secUserService.listLayers(project)
+            if(!layers.isEmpty()) {
+                def annotations = UserAnnotation.createCriteria().list {
+                    eq("project", project)
+                    inList("user", layers)
+                }
+                annotations.each { annotation ->
+                    if (annotation.terms().contains(term)) {
+                        count[project.name] = count[project.name] + 1;
+                    }
+                }
+            }
+        }
+
+        def list = []
+        count.each {
+            list << ["key": it.key, "value": it.value]
+        }
+        responseSuccess(list)
     }
 
     @RestApiMethod(description="Get the total of the domains made on this instance.")

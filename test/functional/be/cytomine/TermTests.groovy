@@ -64,18 +64,6 @@ class TermTests  {
         assert 404 == result.code
     }
 
-    void testStatTerm() {
-        def result = TermAPI.statsTerm(BasicInstanceBuilder.getTerm().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.collection instanceof JSONArray
-    }
-
-    void testStatTermNotExist() {
-        def result = TermAPI.statsTerm(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 404 == result.code
-    }
-
 
   void testListTermWithCredential() {
       def result = TermAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)

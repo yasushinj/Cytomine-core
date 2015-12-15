@@ -138,17 +138,4 @@ class RestTermController extends RestController {
             responseNotFound("Term", "Project", params.idProject)
         }
     }
-
-    /**
-     * Get the stats info for a term
-     * @Param id Term id
-     * @return For each project with this Term, get a the term count
-     */
-    //TODO:APIDOC
-    def statProject() {
-        Term term = Term.read(params.id)
-        if (term) responseSuccess(termService.statProject(term))
-        else responseNotFound("Project", params.id)
-    }
-
 }
