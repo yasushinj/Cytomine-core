@@ -107,14 +107,6 @@ class TermService extends ModelService {
         return data
     }
 
-    private List convertHashToList(HashMap<String, Integer> map) {
-        def list = []
-        map.each {
-            list << ["key": it.key, "value": it.value]
-        }
-        list
-    }
-
     /**
      * Add the new domain with JSON data
      * @param json New domain data

@@ -146,18 +146,18 @@ class AmqpQueueService extends ModelService {
 
         for (AmqpQueueConfigInstance configInstance in parameters) {
             if (configInstance.config.isInMap) {
-                if (!configInstance.value) {
-                    propertiesMap.put(configInstance.config.name, amqpQueueConfigService.getValueCasted(configInstance.config.defaultValue, configInstance.config.type))
-                }
-                else {
+                if (configInstance.value) {
                     propertiesMap.put(configInstance.config.name, amqpQueueConfigService.getValueCasted(configInstance.value, configInstance.config.type))
                 }
+                else {
+                    propertiesMap.put(configInstance.config.name, amqpQueueConfigService.getValueCasted(configInstance.config.defaultValue, configInstance.config.type))
+                }
             } else {
-                if (!configInstance.value) {
-                    propertiesList.add(amqpQueueConfigService.getValueCasted(configInstance.config.defaultValue, configInstance.config.type))
+                if (configInstance.value) {
+                    propertiesList.add(amqpQueueConfigService.getValueCasted(configInstance.value, configInstance.config.type))
                 }
                 else {
-                    propertiesList.add(amqpQueueConfigService.getValueCasted(configInstance.value, configInstance.config.type))
+                    propertiesList.add(amqpQueueConfigService.getValueCasted(configInstance.config.defaultValue, configInstance.config.type))
                 }
             }
         }
@@ -226,7 +226,7 @@ class AmqpQueueService extends ModelService {
         Channel channel = rabbitConnectionService.getRabbitChannel(domain.name, mbs)
 
         try {
-            println "Exchange : " + domain.exchange
+            log.info "Exchange : " + domain.exchange
             channel.basicPublish(domain.exchange, "", MessageProperties.PERSISTENT_TEXT_PLAIN, messageBody.getBytes())
         } catch(IOException e) {
             throw new MiddlewareException(("Cannot publish message : " + e.toString()))

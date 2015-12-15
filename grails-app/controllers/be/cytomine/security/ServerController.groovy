@@ -23,9 +23,6 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.plugin.springsecurity.annotation.Secured
 
-//import grails.plugin.springsecurity.annotation.Secured
-import javax.imageio.ImageIO
-
 class ServerController {
 
     def imageRetrievalService

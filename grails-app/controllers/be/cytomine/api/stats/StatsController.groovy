@@ -1,6 +1,5 @@
 package be.cytomine.api.stats
 
-import be.cytomine.CytomineDomain
 import be.cytomine.Exception.WrongArgumentException
 
 /*
@@ -327,14 +326,14 @@ class StatsController extends RestController {
         int count = 0;
 
         def annotations = null;
-        if(!term) {
-            //find all annotation user for this project
-            annotations = UserAnnotation.executeQuery("select a.created from UserAnnotation a where a.project = ? order by a.created desc", [project])
-        }
-        else {
+        if(term) {
             log.info "Search on term " + term.name
             //find all annotation user for this project and this term
             annotations = UserAnnotation.executeQuery("select b.created from UserAnnotation b where b.project = ? and b.id in (select x.userAnnotation.id from AnnotationTerm x where x.term = ?) order by b.created desc", [project,term])
+        }
+        else {
+            //find all annotation user for this project
+            annotations = UserAnnotation.executeQuery("select a.created from UserAnnotation a where a.project = ? order by a.created desc", [project])
         }
 
         //start a the project creation and stop today

@@ -27,7 +27,7 @@ class ImageServerStorage {
     Storage storage
 
     def getZoomifyUrl() {
-        println "imageServer.url=${imageServer.url}"
+        log.info "imageServer.url=${imageServer.url}"
         return imageServer.url + imageServer.service + "?zoomify=" + storage.getBasePath()
     }
 

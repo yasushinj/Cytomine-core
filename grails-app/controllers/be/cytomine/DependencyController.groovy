@@ -1,5 +1,7 @@
 package be.cytomine
 
+import be.cytomine.Exception.ServerException
+
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
 *
@@ -71,7 +73,7 @@ class DependencyController {
             log.error it
         }
         if (!allErrors.isEmpty()) {
-            throw new Exception(allErrors.join(","))
+            throw new ServerException(allErrors.join(","))
         }
 
 

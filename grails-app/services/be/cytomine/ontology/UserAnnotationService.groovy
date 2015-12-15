@@ -39,7 +39,6 @@ import groovy.sql.Sql
 import org.hibernate.criterion.Restrictions
 import org.hibernate.spatial.criterion.SpatialRestrictions
 
-import javax.imageio.ImageIO
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 

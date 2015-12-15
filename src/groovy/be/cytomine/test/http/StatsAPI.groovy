@@ -16,9 +16,7 @@ package be.cytomine.test.http
 * limitations under the License.
 */
 
-import be.cytomine.image.server.Storage
 import be.cytomine.test.Infos
-import grails.converters.JSON
 
 class StatsAPI  extends DomainAPI {
 

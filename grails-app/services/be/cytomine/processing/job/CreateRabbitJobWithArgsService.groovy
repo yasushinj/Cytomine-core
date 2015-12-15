@@ -1,5 +1,7 @@
 package be.cytomine.processing.job
 
+import be.cytomine.Exception.CytomineException
+
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
 *
@@ -63,9 +65,9 @@ class CreateRabbitJobWithArgsService extends AbstractJobService{
             if (jobParam) {
                 Job previousJob = Job.read(jobParam.value)
                 jobParameterService.add(JSON.parse(createJobParameter("pyxit_load_from",job,"algo/models/"+previousJob.software.name+"/"+previousJob.id+".pkl").encodeAsJSON()))
+            } else {
+                throw new MiddlewareException("No Job Parameter model_id_job found. It is mandatory for pyxit_load_from argument.") {}
             }
-            // TODO throw error
-            println "no jobParam."
         }
         SoftwareParameter modelsJob = softwareParameterService.list(job.software).find {it.name == "models_id_job"};
         if(softwareParameters.find {it.name == "cytomine_model_names_to_load"}) {
@@ -79,9 +81,9 @@ class CreateRabbitJobWithArgsService extends AbstractJobService{
                 }
                 paths =  paths.join(",")
                 jobParameterService.add(JSON.parse(createJobParameter("cytomine_model_names_to_load",job,paths).encodeAsJSON()))
+            } else {
+                throw new MiddlewareException("No Job Parameter models_id_job found. It is mandatory for cytomine_model_names_to_load argument.") {}
             }
-            // TODO throw error
-            println "no jobParam."
         }
 
 

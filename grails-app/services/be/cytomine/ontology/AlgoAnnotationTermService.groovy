@@ -17,6 +17,7 @@ package be.cytomine.ontology
 */
 
 import be.cytomine.AnnotationDomain
+import be.cytomine.Exception.ServerException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
@@ -133,7 +134,7 @@ class AlgoAnnotationTermService extends ModelService {
             isNotNull("expectedTerm")
         }
         if (nbTermTotal == 0) {
-            throw new Exception("UserJob has no algo-annotation-term!")
+            throw new ServerException("UserJob has no algo-annotation-term!")
         }
 
         def nbTermCorrect = AlgoAnnotationTerm.createCriteria().count {
@@ -155,7 +156,7 @@ class AlgoAnnotationTermService extends ModelService {
             eq("expectedTerm", term)
         }
         if (nbTermTotal == 0) {
-            throw new Exception("UserJob has no algo-annotation-term!")
+            throw new ServerException("UserJob has no algo-annotation-term!")
         }
 
         def nbTermCorrect = AlgoAnnotationTerm.createCriteria().count {

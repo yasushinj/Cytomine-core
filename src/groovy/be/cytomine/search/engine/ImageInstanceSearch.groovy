@@ -62,7 +62,6 @@ class ImageInstanceSearch extends EngineSearch {
     }
 
     public String createRequestOnDescription(List<String> words) {
-        println "PROJECT.createRequestOnDescription"
         return """
             SELECT description.domain_ident as id, description.domain_class_name as type ${
             getMatchingValue("description.data")

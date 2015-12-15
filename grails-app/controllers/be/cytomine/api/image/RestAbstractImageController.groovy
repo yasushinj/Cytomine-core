@@ -293,10 +293,14 @@ class RestAbstractImageController extends RestController {
     def imageServers() {
 
         try {
-        def id = params.long('id')
-        def merge = params.get('merge')
+            def id = params.long('id')
+            def merge = params.get('merge')
 
-        if(merge) {
+            if(!merge){
+                responseSuccess(abstractImageService.imageServers(id))
+                return
+            }
+
             def idImageInstance = params.long('imageinstance')
             ImageInstance image = ImageInstance.read(idImageInstance)
 
@@ -333,12 +337,10 @@ class RestAbstractImageController extends RestController {
                     if(merge=="slice") position = seq.slice
                     if(merge=="time") position = seq.time
 
-                    if(position==pos) {
+                    if(position==pos && ids.contains(position)) {
                         def urls = abstractImageService.imageServers(seq.image.baseImage.id).imageServersURLs
-                        if(ids.contains(position)) {
-                            def param = "url$index="+ URLEncoder.encode(urls.first(),"UTF-8") +"&color$index="+ URLEncoder.encode(colors.get(index),"UTF-8")
-                            params << param
-                        }
+                        def param = "url$index="+ URLEncoder.encode(urls.first(),"UTF-8") +"&color$index="+ URLEncoder.encode(colors.get(index),"UTF-8")
+                        params << param
                     }
 
                 }
@@ -361,9 +363,6 @@ class RestAbstractImageController extends RestController {
             //get url for each image
 
             responseSuccess([imageServersURLs : urls])
-        } else {
-            responseSuccess(abstractImageService.imageServers(id))
-        }
         } catch (CytomineException e) {
             log.error(e)
             response([success: false, errors: e.msg], e.code)

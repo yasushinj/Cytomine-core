@@ -127,7 +127,7 @@ class ReviewedAnnotationAPI extends DomainAPI {
 
     static def addReviewAnnotation(def id, def terms, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/annotation/" + id + "/review.json"
-        return doPOST(URL,(!terms? "" : "{ \"terms\":[${terms.join(",")}]}"),username,password)
+        return doPOST(URL,(terms? "{ \"terms\":[${terms.join(",")}]}" : ""),username,password)
     }
 
     static def addReviewAll(Long idImage, List<Long> users, String username, String password) {

@@ -427,7 +427,7 @@ class RestImageInstanceController extends RestController {
             Task task = taskService.read(params.getLong("task"))
             Boolean giveMe = params.boolean("giveMe")
             log.info "task ${task} is find for id = ${params.getLong("task")}"
-            def layers = !params.layers? "" : params.layers.split(",")
+            def layers = params.layers? params.layers.split(",") : ""
             if(image && layers) {
                 responseSuccess(imageInstanceService.copyLayers(image,layers,secUserService.listUsers(image.project).collect{it.id},task,cytomineService.currentUser,giveMe))
             } else {
