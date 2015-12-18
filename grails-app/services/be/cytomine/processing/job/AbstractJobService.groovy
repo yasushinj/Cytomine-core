@@ -85,8 +85,6 @@ abstract class AbstractJobService {
                 value = jobParam.value
             }
             else if (softParam.required) {
-                println "Coucou" + softParam
-                println "Coucou" + softParam.name
                 throw new WrongArgumentException("Argument " + softParam.name + " is required!")
             }
             args[i] = value

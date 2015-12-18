@@ -1,7 +1,5 @@
 package be.cytomine.processing.job
 
-import be.cytomine.Exception.CytomineException
-
 /*
 * Copyright (c) 2009-2015. Authors: see NOTICE file.
 *

@@ -58,6 +58,7 @@ class CreateRabbitJobService extends AbstractJobService{
         String[] jobParams = getParametersValues(job)
 
         //get the executed command value and all its hard-coded parameters
+        // mainArgs = command without parameters
         String[] mainArgs = createArgsArray(job)
         String[] allArgs = new String[mainArgs.length+jobParams.length+2]
 

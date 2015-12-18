@@ -29,7 +29,7 @@ class JobDataUrlMappings {
             action = [GET:"listByJob"]
         }
 
-        "/api/jobdata/$id/upload.$format"(controller:"restJobData"){
+        "/api/jobdata/$id/upload"(controller:"restJobData"){
             action = [PUT:"upload", POST: "upload"]
         }
 
