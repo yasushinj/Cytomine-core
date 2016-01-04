@@ -10,10 +10,10 @@
                 <table>
                     <tr>
                         <td>
-                            <h3>Hi,</h3>
+                            <h3>Dear Madam/Sir,</h3>
 
                             <p class="lead">
-                                You receive this email because <%= senderFirstname %> <%= senderLastname %> (<%=  senderEmail %>) invited you to join Cytomine. Welcome !
+                                You receive this email because <%= senderFirstname %> <%= senderLastname %> (<%=  senderEmail %>) invited you to join Cytomine, a rich internet application for collaborative analysis of multi-gigapixel images. Welcome !
                             </p>
 
                             <p class="callout">
@@ -23,6 +23,10 @@
                             <p>
                                 Click <a href='<%= by %>/login/loginWithToken?tokenKey=<%= tokenKey %>&username=<%= username %>&redirect=#account'> here</a> to sign in, set your firstname, lastname and change your password. <br />
                                 Please note that this link will expire on <%= expiryDate %>. You can request a new one by clicking <a href="<%= by %>/#forgotPassword">here</a> and enter your username.
+                            </p>
+                            
+                            <p>
+                            For more information about Cytomine open-source project, please <a href='http://www.cytomine.be/'>visit our website</a>.
                             </p>
 
                             <!-- social & contact -->
