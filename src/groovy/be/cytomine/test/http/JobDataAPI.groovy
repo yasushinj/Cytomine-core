@@ -62,7 +62,7 @@ class JobDataAPI extends DomainAPI {
     }
 
     static def upload(def id, byte[] data, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/jobdata/" + id + "/upload.json"
+        String URL = Infos.CYTOMINEURL + "api/jobdata/" + id + "/upload"
         return doPUT(URL,data,username,password)
     }
 
