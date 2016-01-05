@@ -383,7 +383,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
                 status: self.getStatusElement(job, width),
                 icon: jobIcon
             });
-            var tpl_data = $.extend({}, {idProject: self.model.id, idSoftware: self.software.id, hasFailed: hasFailed }, job.toJSON());
+            var tpl_data = $.extend({}, {idProject: self.model.id, idSoftware: self.software.id }, job.toJSON());
             elem.append(_.template(tpl, tpl_data));
         });
     },

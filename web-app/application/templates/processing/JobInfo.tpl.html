@@ -8,7 +8,7 @@
     <dd><%= created %></dd>
     <dt>Status</dt>
     <dd><%= status %></dd>
-    <% if (hasFailed && statusComment) { %>
+    <% if (statusComment) { %>
     <dt>Caused by</dt>
     <dd><%= statusComment %></dd>
     <% } %>
