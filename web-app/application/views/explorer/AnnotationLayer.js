@@ -825,14 +825,14 @@ AnnotationLayer.prototype = {
     },
     removeAnnotation: function (feature) {
         var self = this;
+        feature.destroyPopup();
+        this.removeFeature(feature);
+        this.controls.select.unselectAll();
+        this.vectorsLayer.removeFeatures([feature]);
         new AnnotationModel({id: feature.attributes.idAnnotation}).destroy({
             success: function (model, response) {
                 window.app.view.message("Annotation", response.message, "success");
                 //TODO find a way to just hide the feature when asking for delete and truly delete it if success. Else, re-show the feature
-                feature.destroyPopup();
-                this.removeFeature(feature);
-                this.controls.select.unselectAll();
-                this.vectorsLayer.removeFeatures([feature]);
                 //END todo
                 self.browseImageView.refreshAnnotationTabs(undefined);
 
