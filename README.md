@@ -1,10 +1,11 @@
 # Cytomine Core
 
 
-If you use Cytomine in scientific publications, please cite it properly with both its URL and scientific paper:
+When using our software, you agree to cite our website url and related publications in all your work (publications, studies, oral presentations,...). In particular, you agree to cite our (Marée et al., Bioinformatics 2016) paper, and to use our logo when appropriate. See our license files for additional details.
+
 - URL: http://www.cytomine.be/
-- Scientific paper:
-Marée et al., Collaborative analysis of multi-gigapixel images using Cytomine, Submitted, 2015.
+- Logo: http://www.cytomine.be/logo/logo.png
+- Scientific paper: Raphaël Marée, Loïc Rollus, Benjamin Stévens, Renaud Hoyoux, Gilles Louppe, Rémy Vandaele, Jean-Michel Begon, Philipp Kainz, Pierre Geurts and Louis Wehenkel. Collaborative analysis of multi-gigapixel imaging data using Cytomine, Bioinformatics, 2016.
 
 ## Presentation
 
@@ -19,12 +20,6 @@ It is being used for years by our collaborators working with large sets of bioim
 Overall, we believe Cytomine is an important new tool of broad interest to foster active communication and distributed collaboration between life, computer and citizen scientists, but also physicians, teachers and
 students, in an unprecedented way using machine learning and web communication mechanisms.
 
-
-Requirements:
-* Java 1.7+
-* PostgreSQL >= 9.2
-* Postgis >= 1.5
-* Grails 2.4+ (only for development)
 
 Full documentation can be found [online](http://doc.cytomine.be)
 
