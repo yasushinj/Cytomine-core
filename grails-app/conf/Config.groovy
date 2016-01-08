@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2015. Authors: see NOTICE file.
+* Copyright (c) 2009-2016. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -332,7 +332,7 @@ grails.plugins.dynamicController.mixins = [
 
 // Rest API Doc plugin
 grails.plugins.restapidoc.docVersion = "0.1"
-grails.plugins.restapidoc.basePath = "http://beta.cytomine.be"
+grails.plugins.restapidoc.basePath = "http://demo.cytomine.be"
 grails.plugins.restapidoc.customClassName = "be.cytomine.api.doc.CustomResponseDoc"
 grails.plugins.restapidoc.controllerPrefix = "Rest"
 grails.plugins.restapidoc.grailsDomainDefaultType = "long"

@@ -4,7 +4,7 @@ import be.cytomine.processing.ImageFilter
 import be.cytomine.processing.ProcessingServer
 
 /*
-* Copyright (c) 2009-2015. Authors: see NOTICE file.
+* Copyright (c) 2009-2016. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
