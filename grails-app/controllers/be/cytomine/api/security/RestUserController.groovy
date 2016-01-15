@@ -542,6 +542,7 @@ class RestUserController extends RestController {
 
         if(params.datatables) {
             params.max = params.iDisplayLength ? params.iDisplayLength as int : 10;
+            if(params.max < 0) params.max = null;
             params.offset = params.iDisplayStart ? params.iDisplayStart as int : 0;
 
             _search = params.sSearch ? ".*"+params.sSearch.toLowerCase()+".*" : ".*"
