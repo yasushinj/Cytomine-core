@@ -517,7 +517,7 @@ var DialogModal = {
             body = '<div class="alert alert-info">';
             header = "Information";
         } else {
-            body = '<div class="alert alert-error">';
+            body = '<div class="alert alert-danger">';
             header = "Error";
         }
         body = body + '<div id="'+ type +'DialogBox' + id + '">' + text + '</div></div>';

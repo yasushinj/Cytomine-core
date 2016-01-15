@@ -352,8 +352,8 @@ class ProjectService extends ModelService {
      */
     def inviteUser(Project project, def json) {
 
-        def guestUser = [username : json.name, firstname : 'firstname',
-                         lastname : 'lastname', email : json.mail,
+        def guestUser = [username : json.name, firstname : json.firstname?:'firstname',
+                         lastname : json.lastname?:'lastname', email : json.mail,
                          password : 'passwordExpired', color : "#FF0000"]
 
         secUserService.add(JSON.parse(JSONUtils.toJSONString(guestUser)))
