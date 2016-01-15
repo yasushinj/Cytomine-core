@@ -202,18 +202,39 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
 
         $(this.el).find("#ProjectUserDelete"+self.model.get('id')).on("click", function() {
-            console.log("delete button");
 
-            var users = $(self.el).find(".userchckbox-"+self.model.get('id')+":checked");
+            var usersToDelete = $(self.el).find(".userchckbox-"+self.model.get('id')+":checked");
 
-            users = $.map( users, function(n) {
-                return ( n.dataset.id );
+            usersToDelete = $.map( usersToDelete, function(n) {
+                return ( Number(n.dataset.id) );
             });
 
-            // donc ici appeller une customModal qui va demander si on est sur blabla et puis on delete tout ces users.
-            // si y a des admins, mettre un warning dans la customModal
-            // si y a le user en cours, mettre le panneau rouge disant que c'est impossible pour cette raison là
-            console.log(users)
+            if(usersToDelete.length == 0) return;
+
+            var level = 'CONFIRMATIONWARNING';
+            var message = 'Do you want to delete these users ?';
+            var callback = null;
+
+            // cannot delete current users and admins.
+            // TODO if a projectRepresentative is deleted he will be no more a representative.
+            if(usersToDelete.indexOf(window.app.status.user.id)>=0){
+                level = 'ERROR';
+                message = 'Impossible to delete these users. You cannot delete yourself of a project.';
+            } else {
+                var checkAdminSelected = self.projectAdmins.some(function(currentValue) {
+                    return usersToDelete.indexOf(currentValue)>=0;
+                });
+
+                if(checkAdminSelected) {
+                    message += "<br/>Be careful, some project managers are selected!";
+                }
+
+                callback = function(){
+                    self.deleteUsersInProject(usersToDelete);
+                }
+            }
+
+            DialogModal.initDialogModal(null, self.model.id, 'DeleteUsers', message, level, callback);
         });
 
 
@@ -229,14 +250,14 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             self.update();
         });
         $(this.el).find("#ProjectUserAdd"+self.model.get('id')).on("click", function() {
-            console.log("add button")
-            /////////////////// NOPE seulement un callback pour la save action ! Et cela va aussi sauver les new user dans le projet AVANT de faire le refresh
-            new AddUserToProjectDialog({el: "#dialogs", model: self.model, closeAction: function(){self.update()}}).render();
+            //The close action save the user modifications
+            new AddUserToProjectDialog({el: "#dialogs", model: self.model, closeAction: function(newUsersId){
+                self.addUsersInProject(newUsersId);
+            }}).render();
         });
 
 
         $(this.el).on("change", ".userchckbox-"+self.model.get('id'), function() {
-            console.log("test");
             console.log($(this).data("id"));
             if ($(this).is(':checked')) {
                 console.log("test2");
@@ -281,5 +302,56 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         this.statsView.render();
 
 
+    },
+
+    addUsersInProject: function(newUsersId) {
+        var self = this;
+        var users = [];
+
+        new UserCollection({project: self.model.id}).fetch({
+            success: function (projectUserCollection) {
+                projectUserCollection.each(function (user) {
+                    users.push(user.id)
+                });
+                for(var i = 0; i< newUsersId.length; i++) {
+                    users.push(newUsersId[i]);
+                }
+                self.updateUsersInProject(users)
+            }
+        });
+    },
+    deleteUsersInProject: function(oldUsersId) {
+        var self = this;
+        var users = [];
+
+        new UserCollection({project: self.model.id}).fetch({
+            success: function (projectUserCollection) {
+                projectUserCollection.each(function (user) {
+                    if(oldUsersId.indexOf(user.id) == -1) {
+                        users.push(user.id)
+                    }
+                });
+                self.updateUsersInProject(users)
+            }
+        });
+    },
+    updateUsersInProject: function(projectUsers) {
+        var self = this;
+
+        var project = self.model;
+
+        project.set({users: projectUsers});
+        project.save({users:projectUsers}, {
+            success: function (model, response) {
+                console.log("1. Project edited!");
+                window.app.view.message("Project", response.message, "success");
+                self.update();
+                // TODO update the config panel (for default layers)
+            },
+            error: function (model, response) {
+                var json = $.parseJSON(response.responseText);
+                window.app.view.message("Project", json.errors, "error");
+            }
+        });
     }
 });

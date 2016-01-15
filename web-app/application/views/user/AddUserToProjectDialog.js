@@ -122,7 +122,7 @@ var AddUserToProjectDialog = Backbone.View.extend({
         });
 
         $('#addUserToProjectSaveBtn').on('click', function () {
-            self.saveCallback();
+            self.saveCallback(self.idsUsersToAdd);
         });
 
         $("#addUserToProject").modal('show');
