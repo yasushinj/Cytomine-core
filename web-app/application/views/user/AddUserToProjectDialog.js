@@ -57,6 +57,11 @@ var AddUserToProjectDialog = Backbone.View.extend({
         var htmlCode = _.template(tpl, self.model.toJSON());
         $(this.el).html(htmlCode);
 
+        self.allUsers = [];
+        self.projectUsers = [];
+        self.availableUsers = [];
+        self.idsUsersToAdd = [];
+
         var creation = function(){
             self.createUserList();
             self.createMultiSelectUser();
@@ -86,7 +91,7 @@ var AddUserToProjectDialog = Backbone.View.extend({
 
                 $.ajax({
                     type: "POST",
-                    url: "api/project/"+self.model.id+"/invitation.json",
+                    url: "api/user/invitation.json",
                     data: " {name : "+username+", firstname : "+firstname+", lastname : "+lastname+", mail:"+mail+"}",
                     contentType:"application/json; charset=utf-8",
                     dataType:"json",

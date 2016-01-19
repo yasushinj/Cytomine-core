@@ -62,6 +62,9 @@ class UserUrlMappings {
         "/api/project/$id/admin.$format"(controller: "restUser"){
             action = [GET:"showAdminByProject"]
         }
+        "/api/project/$id/users/representative.$format"(controller: "restUser"){
+            action = [GET:"showRepresentativeByProject"]
+        }
         "/api/project/$id/creator.$format"(controller: "restUser"){
             action = [GET:"showCreatorByProject"]
         }
@@ -125,5 +128,8 @@ class UserUrlMappings {
             action = [GET:"downloadUserListingLightByProject"]
         }
 
+        "/api/user/invitation.$format" (controller: "restProject") {
+            action = [POST:"inviteNewUser"]
+        }
     }
 }

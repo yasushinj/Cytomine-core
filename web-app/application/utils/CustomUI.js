@@ -47,7 +47,7 @@ var CustomUI = {
         {componentId: "project-images-tab", componentName: "Images tab"}, //TODO: if you need to add a new panel
         {componentId: "project-properties-tab", componentName: "Properties tab"},
         {componentId: "project-jobs-tab", componentName: "Jobs tab"},
-        //{componentId: "project-usersconfiguration-tab", componentName: "Config Users tab"},
+        {componentId: "project-usersconfiguration-tab", componentName: "Config Users tab"},
         {componentId: "project-configuration-tab", componentName: "Config tab"} //TODO: cannot be hide by project-admin
 
     ],

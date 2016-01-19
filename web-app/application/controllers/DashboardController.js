@@ -30,7 +30,7 @@ var DashboardController = Backbone.Router.extend({
         "tabs-imageproperties-:project-:iddomain": "imageProperties",
         "tabs-dashboard-:project": "dashboard",
         "tabs-config-:project": "config",
-        //"tabs-usersconfig-:project": "usersConfig",
+        "tabs-usersconfig-:project": "usersConfig",
         "tabs-algos-:project-:software-:job": "algos",
         "tabs-algos-:project-:software-": "algos",
         "tabs-algos-:project": "algos",
@@ -234,7 +234,7 @@ var DashboardController = Backbone.Router.extend({
         this.init(project, func);
     },
 
-    /*usersConfig: function (project) {
+    usersConfig: function (project) {
         console.log("config");
         var self = this;
         var func = function () {
@@ -243,7 +243,7 @@ var DashboardController = Backbone.Router.extend({
             tabs.find('a[href=#tabs-usersconfig-' + window.app.status.currentProject + ']').click();
         };
         this.init(project, func);
-    },*/
+    },
 
     dashboard: function (project, callback) {
         var self = this;

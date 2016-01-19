@@ -50,6 +50,7 @@ class RestUserController extends RestController {
     def reportService
     def projectConnectionService
     def imageConsultationService
+    def projectRepresentativeUserService
 
     /**
      * Get all project users
@@ -86,6 +87,19 @@ class RestUserController extends RestController {
         Project project = projectService.read(params.long('id'))
         if (project) {
             responseSuccess(secUserService.listAdmins(project))
+        } else {
+            responseNotFound("User", "Project", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get all project representatives", listing = true)
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
+    ])
+    def showRepresentativeByProject() {
+        Project project = projectService.read(params.long('id'))
+        if (project) {
+            responseSuccess(projectRepresentativeUserService.listUserByProject(project))
         } else {
             responseNotFound("User", "Project", params.id)
         }
@@ -562,6 +576,7 @@ class RestUserController extends RestController {
         Project project = projectService.read(params.long('id'))
 
         boolean online = params.boolean('onlineOnly');
+        boolean adminsOnly = params.boolean('adminsOnly');
 
         def results = []
 
@@ -578,6 +593,12 @@ class RestUserController extends RestController {
                 it.lastname.toLowerCase().matches(_search) ||
                         it.firstname.toLowerCase().matches(_search) ||
                         it.username.toLowerCase().matches(_search)}
+        }
+
+        if (adminsOnly) {
+            List<SecUser> admins;
+            admins = secUserService.listAdmins(project)
+            users = users.findAll{admins.contains(it)}
         }
 
         Integer offset = params.offset != null ? params.getInt('offset') : 0

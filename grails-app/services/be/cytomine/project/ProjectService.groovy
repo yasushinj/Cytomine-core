@@ -32,6 +32,7 @@ import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import groovy.sql.Sql
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.security.acls.domain.BasePermission
 
 import static org.springframework.security.acls.domain.BasePermission.*
@@ -60,6 +61,7 @@ class ProjectService extends ModelService {
     def secUserSecRoleService
     def secRoleService
     def notificationService
+    def projectRepresentativeUserService
 
     def currentDomain() {
         Project
@@ -269,12 +271,25 @@ class ProjectService extends ModelService {
 
 
         def users = jsonNewData.users
+        if(users == JSONObject.NULL) users = null;
+
         def admins = jsonNewData.admins
+        if(admins == JSONObject.NULL) admins = null;
+
+        def representatives = jsonNewData.representatives
+        if(representatives == JSONObject.NULL) representatives = null;
 
         if(users) {
             def projectOldUsers = secUserService.listUsers(project).collect{it.id}.sort() //[a,b,c]
             def projectNewUsers = JSONUtils.getJSONList(jsonNewData.users).collect{Long.parseLong(it+"")}.sort() //[a,b,x]
-            projectNewUsers.addAll(JSONUtils.getJSONList(jsonNewData.admins).collect{Long.parseLong(it+"")})  //add new admin as user too
+            def nextAdmins;
+            if(admins) {
+                nextAdmins = JSONUtils.getJSONList(jsonNewData.admins).collect{Long.parseLong(it+"")}
+            } else {
+                nextAdmins = secUserService.listAdmins(project).collect{it.id}.sort() //[a,b,c]
+            }
+            projectNewUsers.addAll(nextAdmins)  //add admin as user too
+
             projectNewUsers.add(currentUser.id)
             projectNewUsers = projectNewUsers.unique()
             log.info "projectOldUsers=$projectOldUsers"
@@ -290,6 +305,33 @@ class ProjectService extends ModelService {
             log.info "projectOldAdmins=$projectOldAdmins"
             log.info "projectNewAdmins=$projectNewAdmins"
             changeProjectUser(project,projectNewAdmins,projectOldAdmins,true,task,60)
+        }
+
+        // here, an empty array is a valid argument
+        if(representatives != null) {
+            def projectOldReprs = projectRepresentativeUserService.listUserByProject(project).collect{it.id}.sort() //[a,b,c]
+            def projectNewReprs = JSONUtils.getJSONList(jsonNewData.representatives).collect{Long.parseLong(it+"")}.sort() //[a,b,x]
+            projectNewReprs = projectNewReprs.unique()
+            log.info "projectOldReprs=$projectOldReprs"
+            log.info "projectNewReprs=$projectNewReprs"
+            def projectAddReprs = projectNewReprs - projectOldReprs
+            def projectDeleteReprs = projectOldReprs - projectNewReprs
+
+            log.info "projectAddUser=$projectAddReprs"
+            log.info "projectDeleteUser=$projectDeleteReprs"
+            projectAddReprs.each { idUser ->
+                SecUser user = SecUser.read(Long.parseLong(idUser+""))
+                log.info "projectAddReprs project=${project} user=${user}"
+                def json = JSON.parse(new ProjectRepresentativeUser(project:project, user:user).encodeAsJSON());
+                projectRepresentativeUserService.add(json);
+            }
+
+            projectDeleteReprs.each { idUser ->
+                SecUser user = SecUser.read(Long.parseLong(idUser+""))
+                ProjectRepresentativeUser repr = ProjectRepresentativeUser.findByUser(user)
+                log.info "projectDeleteReprs project=${project} user=${repr}"
+                projectRepresentativeUserService.delete(repr)
+            }
         }
         return result
     }
@@ -360,7 +402,9 @@ class ProjectService extends ModelService {
         User user = (User) secUserService.findByUsername(guestUser.username)
         SecRole secRole = secRoleService.findByAuthority("ROLE_GUEST")
         secUserSecRoleService.add(JSON.parse(JSONUtils.toJSONString([ user : user.id, role : secRole.id])))
-        secUserService.addUserToProject(user, project, false)
+        if (project) {
+            secUserService.addUserToProject(user, project, false)
+        }
 
         if (user) {
             user.passwordExpired = true

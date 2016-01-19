@@ -29,7 +29,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
     render: function () {
         var self = this;
         if (!this.rendered) {
-            require(["text!application/templates/dashboard/config/UsersConfig2.tpl.html"],
+            require(["text!application/templates/dashboard/config/UsersConfig.tpl.html"],
                 function (imageTableTemplate) {
                     self.doLayout(imageTableTemplate);
                     self.rendered = true;
@@ -130,6 +130,8 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
         });
 
+        $('#selectAllUsers'+self.model.id).prop('checked', false);
+
 
     },
     updateMagics: function () {
@@ -140,17 +142,15 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         self.adminMagicSuggest.setData(self.projectUsers);
         self.adminMagicSuggest.setValue(self.projectAdmins);
         self.representativeMagicSuggest.setData(self.projectUsers);
-        // add representative
-        //self.representativeMagicSuggest.setValue(self.projectAdmins);
+        self.representativeMagicSuggest.setValue(self.projectRepresentatives);
 
         $(self.adminMagicSuggest).on('selectionchange', function(e,m){
             self.projectAdmins = this.getValue();
-            self.updateAdminsInProject(self.projectAdmins);
+            self.updateUsersInProject(null,self.projectAdmins,null);
         });
         $(self.representativeMagicSuggest).on('selectionchange', function(e,m){
             self.projectRepresentatives = this.getValue();
-            // TODO : this function will trigger a general self.update()
-            self.updateRepresentativesInProject(self.projectRepresentatives);
+            self.updateUsersInProject(null, null, self.projectRepresentatives);
         });
 
     },
@@ -162,12 +162,13 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
 
         var loadUsers = function() {
-            if(projectUser == null || projectAdmin == null /*|| projectRepresentative == null*/) {
+            if(projectUser == null || projectAdmin == null || projectRepresentative == null) {
                 return;
             }
 
             self.projectUsers = [];
             self.projectAdmins = [];
+            self.projectRepresentatives = [];
 
             projectUser.each(function(user) {
                 self.projectUsers.push({id:user.id,label:user.prettyName()});
@@ -178,9 +179,9 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 self.projectAdmins.push(user.id);
             });
 
-            /*projectRepresentative.each(function(user) {
+            projectRepresentative.each(function(user) {
                 self.projectRepresentatives.push(user.id);
-            });*/
+            });
 
             callBack();
 
@@ -191,18 +192,24 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 projectUser = projectUserCollection;
                 window.app.models.projectUser = projectUserCollection;
                 loadUsers();
-            }});
+            }
+        });
 
         new UserCollection({project: self.model.id, admin:true}).fetch({
             success: function (projectUserCollection) {
                 projectAdmin = projectUserCollection;
-                window.app.models.projectAddmin = projectUserCollection;
+                window.app.models.projectAdmin = projectUserCollection;
                 loadUsers();
-            }});
+            }
+        });
 
-        // need to get the Representative too
-
-
+        new UserCollection({project: self.model.id, representative:true}).fetch({
+            success: function (projectUserCollection) {
+                projectRepresentative = projectUserCollection;
+                window.app.models.projectRepresentative = projectUserCollection;
+                loadUsers();
+            }
+        });
     },
 
     doLayout: function (imageTableTemplate) {
@@ -221,7 +228,10 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         $(this.el).find("#UserRefresh"+self.model.get('id')).on("click", function() {
             self.updateTable();
         });
-        // TODO export
+
+        $(this.el).find("#ProjectUserExport"+self.model.get('id')).on("click", function() {
+            window.open("/api/project/"+self.model.id+"/user/download?format=csv");
+        });
 
 
 
@@ -245,20 +255,27 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             }
             self.updateTable();
         });
-
-        $('#selectAllUsers'+self.model.id).on('click', function(){
-            console.log("Select all from the page !");
-            // find how ...
+        $(this.el).find("#ShowOnlyAdmin"+self.model.get('id')).change(function() {
+            if ($(this).is(':checked')) {
+                self.showOnlyAdmins = true;
+            } else {
+                self.showOnlyAdmins = false;
+            }
+            self.updateTable();
         });
 
-
+        $('#selectAllUsers'+self.model.id).on('change', function(){
+            $(".userchckbox-"+self.model.get('id')).prop('checked', $(this).prop('checked'));
+        });
 
         $(this.el).on("change", ".userchckbox-"+self.model.get('id'), function() {
             console.log($(this).data("id"));
-            if ($(this).is(':checked')) {
-                console.log("test2");
+            if ($(this).prop('checked')) {
+                if($(".userchckbox-"+self.model.get('id')+":checked").length === $(".userchckbox-"+self.model.get('id')).length){
+                    $('#selectAllUsers'+self.model.id).prop('checked', true);
+                }
             } else {
-                console.log("test3");
+                $('#selectAllUsers'+self.model.id).prop('checked', false);
             }
         });
 
@@ -301,6 +318,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
     },
 
     archiveAnnotationsOfUsers: function() {
+        var self = this;
         var usersToArchive = $(self.el).find(".userchckbox-"+self.model.get('id')+":checked");
 
         usersToArchive = $.map( usersToArchive, function(n) {
@@ -311,7 +329,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
         var level = 'CONFIRMATIONWARNING';
         // todo put the after br in red
-        var message = "Do you really want to archive these users ? <br/>You won't be able to reverse this!";
+        var message = "Do you really want to archive these users ? <br/><label class='label label-danger'>You won't be able to reverse this!</label>";
         var callback = function(){
             // TODO : A post request not yet implemented
         };
@@ -330,7 +348,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 for(var i = 0; i< newUsersId.length; i++) {
                     users.push(newUsersId[i]);
                 }
-                self.updateUsersInProject(users)
+                self.updateUsersInProject(users, null, null)
             }
         });
     },
@@ -373,7 +391,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                                 users.push(user.id)
                             }
                         });
-                        self.updateUsersInProject(users)
+                        self.updateUsersInProject(users, null, null)
                     }
                 });
             };
@@ -381,46 +399,25 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
         DialogModal.initDialogModal(null, self.model.id, 'DeleteUsers', message, level, callback);
     },
-    updateUsersInProject: function(projectUsers) {
+    updateUsersInProject: function(projectUsers, projectManagers, projectRepresentatives) {
         var self = this;
 
         var project = self.model;
 
-        project.set({users: projectUsers});
-        project.save({users:projectUsers}, {
+        project.set({users: projectUsers, admins: projectManagers, representatives: projectRepresentatives});
+        project.save({users:projectUsers, admins: projectManagers, representatives: projectRepresentatives}, {
             success: function (model, response) {
-                console.log("1. Project contributors edited!");
-                window.app.view.message("Project contributors", response.message, "success");
-                self.updateTable();
-                // TODO update the config panel (for default layers)
-            },
-            error: function (model, response) {
-                var json = $.parseJSON(response.responseText);
-                window.app.view.message("Project", json.errors, "error");
-            }
-        });
-    },
-    updateAdminsInProject: function(projectManagers) {
-        var self = this;
-
-        var project = self.model;
-
-        project.set({admins: projectManagers});
-        project.save({admins:projectManagers}, {
-            success: function (model, response) {
-                console.log("1. Project admins edited!");
-                window.app.view.message("Project managers", response.message, "success");
+                console.log("1. Project edited!");
+                window.app.view.message("Project", response.message, "success");
                 self.update();
+                // TODO update the config panel (for default layers) for admins and users
+                // TODO update the dashboard panel as representative is also there
             },
             error: function (model, response) {
                 var json = $.parseJSON(response.responseText);
                 window.app.view.message("Project", json.errors, "error");
             }
         });
-    },
-    updateRepresentativesInProject: function(projectUsers) {
-        // TODO
-        // TODO update the dashboard panel as representative is also there
     }
 
 });
