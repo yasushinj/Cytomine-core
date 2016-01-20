@@ -14,79 +14,23 @@
  * limitations under the License.
  */
 
-var ProjectDashboardUsersStatsView = Backbone.View.extend({
+var ProjectUsersHeatmapView = Backbone.View.extend({
     initialize: function () {
+        $(window).on("resize", _.debounce(_.bind(this.resize, this), 100));
+    },
+    resize: function () {
+        var chart = $(".heatmap"),
+            aspect = chart.width() / chart.height(),
+            container = chart.parent();
+        var targetWidth = container.width();
+        var margin = targetWidth/8;
+        chart.attr("width", targetWidth-2*margin);
+        chart.attr("height", Math.round((targetWidth-margin) / aspect));
     },
     render: function () {
         var self = this;
-        //require(["text!application/templates/dashboard/config/UsersConfig2.tpl.html"],
-        //    function (imageTableTemplate) {
-                self.doLayout(/*imageTableTemplate*/);
-        //    });
-    },
-    doLayout: function (/*imageTableTemplate*/) {
-        var self = this;
 
-        /*// table
-        var view = _.template(imageTableTemplate, {id : self.model.get('id')})
-        $(this.el).append(view)*/
-
-
-
-
-        var diameter = 750,
-            format = d3.format(",d"),
-            color = d3.scale.category20c();
-
-        var bubble = d3.layout.pack()
-            .sort(null)
-            .size([diameter, diameter])
-            .padding(1.5);
-
-        var svg = d3.select($(this.el).find("#UsersGlobalActivitiesGraph"+self.model.get("id"))[0]).append("svg")
-            .attr("width", diameter)
-            .attr("height", diameter)
-            .attr("class", "bubble");
-
-
-
-        // TODO use one Model.url() instead
-        d3.json("api/project/" + self.model.get('id') + "/usersActivity.json", function(error, root) {
-            if (error) throw error;
-
-            var node = svg.selectAll(".node")
-                .data(bubble.nodes(classes(root))
-                    .filter(function(d) { return !d.children; }))
-                .enter().append("g")
-                .attr("class", "node")
-                .attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")"; });
-
-            node.append("title")
-                .text(function(d) {return d.className + ": " + format(d.value); });
-
-            node.append("circle")
-                .attr("r", function(d) { return d.r; })
-                .style("fill", function(d) { return color(d.packageName); });
-
-            node.append("text")
-                .attr("dy", ".3em")
-                .style("text-anchor", "middle")
-                .text(function(d) { return d.className.substring(0, d.r / 3); });
-        });
-
-        function classes(root) {
-            var classes = [];
-
-            for(var i=0; i<root.collection.length;i++) {
-                classes.push({packageName: root.collection[i].username, className: root.collection[i].username, value: root.collection[i].frequency});
-            }
-
-            return {children: classes};
-        }
-
-        d3.select(self.frameElement).style("height", diameter + "px");
-
-        var margin = { top: 50, right: 0, bottom: 100, left: 30 },
+        var margin = { top: 30, right: 0, bottom: 100, left: 30 },
             width = 960 - margin.left - margin.right,
             height = 430 - margin.top - margin.bottom,
             gridSize = Math.floor(width / 24),
@@ -96,9 +40,12 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
             days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
             times = ["0a", "1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p"];
 
-        var svg2 = d3.select($(this.el).find("#UsersWeeklyHeatmapGraph"+self.model.get("id"))[0]).append("svg")
+        var svg = d3.select($(this.el)[0]).append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
+            .attr("viewBox","0 0 960 430")
+            .attr("perserveAspectRatio","xMinYMid")
+            .attr("class", "heatmap")
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -111,7 +58,7 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
             }
         }
 
-        var dayLabels = svg2.selectAll(".dayLabel")
+        var dayLabels = svg.selectAll(".dayLabel")
             .data(days)
             .enter().append("text")
             .text(function (d) { return d; })
@@ -121,7 +68,7 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
             .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
             .attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
 
-        var timeLabels = svg2.selectAll(".timeLabel")
+        var timeLabels = svg.selectAll(".timeLabel")
             .data(times)
             .enter().append("text")
             .text(function(d) { return d; })
@@ -219,7 +166,7 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
 
 
 
-            var cards = svg2.selectAll(".hour")
+            var cards = svg.selectAll(".hour")
                 .data(data, function(d) {return d.day+':'+d.hour;});
 
             cards.append("title");
@@ -258,7 +205,7 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
 
             cards.exit().remove();
 
-            var legend = svg2.selectAll(".legend")
+            var legend = svg.selectAll(".legend")
                 .data([0].concat(colorScale.quantiles()), function(d) { return d; });
 
             legend.enter().append("g")
@@ -280,7 +227,6 @@ var ProjectDashboardUsersStatsView = Backbone.View.extend({
 
             legend.exit().remove();
         });
-
-
+        $(window).trigger('resize');
     }
 });

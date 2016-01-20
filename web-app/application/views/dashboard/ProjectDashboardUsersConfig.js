@@ -22,7 +22,8 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
     projectRepresentatives: [],
     showOnlyOnlineUsers : false,
     showOnlyAdmins : false,
-    statsView : null,
+    statsUsersHeatmapView : null,
+    statsUsersGlobalActivitiesView: null,
     initialize: function () {
         this.rendered = false;
     },
@@ -304,15 +305,21 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
         self.update();
 
-        //$(this.el).append(view)
-        if (this.statsView == null) {
-            this.statsView = new ProjectDashboardUsersStatsView({
+        if (this.statsUsersGlobalActivitiesView == null) {
+            this.statsUsersGlobalActivitiesView = new ProjectUsersTotalActivitiesView({
                 model: self.model,
-                el: $(self.el).find("#UsersActivitiesGraph"+self.model.get('id'))
+                el: $(self.el).find(".custom-ui-project-users-global-activities-graph")[0]
+            });
+        }
+        if (this.statsUsersHeatmapView == null) {
+            this.statsUsersHeatmapView = new ProjectUsersHeatmapView({
+                model: self.model,
+                el: $(self.el).find(".custom-ui-project-users-heatmap-graph")[0]
             });
         }
 
-        this.statsView.render();
+        this.statsUsersGlobalActivitiesView.render();
+        this.statsUsersHeatmapView.render();
 
 
     },

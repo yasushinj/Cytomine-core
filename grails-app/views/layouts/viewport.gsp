@@ -240,8 +240,10 @@ body {
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardAlgos.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardConfig.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersStatsView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
+
+<script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
+<script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
 
 <script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>
 <script type="text/javascript" src="application/views/processing/JobComparatorView.js" ></script>

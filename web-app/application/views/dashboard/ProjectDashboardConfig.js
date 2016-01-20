@@ -705,12 +705,14 @@ var CutomUIPanel = Backbone.View.extend({
         var elTabs = $(self.el).find("#custom-ui-table-tabs");
         var elPanels = $(self.el).find("#custom-ui-table-panels");
         var elTools = $(self.el).find("#custom-ui-table-tools");
+        var elGraphs = $(self.el).find("#custom-ui-table-project-graphs");
 
         var fn = function() {
             require(["text!application/templates/dashboard/config/CustomUIItem.tpl.html"], function (customUIItemTpl) {
                 elTabs.empty();
                 elPanels.empty();
                 elTools.empty();
+                elGraphs.empty();
 
                 _.each(CustomUI.components,function(component) {
                     self.createComponentConfig(component,customUIItemTpl,elTabs);
@@ -720,6 +722,9 @@ var CutomUIPanel = Backbone.View.extend({
                 });
                 _.each(CustomUI.componentsTools,function(component) {
                     self.createComponentConfig(component,customUIItemTpl,elTools);
+                });
+                _.each(CustomUI.componentsGraphs,function(component) {
+                    self.createComponentConfig(component,customUIItemTpl,elGraphs);
                 });
 
                 $(self.el).find("#btn-project-configuration-tab-ADMIN_PROJECT").attr("disabled", "disabled");
