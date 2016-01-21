@@ -141,8 +141,10 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         $(self.representativeMagicSuggest).off('selectionchange');
 
         self.adminMagicSuggest.setData(self.projectUsers);
+        self.adminMagicSuggest.clear();
         self.adminMagicSuggest.setValue(self.projectAdmins);
         self.representativeMagicSuggest.setData(self.projectUsers);
+        self.representativeMagicSuggest.clear();
         self.representativeMagicSuggest.setValue(self.projectRepresentatives);
 
         $(self.adminMagicSuggest).on('selectionchange', function(e,m){
@@ -308,13 +310,13 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         if (this.statsUsersGlobalActivitiesView == null) {
             this.statsUsersGlobalActivitiesView = new ProjectUsersTotalActivitiesView({
                 model: self.model,
-                el: $(self.el).find(".custom-ui-project-users-global-activities-graph")[0]
+                el: $(self.el).find("#UsersGlobalActivities"+self.model.id)
             });
         }
         if (this.statsUsersHeatmapView == null) {
             this.statsUsersHeatmapView = new ProjectUsersHeatmapView({
                 model: self.model,
-                el: $(self.el).find(".custom-ui-project-users-heatmap-graph")[0]
+                el: $(self.el).find("#UsersActivitiesHeatmap"+self.model.id)
             });
         }
 

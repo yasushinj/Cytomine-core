@@ -75,8 +75,18 @@
         </div>
     </div>
     <br/>
-    <h4>Graphics :</h4>
     <div class="row"></div>
-    <div class="row custom-ui-project-users-global-activities-graph" style="text-align: center;"></div>
-    <div class="row custom-ui-project-users-heatmap-graph" style="text-align: center;"></div>
+    <div class="row row-nomargin custom-ui-project-users-global-activities-graph">
+        <div class="col-md-offset-1 col-md-8">
+            <h4 class="header_h"><i class="glyphicon glyphicon-stats"></i> Connexions by contributors</h4>
+            <div class="col-md-offset-1" id="UsersGlobalActivities<%= id %>" style="text-align: center;"></div>
+        </div>
+    </div>
+    <div class="row row-nomargin custom-ui-project-users-heatmap-graph">
+        <div class="col-md-offset-1 col-md-8">
+            <h4 class="header_h"><i class="glyphicon glyphicon-stats"></i> Heatmap of contributor connexions</h4>
+            <div class="col-md-offset-1" id="UsersActivitiesHeatmap<%= id %>" style="text-align: center;"></div>
+        </div>
+    </div>
+
 </div>

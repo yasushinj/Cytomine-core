@@ -39,7 +39,7 @@ var ProjectUsersTotalActivitiesView = Backbone.View.extend({
             .size([diameter, diameter])
             .padding(1.5);
 
-        var svg = d3.select($(this.el)[0]).append("svg")
+        var svg = d3.select(this.el).append("svg")
             .attr("viewBox","0 0 500 500")
             .attr("perserveAspectRatio","xMinYMid")
             .attr("width", diameter)

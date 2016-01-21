@@ -23,7 +23,7 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
             aspect = chart.width() / chart.height(),
             container = chart.parent();
         var targetWidth = container.width();
-        var margin = targetWidth/8;
+        var margin = 0;
         chart.attr("width", targetWidth-2*margin);
         chart.attr("height", Math.round((targetWidth-margin) / aspect));
     },
@@ -40,7 +40,7 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
             days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
             times = ["0a", "1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p"];
 
-        var svg = d3.select($(this.el)[0]).append("svg")
+        var svg = d3.select(this.el).append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .attr("viewBox","0 0 960 430")
