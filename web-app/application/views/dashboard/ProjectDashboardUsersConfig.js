@@ -97,7 +97,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             }},
             { "mDataProp": "action", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 o.aData["project"]  = self.model.get('id');
-                return _.template('<button class="btn btn-info btn-xs" id="UserDetailsButton<%=  id  %>">Details</button>', o.aData);
+                return "<button class='btn btn-info btn-xs UserDetailsButton"+self.model.id+"' data-id="+o.aData["id"]+" >Details</button>";
             }}
         ];
 
@@ -300,10 +300,20 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         });
 
 
-        //var isAdmin = window.app.status.currentProjectModel.isAdmin(window.app.models.projectAdmin);
+        $(this.el).on("click", ".UserDetailsButton"+self.model.get('id'), function() {
+            var userId = $(this).data("id");
+            new UserModel({id: userId}).fetch({
+                success: function (model, response) {
+                    var viewModel = model;
+                    viewModel.set({projectId : self.model.id});
+                    viewModel.set({projectName : self.model.get('name')});
+
+                    new DetailedUserProjectInfoDialog({el: "#dialogs", model: viewModel}).render();
+                }
+            });
 
 
-
+        });
 
         self.update();
 

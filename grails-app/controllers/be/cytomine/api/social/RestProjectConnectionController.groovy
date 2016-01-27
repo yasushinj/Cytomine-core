@@ -21,6 +21,7 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.social.PersistentConnection
 
 /**
  * Controller for an user connection to a project
@@ -64,4 +65,50 @@ class RestProjectConnectionController extends RestController {
             responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
         }
     }
+
+    def userProjectConnectionHistory = {
+        SecUser user = secUserService.read(params.user)
+        Project project = projectService.read(params.project)
+        // Int limit
+        // Int offset
+
+        // si offset = 0 , j'en prend limit, sinon, j'en prends limit +1 pour avoir les infos du précédent.
+
+        // TODO changer le ALL par un limit et si -1 alors c'est all.
+        def connections = projectConnectionService.getConnectionByUserAndProject(user, project, true)
+
+        def result = []
+
+        //long before = 0; // Date.now si pas de précédent et le created du précédent sinon
+
+        if(connections.size() >= 1) { // si on a passé le paramètre demandant la durée
+
+            Date after = connections[connections.size()-1].created;
+
+            def imagesConsultations = [] // here get image consultation for user, project and between the 2 dates.
+            imagesConsultations = (imagesConsultations.size() > 0) ? imagesConsultations : []
+            println imagesConsultations.size()
+
+
+            //merging
+            if(imagesConsultations.size()>=1) {
+                int beginJ = imagesConsultations.size()-1;
+                for(int i=connections.size()-1;i>=1;i--){
+                    def nextConnection = connections[i-1];
+                    int j = beginJ;
+                    /*while(j>=0 && imagesConsultations[j].created < nextConnection.created){
+                        get the list of images
+                    }
+                    beginJ = j;*/
+
+                }
+                // put the images by connexion in the results
+            } else {
+                result = connections;
+            }
+        }
+
+        responseSuccess(result)
+    }
+
 }

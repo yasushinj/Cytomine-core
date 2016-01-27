@@ -214,6 +214,8 @@ body {
 <!-- View -->
 <script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
 <script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
+<script type="text/javascript" src="application/views/user/DetailedUserProjectInfoDialog.js"></script>
+
 
 <script type="text/javascript" src="application/views/activity/ActivityView.js" ></script>
 <script type="text/javascript" src="application/views/search/SearchEngineFilterView.js" ></script>

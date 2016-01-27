@@ -48,12 +48,48 @@ class ProjectConnectionService extends ModelService {
     def getConnectionByUserAndProject(User user, Project project, boolean all){
         securityACLService.check(project,WRITE)
         def result;
+        Long test = System.currentTimeMillis();
+        Long test2
         if(all){
             def connections = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc") {
                 eq("user", user)
                 eq("project", project)
             }
-            result = (connections.size() > 0) ? connections : []
+
+            result = []
+
+            if(connections.size() >= 1) {
+
+                Date after = connections[connections.size()-1].created;
+                def continuousConnections = PersistentConnection.createCriteria().list(sort: "created", order: "desc") {
+                    eq("user", user)
+                    eq("project", project)
+                    ge("created", after)
+                }
+                continuousConnections = (continuousConnections.size() > 0) ? continuousConnections : []
+                 test = System.currentTimeMillis();
+
+                //merging
+                int beginJ = continuousConnections.size()-1;
+                for(int i=connections.size()-1;i>=1;i--){
+                    //def connectionDate = connections[i].created;
+                    def nextConnectionDate = connections[i-1].created;
+                    int j = beginJ;
+                    while(j>=0 && continuousConnections[j].created < nextConnectionDate){
+                        j--;
+                    }
+                    long time = continuousConnections[j+1].created.getTime() - continuousConnections[beginJ].created.getTime();
+                    beginJ = j;
+
+                    result << [id : connections[i].id, created: connections[i].created, user:connections[i].user.id,
+                               project : connections[i].project.id, time:time]
+                }
+                // TODO prendre la lastConnexion pour user & project dans les persistent pour avoir une idée de la toute dernière connection.
+                result << [id : connections[0].id, created: connections[0].created, user:connections[0].user.id,
+                           project : connections[0].project.id, time:0]
+                 test2 = System.currentTimeMillis();
+                result.reverse();
+            }
         }else {
             def connection = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc", max: 1) {
                 eq("user", user)
@@ -61,6 +97,10 @@ class ProjectConnectionService extends ModelService {
             }
             result = (connection.size() > 0) ? connection[0] : []
         }
+
+        println "perf test"
+        println test2-test
+
         return result
     }
 
