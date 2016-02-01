@@ -32,6 +32,7 @@ class RestProjectConnectionController extends RestController {
     def secUserService
     def projectService
     def projectConnectionService
+    def imageConsultationService
 
     def add = {
         try {
@@ -50,8 +51,12 @@ class RestProjectConnectionController extends RestController {
     def getConnectionByUserAndProject = {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
-        boolean all = params.all
-        responseSuccess(projectConnectionService.getConnectionByUserAndProject(user, project, all))
+        Integer offset = params.offset != null ? params.getInt('offset') : 0
+        Integer limit = params.limit != null ? params.getInt('limit') : -1
+        def results = projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset)
+        // hack to avoid list to be cut. offset was already used in db request
+        params.remove("offset")
+        responseSuccess(results)
     }
 
     def numberOfConnectionsByProjectAndUser = {
@@ -69,44 +74,72 @@ class RestProjectConnectionController extends RestController {
     def userProjectConnectionHistory = {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
-        // Int limit
-        // Int offset
+        Integer offset = params.offset != null ? params.getInt('offset') : 0
+        Integer limit = params.limit != null ? params.getInt('limit') : -1
 
-        // si offset = 0 , j'en prend limit, sinon, j'en prends limit +1 pour avoir les infos du précédent.
+        // if offset > 0, we take limit +1 object to have the created of the previous object.
+        boolean getPrevious;
+        if(offset > 0 && limit >= 0) {
+            limit++
+            offset--
+            getPrevious = true;
+        };
 
-        // TODO changer le ALL par un limit et si -1 alors c'est all.
-        def connections = projectConnectionService.getConnectionByUserAndProject(user, project, true)
+        def connections = projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset)
 
+        Date before;
         def result = []
+        if(connections.size() == 0) {
+            return result
+        }
+        if(getPrevious) {
+            before = connections.remove(0).created;
+        } else {
+            before = new Date();
+        }
 
-        //long before = 0; // Date.now si pas de précédent et le created du précédent sinon
-
-        if(connections.size() >= 1) { // si on a passé le paramètre demandant la durée
+        if(connections.size() >= 1) {
 
             Date after = connections[connections.size()-1].created;
 
-            def imagesConsultations = [] // here get image consultation for user, project and between the 2 dates.
-            imagesConsultations = (imagesConsultations.size() > 0) ? imagesConsultations : []
-            println imagesConsultations.size()
+            def imagesConsultations = imageConsultationService.getImagesOfUsersByProjectBetween(user, project,after, before)
 
+            imagesConsultations = (imagesConsultations.size() > 0) ? imagesConsultations : []
 
             //merging
             if(imagesConsultations.size()>=1) {
+                def consultedImages;
                 int beginJ = imagesConsultations.size()-1;
                 for(int i=connections.size()-1;i>=1;i--){
+                    consultedImages = [];
+
                     def nextConnection = connections[i-1];
                     int j = beginJ;
-                    /*while(j>=0 && imagesConsultations[j].created < nextConnection.created){
-                        get the list of images
+                    while(j>=0 && imagesConsultations[j].created < nextConnection.created){
+                        consultedImages << imagesConsultations[j]
+                        j--
                     }
-                    beginJ = j;*/
+                    beginJ = j;
+
+                    result << [id : connections[i].id, created: connections[i].created, user: user.id,
+                               project : project.id, time:connections[i].time, images:consultedImages]
 
                 }
-                // put the images by connexion in the results
+                consultedImages = [];
+                for(int j=beginJ;j>=0;j--){
+                    consultedImages << imagesConsultations[j]
+                }
+
+                result << [id : connections[0].id, created: connections[0].created, user:user.id,
+                           project : project.id, time:connections[0].time, images:consultedImages]
+                result = result.reverse();
             } else {
                 result = connections;
             }
         }
+
+        // hack to avoid list to be cut. offset was already used in db request
+        params.remove("offset")
 
         responseSuccess(result)
     }

@@ -3,6 +3,7 @@ package be.cytomine.social
 import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
@@ -48,6 +49,30 @@ class ImageConsultationService extends ModelService {
 
         images.results().each {
             results << [user: it["_id"], created : it["created"], image : it["image"], imageName: it["imageName"]]
+        }
+        return results
+    }
+
+    def getImagesOfUsersByProjectBetween(User user, Project project, Date after = null, Date before = null){
+        def results = [];
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def match;
+        if(after && before){
+            match = [$match:[$and : [[created: [$lt: before]], [created: [$gte: after]], [project : project.id], [user:user.id]]]]
+        } else if(after){
+            match = [$match:[project : project.id, user:user.id, created: [$gte: after]]]
+        } else if(before){
+            match = [$match:[project : project.id, user:user.id, created: [$lt: before]]]
+        } else {
+            match = [$match:[project : project.id, user:user.id]]
+        }
+
+        def images = db.persistentImageConsultation.aggregate(
+                match,
+                [$sort : [created:-1]]
+        );
+        images.results().each {
+            results << [user: it["user"], project: it["project"], created : it["created"], image : it["image"], imageName: it["imageName"], mode: it["mode"]]
         }
         return results
     }
