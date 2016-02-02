@@ -89,7 +89,8 @@ class ProjectConnectionService extends ModelService {
                 j--;
             }
 
-            long time = continuousConnections[j + 1] - continuousConnections[beginJ];
+            // if j = beginJ, short time connection (<20sec). Avoid j+1 > size of array.
+            long time = (j == beginJ) ? 0 : (continuousConnections[j + 1] - continuousConnections[beginJ]);
             if (time < 0) time = 0;
             beginJ = j >= 0 ? j : 0;
 

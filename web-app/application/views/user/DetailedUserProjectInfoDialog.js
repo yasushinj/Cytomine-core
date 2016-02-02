@@ -15,6 +15,11 @@
  */
 
 var DetailedUserProjectInfoDialog = Backbone.View.extend({
+    activitiesHistory : [],
+    numberAnnotations : null,
+    lastConnexionDate : null,
+    numberConnexions : null,
+
     initialize: function (options) {
         _.bindAll(this, 'render');
     },
@@ -32,28 +37,154 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
     doLayout: function (tpl) {
         var self = this;
 
-        console.log("model");
-        console.log(self.model);
-        console.log(self.model.toJSON());
-
         var htmlCode = _.template(tpl, self.model.toJSON());
         $(this.el).html(htmlCode);
 
-        /*var creation = function(){
+        $(this.el).find(".detailedUserInfoContent").hide();
 
-        };
+        self.getValuesActivities(function() {
 
-        $(this.el).find("#detailedUserInfoContent").hide();
+            $(self.el).find("#UserActivitiesInfo-"+self.model.id).find(".detailedUserInfoWaitingDiv").hide();
+            $(self.el).find("#UserActivitiesInfo-"+self.model.id).find(".detailedUserInfoContent").show();
+            self.renderInfoActivities();
+        });
 
-        self.getValues(function() {
-            $(self.el).find("#detailedUserInfoWaitingDiv").hide();
-            $(self.el).find("#detailedUserInfoContent").show();
-            creation();
-        });*/
+        self.getValuesHistory(function() {
+
+            $(self.el).find("#UserActivitiesHistory-"+self.model.id).find(".detailedUserInfoWaitingDiv").hide();
+            $(self.el).find("#UserActivitiesHistory-"+self.model.id).find(".detailedUserInfoContent").show();
+            self.renderHistory();
+        });
 
         $("#detailedUserInfoDialog").modal('show');
     },
-    getValues: function (callback) {
+
+    getValuesActivities: function (creation) {
+        var callback = function(){
+            if(self.numberAnnotations == null || self.lastConnexionDate == null || self.numberConnexions == null) return;
+            creation();
+        };
+
         var self = this;
+        $.get("/api/user/"+self.model.id+"/userannotation/count.json?project="+self.model.get('projectId'), function(data) {
+            self.numberAnnotations = data.total;
+            callback();
+        });
+
+        $.get("/api/project/"+self.model.get('projectId')+"/lastconnections.json", function(data) {
+            self.lastConnexionDate = data.collection[0].created;
+            callback();
+        });
+
+        $.get("/api/project/"+self.model.get('projectId')+"/connectionFrequency/"+self.model.id+".json", function(data) {
+            self.numberConnexions = data.collection[0].frequency;
+            callback();
+        });
+        // TODO # consulted images
+
+    },
+    renderInfoActivities:function(){
+        var self = this;
+
+        $(self.el).find("#totalProjectConnexions-"+self.model.id).html(self.numberConnexions);
+
+        //$(self.el).find("#totalConsultedImages"+self.model.id).html(self.);
+
+        $(self.el).find("#totalUserAnnotations-"+self.model.id).html(self.numberAnnotations);
+
+        var prettyDate = window.app.convertLongToPrettyDate(self.lastConnexionDate);
+        $(self.el).find("#lastProjectConnexion-"+self.model.id).html(prettyDate);
+
+
+    },
+    getValuesHistory: function (creation) {
+        var self = this;
+        $.get("/api/project/"+self.model.get('projectId')+"/connectionHistory/"+self.model.id+".json?limit=50", function(data) {
+            self.activitiesHistory = data.collection;
+            creation();
+        });
+
+    },
+    renderHistory:function(){
+        var self = this;
+        //here create the treeview
+
+        var nodes = [];
+        for(var i=0;i<self.activitiesHistory.length;i++){
+            var children = [];
+
+            var time = Math.round(self.activitiesHistory[i].time/1000);
+
+            if(time < 60){
+                if(time <= 1){
+                    time = time+" second";
+                } else {
+                    time = time+" seconds";
+                }
+            } else {
+                time = Math.round(time/60)
+                if(time <= 1){
+                    time = time+" minute";
+                } else {
+                    time = time+" minutes";
+                }
+            }
+
+            children.push({
+                title : "temps : "+time,
+                isFolder : false,
+                noLink : true,
+                unselectable : true,
+                hideCheckbox: true
+            });
+
+            var children2 = [];
+            for(var j=0;j<self.activitiesHistory[i].images.length;j++){
+                children2.push({
+                    title : "Image : "+self.activitiesHistory[i].images[j].imageName+" ("+self.activitiesHistory[i].images[j].mode+")"/*+" ("+self.activitiesHistory[i].images[j].created+")"*/,
+                    isFolder : false,
+                    noLink : true,
+                    unselectable : true,
+                    hideCheckbox: true
+                });
+            }
+
+            children.push({
+                title : "Consulted images : "+self.activitiesHistory[i].images.length,
+                isFolder : self.activitiesHistory[i].images.length>0,
+                noLink : true,
+                unselectable : true,
+                hideCheckbox: true,
+                children : children2
+            });
+
+            nodes.push({
+                title : window.app.convertLongToPrettyDate(self.activitiesHistory[i].created),
+                isFolder : true,
+                noLink : true,
+                unselectable : true,
+                hideCheckbox: true,
+                children : children
+            });
+        }
+
+        $(self.el).find("#treehistory").dynatree({
+            ajaxDefaults: { // Used by initAjax option
+                cache: false // false: Append random '_' argument to the request url to prevent caching.
+            },
+            children: nodes,//self.activitiesHistory,
+            onExpand: function () {
+            },
+            onClick: function (node, event) {
+            },
+            onSelect: function (select, node) {
+            },
+            onActivate: function (node) {
+            },
+            onDblClick: function (node, event) {
+            },
+            onRender: function (node, nodeSpan) {
+            }
+        });
     }
 });

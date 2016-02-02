@@ -7,8 +7,7 @@
             </div>
             <div class="modal-body">
                 <p></p>
-                <div id="detailedUserInfoWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
-                <div id="detailedUserInfoContent" class="col-md-9 col-md-offset-1">
+                <div class="col-md-9 col-md-offset-1">
                     <div id="BasicUserInfo">
                         <h4 class="header_h"> Basic Informations</h4>
                         <div class="row">
@@ -36,15 +35,20 @@
                     <br/>
                     <div id="UserActivitiesInfo-<%= id %>">
                         <h4 class="header_h"> User activities resume</h4>
-                        <label class="control-label">Number of connexion to this project : </label> <span id ="totalProjectConnexions-<%= id %>"></span> <br/>
-                        <label class="control-label">Number of consulted images: </label> <span id ="totalConsultedImages-<%= id %>"></span> <br/>
-                        <label class="control-label">Number of annotations : </label> <span id ="totalUserAnnotations-<%= id %>"></span> <br/>
-                        <label class="control-label">Last connexion on the project : </label> <span id ="lastProjectConnexion-<%= id %>"></span> <br/>
+                        <div class="detailedUserInfoWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
+                        <div class="detailedUserInfoContent">
+                            <label class="control-label">Number of connexion to this project : </label> <span id ="totalProjectConnexions-<%= id %>"></span> <br/>
+                            <!--<label class="control-label">Number of consulted images: </label> <span id ="totalConsultedImages-<%= id %>"></span> <br/>-->
+                            <label class="control-label">Number of annotations : </label> <span id ="totalUserAnnotations-<%= id %>"></span> <br/>
+                            <label class="control-label">Last connexion on the project : </label> <span id ="lastProjectConnexion-<%= id %>"></span> <br/>
+                        </div>
                     </div>
                     <br/>
                     <div id="UserActivitiesHistory-<%= id %>">
                         <h4 class="header_h"> User activities history</h4>
-                        HERE put a treeview !!!
+                        <div class="detailedUserInfoWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
+                        <div id="treehistory" class="detailedUserInfoContent">
+                        </div>
                     </div>
 
                 </div>
