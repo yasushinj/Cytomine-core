@@ -39,6 +39,12 @@ class PersistentProjectConnection extends CytomineDomain{
     SecUser user
     @RestApiObjectField(description = "The consultated project")
     Project project
+    @RestApiObjectField(description = "The OS of the user")
+    String os
+    @RestApiObjectField(description = "The browser of the user")
+    String browser
+    @RestApiObjectField(description = "The browser version of the user")
+    String browserVersion
 
     static constraints = {
         user (nullable:false)

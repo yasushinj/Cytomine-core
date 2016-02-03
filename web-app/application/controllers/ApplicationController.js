@@ -367,6 +367,104 @@ var ApplicationController = Backbone.Router.extend({
 
         return false;
     },
+    getInfoClient: function () {
+
+        var browser = null;
+        var userAgent = navigator.userAgent;
+
+        var i;
+        var index;
+        // Chrome
+        if (userAgent.indexOf("Chrome/") > -1){
+            browser = "Chrome";
+            index = userAgent.indexOf("Chrome/");
+            i = "Chrome/".length;
+        }
+        // IceWeasel
+        else if (userAgent.indexOf("Iceweasel/") > -1){
+            browser = "Iceweasel";
+            index = userAgent.indexOf("Iceweasel/");
+            i = "Iceweasel/".length;
+        }
+        // Firefox
+        else if (userAgent.indexOf("Firefox/") > -1){
+            browser = "Firefox";
+            index = userAgent.indexOf("Firefox/");
+            i = "Firefox/".length;
+        }
+        //MSIE
+        else if (userAgent.indexOf("MSIE") > -1){
+            browser = "Internet Explorer";
+            index = userAgent.indexOf("MSIE");
+            i = "MSIE ".length;
+        }
+        // Opera
+        else if (userAgent.indexOf("Opera") > -1){
+            browser = "Opera";
+            index = userAgent.indexOf("Version/");
+            i = "Version/".length;
+        }
+        // Safari
+        else if (userAgent.indexOf("Safari") > -1){
+            browser = "Safari";
+            index = userAgent.indexOf("Version/");
+            i = "Version/".length;
+        }
+
+        if(browser === null){
+            browser = "Unknown";
+        }
+        var version = "";
+        if(index === -1){
+            version = "Unknown"
+        } else {
+            while (index+i <userAgent.length) {
+                var ch = userAgent.substr(index+i, 1);
+                if(ch != "." && ch != " "){
+                    version += ch;
+                    i++;
+                } else break;
+            }
+        }
+
+        var os;
+
+        //navigator.userAgent samples
+        /*"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:42.0) Gecko/20100101 Firefox/42.0"
+        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0"
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 6.1; rv:40.0) Gecko/20100101 Firefox/40.0"*/
+
+        if(userAgent.indexOf("Mac") > -1){
+            os = "OSX";
+        } else if(userAgent.indexOf("Win") > -1){
+            os = "Windows ";
+
+            index = userAgent.indexOf("Windows NT ");
+            var l = "Windows NT ".length;
+            var osVersion = userAgent.substr(index+ l, 3);
+            if(osVersion.indexOf("5.1")>-1){
+                os += " XP";
+            } else if(osVersion.indexOf("6.0")>-1){
+                os += " Vista";
+            } else if(osVersion.indexOf("6.1")>-1){
+                os += " 7";
+            } else if(osVersion.indexOf("6.2")>-1){
+                os += " 8";
+            } else if(osVersion.indexOf("10.0")>-1){
+                os += " 10";
+            }
+        } else if(userAgent.indexOf("Ubuntu") > -1){
+            os = "Ubuntu";
+        } else if(userAgent.indexOf("Linux") > -1){
+            os = "Linux";
+        } else {
+            os = "Unknown";
+        }
+
+        return {os : os, browser : browser, browserVersion : version};
+
+    },
     dataTablesBootstrap: function () {
         $.extend(true, $.fn.dataTable.defaults, {
             "sDom": "<'row'<'col-xs-5 col-sm-6'l><'col-xs-7 col-sm-6 text-right'f>r>t<'row'<'col-xs-3 col-sm-4 col-md-5'i><'col-xs-9 col-sm-8 col-md-7 text-right'p>>",

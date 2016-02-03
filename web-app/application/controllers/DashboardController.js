@@ -61,8 +61,13 @@ var DashboardController = Backbone.Router.extend({
             this.showView();
 
             // here, save a no-sql line projectConnexion
+            var userInfo = window.app.getInfoClient();
             new ProjectConnectionModel({
-                project: project
+                project: project,
+                os: userInfo.os,
+                browser: userInfo.browser,
+                browserVersion : userInfo.browserVersion
+
             }).save();
 
         } else {

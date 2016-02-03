@@ -26,6 +26,9 @@ class ProjectConnectionService extends ModelService {
         connection.user = user
         connection.project = project
         connection.created = new Date()
+        connection.os = json.os
+        connection.browser = json.browser
+        connection.browserVersion = json.browserVersion
         connection.insert(flush:true) //don't use save (stateless collection)
         return connection
     }
