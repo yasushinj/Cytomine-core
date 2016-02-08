@@ -430,7 +430,9 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 self.update();
                 // The users change. Update all the panels where users are listed.
                 window.app.controllers.dashboard.refreshUserData();
-                // TODO update the dashboard panel as representative is also there
+                // Idem with representatives
+                window.app.controllers.dashboard.refreshRepresentativeData();
+
             },
             error: function (model, response) {
                 var json = $.parseJSON(response.responseText);

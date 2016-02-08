@@ -274,7 +274,7 @@ var DashboardController = Backbone.Router.extend({
         console.log("createView");
         var self = this;
 
-        var nbCollectionToFetch = 6;
+        var nbCollectionToFetch = 7;
         var nbCollectionToFetched = 0;
         var collectionFetched = function (expected) {
             nbCollectionToFetched++;
@@ -311,6 +311,13 @@ var DashboardController = Backbone.Router.extend({
                 collectionFetched(nbCollectionToFetch);
             }
         });
+        new UserCollection({project: window.app.status.currentProject, representative:true}).fetch({
+            success: function (representatives) {
+                window.app.models.projectRepresentatives = representatives;
+                collectionFetched(nbCollectionToFetch);
+            }
+        });
+
 
         new ProjectModel({id: window.app.status.currentProject}).fetch({
             success: function (model, response) {
@@ -452,5 +459,17 @@ var DashboardController = Backbone.Router.extend({
                 collectionFetched();
             }
         });
+    },
+
+    refreshRepresentativeData: function () {
+        var self = this;
+        new UserCollection({project: window.app.status.currentProject, representative:true}).fetch({
+            success: function (representatives) {
+                window.app.models.projectRepresentatives = representatives;
+                self.view.updateRepresentatives();
+            }
+        });
+
+
     }
 });

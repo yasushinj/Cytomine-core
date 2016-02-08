@@ -32,7 +32,7 @@ var ProjectInfoDialog = Backbone.View.extend({
         var htmlCode = _.template(tpl, this.model.toJSON());
         $(this.el).html(htmlCode);
 
-        var expectedCallback = 4;
+        var expectedCallback = 5;
         var dataLoadedCallback = 0;
         var dataLoaded = function (dataLoadedCallback) {
             if (dataLoadedCallback === expectedCallback) {
@@ -105,6 +105,24 @@ var ProjectInfoDialog = Backbone.View.extend({
                 $("#userInfoBigPanel-" + project.id).find("#projectUsersOnline").append(list.join(", "));
                 dataLoaded(++dataLoadedCallback);
             }});
+
+        new UserCollection({project: project.id, representative:true}).fetch({
+            success: function (representatives) {
+                $("#userInfoBigPanel-" + project.id).find("#projectUsersRepresentative").empty();
+                var list = [];
+                if(representatives.length === 0){
+                    $("#userInfoBigPanel-" + project.id).find("#projectUsersRepresentative").append("No contact");
+                } else {
+                    representatives.each(function (representative) {
+                        list.push(representative.prettyName() + ": "+representative.get('email'));
+                    });
+                    $("#userInfoBigPanel-" + project.id).find("#projectUsersRepresentative").append(list.join("<br/> "));
+                }
+                dataLoaded(++dataLoadedCallback);
+            }
+        });
+
+
 
         new ImageInstanceCollection({project: project.id, max: 3}).fetch({
             success: function (collection) {

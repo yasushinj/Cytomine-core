@@ -193,6 +193,8 @@ var ProjectDashboardView = Backbone.View.extend({
 
             $("#projectInfoPanel").html(_.template(tpl, json));
 
+            self.updateRepresentatives();
+
             var updateProjectClosed = function(close) {
                 self.model.set({isClosed: close});
 
@@ -419,6 +421,24 @@ var ProjectDashboardView = Backbone.View.extend({
         if(this.projectDashboardAnnotations !== null) this.projectDashboardAnnotations.refreshUserData();
 
         if(this.projectDashboardConfig !== null) this.projectDashboardConfig.refreshUserData();
+    },
+
+    updateRepresentatives: function (){
+        var representatives = window.app.models.projectRepresentatives;
+        var list = [];
+        if(representatives.length === 0){
+            $("#projectInfoPanel").find("#projectContacts").append("No contact");
+        } else {
+            var max = Math.min(3,representatives.length);
+            for(var i = 0 ; i < max;i++){
+
+                var representative = representatives.models[i];
+
+                var mail = representative.get('email');
+                list.push("<a href='mailto:"+mail+"'>"+representative.prettyName()+"</a>");
+            }
+            $("#projectInfoPanel").find("#projectContacts").append(list.join("<br/> "));
+        }
     }
 
 });
