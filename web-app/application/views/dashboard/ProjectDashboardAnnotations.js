@@ -87,6 +87,7 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
             checkbox: true,
             selectMode: 2,
             expand: true,
+            noLink : true,
             onExpand: function () {
             },
             children: window.app.status.currentOntologyModel.toJSON(),
@@ -189,6 +190,7 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
                 $(self.el).find('#treeImageListing').dynatree({
                     checkbox: true,
                     selectMode: 2,
+                    noLink : true,
                     expand: true,
                     onExpand: function () {
                     },
@@ -540,8 +542,9 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
         var treeData = {
             id: self.model.id,
             name: "Users",
-            title: "Users",
+            title: "Contributors",
             key: self.model.id,
+            noLink : true,
             "hideCheckbox": true,
             isFolder: true,
             children: []
@@ -561,6 +564,7 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
         $(self.el).find('#treeUserListing').dynatree({
             checkbox: true,
             selectMode: 2,
+            noLink : true,
             expand: true,
             onExpand: function () {
             },
@@ -604,6 +608,7 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
             checkbox: true,
             selectMode: 2,
             expand: true,
+            noLink : true,
             onExpand: function () {
             },
             children: window.app.models.projectUserJobTree.toJSON(),
