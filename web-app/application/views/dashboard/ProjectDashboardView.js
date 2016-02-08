@@ -28,6 +28,7 @@ var ProjectDashboardView = Backbone.View.extend({
     maxSuggestView: 30,
     projectDashboardAnnotations: null,
     projectDashboardImages: null,
+    projectDashboardConfig: null,
     rendered: false,
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -57,7 +58,7 @@ var ProjectDashboardView = Backbone.View.extend({
         $('#activityTab a').click(function (e) {
           e.preventDefault();
           $(this).tab('show');
-        })
+        });
         //Refresh dashboard
         setInterval(function () {
             if ($("#tabs-dashboard-" + self.model.id).hasClass('active')) {
@@ -73,14 +74,14 @@ var ProjectDashboardView = Backbone.View.extend({
         }, 60000);
 
     },
-    refreshImagesThumbs: function () {
+    refreshImagesThumbsView: function () {
         if (this.projectDashboardImages == null) {
             this.projectDashboardImages = new ProjectDashboardImages({ model: this.model});
         }
         this.projectDashboardImages.refreshImagesThumbs();
 
     },
-    refreshAlgos: function (idSoftware, idJob) {
+    refreshAlgosView: function (idSoftware, idJob) {
 
         if (this.projectDashboardAlgos == null || this.projectDashboardAlgos == undefined) {
             this.projectDashboardAlgos = new ProjectDashboardAlgos({
@@ -94,18 +95,18 @@ var ProjectDashboardView = Backbone.View.extend({
         }
 
     },
-    refreshConfig: function () {
-        if (this.ProjectDashboardConfig == null) {
-            this.ProjectDashboardConfig = new ProjectDashboardConfig({
+    refreshConfigView: function () {
+        if (this.projectDashboardConfig == null) {
+            this.projectDashboardConfig = new ProjectDashboardConfig({
                 model: this.model,
                 el: $("#editableConfigurations")
             });
         }
 
-        this.ProjectDashboardConfig.refresh();
+        this.projectDashboardConfig.refresh();
 
     },
-    refreshUsersConfig: function () {
+    refreshUsersConfigView: function () {
         if (this.ProjectDashboardUsersConfig == null) {
             this.ProjectDashboardUsersConfig = new ProjectDashboardUsersConfig({
                 model: this.model,
@@ -136,7 +137,7 @@ var ProjectDashboardView = Backbone.View.extend({
         }
         this.projectDashboardImages.refreshImagesTable();
     },
-    refreshAnnotations: function (terms, users) {
+    refreshAnnotationsView: function (terms, users) {
         var self = this;
 
         if (this.projectDashboardAnnotations == null) {
@@ -413,6 +414,11 @@ var ProjectDashboardView = Backbone.View.extend({
         $("#tabs-projectImageListing" + this.model.id).show();
         $('#imageThumbs' + this.model.id).removeAttr("disabled");
         $('#imageArray' + this.model.id).attr("disabled", "disabled");
+    },
+    refreshUserData: function (){
+        if(this.projectDashboardAnnotations !== null) this.projectDashboardAnnotations.refreshUserData();
+
+        if(this.projectDashboardConfig !== null) this.projectDashboardConfig.refreshUserData();
     }
 
 });

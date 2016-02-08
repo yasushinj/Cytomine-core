@@ -166,6 +166,13 @@ var ExplorerController = Backbone.Router.extend({
         $("#explorer > .browser").show();
         $("#explorer > .noProject").hide();
         window.app.view.showComponent(window.app.view.components.explorer);
+    },
+
+    // methods called when something has changed.
+    // Reactive reloading
+    refreshUserData: function () {
+        this.tabs.refreshUserData();
     }
+
 
 });

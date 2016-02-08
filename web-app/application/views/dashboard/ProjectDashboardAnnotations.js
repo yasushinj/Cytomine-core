@@ -816,5 +816,12 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
         }).render();
         $($elem).parent().find("h4").find(".alert").replaceWith("");
 
+    },
+
+    refreshUserData: function (){
+        var self = this;
+        $(self.el).find('#treeUserListing').dynatree("destroy");
+        $(self.el).find('#treeUserListing').empty();
+        this.initSelectUser();
     }
 });

@@ -119,7 +119,7 @@ var DashboardController = Backbone.Router.extend({
         var self = this;
         var func = function () {
             console.log("refreshImagesThumbs");
-            self.view.refreshImagesThumbs();
+            self.view.refreshImagesThumbsView();
             console.log("showImagesThumbs");
             self.view.showImagesThumbs();
             var tabs = $("#explorer > .browser").find(".nav-tabs");
@@ -147,7 +147,7 @@ var DashboardController = Backbone.Router.extend({
             window.app.controllers.browse.tabs.triggerRoute = false;
             var tabs = $("#explorer > .browser").find(".nav-tabs");
             tabs.find('a[href=#tabs-annotations-' + window.app.status.currentProject + ']').click();
-            self.view.refreshAnnotations(terms, users);
+            self.view.refreshAnnotationsView(terms, users);
             window.app.controllers.browse.tabs.triggerRoute = true;
 
         };
@@ -186,7 +186,7 @@ var DashboardController = Backbone.Router.extend({
             var tabs = $("#explorer > .browser").find(".nav-tabs");
             console.log(tabs.find('a[href^=#tabs-algos-' + window.app.status.currentProject + '-]'));
             tabs.find('a[href^=#tabs-algos-' + window.app.status.currentProject + ']').click();
-            self.view.refreshAlgos(software, job || undefined);
+            self.view.refreshAlgosView(software, job || undefined);
             window.app.controllers.browse.tabs.triggerRoute = true;
         };
         this.init(project, func);
@@ -232,7 +232,7 @@ var DashboardController = Backbone.Router.extend({
         console.log("config");
         var self = this;
         var func = function () {
-            self.view.refreshConfig();
+            self.view.refreshConfigView();
             var tabs = $("#explorer > .browser").find(".nav-tabs");
             tabs.find('a[href=#tabs-config-' + window.app.status.currentProject + ']').click();
         };
@@ -243,7 +243,7 @@ var DashboardController = Backbone.Router.extend({
         console.log("config");
         var self = this;
         var func = function () {
-            self.view.refreshUsersConfig();
+            self.view.refreshUsersConfigView();
             var tabs = $("#explorer > .browser").find(".nav-tabs");
             tabs.find('a[href=#tabs-usersconfig-' + window.app.status.currentProject + ']').click();
         };
@@ -420,5 +420,37 @@ var DashboardController = Backbone.Router.extend({
             shortValue = computeValue.substring(0, maxSize) + "...";
         }
         return shortValue;
+    },
+
+    // methods called when something has changed.
+    // Reactive reloading
+    refreshUserData: function () {
+        var self = this;
+
+        var nbCollectionToFetch = 2;
+        var nbCollectionFetched = 0;
+
+        var collectionFetched = function () {
+            nbCollectionFetched++;
+            if (nbCollectionFetched < nbCollectionToFetch) {
+                return;
+            }
+            self.view.refreshUserData();
+            window.app.controllers.browse.refreshUserData();
+
+        };
+
+        new UserCollection({project: window.app.status.currentProject}).fetch({
+            success: function (collection, response) {
+                window.app.models.projectUser = collection;
+                collectionFetched();
+            }
+        });
+        new UserLayerCollection({project: window.app.status.currentProject}).fetch({
+            success: function (collection, response) {
+                window.app.models.userLayer = collection;
+                collectionFetched();
+            }
+        });
     }
 });

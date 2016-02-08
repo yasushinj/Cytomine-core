@@ -387,7 +387,6 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         var callback = null;
 
         // cannot delete current users and admins.
-        // TODO if a projectRepresentative is deleted he will be no more a representative.
         if(usersToDelete.indexOf(window.app.status.user.id)>=0){
             level = 'ERROR';
             message = 'Impossible to delete these users. You cannot delete yourself of a project.';
@@ -429,7 +428,8 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 console.log("1. Project edited!");
                 window.app.view.message("Project", response.message, "success");
                 self.update();
-                // TODO update the config panel (for default layers) for admins and users
+                // The users change. Update all the panels where users are listed.
+                window.app.controllers.dashboard.refreshUserData();
                 // TODO update the dashboard panel as representative is also there
             },
             error: function (model, response) {

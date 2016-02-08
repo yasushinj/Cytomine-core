@@ -1510,21 +1510,34 @@ BrowseImageView = Backbone.View.extend({
         var self = this;
         if (!self.review) {
 
+            self.updateVectorLayers();
+
+        } else {
+            self.reviewPanel.addReviewLayerToReview();
+            self.reviewPanel.addLayerToReview(window.app.status.user.id);
+            self.reviewPanel.removeLayerFromReview(window.app.status.user.id);
+            self.reviewPanel.addLayerToReview(window.app.status.user.id);
+        }
+
+    },
+    updateVectorLayers: function () {
+        var self = this;
+        if (!self.review) {
+
             new UserLayerCollection({project: window.app.status.currentProject, image: self.model.id}).fetch({
                 success: function (collection, response) {
                     window.app.models.userLayer = collection;
 
+                    self.layerSwitcherPanel.allVectorLayers = [];
+                    self.layerSwitcherPanel.defaultVectorLayers = [];
+
 
                     var projectUsers = window.app.models.projectUser.
                         select(function (user) {
-                            return window.app.
-                                models.
-
-                                userLayer.get(user.id) != undefined;
+                            return window.app.models.userLayer.get(user.id) != undefined;
                         });
                     _.each(projectUsers, function (user) {
-                        self.layerSwitcherPanel.
-                            allVectorLayers.push({ id: user.id, user: user});
+                        self.layerSwitcherPanel.allVectorLayers.push({ id: user.id, user: user});
                     });
 
                     self.layerSwitcherPanel.allVectorLayers.push({ id: "REVIEW", user: null})
@@ -1554,14 +1567,7 @@ BrowseImageView = Backbone.View.extend({
 
                 }
             });
-
-        } else {
-            self.reviewPanel.addReviewLayerToReview();
-            self.reviewPanel.addLayerToReview(window.app.status.user.id);
-            self.reviewPanel.removeLayerFromReview(window.app.status.user.id);
-            self.reviewPanel.addLayerToReview(window.app.status.user.id);
         }
-
     },
     refreshReviewLayer: function () {
         if (this.reviewPanel) {
@@ -1688,5 +1694,9 @@ BrowseImageView = Backbone.View.extend({
     },
     getOpacityBorder: function () {
         return this.opacityBorder
+    },
+
+    refreshUserData: function () {
+        this.updateVectorLayers();
     }
 });

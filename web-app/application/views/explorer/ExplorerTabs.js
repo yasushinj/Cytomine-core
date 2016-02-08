@@ -430,5 +430,14 @@ var ExplorerTabs = Backbone.View.extend({
      */
     getDashboard: function () {
         return this.dashboard;
+    },
+
+    // methods called when something has changed.
+    // Reactive reloading
+    refreshUserData: function () {
+        for(var i = 0; i< this.tabs.length; i++){
+            this.tabs[i].view.refreshUserData();
+        }
     }
+
 });

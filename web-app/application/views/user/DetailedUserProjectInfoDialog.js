@@ -131,7 +131,15 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
             }
 
             children.push({
-                title : "temps : "+time,
+                title : "date : "+window.app.convertLongToDate(self.activitiesHistory[i].created),
+                isFolder : false,
+                noLink : true,
+                unselectable : true,
+                hideCheckbox: true
+            });
+
+            children.push({
+                title : "duration : "+time,
                 isFolder : false,
                 noLink : true,
                 unselectable : true,

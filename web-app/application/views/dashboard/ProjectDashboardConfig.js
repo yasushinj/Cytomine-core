@@ -15,6 +15,7 @@
  */
 
 var ProjectDashboardConfig = Backbone.View.extend({
+    defaultLayersPanel : null,
     initialize: function () {
         this.rendered = false;
     },
@@ -55,11 +56,11 @@ var ProjectDashboardConfig = Backbone.View.extend({
         idPanel = "defaultLayers";
         titlePanel = "Default Layers Configuration";
         configs.push({id: idPanel, title : titlePanel});
-        var defaultLayers = new DefaultLayerPanel({
+        this.defaultLayersPanel = new DefaultLayerPanel({
             el: _.template(defaultLayersTemplate, {titre : titlePanel, id : idPanel}),
             model: this.model
         }).render();
-        configList.append(defaultLayers.el);
+        configList.append(this.defaultLayersPanel.el);
 
 
         // CustomUI
@@ -101,36 +102,6 @@ var ProjectDashboardConfig = Backbone.View.extend({
             el: _.template(AnnotToolsTemplate, {titre : titlePanel, id : idPanel})
         }).render();
         configList.append(magicWand.el);
-
-
-        // TODO reuse this for UserConfigPanel
-        var callBack = function(users) {
-            new ProjectDefaultLayerCollection({project: this.model.id}).fetch({
-                success: function (collection) {
-                    var layersToDelete = 0;
-                    var layersDeleted = 0;
-                    collection.each(function(layer) {
-                        if(users.indexOf(layer.attributes.user) === -1) {
-                            layersToDelete++;
-                            console.log("deletion de ");
-                            console.log(layer.id);
-                            layer.destroy({
-                                success: function () {
-                                    layersDeleted++;
-                                    if(layersToDelete === layersDeleted) {
-                                        defaultLayers.refresh();
-                                    }
-                                }
-                            });
-                        }
-                        if(layersToDelete === 0) {
-                            defaultLayers.refresh();
-                        }
-                    });
-                }
-            });
-        };
-
 
         // Generation of the left menu
         var menu = this.createConfigMenu(configs);
@@ -174,7 +145,12 @@ var ProjectDashboardConfig = Backbone.View.extend({
         if (!this.rendered) {
             this.render();
         }
+    },
+
+    refreshUserData: function (){
+        this.defaultLayersPanel.refresh();
     }
+
 
 });
 
@@ -586,12 +562,8 @@ var DefaultLayerPanel = Backbone.View.extend({
 
 
         // load all user and admin of the project
-        new UserCollection({project: self.model.id}).fetch({
-            success: function (projectUserCollection, response) {
-                projectUserCollection.each(function(user) {
-                    $(self.el).find('#availableprojectdefaultlayers').append('<option value="'+ user.id +'">' + user.prettyName() + '</option>');
-                });
-            }
+        window.app.models.projectUser.each(function(user) {
+            $(self.el).find('#availableprojectdefaultlayers').append('<option value="'+ user.id +'">' + user.prettyName() + '</option>');
         });
 
         // load existing default layers
