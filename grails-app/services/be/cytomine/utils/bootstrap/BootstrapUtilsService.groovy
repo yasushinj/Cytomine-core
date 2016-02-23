@@ -192,7 +192,7 @@ class BootstrapUtilsService {
 
     public def createMimeImageServers(def imageServerCollection, def mimeCollection) {
         log.info imageServerCollection
-        log.info ImageServer.list()
+        log.info ImageServer.list().collect {it.url}
         imageServerCollection.each {
             ImageServer imageServer = ImageServer.findByName(it.name)
             if (imageServer) {
@@ -242,44 +242,6 @@ class BootstrapUtilsService {
         ]
         createMimes(mimeSamples)
         createMimeImageServers(ImageServer.findAll(), mimeSamples)
-    }
-
-    def createNewIS2() {
-        if (ImageServer.count() > 1) return
-
-        (1..10).each { id->
-            log.info "cerate image server $id"
-            def IIPImageServer = [className : 'IIPResolver', name : "IIP$id", service : '/image/tile', url : "http://image$id"+".cytomine.be", available : true]
-            ImageServer imageServer = new ImageServer(
-                    className: IIPImageServer.className,
-                    name: IIPImageServer.name,
-                    service : IIPImageServer.service,
-                    url : IIPImageServer.url,
-                    available : IIPImageServer.available
-            )
-            if (imageServer.validate()) {
-                imageServer.save()
-            } else {
-                imageServer.errors?.each {
-                    log.info it
-                }
-            }
-
-            log.info "add all storage to IS $id"
-            Storage.list().each {
-                new ImageServerStorage(
-                        storage : it,
-                        imageServer: imageServer
-                ).save()
-            }
-
-            Mime.list().each {
-                new MimeImageServer(
-                        mime : it,
-                        imageServer: imageServer
-                ).save()
-            }
-        }
     }
 
     def createMultipleRetrieval() {

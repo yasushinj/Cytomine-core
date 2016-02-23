@@ -16,8 +16,6 @@ package be.cytomine.utils.bootstrap
 * limitations under the License.
 */
 
-import be.cytomine.image.server.ImageServer
-import be.cytomine.processing.*
 import be.cytomine.security.SecUser
 import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
@@ -40,9 +38,6 @@ class BootstrapDataService {
         recreateTableFromNotDomainClass()
         amqpQueueConfigService.initAmqpQueueConfigDefaultValues()
 
-        def IIPImageServer = [className : 'IIPResolver', name : 'IIP', service : '/image/tile', url : grailsApplication.config.grails.imageServerURL, available : true]
-
-        bootstrapUtilsService.createImageServers([IIPImageServer])
         def IIPMimeSamples = [
                 [extension : 'mrxs', mimeType : 'openslide/mrxs'],
                 [extension : 'vms', mimeType : 'openslide/vms'],
@@ -58,7 +53,6 @@ class BootstrapDataService {
                 [extension : 'zvi', mimeType : 'zeiss/zvi']
         ]
         bootstrapUtilsService.createMimes(IIPMimeSamples)
-        bootstrapUtilsService.createMimeImageServers([IIPImageServer], IIPMimeSamples)
 
 
         def usersSamples = [
