@@ -736,7 +736,7 @@ var UploadFormView = Backbone.View.extend({
                             return 'No preview available';
                         }
                         return '<img class="thumbcommand" id="thumbcommand'+o.aData.image+'" '+
-                            'src="'+thumb +'" style="max-width: 128px;max-height: 45px;"/>';
+                            'src="'+thumb +'?maxWidth=128" style="max-width: 128px;max-height: 45px;"/>';
                     },
                     "aTargets": [ 0 ]
                 },

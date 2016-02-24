@@ -109,8 +109,9 @@ class UrlApi {
         return "${serverUrl()}/api/annotation/$idAnnotation/crop.png" + (maxSize? "?maxSize=$maxSize" :"")
     }
 
-    static def getAssociatedImage(Long idAbstractImage, String label, def maxSize) {
-        return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label" + ".png?maxWidth=$maxSize"
+    static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null) {
+        String size = maxSize ? "?maxWidth=$maxSize" : "";
+        return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label" + ".png$size"
     }
 
     static def getThumbImage(Long idAbstractImage, def maxSize) {

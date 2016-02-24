@@ -336,17 +336,18 @@ class AbstractImageService extends ModelService {
      */
     def thumb(long id, int maxSize) {
         AbstractImage abstractImage = AbstractImage.read(id)
-        String imageServerURL = abstractImage.getRandomImageServerURL()
         UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
         String fif = URLEncoder.encode(uploadedFile.absolutePath, "UTF-8")
         String mimeType = uploadedFile.mimeType
-        String url = "$imageServerURL/image/thumb.jpg?fif=$fif&mimeType=$mimeType&maxSize=$maxSize"
+        String url = "/image/thumb.jpg?fif=$fif&mimeType=$mimeType&maxSize=$maxSize"
+
         AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(id, url)
         if (attachedFile) {
             return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
         } else {
-            log.info url
-            byte[] imageData = new URL(url).getBytes()
+            String imageServerURL = abstractImage.getRandomImageServerURL()
+            log.info "$imageServerURL"+url
+            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageData))
             attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
             return bufferedImage
@@ -405,16 +406,17 @@ class AbstractImageService extends ModelService {
     }
 
     def getAssociatedImage(AbstractImage abstractImage, String label, def maxWidth) {
-        String imageServerURL = abstractImage.getRandomImageServerURL()
         UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
         String fif = URLEncoder.encode(uploadedFile.absolutePath, "UTF-8")
         String mimeType = uploadedFile.mimeType
-        String url = "$imageServerURL/image/nested.jpg?fif=$fif&mimeType=$mimeType&label=$label&maxSize=$maxWidth"
+        String url = "/image/nested.jpg?fif=$fif&mimeType=$mimeType&label=$label&maxSize=$maxWidth"
+
         AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(abstractImage.id, url)
         if (attachedFile) {
             return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
         } else {
-            byte[] imageData = new URL(url).getBytes()
+            String imageServerURL = abstractImage.getRandomImageServerURL()
+            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
             BufferedImage bufferedImage =  ImageIO.read(new ByteArrayInputStream(imageData))
             attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
             return bufferedImage

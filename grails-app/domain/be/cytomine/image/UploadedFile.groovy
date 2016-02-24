@@ -140,7 +140,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['image'] = uploaded?.getAbstractImage()
         returnArray['parent'] = uploaded?.parent?.id
         returnArray['downloadParent'] = uploaded?.downloadParent?.id
-        returnArray['thumbURL'] = uploaded?.status == UploadedFile.DEPLOYED && uploaded?.image ? UrlApi.getAssociatedImage(uploaded?.image?.id, "macro", 512) : null
+        returnArray['thumbURL'] = uploaded?.status == UploadedFile.DEPLOYED && uploaded?.image ? UrlApi.getAssociatedImage(uploaded?.image?.id, "macro") : null
         returnArray
     }
 

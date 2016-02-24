@@ -72,7 +72,7 @@ var ImageTabsView = Backbone.View.extend({
                     {
                         project : self.idProject,
                         id : o.aData.id,
-                        thumb : o.aData["macroURL"]
+                        thumb : o.aData["macroURL"]+"?maxWidth=128"
                     });
             }},
             { "mDataProp": "originalFilename", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {

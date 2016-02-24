@@ -186,7 +186,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
             returnArray['thumb'] = 'NO THUMB:' + e.toString()
         }
         try {
-            returnArray['macroURL'] = image.baseImage ? UrlApi.getAssociatedImage(image.baseImage?.id, "macro", 512) : null
+            returnArray['macroURL'] = image.baseImage ? UrlApi.getAssociatedImage(image.baseImage?.id, "macro") : null
         } catch (Exception e) {
             returnArray['macro'] = 'NO THUMB:' + e.toString()
         }
