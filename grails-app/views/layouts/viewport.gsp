@@ -212,6 +212,12 @@ body {
 
 
 <!-- View -->
+<script type="text/javascript" src="application/views/admin/AdminView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminDashboard.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminUsersView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminUserDialog.js"></script>
+
+
 <script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
 <script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
 <script type="text/javascript" src="application/views/user/DetailedUserProjectInfoDialog.js"></script>

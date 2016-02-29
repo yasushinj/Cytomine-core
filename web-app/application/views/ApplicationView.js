@@ -262,7 +262,7 @@ var ApplicationView = Backbone.View.extend({
             "text!application/templates/project/ProjectComponent.tpl.html",
             "text!application/templates/ontology/OntologyComponent.tpl.html",
             "text!application/templates/explorer/ExplorerComponent.tpl.html",
-            "text!application/templates/AdminComponent.tpl.html",
+            "text!application/templates/admin/AdminComponent.tpl.html",
             "text!application/templates/activity/ActivityComponent.tpl.html",
             "text!application/templates/account/AccountComponent.tpl.html",
             "text!application/templates/search/SearchComponent.tpl.html"
@@ -280,28 +280,6 @@ var ApplicationView = Backbone.View.extend({
                         self.currentComponent = this;
                     }
                 });
-                self.components.search = new Component({
-                    el: "#content",
-                    template: _.template(searchTpl, {}),
-                    buttonAttr: {
-                        elButton: "search-button"
-                    },
-                    divId: "search",
-                    onActivate: function () {
-                        self.currentComponent = this;
-                    }
-                });
-                self.components.activity = new Component({
-                    el: "#content",
-                    template: _.template(activityTpl, {}),
-                    buttonAttr: {
-                        elButton: "activity-button"
-                    },
-                    divId: "activity",
-                    onActivate: function () {
-                        self.currentComponent = this;
-                    }
-                });
                 self.components.upload = new Component({
                     el: "#content",
                     template: _.template(uploadTpl, {}),
@@ -313,6 +291,41 @@ var ApplicationView = Backbone.View.extend({
                         self.currentComponent = this;
                     }
                 });
+                self.components.ontology = new Component({
+                    el: "#content",
+                    template: _.template(ontologyTpl, {}),
+                    buttonAttr: {
+                        elButton: "ontology-button"
+                    },
+                    divId: "ontology",
+                    onActivate: function () {
+                        self.currentComponent = this;
+                    }
+                });
+
+                self.components.admin = new Component({
+                    el: "#content",
+                    template: _.template(adminTpl, {}),
+                    buttonAttr: {
+                        elButton: "admin-button"
+                    },
+                    divId: "admin",
+                    onActivate: function () {
+                        self.currentComponent = this;
+                    }
+                });
+
+                self.components.activity = new Component({
+                    el: "#content",
+                    template: _.template(activityTpl, {}),
+                    buttonAttr: {
+                        elButton: "activity-button"
+                    },
+                    divId: "activity",
+                    onActivate: function () {
+                        self.currentComponent = this;
+                    }
+                });
                 self.components.account = new Component({
                     el: "#content",
                     template: _.template(accountTpl, {}),
@@ -320,6 +333,17 @@ var ApplicationView = Backbone.View.extend({
                         elButton: "upload-button"
                     },
                     divId: "account",
+                    onActivate: function () {
+                        self.currentComponent = this;
+                    }
+                });
+                self.components.search = new Component({
+                    el: "#content",
+                    template: _.template(searchTpl, {}),
+                    buttonAttr: {
+                        elButton: "search-button"
+                    },
+                    divId: "search",
                     onActivate: function () {
                         self.currentComponent = this;
                     }
@@ -343,17 +367,6 @@ var ApplicationView = Backbone.View.extend({
                             $("#" + this.buttonAttr.elButton).parent().addClass("active");
                         }
                     }*/
-                });
-                self.components.ontology = new Component({
-                    el: "#content",
-                    template: _.template(ontologyTpl, {}),
-                    buttonAttr: {
-                        elButton: "ontology-button"
-                    },
-                    divId: "ontology",
-                    onActivate: function () {
-                        self.currentComponent = this;
-                    }
                 });
                 self.components.explorer = new Component({
                     el: "#content",
