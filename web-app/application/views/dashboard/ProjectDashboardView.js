@@ -29,6 +29,7 @@ var ProjectDashboardView = Backbone.View.extend({
     projectDashboardAnnotations: null,
     projectDashboardImages: null,
     projectDashboardConfig: null,
+    projectDashboardUsersConfig: null,
     rendered: false,
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -107,14 +108,14 @@ var ProjectDashboardView = Backbone.View.extend({
 
     },
     refreshUsersConfigView: function () {
-        if (this.ProjectDashboardUsersConfig == null) {
-            this.ProjectDashboardUsersConfig = new ProjectDashboardUsersConfig({
+        if (this.projectDashboardUsersConfig == null) {
+            this.projectDashboardUsersConfig = new ProjectDashboardUsersConfig({
                 model: this.model,
                 el: $("#projectUsersConfiguration")
             });
         }
 
-        this.ProjectDashboardUsersConfig.render();
+        this.projectDashboardUsersConfig.render();
 
     },
     refreshReview: function (image,user,term) {

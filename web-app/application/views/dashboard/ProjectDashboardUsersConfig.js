@@ -31,8 +31,8 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         var self = this;
         if (!this.rendered) {
             require(["text!application/templates/dashboard/config/UsersConfig.tpl.html"],
-                function (imageTableTemplate) {
-                    self.doLayout(imageTableTemplate);
+                function (userTableTemplate) {
+                    self.doLayout(userTableTemplate);
                     self.rendered = true;
                 });
         } else {
@@ -215,11 +215,11 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         });
     },
 
-    doLayout: function (imageTableTemplate) {
+    doLayout: function (userTableTemplate) {
         var self = this;
 
         // table
-        var view = _.template(imageTableTemplate, {id : self.model.get('id')});
+        var view = _.template(userTableTemplate, {id : self.model.get('id')});
         $(this.el).append(view);
 
         $(this.el).find("#ProjectUserAdd"+self.model.get('id')).on("click", function() {
