@@ -23,8 +23,8 @@ var AdminController = Backbone.Router.extend({
     routes: {
         "admin": "dashboard",
         "admin-tabs-dashboard": "dashboard",
-        "admin-tabs-users": "users"/*,
-        "admin-tabs-groups": "groups",
+        "admin-tabs-users": "users",
+        "admin-tabs-groups": "groups"/*,
         "admin-tabs-permissions": "permissions",
         "admin-tabs-config": "config"*/
     },
@@ -74,5 +74,27 @@ var AdminController = Backbone.Router.extend({
             tabs.find('a[href=#admin-tabs-users]').tab('show');
         };
         self.init(func);
-    }
+    },
+
+    groups: function () {
+
+        var self = this;
+        var func = function () {
+            self.view.refreshGroups();
+            var tabs = $("#admin").find(".nav-tabs");
+            tabs.find('a[href=#admin-tabs-groups]').tab('show');
+        };
+        self.init(func);
+    }/*,
+
+    permissions: function () {
+
+        var self = this;
+        var func = function () {
+            self.view.refreshPermissions();
+            var tabs = $("#admin").find(".nav-tabs");
+            tabs.find('a[href=#admin-tabs-permissions]').tab('show');
+        };
+        self.init(func);
+    }*/
 });

@@ -106,6 +106,8 @@ var UserCollection = PaginatedCollection.extend({
         } else if (!window.app.isUndefined(this.ontology)) {
             console.log("ontologyYYY=" + this.ontology);
             return "api/ontology/" + this.ontology + "/user.json";
+        } else if (!window.app.isUndefined(this.group)) {
+            return "api/group/" + this.group + "/user.json";
         } else {
             return "api/user.json";
         }
@@ -118,6 +120,7 @@ var UserCollection = PaginatedCollection.extend({
         this.creator = options.creator;
         this.online = options.online;
         this.representative = options.representative;
+        this.group = options.group;
     },
     comparator: function (user) {
         if (user.get("lastname") != undefined) {
@@ -186,6 +189,20 @@ var UserLayerCollection = PaginatedCollection.extend({
     }
 });
 
+
+var UserGroup = Backbone.Model.extend({
+    url: function () {
+        if (!window.app.isUndefined(this.group) && !this.isNew()) {
+            return "api/user/" + this.user + "/group/"+this.group+".json";
+        } else {
+            return "api/user/" + this.user + "/group.json";
+        }
+    },
+    initialize: function (options) {
+        this.user = options.user;
+        this.group = options.group;
+    }
+});
 
 var UserSecRole = Backbone.Model.extend({
     url: function () {

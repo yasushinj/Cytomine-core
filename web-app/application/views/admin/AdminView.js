@@ -18,6 +18,7 @@ var AdminView = Backbone.View.extend({
     adminDashboard: null,
     adminUsersView: null,
     adminGroupsView: null,
+    //adminPermissionsView : null,
     initialize: function (options) {
         _.bindAll(this, 'render');
     },
@@ -53,5 +54,26 @@ var AdminView = Backbone.View.extend({
             });
         }
         this.adminUsersView.render();
-    }
+    },
+    refreshGroups: function () {
+        var self = this;
+        if (this.adminGroupsView == null) {
+            this.adminGroupsView = new AdminGroupsView({
+                //model: this.model,
+                el: $(self.el).find("#admin-tabs-groups")
+            });
+        }
+        this.adminGroupsView.render();
+    }/*,
+    refreshPermissions: function () {
+        var self = this;
+        if (this.adminPermissionsView == null) {
+            this.adminPermissionsView = new AdminPermissionsView({
+                //model: this.model,
+                el: $(self.el).find("#admin-tabs-groups")
+            });
+        }
+        this.adminPermissionsView.render();
+    }*/
+
 });
