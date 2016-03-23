@@ -38,7 +38,7 @@ var AdminUserDialog = Backbone.View.extend({
 
     doLayout: function (tpl) {
         var self = this;
-        var htmlCode = _.template(tpl, {model:self.model});
+        var htmlCode = _.template(tpl, {model:self.model.toJSON()});
         $(this.el).html(htmlCode);
 
         self.errors = [];
@@ -49,6 +49,28 @@ var AdminUserDialog = Backbone.View.extend({
             roleList.append("<option value='"+value.id+"'>"+value.authority+"</option>");
         });
 
+        $("#resetPasswordButton").click(function() {
+
+            var newPass = $("#editinputResetPassword").val();
+
+            if(newPass.length<5) {
+                $("#changePasswordError").append("Password is too short!");
+            }else {
+
+                $("#changePasswordError").empty();
+                var data = { 'password': newPass};
+
+                $.ajax({
+                    type:"PUT",
+                    url : "/api/user/"+self.model.id+"/password.json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success : function(){
+                        window.app.view.message("Success", "Password changed", "success");
+                    }
+                });
+            }
+        });
 
 
         $("#adminUserDialog").modal('show');
@@ -70,15 +92,24 @@ var AdminUserDialog = Backbone.View.extend({
 
             var role = Number($(self.el).find("#newUserRoleList").val());
 
-            var user = new UserModel();
-            user.save({
+            var user;
+            var savedParams = {
                 "username": $(self.el).find("#editinputUsername").val(),
-                "algo": false,
                 "firstname": $(self.el).find("#editinputFirstname").val(),
                 "lastname": $(self.el).find("#editinputLastname").val(),
                 "email": $(self.el).find("#editinputEmail").val(),
-                "password": $(self.el).find("#editinputPassword").val()
-            }, {
+            };
+
+            if(window.app.isUndefined(self.model.id)){
+                user = new UserModel();
+                savedParams.password = $(self.el).find("#editinputPassword").val();
+                savedParams.algo = false;
+            } else {
+                user = self.model;
+            }
+
+
+            user.save(savedParams, {
                 success: function (model, response) {
                     window.app.view.message("Success", response.message, "success");
 
@@ -97,6 +128,12 @@ var AdminUserDialog = Backbone.View.extend({
             });
         });
 
+        if(!window.app.isUndefined(self.model.id)){
+            var fields = $(self.el).find("form").find("input[required]")
+            for(var i =0; i < fields.length; i++){
+                $("#"+fields[i].id).keyup();
+            }
+        }
     },
 
     validate: function () {
@@ -116,7 +153,7 @@ var AdminUserDialog = Backbone.View.extend({
 
         // check if all required field are valid to enable the submit button
         var valid = ($.map(self.errors, function(item){if(item.valid) return item}).length === $(self.el).find("form").find("input[required]").length);
-        $(this.el).find("#AdminUserDialogBtn").prop('disabled', !valid);
+        $(this.el).find("#adminUserDialogBtn").prop('disabled', !valid);
     },
     validateItem: function (id) {
         var value = $(this.el).find("#"+id).val();
@@ -158,7 +195,7 @@ var AdminUserDialog = Backbone.View.extend({
         new SecRoleCollection({}).fetch({
             success: function (allRolesCollection) {
                 self.allRoles = $.map(allRolesCollection.models, function(item){return {id: item.id, authority: item.get('authority')}});
-                if(self.model.id !== undefined){
+                if(!window.app.isUndefined(self.model.id)){
                     new UserSecRole({user : self.model.id}).fetch({
                         success: function (currentRoles) {
                             // TODO collection ! get highest rank

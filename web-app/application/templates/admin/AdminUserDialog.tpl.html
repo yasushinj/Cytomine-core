@@ -6,7 +6,6 @@
             </div>
             <div class="modal-body">
 
-                <!--<form role="form" name="editUserForm" ng-submit="saveEdit(currentEditedUser,editUserForm)" ng-class="showValidationUserForm ? 'validate' : ''" novalidate="" class="ng-invalid ng-invalid-required ng-dirty">-->
                 <form role="form" name="editUserForm" novalidate>
                     <table class="table table-striped">
                         <tbody>
@@ -36,12 +35,14 @@
                             </td>
                         </tr>
 
+                        <% if (model.id === undefined) { %>
                         <tr>
                             <td>Password</td>
                             <td>
                                 <input name="password" type="password" class="form-control" id="editinputPassword" value="" required="">
                             </td>
                         </tr>
+                        <% } %>
 
                         <tr>
                             <td>Email</td>
@@ -55,6 +56,13 @@
                 </form>
 
                 <div id="adminUserDialogErrors"></div>
+
+                <% if (model.id !== undefined) { %>
+                <h3>Change password</h3>
+                <input name="password" type="password" class="form-control" id="editinputResetPassword" style="width:auto;" required="">
+                <button type="button" class="btn btn-primary" id="resetPasswordButton" >Change password</button>
+                <div id="changePasswordError"></div>
+                <% } %>
 
                 <h3>Change role</h3>
 

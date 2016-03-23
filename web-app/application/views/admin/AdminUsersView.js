@@ -45,9 +45,24 @@ var AdminUsersView = Backbone.View.extend({
         $(self.el).find("#AddNewUserBtn").click(function() {
             new AdminUserDialog({
                 el: "#dialogs",
-                model : {},
+                model : new Backbone.Model(),
                 callback : function() {self.updateTable()}}
             ).render();
+        });
+
+        $(self.el).on("click", ".UserEditButton", function() {
+            var user = $(this).data("id");
+
+            new UserModel({id:user}).fetch({
+                success: function(model){
+                    new AdminUserDialog({
+                            el: "#dialogs",
+                            model : model,
+                            callback : function() {self.updateTable()}
+                        }
+                    ).render();
+                }
+            });
         });
 
         this.update();
@@ -83,13 +98,13 @@ var AdminUsersView = Backbone.View.extend({
             }},
             { "mDataProp": "action", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 return "<button class='btn btn-xs btn-primary UserDetailsButton' data-id="+o.aData["id"]+" >Info</button>"
-                    +" <button class='btn btn-xs btn-primary UserDetailsButton' data-id="+o.aData["id"]+" >Edit</button>";
+                    +" <button class='btn btn-xs btn-primary UserEditButton' data-id="+o.aData["id"]+" >Edit</button>";
             }}
         ];
 
         table.dataTable({
             "bProcessing": true,
-            "bServerSide": true,
+            "bServerSide": false,
             "sAjaxSource": new UserCollection({}).url(),
             "fnServerParams": function ( aoData ) {
                 aoData.push( { "name": "datatables", "value": "true" } );

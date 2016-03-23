@@ -424,27 +424,27 @@ class RestUserController extends RestController {
     ])
     def resetPassword () {
         try {
-        SecUser user = SecUser.get(params.long('id'))
-        //::todo : check also old password security
-        /*String oldPassword = params.get('oldPassword')
-        oldPassword = springSecurityService.encodePassword(oldPassword)
-        if (user.password != oldPassword && !user.passwordExpired) {
-            responseNotFound("Password",params.password)
-        } */
-        String newPassword = params.get('password')
-        log.info "change password for user $user with new password $newPassword"
-        if(user && newPassword) {
-            securityACLService.checkIsCreator(user,cytomineService.currentUser)
-            user.newPassword = newPassword
-            //force to reset password (newPassword is transient => beforeupdate is not called):
-            user.password = "bad"
-            secUserService.saveDomain(user)
-            response(user)
-        } else if(!user) {
-            responseNotFound("SecUser",params.id)
-        }else if(!newPassword) {
-            responseNotFound("Password",params.password)
-         }
+            SecUser user = SecUser.get(params.long('id'))
+            //::TODO : check also old password security
+            /*String oldPassword = params.get('oldPassword')
+            oldPassword = springSecurityService.encodePassword(oldPassword)
+            if (user.password != oldPassword && !user.passwordExpired) {
+                responseNotFound("Password",params.password)
+            } */
+            String newPassword = request.JSON.password
+            log.info "change password for user $user with new password $newPassword"
+            if(user && newPassword) {
+                securityACLService.checkIsCreator(user,cytomineService.currentUser)
+                user.newPassword = newPassword
+                //force to reset password (newPassword is transient => beforeupdate is not called):
+                user.password = "bad"
+                secUserService.saveDomain(user)
+                response(user)
+            } else if(!user) {
+                responseNotFound("SecUser",params.id)
+            }else if(!newPassword) {
+                responseNotFound("Password",newPassword)
+            }
         }catch(CytomineException e) {
             responseError(e)
         }
