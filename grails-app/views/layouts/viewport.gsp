@@ -245,6 +245,7 @@ body {
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
 
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
+<script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
 
 <script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>

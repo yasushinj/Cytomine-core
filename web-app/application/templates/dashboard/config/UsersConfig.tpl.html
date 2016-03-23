@@ -38,7 +38,7 @@
         <div class="col-md-9 col-md-offset-1">
             <label class="control-label">For selected contributors :</label>
             <a id="ProjectUserDelete<%= id %>" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a>
-            <a id="ProjectUserArchive<%= id %>" class="btn btn-danger"><i class="glyphicon glyphicon-lock"></i> Archive</a>
+            <!--<a id="ProjectUserArchive<%= id %>" class="btn btn-danger"><i class="glyphicon glyphicon-lock"></i> Archive</a>-->
             <label class="col-md-offset-1 control-label">Show only online contributors</label>
             <input type="checkbox" id="ShowOnlyOnline<%= id %>">
             <label class="col-md-offset-2 control-label">Show only managers</label>
@@ -77,10 +77,7 @@
     <br/>
     <div class="row"></div>
     <div class="row row-nomargin custom-ui-project-users-global-activities-graph">
-        <div class="col-md-offset-1 col-md-8">
-            <h4 class="header_h"><i class="glyphicon glyphicon-stats"></i> Connexions by contributors</h4>
-            <div class="col-md-offset-1" id="UsersGlobalActivities<%= id %>" style="text-align: center;"></div>
-        </div>
+        <div class="col-md-offset-1 col-md-8" id="UsersGlobalActivities<%= id %>"></div>
     </div>
     <div class="row row-nomargin custom-ui-project-users-heatmap-graph">
         <div class="col-md-offset-1 col-md-8">

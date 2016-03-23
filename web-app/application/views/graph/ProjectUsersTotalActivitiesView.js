@@ -15,76 +15,55 @@
  */
 
 var ProjectUsersTotalActivitiesView = Backbone.View.extend({
+    activities : [],
     initialize: function () {
-        $(window).on("resize", _.debounce(_.bind(this.resize, this), 100));
-    },
-    resize: function () {
-        var chart = $(".bubble"),
-            aspect = chart.width() / chart.height(),
-            container = chart.parent();
-        var targetWidth = container.width();
-        var margin = targetWidth/2;
-        chart.attr("width", targetWidth-margin);
-        chart.attr("height", Math.round((targetWidth-margin) / aspect));
+        this.activities.push({name : "Connexions",  url : "api/project/" + this.model.get('id') + "/usersActivity.json", property : "frequency", panel : null});
+        this.activities.push({name : "Annotations", url : "api/project/" + this.model.get('id') + "/stats/user.json", property : "value", panel : null});
     },
     render: function () {
         var self = this;
 
-        var diameter = 500,
-            format = d3.format(",d"),
-            color = d3.scale.category20c();
+        var tpl = '<h4 class="header_h"><i class="glyphicon glyphicon-stats"></i> Activities of contributors</h4>'+
+            '<select id="activitySelection<%= id %>">' +
+                '<option>Select an activity</option>';
 
-        var bubble = d3.layout.pack()
-            .sort(null)
-            .size([diameter, diameter])
-            .padding(1.5);
-
-        var svg = d3.select(this.el).append("svg")
-            .attr("viewBox","0 0 500 500")
-            .attr("perserveAspectRatio","xMinYMid")
-            .attr("width", diameter)
-            .attr("height", diameter)
-            .attr("class", "bubble");
-
-
-
-        // TODO use one Model.url() instead
-        var data;
-        d3.json("api/project/" + self.model.get('id') + "/usersActivity.json", function(error, root) {
-            if (error) throw error;
-
-            data = root;
-
-            var node = svg.selectAll(".node")
-                .data(bubble.nodes(classes(root))
-                    .filter(function(d) { return !d.children; }))
-                .enter().append("g")
-                .attr("class", "node")
-                .attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")"; });
-
-            node.append("title")
-                .text(function(d) {return d.className + ": " + format(d.value); });
-
-            node.append("circle")
-                .attr("r", function(d) { return d.r; })
-                .style("fill", function(d) { return color(d.packageName); });
-
-            node.append("text")
-                .attr("dy", ".3em")
-                .style("text-anchor", "middle")
-                .text(function(d) { return d.className.substring(0, d.r / 3); });
+        _.each(self.activities, function(it){
+            tpl+= '<option>'+it.name+'</option>';
         });
 
-        function classes(root) {
-            var classes = [];
+        tpl += '</select>';
 
-            for(var i=0; i<root.collection.length;i++) {
-                classes.push({packageName: root.collection[i].username, className: root.collection[i].username, value: root.collection[i].frequency});
+        _.each(self.activities, function(it){
+            tpl+= '<div class="col-md-offset-1 graph" id="UsersGlobal'+it.name+'<%= id %>" style="text-align: center;"></div>';
+        });
+
+
+        $(self.el).append(_.template(tpl, {id : self.model.get('id')}));
+
+
+        $(self.el).find("#activitySelection"+self.model.id).on("change", function(e){
+
+            $(self.el).find(".graph").hide();
+
+            var chosen = $(this).val();
+            chosen = _.find(self.activities, function(it) {
+                return it.name === chosen;
+            });
+
+            if(!window.app.isUndefined(chosen)){
+                var panel = $(self.el).find("#UsersGlobal"+chosen.name+self.model.id);
+                // create objet if not null
+                if(chosen.panel === null){
+                    chosen.panel = new ProjectUsersTotalActivitiesGraph({
+                        model: self.model,
+                        el: panel,
+                        url : chosen.url,
+                        property : chosen.property
+                    });
+                    chosen.panel.render();
+                }
+                panel.show();
             }
-
-            return {children: classes};
-        }
-
-        $(window).trigger('resize');
+        });
     }
 });
