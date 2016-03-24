@@ -18,9 +18,12 @@ package be.cytomine
 
 import be.cytomine.project.Project
 import be.cytomine.project.ProjectRepresentativeUser
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
+import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.ProjectRepresentativeUserAPI
+import be.cytomine.test.http.UserAPI
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -108,6 +111,45 @@ class ProjectRepresentativeUserTests {
 
         result = ProjectRepresentativeUserAPI.show(id, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
+    }
+
+    void testDeleteDependentUser() {
+        //init user creator
+        def USERNAME2 = "user2";
+        def PASSWORD2 = "password";
+
+        BasicInstanceBuilder.getUser2()
+        User user = BasicInstanceBuilder.getUser1()
+
+        //Create new project (user1)
+        def resultProject = ProjectAPI.create(BasicInstanceBuilder.getProjectNotExist().encodeAsJSON(),USERNAME2,PASSWORD2)
+
+        Project project = Project.get(resultProject.data.id)
+        def resAddUser = ProjectAPI.addUserProject(project.id,user.id,USERNAME2,PASSWORD2)
+        assert 200 == resAddUser.code
+
+        //create new representative
+        def representative = new ProjectRepresentativeUser(project: project, user: user)
+        def result = ProjectRepresentativeUserAPI.create(representative.encodeAsJSON(), USERNAME2, PASSWORD2)
+
+        //check if create == good HTTP Code
+        assert 200 == result.code
+
+        Long id = result.data.id
+        Long idProject = result.data.project.id
+
+        //check if show == good HTTP Code
+        result = ProjectRepresentativeUserAPI.show(id, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = UserAPI.delete(representative.user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        def showResult = ProjectRepresentativeUserAPI.show(id, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == showResult.code
+
+
+
     }
 
     void testDeleteProjectRepresentativeUserNotExist() {

@@ -2,11 +2,13 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">Add contributors to <%= name %> project</h4>
             </div>
             <div class="modal-body">
                 <p></p>
-                <div class="col-md-9 col-md-offset-2">
+                <div id="addUserToProjectWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
+                <div id="addUserToProjectContent" class="col-md-9 col-md-offset-2">
                     <div id="AddUserGroup">
                         <input type="radio" id="addUsersByName-radio-config" name="AddUserGroup" value="name" checked>
                         Add contributors by name<br>
@@ -21,6 +23,10 @@
                         <div id="invite_new_user" class="col-md-offset-1">
                             <label class="control-label" for="new_username">Username</label><br/>
                             <input type="text" id="new_username"><br/>
+                            <label class="control-label" for="new_firstname">Firstname</label><br/>
+                            <input type="text" id="new_firstname"><br/>
+                            <label class="control-label" for="new_lastname">Lastname</label><br/>
+                            <input type="text" id="new_lastname"><br/>
                             <label class="control-label" for="new_mail">Email</label><br/>
                             <input type="email" id="new_mail"><br/><br/>
                             <a id="invitenewuserbutton" href="javascript:void(0);" class="btn btn-info">Invite</a>
@@ -31,6 +37,7 @@
 
             </div>
             <div class="modal-footer">
+                <a href="#" id="addUserToProjectSaveBtn" class="btn btn-default btn-primary"  data-dismiss="modal">Save</a>
                 <a href="#" class="btn btn-default btn-primary"  data-dismiss="modal">Close</a>
             </div>
         </div>

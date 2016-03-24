@@ -136,6 +136,7 @@ class StatsController extends RestController {
             def item = [:]
             item.id = user.id
             item.key = user.firstname + " " + user.lastname
+            item.username = user.username
             item.value = 0
             result.put(item.id, item)
         }

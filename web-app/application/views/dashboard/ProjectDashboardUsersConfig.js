@@ -22,16 +22,17 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
     projectRepresentatives: [],
     showOnlyOnlineUsers : false,
     showOnlyAdmins : false,
-    statsView : null,
+    statsUsersHeatmapView : null,
+    statsUsersGlobalActivitiesView: null,
     initialize: function () {
         this.rendered = false;
     },
     render: function () {
         var self = this;
         if (!this.rendered) {
-            require(["text!application/templates/dashboard/config/UsersConfig2.tpl.html"],
-                function (imageTableTemplate) {
-                    self.doLayout(imageTableTemplate);
+            require(["text!application/templates/dashboard/config/UsersConfig.tpl.html"],
+                function (userTableTemplate) {
+                    self.doLayout(userTableTemplate);
                     self.rendered = true;
                 });
         } else {
@@ -96,7 +97,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             }},
             { "mDataProp": "action", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 o.aData["project"]  = self.model.get('id');
-                return _.template('<button class="btn btn-info btn-xs" id="UserDetailsButton<%=  id  %>">Details</button>', o.aData);
+                return "<button class='btn btn-info btn-xs UserDetailsButton"+self.model.id+"' data-id="+o.aData["id"]+" >Details</button>";
             }}
         ];
 
@@ -111,9 +112,11 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             "fnRowCallback": function( nRow, aData ) {
                 var id = aData.id; // ID is returned by the server as part of the data
                 var $nRow = $(nRow); // cache the row wrapped up in jQuery
-                // TODO a better color. Put a color for online users ?
-                if (id == "41") {
-                    $('td', $nRow).css({"background-color":"red"});
+                if (self.projectAdmins.indexOf(id) >= 0) {
+                    $('td', $nRow).css({"background-color":"#ff3333"});
+                }
+                if (id == window.app.status.user.id) {
+                    $('td', $nRow).css({"background-color":"#3385ff"});
                 }
                 return nRow;
             },
@@ -121,20 +124,37 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             "fnDrawCallback": function(oSettings, json) {
             },
             "aoColumns" : columns,
-            "aaSorting": [[ 0, "desc" ]]
+            "aaSorting": [[ 0, "desc" ]],
+            "aLengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
 
 
         });
+
+        $('#selectAllUsers'+self.model.id).prop('checked', false);
 
 
     },
     updateMagics: function () {
         var self = this;
+        $(self.adminMagicSuggest).off('selectionchange');
+        $(self.representativeMagicSuggest).off('selectionchange');
+
         self.adminMagicSuggest.setData(self.projectUsers);
+        self.adminMagicSuggest.clear();
         self.adminMagicSuggest.setValue(self.projectAdmins);
         self.representativeMagicSuggest.setData(self.projectUsers);
-        // add representative
-        //self.representativeMagicSuggest.setValue(self.projectAdmins);
+        self.representativeMagicSuggest.clear();
+        self.representativeMagicSuggest.setValue(self.projectRepresentatives);
+
+        $(self.adminMagicSuggest).on('selectionchange', function(e,m){
+            self.projectAdmins = this.getValue();
+            self.updateUsersInProject(null,self.projectAdmins,null);
+        });
+        $(self.representativeMagicSuggest).on('selectionchange', function(e,m){
+            self.projectRepresentatives = this.getValue();
+            self.updateUsersInProject(null, null, self.projectRepresentatives);
+        });
+
     },
     getValues: function (callBack) {
         var self = this;
@@ -144,12 +164,13 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
 
         var loadUsers = function() {
-            if(projectUser == null || projectAdmin == null /*|| projectRepresentative == null*/) {
+            if(projectUser == null || projectAdmin == null || projectRepresentative == null) {
                 return;
             }
 
             self.projectUsers = [];
             self.projectAdmins = [];
+            self.projectRepresentatives = [];
 
             projectUser.each(function(user) {
                 self.projectUsers.push({id:user.id,label:user.prettyName()});
@@ -160,9 +181,9 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 self.projectAdmins.push(user.id);
             });
 
-            /*projectRepresentative.each(function(user) {
+            projectRepresentative.each(function(user) {
                 self.projectRepresentatives.push(user.id);
-            });*/
+            });
 
             callBack();
 
@@ -173,49 +194,58 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 projectUser = projectUserCollection;
                 window.app.models.projectUser = projectUserCollection;
                 loadUsers();
-            }});
+            }
+        });
 
         new UserCollection({project: self.model.id, admin:true}).fetch({
             success: function (projectUserCollection) {
                 projectAdmin = projectUserCollection;
-                window.app.models.projectAddmin = projectUserCollection;
+                window.app.models.projectAdmin = projectUserCollection;
                 loadUsers();
-            }});
+            }
+        });
 
-        // need to get the Representative too
-
-
+        new UserCollection({project: self.model.id, representative:true}).fetch({
+            success: function (projectUserCollection) {
+                projectRepresentative = projectUserCollection;
+                window.app.models.projectRepresentative = projectUserCollection;
+                loadUsers();
+            }
+        });
     },
 
-    doLayout: function (imageTableTemplate) {
+    doLayout: function (userTableTemplate) {
         var self = this;
 
         // table
-        var view = _.template(imageTableTemplate, {id : self.model.get('id')});
+        var view = _.template(userTableTemplate, {id : self.model.get('id')});
         $(this.el).append(view);
 
+        $(this.el).find("#ProjectUserAdd"+self.model.get('id')).on("click", function() {
+            //The close action save the user modifications
+            new AddUserToProjectDialog({el: "#dialogs", model: self.model, closeAction: function(newUsersId){
+                self.addUsersInProject(newUsersId);
+            }}).render();
+        });
         $(this.el).find("#UserRefresh"+self.model.get('id')).on("click", function() {
-            self.update();
+            self.updateTable();
+        });
+
+        $(this.el).find("#ProjectUserExport"+self.model.get('id')).on("click", function() {
+            window.open("/api/project/"+self.model.id+"/user/download?format=csv");
         });
 
 
 
 
         $(this.el).find("#ProjectUserDelete"+self.model.get('id')).on("click", function() {
-            console.log("delete button");
-
-            var users = $(self.el).find(".userchckbox-"+self.model.get('id')+":checked");
-
-            users = $.map( users, function(n) {
-                return ( n.dataset.id );
-            });
-
-            // donc ici appeller une customModal qui va demander si on est sur blabla et puis on delete tout ces users.
-            // si y a des admins, mettre un warning dans la customModal
-            // si y a le user en cours, mettre le panneau rouge disant que c'est impossible pour cette raison là
-            console.log(users)
+            self.deleteUsersInProject();
         });
 
+        // TODO uncomment when archive proccess is written
+        /*$(this.el).find("#ProjectUserArchive"+self.model.get('id')).on("click", function() {
+            self.archiveAnnotationsOfUsers();
+        });*/
 
 
 
@@ -226,22 +256,29 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             } else {
                 self.showOnlyOnlineUsers = false;
             }
-            self.update();
+            self.updateTable();
         });
-        $(this.el).find("#ProjectUserAdd"+self.model.get('id')).on("click", function() {
-            console.log("add button")
-            /////////////////// NOPE seulement un callback pour la save action ! Et cela va aussi sauver les new user dans le projet AVANT de faire le refresh
-            new AddUserToProjectDialog({el: "#dialogs", model: self.model, closeAction: function(){self.update()}}).render();
+        $(this.el).find("#ShowOnlyAdmin"+self.model.get('id')).change(function() {
+            if ($(this).is(':checked')) {
+                self.showOnlyAdmins = true;
+            } else {
+                self.showOnlyAdmins = false;
+            }
+            self.updateTable();
         });
 
+        $('#selectAllUsers'+self.model.id).on('change', function(){
+            $(".userchckbox-"+self.model.get('id')).prop('checked', $(this).prop('checked'));
+        });
 
         $(this.el).on("change", ".userchckbox-"+self.model.get('id'), function() {
-            console.log("test");
             console.log($(this).data("id"));
-            if ($(this).is(':checked')) {
-                console.log("test2");
+            if ($(this).prop('checked')) {
+                if($(".userchckbox-"+self.model.get('id')+":checked").length === $(".userchckbox-"+self.model.get('id')).length){
+                    $('#selectAllUsers'+self.model.id).prop('checked', true);
+                }
             } else {
-                console.log("test3");
+                $('#selectAllUsers'+self.model.id).prop('checked', false);
             }
         });
 
@@ -263,23 +300,145 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         });
 
 
-        //var isAdmin = window.app.status.currentProjectModel.isAdmin(window.app.models.projectAdmin);
+        $(this.el).on("click", ".UserDetailsButton"+self.model.get('id'), function() {
+            var userId = $(this).data("id");
+            new UserModel({id: userId}).fetch({
+                success: function (model, response) {
+                    var viewModel = model;
+                    viewModel.set({projectId : self.model.id});
+                    viewModel.set({projectName : self.model.get('name')});
+
+                    new DetailedUserProjectInfoDialog({el: "#dialogs", model: viewModel}).render();
+                }
+            });
 
 
-
+        });
 
         self.update();
 
-        //$(this.el).append(view)
-        if (this.statsView == null) {
-            this.statsView = new ProjectDashboardUsersStatsView({
+        if (this.statsUsersGlobalActivitiesView == null) {
+            this.statsUsersGlobalActivitiesView = new ProjectUsersTotalActivitiesView({
                 model: self.model,
-                el: $(self.el).find("#UsersActivitiesGraph"+self.model.get('id'))
+                el: $(self.el).find("#UsersGlobalActivities"+self.model.id)
+            });
+        }
+        if (this.statsUsersHeatmapView == null) {
+            this.statsUsersHeatmapView = new ProjectUsersHeatmapView({
+                model: self.model,
+                el: $(self.el).find("#UsersActivitiesHeatmap"+self.model.id)
             });
         }
 
-        this.statsView.render();
+        this.statsUsersGlobalActivitiesView.render();
+        this.statsUsersHeatmapView.render();
 
 
+    },
+
+    archiveAnnotationsOfUsers: function() {
+        var self = this;
+        var usersToArchive = $(self.el).find(".userchckbox-"+self.model.get('id')+":checked");
+
+        usersToArchive = $.map( usersToArchive, function(n) {
+            return ( Number(n.dataset.id) );
+        });
+
+        if(usersToArchive.length == 0) return;
+
+        /*var level = 'CONFIRMATIONWARNING';
+        // todo put the after br in red
+        var message = "Do you really want to archive these users ? <br/><label class='label label-danger'>You won't be able to reverse this!</label>";
+        var callback = function(){
+            // TODO : A post request not yet implemented
+        };
+
+        DialogModal.initDialogModal(null, self.model.id, 'ArchiveUsers', message, level, callback);*/
+    },
+    addUsersInProject: function(newUsersId) {
+        var self = this;
+        var users = [];
+
+        new UserCollection({project: self.model.id}).fetch({
+            success: function (projectUserCollection) {
+                projectUserCollection.each(function (user) {
+                    users.push(user.id)
+                });
+                for(var i = 0; i< newUsersId.length; i++) {
+                    users.push(newUsersId[i]);
+                }
+                self.updateUsersInProject(users, null, null)
+            }
+        });
+    },
+    deleteUsersInProject: function() {
+        var self = this;
+
+        var usersToDelete = $(self.el).find(".userchckbox-"+self.model.get('id')+":checked");
+
+        usersToDelete = $.map( usersToDelete, function(n) {
+            return ( Number(n.dataset.id) );
+        });
+
+        if(usersToDelete.length == 0) return;
+
+        var level = 'CONFIRMATIONWARNING';
+        var message = 'Do you want to delete these users ?';
+        var callback = null;
+
+        // cannot delete current users and admins.
+        if(usersToDelete.indexOf(window.app.status.user.id)>=0){
+            level = 'ERROR';
+            message = 'Impossible to delete these users. You cannot delete yourself of a project.';
+        } else {
+            var checkAdminSelected = self.projectAdmins.some(function(currentValue) {
+                return usersToDelete.indexOf(currentValue)>=0;
+            });
+
+            if(checkAdminSelected) {
+                message += "<br/>Be careful, some project managers are selected!";
+            }
+
+            callback = function(){
+                var users = [];
+
+                new UserCollection({project: self.model.id}).fetch({
+                    success: function (projectUserCollection) {
+                        projectUserCollection.each(function (user) {
+                            if(usersToDelete.indexOf(user.id) == -1) {
+                                users.push(user.id)
+                            }
+                        });
+                        self.updateUsersInProject(users, null, null)
+                    }
+                });
+            };
+        }
+
+        DialogModal.initDialogModal(null, self.model.id, 'DeleteUsers', message, level, callback);
+    },
+    updateUsersInProject: function(projectUsers, projectManagers, projectRepresentatives) {
+        var self = this;
+
+        var project = self.model;
+
+        project.set({users: projectUsers, admins: projectManagers, representatives: projectRepresentatives});
+        project.save({users:projectUsers, admins: projectManagers, representatives: projectRepresentatives}, {
+            success: function (model, response) {
+                console.log("1. Project edited!");
+                window.app.view.message("Project", response.message, "success");
+                self.update();
+                // The users change. Update all the panels where users are listed.
+                window.app.controllers.dashboard.refreshUserData();
+                // Idem with representatives
+                window.app.controllers.dashboard.refreshRepresentativeData();
+
+            },
+            error: function (model, response) {
+                var json = $.parseJSON(response.responseText);
+                window.app.view.message("Project", json.errors, "error");
+            }
+        });
     }
+
 });

@@ -28,6 +28,8 @@ var ProjectDashboardView = Backbone.View.extend({
     maxSuggestView: 30,
     projectDashboardAnnotations: null,
     projectDashboardImages: null,
+    projectDashboardConfig: null,
+    projectDashboardUsersConfig: null,
     rendered: false,
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -57,7 +59,7 @@ var ProjectDashboardView = Backbone.View.extend({
         $('#activityTab a').click(function (e) {
           e.preventDefault();
           $(this).tab('show');
-        })
+        });
         //Refresh dashboard
         setInterval(function () {
             if ($("#tabs-dashboard-" + self.model.id).hasClass('active')) {
@@ -73,14 +75,14 @@ var ProjectDashboardView = Backbone.View.extend({
         }, 60000);
 
     },
-    refreshImagesThumbs: function () {
+    refreshImagesThumbsView: function () {
         if (this.projectDashboardImages == null) {
             this.projectDashboardImages = new ProjectDashboardImages({ model: this.model});
         }
         this.projectDashboardImages.refreshImagesThumbs();
 
     },
-    refreshAlgos: function (idSoftware, idJob) {
+    refreshAlgosView: function (idSoftware, idJob) {
 
         if (this.projectDashboardAlgos == null || this.projectDashboardAlgos == undefined) {
             this.projectDashboardAlgos = new ProjectDashboardAlgos({
@@ -94,28 +96,28 @@ var ProjectDashboardView = Backbone.View.extend({
         }
 
     },
-    refreshConfig: function () {
-        if (this.ProjectDashboardConfig == null) {
-            this.ProjectDashboardConfig = new ProjectDashboardConfig({
+    refreshConfigView: function () {
+        if (this.projectDashboardConfig == null) {
+            this.projectDashboardConfig = new ProjectDashboardConfig({
                 model: this.model,
                 el: $("#editableConfigurations")
             });
         }
 
-        this.ProjectDashboardConfig.refresh();
+        this.projectDashboardConfig.refresh();
 
     },
-    /*refreshUsersConfig: function () {
-        if (this.ProjectDashboardUsersConfig == null) {
-            this.ProjectDashboardUsersConfig = new ProjectDashboardUsersConfig({
+    refreshUsersConfigView: function () {
+        if (this.projectDashboardUsersConfig == null) {
+            this.projectDashboardUsersConfig = new ProjectDashboardUsersConfig({
                 model: this.model,
                 el: $("#projectUsersConfiguration")
             });
         }
 
-        this.ProjectDashboardUsersConfig.render();
+        this.projectDashboardUsersConfig.render();
 
-    },*/
+    },
     refreshReview: function (image,user,term) {
         if (this.projectDashboardReview == null || this.projectDashboardReview.image!=image) {
 
@@ -136,7 +138,7 @@ var ProjectDashboardView = Backbone.View.extend({
         }
         this.projectDashboardImages.refreshImagesTable();
     },
-    refreshAnnotations: function (terms, users) {
+    refreshAnnotationsView: function (terms, users) {
         var self = this;
 
         if (this.projectDashboardAnnotations == null) {
@@ -191,6 +193,8 @@ var ProjectDashboardView = Backbone.View.extend({
             json.hideImagesData = CustomUI.mustBeShow("project-images-tab")? "" : 'display:none;';
 
             $("#projectInfoPanel").html(_.template(tpl, json));
+
+            self.updateRepresentatives();
 
             var updateProjectClosed = function(close) {
                 self.model.set({isClosed: close});
@@ -413,6 +417,29 @@ var ProjectDashboardView = Backbone.View.extend({
         $("#tabs-projectImageListing" + this.model.id).show();
         $('#imageThumbs' + this.model.id).removeAttr("disabled");
         $('#imageArray' + this.model.id).attr("disabled", "disabled");
+    },
+    refreshUserData: function (){
+        if(this.projectDashboardAnnotations !== null) this.projectDashboardAnnotations.refreshUserData();
+
+        if(this.projectDashboardConfig !== null) this.projectDashboardConfig.refreshUserData();
+    },
+
+    updateRepresentatives: function (){
+        var representatives = window.app.models.projectRepresentatives;
+        var list = [];
+        if(representatives.length === 0){
+            $("#projectInfoPanel").find("#projectContacts").append("No contact");
+        } else {
+            var max = Math.min(3,representatives.length);
+            for(var i = 0 ; i < max;i++){
+
+                var representative = representatives.models[i];
+
+                var mail = representative.get('email');
+                list.push("<a href='mailto:"+mail+"'>"+representative.prettyName()+"</a>");
+            }
+            $("#projectInfoPanel").find("#projectContacts").append(list.join("<br/> "));
+        }
     }
 
 });

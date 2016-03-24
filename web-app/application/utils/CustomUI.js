@@ -47,7 +47,7 @@ var CustomUI = {
         {componentId: "project-images-tab", componentName: "Images tab"}, //TODO: if you need to add a new panel
         {componentId: "project-properties-tab", componentName: "Properties tab"},
         {componentId: "project-jobs-tab", componentName: "Jobs tab"},
-        //{componentId: "project-usersconfiguration-tab", componentName: "Config Users tab"},
+        {componentId: "project-usersconfiguration-tab", componentName: "Config Users tab"},
         {componentId: "project-configuration-tab", componentName: "Config tab"} //TODO: cannot be hide by project-admin
 
     ],
@@ -93,8 +93,16 @@ var CustomUI = {
         {componentId: "project-tools-move", componentName: "Move tool"},
         {componentId: "project-tools-delete", componentName: "Delete tool  <i class='glyphicon glyphicon-trash'/>"},
         {componentId: "project-tools-screenshot", componentName: "Screenshot tool  <i class='glyphicon glyphicon-screenshot'/>"}
-
-
+    ],
+    componentsGraphs: [
+        {componentId: "project-annotations-term-piegraph", componentName: "Annotations VS terms pie graph"},
+        {componentId: "project-annotations-term-bargraph", componentName: "Annotations VS terms bar graph"},
+        {componentId: "project-annotations-users-graph", componentName: "Annotations by contributor graph"},
+        {componentId: "project-annotated-slides-term-graph", componentName: "Annotated slides by term graph"},
+        {componentId: "project-annotated-slides-users-graph", componentName: "Annotated slides by contributor graph"},
+        {componentId: "project-annotation-graph", componentName: "Number of contributor annotation graph"},
+        {componentId: "project-users-global-activities-graph", componentName: "Users global activities graph"},
+        {componentId: "project-users-heatmap-graph", componentName: "Users heatmap graph"}
     ],
 
     roles:[

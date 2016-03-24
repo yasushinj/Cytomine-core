@@ -92,7 +92,8 @@ class UserAnnotationService extends ModelService {
         annotationListingService.executeRequest(al)
     }
 
-    def count(User user) {
+    def count(User user, Project project = null) {
+        if(project) return UserAnnotation.countByUserAndProject(user, project)
         return UserAnnotation.countByUser(user)
     }
 

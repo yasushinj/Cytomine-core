@@ -80,7 +80,7 @@ var CommandController = Backbone.Router.extend({
             var image = tab.view;
             image.getUserLayer().annotationAdded(callback.annotationID);
             if (window.app.controllers.dashboard.view != null) {
-                window.app.controllers.dashboard.view.refreshAnnotations();
+                window.app.controllers.dashboard.view.refreshAnnotationsView();
             }
         } else if (callback.method == "be.cytomine.EditUserAnnotationCommand") {
 
@@ -94,7 +94,7 @@ var CommandController = Backbone.Router.extend({
             var image = tab.view;
             image.getUserLayer().annotationUpdated(callback.annotationID);
             if (window.app.controllers.dashboard.view != null) {
-                window.app.controllers.dashboard.view.refreshAnnotations();
+                window.app.controllers.dashboard.view.refreshAnnotationsView();
             }
 
         } else if (callback.method == "be.cytomine.DeleteUserAnnotationCommand") {
@@ -110,7 +110,7 @@ var CommandController = Backbone.Router.extend({
 
             image.getUserLayer().annotationRemoved(callback.annotationID);
             if (window.app.controllers.dashboard.view != null) {
-                window.app.controllers.dashboard.view.refreshAnnotations();
+                window.app.controllers.dashboard.view.refreshAnnotationsView();
             }
             /**
              * ANNOTATION TERM
@@ -127,7 +127,7 @@ var CommandController = Backbone.Router.extend({
             var image = tab.view;
             image.getUserLayer().termAdded(callback.annotationID, callback.termID);
             if (window.app.controllers.dashboard.view != null) {
-                window.app.controllers.dashboard.view.refreshAnnotations();
+                window.app.controllers.dashboard.view.refreshAnnotationsView();
             }
         } else if (callback.method == "be.cytomine.DeleteAnnotationTermCommand") {
 
@@ -141,7 +141,7 @@ var CommandController = Backbone.Router.extend({
             var image = tab.view;
             image.getUserLayer().termRemoved(callback.annotationID, callback.termID);
             if (window.app.controllers.dashboard.view != null) {
-                window.app.controllers.dashboard.view.refreshAnnotations();
+                window.app.controllers.dashboard.view.refreshAnnotationsView();
             }
         }
 

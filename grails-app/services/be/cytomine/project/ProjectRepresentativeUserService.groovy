@@ -34,7 +34,7 @@ class ProjectRepresentativeUserService extends ModelService {
     def springSecurityService
     def transactionService
     def securityACLService
-    def secUserService
+    def projectPermissionService
 
     def currentDomain() {
         return ProjectRepresentativeUser
@@ -57,6 +57,12 @@ class ProjectRepresentativeUserService extends ModelService {
         return ProjectRepresentativeUser.findAllByProject(project)
     }
 
+    def listUserByProject(Project project) {
+        securityACLService.check(project,READ)
+        def users = listByProject(project).collect {it.user}
+        return users
+    }
+
     /**
      * Add the new domain with JSON data
      * @param json New domain data
@@ -67,7 +73,7 @@ class ProjectRepresentativeUserService extends ModelService {
         securityACLService.check(json.project,Project,WRITE)
         User user = User.get(json.user)
         Project project = Project.get(json.project)
-        secUserService.checkIsUserInProject(user, project)
+        projectPermissionService.checkIsUserInProject(user, project)
         def result =  executeCommand(new AddCommand(user: user), null,json)
         return result
     }

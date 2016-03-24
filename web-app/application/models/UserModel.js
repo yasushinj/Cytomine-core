@@ -91,8 +91,10 @@ var UserOnlineCollection = PaginatedCollection.extend({
 var UserCollection = PaginatedCollection.extend({
     model: UserModel,
     url: function () {
-        if (!window.app.isUndefined(this.project) && this.admin) {
-            return "api/project/" + this.project + "/admin.json";
+        if (!window.app.isUndefined(this.project) && this.representative) {
+            return "api/project/" + this.project + "/users/representative.json";
+        } else if (!window.app.isUndefined(this.project) && this.admin) {
+                return "api/project/" + this.project + "/admin.json";
         } else if (!window.app.isUndefined(this.project) && this.creator) {
             return "api/project/" + this.project + "/creator.json";
         } else if (!window.app.isUndefined(this.project) && this.online) {
@@ -115,6 +117,7 @@ var UserCollection = PaginatedCollection.extend({
         this.admin = options.admin;
         this.creator = options.creator;
         this.online = options.online;
+        this.representative = options.representative;
     },
     comparator: function (user) {
         if (user.get("lastname") != undefined) {

@@ -30,6 +30,7 @@ import be.cytomine.ontology.*
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
 import be.cytomine.project.ProjectDefaultLayer
+import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.social.LastConnection
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.News
@@ -67,6 +68,7 @@ class SecUserService extends ModelService {
     def securityACLService
     def projectDefaultLayerService
     def storageService
+    def projectRepresentativeUserService
 
     def currentDomain() {
         User
@@ -155,21 +157,6 @@ class SecUserService extends ModelService {
         }
         return users
     }
-
-    boolean isUserInProject(User user, Project project) {
-        securityACLService.check(project,READ)
-        List<SecUser> users = SecUser.executeQuery("select count(secUser) from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, SecUser as secUser "+
-                "where aclObjectId.objectId = "+project.id+" and aclEntry.aclObjectIdentity = aclObjectId.id and aclEntry.sid = aclSid.id and aclSid.sid = secUser.username " +
-                "and secUser.class = 'be.cytomine.security.User' and secUser.id = "+user.id);
-        return (users.get(0) > 0)
-    }
-
-    void checkIsUserInProject(User user, Project project) {
-        boolean result = isUserInProject(user, project)
-        if(!result) throw new ConstraintException("Error: the user "+user.id+" is not into the project "+project.id)
-
-    }
-
 
     def listCreator(Project project) {
         securityACLService.check(project,READ)
@@ -460,6 +447,10 @@ class SecUserService extends ModelService {
                 removeOntologyRightIfNecessary(project,user)
                 permissionService.deletePermission(project,user.username,READ)
             }
+            ProjectRepresentativeUser representative = ProjectRepresentativeUser.findByUserAndProject(user, project)
+            if(representative) {
+                projectRepresentativeUserService.delete(representative)
+            }
         }
         [data: [message: "OK"], status: 201]
     }
@@ -693,6 +684,14 @@ class SecUserService extends ModelService {
         if(user instanceof User) {
             ProjectDefaultLayer.findAllByUser(user).each {
                 projectDefaultLayerService.delete(it,transaction, null,false)
+            }
+        }
+    }
+
+    def deleteDependentProjectRepresentativeUser(SecUser user, Transaction transaction, Task task = null) {
+        if(user instanceof User) {
+            ProjectRepresentativeUser.findAllByUser(user).each {
+                projectRepresentativeUserService.delete(it,transaction, null,false)
             }
         }
     }
