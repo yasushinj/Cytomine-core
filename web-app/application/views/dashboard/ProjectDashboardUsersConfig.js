@@ -112,12 +112,11 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             "fnRowCallback": function( nRow, aData ) {
                 var id = aData.id; // ID is returned by the server as part of the data
                 var $nRow = $(nRow); // cache the row wrapped up in jQuery
-                // TODO a better color. Put a color for online users ?
                 if (self.projectAdmins.indexOf(id) >= 0) {
-                    $('td', $nRow).css({"background-color":"green"});
+                    $('td', $nRow).css({"background-color":"#ff3333"});
                 }
                 if (id == window.app.status.user.id) {
-                    $('td', $nRow).css({"background-color":"red"});
+                    $('td', $nRow).css({"background-color":"#3385ff"});
                 }
                 return nRow;
             },
@@ -243,9 +242,10 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             self.deleteUsersInProject();
         });
 
-        $(this.el).find("#ProjectUserArchive"+self.model.get('id')).on("click", function() {
+        // TODO uncomment when archive proccess is written
+        /*$(this.el).find("#ProjectUserArchive"+self.model.get('id')).on("click", function() {
             self.archiveAnnotationsOfUsers();
-        });
+        });*/
 
 
 
@@ -346,14 +346,14 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
         if(usersToArchive.length == 0) return;
 
-        var level = 'CONFIRMATIONWARNING';
+        /*var level = 'CONFIRMATIONWARNING';
         // todo put the after br in red
         var message = "Do you really want to archive these users ? <br/><label class='label label-danger'>You won't be able to reverse this!</label>";
         var callback = function(){
             // TODO : A post request not yet implemented
         };
 
-        DialogModal.initDialogModal(null, self.model.id, 'ArchiveUsers', message, level, callback);
+        DialogModal.initDialogModal(null, self.model.id, 'ArchiveUsers', message, level, callback);*/
     },
     addUsersInProject: function(newUsersId) {
         var self = this;
