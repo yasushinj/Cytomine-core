@@ -44,7 +44,6 @@ class UploadedFileService extends ModelService {
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
             isNull("parent.id")
-            isNull("downloadParent.id")
             isNull("deleted")
         }
         return uploadedFiles

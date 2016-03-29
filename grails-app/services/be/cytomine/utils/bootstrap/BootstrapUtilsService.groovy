@@ -468,10 +468,6 @@ class BootstrapUtilsService {
             }
 
             uploadedFile.image = abstractImage
-            String extension = abstractImage.mime.extension
-            if (extension == "tiff" || extension == "tif" || extension == "svs" || extension == "scn" || extension == "jp2" || extension == "ndpi") {
-                uploadedFile.downloadParent = uploadedFile
-            }
             uploadedFile.save()
             if(index%100==0) {
                 log.info "Create upload ${(index/notok.size())*100}"
