@@ -191,7 +191,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
             returnArray['macro'] = 'NO THUMB:' + e.toString()
         }
         try {
-            returnArray['fullPath'] = image.baseImage ? image.baseImage.getFullPath() : null
+            returnArray['fullPath'] = image.baseImage ? image.baseImage.getAbsolutePath() : null
         } catch (Exception e) {
             returnArray['thumb'] = 'NO THUMB:' + e.toString()
         }

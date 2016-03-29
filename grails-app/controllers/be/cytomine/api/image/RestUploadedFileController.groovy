@@ -175,6 +175,9 @@ class RestUploadedFileController extends RestController {
         def currentUser = cytomineService.currentUser
         securityACLService.checkUser(currentUser)
         UploadedFile uploadedFile = UploadedFile.read(params.long('uploadedFile'))
+        String path = request.JSON.path ?: uploadedFile.getFilename();
+        String filename = request.JSON.filename ?: uploadedFile.getFilename();
+        String mimeType = request.JSON.mimeType ?: uploadedFile.getMimeType();
         Collection<Storage> storages = []
         uploadedFile.getStorages()?.each {
             storages << storageService.read(it)
@@ -184,7 +187,6 @@ class RestUploadedFileController extends RestController {
 
         def projects = []
         //create domains instance
-        def mimeType = uploadedFile.getMimeType()
         def ext = uploadedFile.getExt()
         Mime mime = Mime.findByMimeType(mimeType)
         if (!mime) {
@@ -200,11 +202,11 @@ class RestUploadedFileController extends RestController {
         log.info "#################################################################"
         log.info "#################################################################"
         AbstractImage abstractImage = new AbstractImage(
-                filename: uploadedFile.getFilename(),
+                filename: filename,
                 originalFilename:  uploadedFile.getOriginalFilename(),
                 scanner: null,
                 sample: sample,
-                path: uploadedFile.getFilename(),
+                path: path,
                 mime: mime)
 
         if (sample.validate() && abstractImage.validate()) {

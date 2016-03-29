@@ -174,7 +174,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['magnification'] = image?.magnification
         returnArray['thumb'] = UrlApi.getThumbImage(image ? (long)image?.id : null, 512)
         returnArray['preview'] = UrlApi.getThumbImage(image ? (long)image?.id : null, 1024)
-        returnArray['fullPath'] = image?.getFullPath()
+        returnArray['fullPath'] = image?.getAbsolutePath()
         returnArray['macroURL'] = UrlApi.getAssociatedImage(image ? (long)image?.id : null, "macro", 512)
         returnArray
     }
@@ -210,12 +210,12 @@ class AbstractImage extends CytomineDomain implements Serializable {
         else return uploadedFile?.mimeType
     }
 
-    def getFullPath() {
-        if(this.version) {
-            def imageServersStorage = getImageServersStorage()
-            if (imageServersStorage && imageServersStorage.size() > 0)
-                return [imageServersStorage.first().storage.getBasePath(), getPath()].join(File.separator)
-        }
+    def getAbsolutePath() {
+        return [ StorageAbstractImage.findByAbstractImage(this).storage.basePath, this.path].join(File.separator)
+    }
+
+    def getMimeType(){
+        return mime.mimeType
     }
 
     def getRandomImageServerURL() {
