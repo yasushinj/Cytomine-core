@@ -215,37 +215,12 @@ class RestAbstractImageController extends RestController {
         responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize))
     }
 
-    //TODO:APIDOC
-//    def camera () {
-//        //:to do : save image in database ?
-//        //:+ send email
-//        String imageData = params.imgdata.replace(' ', '+')
-//        BASE64Decoder decoder = new BASE64Decoder();
-//        byte[] imageByte = decoder.decodeBuffer(imageData);
-//        response.setContentType "application/octet-stream"
-//        response.setHeader "Content-disposition", "attachment; filename=capture.png"
-//        response.getOutputStream() << imageByte
-//        response.getOutputStream().flush()
-//    }
-
     def download() {
         String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")))
         log.info "redirect url"
         redirect (url : url)
     }
 
-
-    /**
-     * Get Image Tile
-     * @param id
-     * @param params
-     */
-    //TODO:APIDOC
-    def tile() {
-        String url = abstractImageService.tile(params, request.queryString)
-        log.info "redirect $url"
-        redirect (url : url)
-    }
 
     //TODO:APIDOC
     def crop() {

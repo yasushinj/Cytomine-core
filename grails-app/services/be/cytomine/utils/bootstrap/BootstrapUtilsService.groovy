@@ -441,7 +441,7 @@ class BootstrapUtilsService {
 
         notok.eachWithIndex { abstractImage, index ->
             abstractImage.attach()
-            UploadedFile uploadedFile = UploadedFile.findByFilename(abstractImage.getPath())
+            UploadedFile uploadedFile = UploadedFile.findByFilename(abstractImage.filename)
             SecUser user = abstractImage.user ? abstractImage.user : currentUser
             if (!uploadedFile) {
                 def imageServerStorage = abstractImage.imageServersStorage
@@ -455,7 +455,7 @@ class BootstrapUtilsService {
                         ext: abstractImage.mime.extension,
                         size : 0,
                         path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),
-                        contentType: abstractImage.mime.mimeType)
+                        contentType: abstractImage.mimeType)
 
                 if (uploadedFile.validate()) {
                     uploadedFile = uploadedFile.save()
@@ -469,30 +469,7 @@ class BootstrapUtilsService {
 
             uploadedFile.image = abstractImage
             String extension = abstractImage.mime.extension
-            if (extension == "tiff" || extension == "tif") {
-                uploadedFile.mimeType = "image/pyrtiff"
-                uploadedFile.downloadParent = uploadedFile
-            }
-            else if (extension == "mrxs") {
-                uploadedFile.mimeType = "openslide/mrxs"
-            }
-            else if (extension == "svs") {
-                uploadedFile.mimeType = "openslide/svs"
-                uploadedFile.downloadParent = uploadedFile
-            }
-            else if (extension == "scn") {
-                uploadedFile.mimeType = "openslide/scn"
-                uploadedFile.downloadParent = uploadedFile
-            }
-            else if (extension == "jp2") {
-                uploadedFile.mimeType = "image/jp2"
-                uploadedFile.downloadParent = uploadedFile
-            }
-            else if (extension == "vms") {
-                uploadedFile.mimeType = "openslide/vms"
-            }
-            else if (extension == "ndpi") {
-                uploadedFile.mimeType = "openslide/ndpi"
+            if (extension == "tiff" || extension == "tif" || extension == "svs" || extension == "scn" || extension == "jp2" || extension == "ndpi") {
                 uploadedFile.downloadParent = uploadedFile
             }
             uploadedFile.save()

@@ -73,9 +73,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
     @RestApiObjectField(description = "File content type", presentInResponse = false)
     String contentType
 
-    @RestApiObjectField(description = "Mime type", presentInResponse = false)
-    String mimeType
-
     UploadedFile parent
     UploadedFile downloadParent
 
@@ -114,7 +111,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
         parent(nullable : true)
         downloadParent(nullable : true)
         image(nullable : true)
-        mimeType(nullable : true)
     }
 
     static def getDataFromDomain(def uploaded) {
@@ -126,7 +122,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['originalFilename'] = uploaded?.originalFilename
         returnArray['ext'] = uploaded?.ext
         returnArray['contentType'] = uploaded?.contentType
-        returnArray['mimeType'] = uploaded?.mimeType
         returnArray['size'] = uploaded?.size
         returnArray['path'] = uploaded?.path
         returnArray['status'] = uploaded?.status
@@ -168,7 +163,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
         domain.ext = JSONUtils.getJSONAttrStr(json,'ext')
         domain.path = JSONUtils.getJSONAttrStr(json,'path')
         domain.contentType = JSONUtils.getJSONAttrStr(json,'contentType')
-        domain.mimeType = JSONUtils.getJSONAttrStr(json,'mimeType')
 
         domain.parent = JSONUtils.getJSONAttrDomain(json, "parent", new UploadedFile(), false)
         domain.downloadParent = JSONUtils.getJSONAttrDomain(json, "downloadParent", new UploadedFile(), false)

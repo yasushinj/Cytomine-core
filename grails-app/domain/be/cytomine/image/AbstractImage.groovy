@@ -204,18 +204,12 @@ class AbstractImage extends CytomineDomain implements Serializable {
 
     }
 
-    def originalMimeType() {
-        UploadedFile uploadedFile = UploadedFile.findByImage(this)
-        if (uploadedFile && uploadedFile.parent) return uploadedFile.parent.mimeType
-        else return uploadedFile?.mimeType
-    }
-
     def getAbsolutePath() {
         return [ StorageAbstractImage.findByAbstractImage(this).storage.basePath, this.path].join(File.separator)
     }
 
     def getMimeType(){
-        return mime.mimeType
+        return mime?.mimeType
     }
 
     def getRandomImageServerURL() {

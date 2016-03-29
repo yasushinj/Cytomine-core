@@ -241,25 +241,9 @@ class AbstractImageService extends ModelService {
         queryString = queryString.replace("?", "")
         AbstractImage abstractImage = read(params.id)
         String imageServerURL = abstractImage.getRandomImageServerURL()
-        UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
-        String fif = URLEncoder.encode(uploadedFile.absolutePath, "UTF-8")
-        String mimeType = uploadedFile.mimeType
+        String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
+        String mimeType = abstractImage.mimeType
         return "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
-    }
-
-    def tile(def params, String queryString) {
-        log.info "tile request"
-        AbstractImage abstractImage = read(params.id)
-        int tileGroup = params.int("TileGroup")
-        int x = params.int("x")
-        int y = params.int("y")
-        int z = params.int("z")
-        String imageServerURL = abstractImage.getRandomImageServerURL()
-        UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
-        String fif = URLEncoder.encode(uploadedFile.absolutePath, "UTF-8")
-        String mimeType = uploadedFile.mimeType
-        def zoomifyQuery = "zoomify=$fif/TileGroup$tileGroup/$z-$x-$y\\.jpg&mimeType=$mimeType"
-        return "$imageServerURL/image/tile.jpg?$zoomifyQuery"
     }
 
     def window(def params, String queryString, Long width = null, Long height = null) {

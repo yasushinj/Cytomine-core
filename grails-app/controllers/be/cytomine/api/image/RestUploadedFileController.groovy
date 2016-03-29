@@ -177,7 +177,7 @@ class RestUploadedFileController extends RestController {
         UploadedFile uploadedFile = UploadedFile.read(params.long('uploadedFile'))
         String path = request.JSON.path ?: uploadedFile.getFilename();
         String filename = request.JSON.filename ?: uploadedFile.getFilename();
-        String mimeType = request.JSON.mimeType ?: uploadedFile.getMimeType();
+        String mimeType = request.JSON.mimeType;
         Collection<Storage> storages = []
         uploadedFile.getStorages()?.each {
             storages << storageService.read(it)

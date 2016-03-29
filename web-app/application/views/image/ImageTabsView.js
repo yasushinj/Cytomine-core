@@ -125,19 +125,19 @@ var ImageTabsView = Backbone.View.extend({
             { "mDataProp": "numberOfAnnotations", "bSearchable": false,"bSortable": true },
             { "mDataProp": "numberOfJobAnnotations", "bSearchable": false,"bSortable": true },
             { "mDataProp": "numberOfReviewedAnnotations", "bSearchable": false,"bSortable": true },
-            { "mDataProp": "originalMimeType", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                var originalMimeType = o.aData["originalMimeType"];
-                if (originalMimeType == "openslide/ndpi" || originalMimeType == "openslide/vms") {
+            { "mDataProp": "mimeType", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
+                var mimeType = o.aData["mime"];
+                if (mimeType == "openslide/ndpi" || mimeType == "openslide/vms") {
                     return '<img src="images/brands/hamamatsu.jpg" alt="hamamatsu photonics" style="max-width : 100px;max-height : 40px;" >';
-                } else if (originalMimeType == "openslide/mrxs") {
+                } else if (mimeType == "openslide/mrxs") {
                     return '<img src="images/brands/3dh.png" alt="hamamatsu photonics" style="max-width : 100px;max-height : 40px;" >';
-                } else if (originalMimeType == "openslide/svs") {
+                } else if (mimeType == "openslide/svs") {
                     return '<img src="images/brands/aperio.jpg" alt="hamamatsu photonics" style="max-width : 100px;max-height : 40px;" >';
-                } else if (originalMimeType == "openslide/scn") {
+                } else if (mimeType == "openslide/scn") {
                     return '<img src="images/brands/leica.png" alt="hamamatsu photonics" style="max-width : 100px;max-height : 40px;" >';
-                } else if (originalMimeType == "ventana/tif" || originalMimeType == "ventana/bif") {
+                } else if (mimeType == "ventana/tif" || mimeType == "ventana/bif") {
                     return '<img src="images/brands/roche.gif" alt="hamamatsu photonics" style="max-width : 100px;max-height : 40px;" >';
-                } else if (originalMimeType == "philips/tif") {
+                } else if (mimeType == "philips/tif") {
                     return '<img src="images/brands/philips.jpg" alt="philips" style="max-width : 100px;max-height : 40px;" >';
                 }
                 else return '<span class="label label-default">Undefined</span>';

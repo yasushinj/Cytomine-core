@@ -304,9 +304,8 @@ class RestImageInstanceController extends RestController {
         log.info "queryString=$queryString"
 //        queryString = queryString.replace("?", "")
         String imageServerURL = imageInstance.baseImage.getRandomImageServerURL()
-        UploadedFile uploadedFile = abstractImageService.getMainUploadedFile(imageInstance.baseImage)
-        String fif = URLEncoder.encode(uploadedFile.absolutePath, "UTF-8")
-        String mimeType = uploadedFile.mimeType
+        String fif = URLEncoder.encode(imageInstance.baseImage.absolutePath, "UTF-8")
+        String mimeType = imageInstance.baseImage.mimeType
         String url
         if(queryString[1].contains("mask=true")) {
             url = "$imageServerURL/image/mask.png?fif=$fif&mimeType=$mimeType&${queryString[1]}&resolution=${imageInstance.baseImage.resolution}" //&scale=$scale
