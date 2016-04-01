@@ -58,12 +58,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
     @RestApiObjectField(description = "Upload file short name")
     String originalFilename
 
-    @RestApiObjectField(description = "The converted filename", presentInResponse = false)
-    String convertedFilename
-
-    @RestApiObjectField(description = "The converted extension", presentInResponse = false)
-    String convertedExt
-
     @RestApiObjectField(description = "Extension name")
     String ext
 
@@ -105,8 +99,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
     static constraints = {
         projects nullable: true
         storages nullable: false
-        convertedFilename (nullable: true)
-        convertedExt (nullable: true)
         parent(nullable : true)
         image(nullable : true)
     }
@@ -130,7 +122,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['error_convert'] = (uploaded?.status == UploadedFile.ERROR_CONVERT)
         returnArray['uncompressed'] = (uploaded?.status == UploadedFile.UNCOMPRESSED)
         returnArray['to_deploy'] = (uploaded?.status == UploadedFile.TO_DEPLOY)
-        returnArray['image'] = uploaded?.getAbstractImage()
+        returnArray['image'] = uploaded?.getAbstractImage()?.id
         returnArray['parent'] = uploaded?.parent?.id
         returnArray['thumbURL'] = uploaded?.status == UploadedFile.DEPLOYED && uploaded?.image ? UrlApi.getAssociatedImage(uploaded?.image?.id, "macro") : null
         returnArray
@@ -155,8 +147,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
 
         domain.filename = JSONUtils.getJSONAttrStr(json,'filename')
         domain.originalFilename = JSONUtils.getJSONAttrStr(json,'originalFilename')
-        domain.convertedFilename = JSONUtils.getJSONAttrStr(json,'convertedFilename')
-        domain.convertedExt = JSONUtils.getJSONAttrStr(json,'convertedExt')
         domain.ext = JSONUtils.getJSONAttrStr(json,'ext')
         domain.path = JSONUtils.getJSONAttrStr(json,'path')
         domain.contentType = JSONUtils.getJSONAttrStr(json,'contentType')
@@ -177,24 +167,13 @@ class UploadedFile extends CytomineDomain implements Serializable{
     }
 
     def getAbsolutePath() {
-        AbstractImage img = this.getAbstractImageObject();
+        AbstractImage img = this.getAbstractImage();
         if(img) return [ StorageAbstractImage.findByAbstractImage(img).storage.basePath, this.filename].join(File.separator)
         // at creation, img are not set
         else return [ this.path, this.filename].join(File.separator)
     }
 
     def getAbstractImage() {
-        try {
-            if (image) return image.id
-            if (parent?.image) return parent.image.id
-            UploadedFile son = UploadedFile.findByParent(this)
-            if (son?.image) return son.image.id
-            else return null
-        } catch(Exception e) {
-            return null
-        }
-    }
-    def getAbstractImageObject() {
         try {
             if (image) return image
             if (parent?.image) return parent.image
@@ -205,5 +184,4 @@ class UploadedFile extends CytomineDomain implements Serializable{
             return null
         }
     }
-
 }

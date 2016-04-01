@@ -451,7 +451,6 @@ class BootstrapUtilsService {
                         projects: ImageInstance.findAllByBaseImage(abstractImage).collect { it.project.id}.unique(),
                         storages : abstractImage.getImageServersStorage().collect { it.storage.id},
                         originalFilename: abstractImage.getOriginalFilename(),
-                        convertedExt: abstractImage.mime.extension,
                         ext: abstractImage.mime.extension,
                         size : 0,
                         path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),

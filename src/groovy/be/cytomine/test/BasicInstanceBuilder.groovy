@@ -784,9 +784,7 @@ class BasicInstanceBuilder {
                     storages: [getStorage().id],
                     filename: "BASICFILENAME",
                     originalFilename: "originalFilename",
-                    convertedFilename:"originalFilenameConv",
                     ext: "tiff",
-                    convertedExt: "tiff",
                     path: "path",
                     contentType: "tiff/ddd",
                     size: 1232l
@@ -803,9 +801,7 @@ class BasicInstanceBuilder {
                 storages: [getStorage().id],
                 filename: getRandomString(),
                 originalFilename: "originalFilename",
-                convertedFilename:"originalFilenameConv",
                 ext: "tiff",
-                convertedExt: "tiff",
                 path: "path",
                 contentType: "tiff/ddd",
                 size: 1232l
