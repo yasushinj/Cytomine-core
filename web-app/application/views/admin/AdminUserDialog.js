@@ -97,7 +97,7 @@ var AdminUserDialog = Backbone.View.extend({
                 "username": $(self.el).find("#editinputUsername").val(),
                 "firstname": $(self.el).find("#editinputFirstname").val(),
                 "lastname": $(self.el).find("#editinputLastname").val(),
-                "email": $(self.el).find("#editinputEmail").val(),
+                "email": $(self.el).find("#editinputEmail").val()
             };
 
             if(window.app.isUndefined(self.model.id)){

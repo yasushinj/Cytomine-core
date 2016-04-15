@@ -18,7 +18,7 @@ var AdminView = Backbone.View.extend({
     adminDashboard: null,
     adminUsersView: null,
     adminGroupsView: null,
-    //adminPermissionsView : null,
+    adminPermissionsView : null,
     initialize: function (options) {
         _.bindAll(this, 'render');
     },
@@ -64,16 +64,16 @@ var AdminView = Backbone.View.extend({
             });
         }
         this.adminGroupsView.render();
-    }/*,
+    },
     refreshPermissions: function () {
         var self = this;
         if (this.adminPermissionsView == null) {
             this.adminPermissionsView = new AdminPermissionsView({
                 //model: this.model,
-                el: $(self.el).find("#admin-tabs-groups")
+                el: $(self.el).find("#admin-tabs-permissions")
             });
         }
         this.adminPermissionsView.render();
-    }*/
+    }
 
 });
