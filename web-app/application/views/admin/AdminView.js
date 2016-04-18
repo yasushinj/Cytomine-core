@@ -74,6 +74,15 @@ var AdminView = Backbone.View.extend({
             });
         }
         this.adminPermissionsView.render();
+    },
+    refreshConfig: function () {
+        var self = this;
+        if (this.adminConfigView == null) {
+            this.adminConfigView = new AdminConfigView ({
+                //model: this.model,
+                el: $(self.el).find("#admin-tabs-config")
+            });
+        }
+        this.adminConfigView.render();
     }
-
 });

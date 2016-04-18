@@ -218,6 +218,7 @@ body {
 <script type="text/javascript" src="application/views/admin/AdminUserDialog.js"></script>
 <script type="text/javascript" src="application/views/admin/AdminGroupsView.js"></script>
 <script type="text/javascript" src="application/views/admin/AdminPermissionsView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminConfigView.js"></script>
 
 
 <script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
