@@ -19,10 +19,16 @@ import be.cytomine.Exception.WrongArgumentException
 */
 
 import be.cytomine.api.RestController
+import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.AnnotationTerm
+import be.cytomine.ontology.Ontology
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
+import be.cytomine.processing.Job
+import be.cytomine.processing.Software
 import be.cytomine.project.Project
+import be.cytomine.security.SecUser
+import be.cytomine.security.User
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
@@ -37,6 +43,24 @@ class StatsController extends RestController {
     def termService
     def jobService
     def secUserService
+    def projectConnectionService
+    def statsService
+
+    def allGlobalStats = {
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+
+        def result = [:];
+        result["users"] = statsService.total(User).total
+        result["projects"] = statsService.total(Project).total
+        result["userAnnotations"] = statsService.total(UserAnnotation).total
+        result["jobAnnotations"] = statsService.total(AlgoAnnotation).total
+        result["terms"] = statsService.total(Term).total
+        result["ontologies"] = statsService.total(Ontology).total
+        result["softwares"] = statsService.total(Software).total
+        result["jobs"] = statsService.total(Job).total
+        responseSuccess(result)
+
+    }
 
     /**
      * Compute for each user, the number of annotation of each term
@@ -408,6 +432,12 @@ class StatsController extends RestController {
         responseSuccess(list)
     }
 
+    @RestApiMethod(description="Get the total of user connection into a project by project.")
+    def totalNumberOfConnectionsByProject(){
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        responseSuccess(projectConnectionService.totalNumberOfConnectionsByProject());
+    }
+
     @RestApiMethod(description="Get the total of the domains made on this instance.")
     @RestApiParams(params=[
             @RestApiParam(name="domain", type="string", paramType = RestApiParamType.PATH, description = "The domain name")
@@ -419,8 +449,6 @@ class StatsController extends RestController {
         if(!clazz){
             throw new WrongArgumentException("This domain doesn't exist!")
         }
-        Integer total = clazz.clazz.count
-
-        responseSuccess(["total" : total]);
+        responseSuccess(statsService.total(clazz.clazz));
     }
 }

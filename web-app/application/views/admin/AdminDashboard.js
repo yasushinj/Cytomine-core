@@ -15,15 +15,20 @@
  */
 
 var AdminDashboard = Backbone.View.extend({
+    totals : {},
     rendered: false,
     render: function () {
         var self = this;
 
         if (!this.rendered) {
-            self.getValues(function() {
-                self.doLayout();
-                self.rendered = true;
-            });
+            require(["text!application/templates/admin/AdminDashboard.tpl.html"],
+                function (tpl) {
+                    self.getValues(function() {
+                        self.doLayout(tpl);
+                        self.rendered = true;
+                    });
+                }
+            );
         } else {
             this.update();
         }
@@ -32,25 +37,38 @@ var AdminDashboard = Backbone.View.extend({
         console.log("dashboard update");
     },
 
-    doLayout: function() {
+    doLayout: function(tpl) {
         var self = this;
 
-        console.log("dashboard doLayout");
+        var modelView = self.totals;
+        modelView.instance = window.location.host;
 
-        $(self.el).append("<p>Test TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest " +
-            "TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest" +
-            " TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest" +
-            " TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest" +
-            " TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest" +
-            " TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest TestTest" +
-            " Test</p>");
+        var view = _.template(tpl, modelView);
+        $(this.el).append(view);
+
+
+        $(self.el).find("#currentStats").append();
+
+
+        // TODO not yet finished : the url doesn't return the project name
+        /*new ProjectUsersTotalActivitiesGraph({
+            model: self.model,
+            el: $(self.el).find("#test"),
+            url : "api/total/project/connections.json",
+            property : "total"
+        }).render();*/
+
 
         this.update();
 
         return this;
     },
 
-    getValues: function (doLayout) {
-        doLayout();
+    getValues: function (callback) {
+        var self = this;
+        $.get( "api/stats/all.json", function( data ) {
+            self.totals = data;
+            callback();
+        });
     }
 });

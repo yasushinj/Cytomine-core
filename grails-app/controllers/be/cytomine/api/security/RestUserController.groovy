@@ -494,7 +494,7 @@ class RestUserController extends RestController {
      */
     @RestApiMethod(description="List people connected now to the same project and get their openned pictures", listing = true)
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
     ])
     @RestApiResponseObject(objectIdentifier = "List of [id: %idUser%,image: %idImage%, filename: %Image path%, originalFilename:%Image filename%, date: %Last position date%]")
     def listOnlineFriendsWithPosition() {
@@ -540,6 +540,13 @@ class RestUserController extends RestController {
         }
         responseSuccess(usersWithPosition)
 //        responseSuccess([])
+    }
+
+    @RestApiMethod(description="List people connected on Cytomine", listing = true)
+    @RestApiResponseObject(objectIdentifier = "List of [id: %idUser%,image: %idImage%, filename: %Image path%, originalFilename:%Image filename%, date: %Last position date%]")
+    def listOnlineUsers() {
+        //TODO
+        responseError("TODO");
     }
 
     @RestApiMethod(description="List all the users of a project with their last activity (opened project & image)", listing = true)

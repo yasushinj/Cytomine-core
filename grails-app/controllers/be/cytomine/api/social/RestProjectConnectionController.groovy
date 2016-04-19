@@ -144,4 +144,7 @@ class RestProjectConnectionController extends RestController {
         responseSuccess(result)
     }
 
+    def totalNumberOfConnections = {
+        responseError("TODO")
+    }
 }

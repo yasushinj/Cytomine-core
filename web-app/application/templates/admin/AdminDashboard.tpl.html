@@ -1,0 +1,40 @@
+<div class="row row-nomargin">
+    <div class="col-md-10 col-md-offset-1">
+        <div>
+            <h3 class="header_h"> <%= instance %> </h3>
+            <div class="row">
+                <h4 class="header_h"><i class="glyphicon glyphicon-dashboard" style="margin-top: 5px;"></i> Currently </h4>
+                    <div class="col-md-6">
+                        <dl class="dl-horizontal" style="margin-left : 0px;">
+                            <dt>Online Users</dt><dd id = "statsTotalOnlineUsers">128</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="dl-horizontal" style="margin-left : 0px;">
+                            <dt>Active projects</dt><dd id = "statsTotalActiveProjects">12</dd>
+                        </dl>
+                    </div>
+            </div>
+            <div class="row">
+                <h4 class="header_h"><i class="glyphicon glyphicon-signal" style="margin-top: 5px;"></i> Total </h4>
+                <div class="col-md-6">
+                    <dl class="dl-horizontal" style="margin-left : 0px;">
+                        <dt>Users</dt><dd><%= users %></dd>
+                        <dt>Projects</dt><dd><%= projects %></dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="dl-horizontal" style="margin-left : 0px;">
+                        <dt>Ontologies</dt><dd><%= ontologies %></dd>
+                        <dt>Terms</dt><dd><%= terms %></dd>
+                    </dl>
+                </div>
+            </div>
+            <div>
+                <div class="row">
+                    <h4 class="header_h"><i class="glyphicon glyphicon-stats" style="margin-top: 5px;"></i> Last connections </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

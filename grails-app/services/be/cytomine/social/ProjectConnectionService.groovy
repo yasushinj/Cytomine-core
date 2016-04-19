@@ -132,16 +132,40 @@ class ProjectConnectionService extends ModelService {
                     [$group : [_id : [ user: '$user'], "frequency":[$sum:1]]]
             )
 
-            def usersWithPosition = []
+            def usersConnections = []
             result.results().each {
                 def userId = it["_id"]["user"]
                 def frequency = it["frequency"]
-                usersWithPosition << [user: userId, frequency: frequency]
+                usersConnections << [user: userId, frequency: frequency]
             }
-            result = usersWithPosition
+            result = usersConnections
         }
         return result
     }
+
+    def totalNumberOfConnectionsByProject(){
+
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        def result;
+        // what we want
+        // db.persistentProjectConnection.aggregate([{ $group : { _id : {project:"$project"} , total : { $sum : 1 }}}])
+
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+
+        result = db.persistentProjectConnection.aggregate(
+                [$group : [_id : '$project', "total":[$sum:1]]]
+        )
+
+        def projectConnections = []
+        result.results().each {
+            def projectId = it["_id"]
+            def total = it["total"]
+            projectConnections << [project: projectId, total: total]
+        }
+        result = projectConnections
+        return result
+    }
+
 
     def numberOfConnectionsByProjectOrderedByHourAndDays(Project project, Long afterThan = null, User user = null){
 
