@@ -88,6 +88,9 @@ class StatsUrlMappings {
         "/api/stats/all.$format"(controller:"stats"){
             action = [GET:"allGlobalStats"]
         }
+        "/api/stats/currentStats.$format"(controller:"stats"){
+            action = [GET:"statsOfCurrentActions"]
+        }
 
 
     }

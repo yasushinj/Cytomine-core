@@ -6,12 +6,13 @@
                 <h4 class="header_h"><i class="glyphicon glyphicon-dashboard" style="margin-top: 5px;"></i> Currently </h4>
                     <div class="col-md-6">
                         <dl class="dl-horizontal" style="margin-left : 0px;">
-                            <dt>Online Users</dt><dd id = "statsTotalOnlineUsers">128</dd>
+                            <dt>Online Users</dt><dd id = "statsTotalOnlineUsers"></dd>
+                            <dt>Most active project</dt><dd id = "statsMostActiveProject"></dd>
                         </dl>
                     </div>
                     <div class="col-md-6">
                         <dl class="dl-horizontal" style="margin-left : 0px;">
-                            <dt>Active projects</dt><dd id = "statsTotalActiveProjects">12</dd>
+                            <dt>Active projects</dt><dd id = "statsTotalActiveProjects"></dd>
                         </dl>
                     </div>
             </div>
@@ -31,8 +32,9 @@
                 </div>
             </div>
             <div>
-                <div class="row">
-                    <h4 class="header_h"><i class="glyphicon glyphicon-stats" style="margin-top: 5px;"></i> Last connections </h4>
+                <div class="row" id="lastConnectionsGraph">
+                </div>
+                <div class="row" id="avgConnectionsGraph">
                 </div>
             </div>
         </div>

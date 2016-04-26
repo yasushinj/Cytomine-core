@@ -90,9 +90,6 @@ class UserUrlMappings {
         "/api/project/$id/online/user.$format"(controller: "restUser"){
             action = [GET:"listOnlineFriendsWithPosition"]
         }
-        "/api/online/user.$format"(controller: "restUser"){
-            action = [GET:"listOnlineUsers"]
-        }
         "/api/project/$id/usersActivity.$format"(controller: "restUser"){
             action = [GET:"listUsersWithLastActivity"]
         }

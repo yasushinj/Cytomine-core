@@ -27,9 +27,11 @@ import be.cytomine.security.ForgotPasswordToken
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import be.cytomine.utils.Utils
 import grails.converters.JSON
 import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -358,6 +360,52 @@ class ProjectService extends ModelService {
             progress = progress + (40/projectDeleteUser.size())
             taskService.updateTask(task,Math.min(100,progress),"User ${user.username} added as ${admin? "Admin" : "User"}")
         }
+    }
+
+    def getActiveProjects(){
+
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def xSecondAgo = Utils.getDatePlusSecond(-120)
+
+        def result;
+        def match = [$match : [ created : [$gte : xSecondAgo]]];
+        def group = [$group : [_id : '$project']]
+
+        result = db.persistentProjectConnection.aggregate(
+                match,
+                group
+        )
+        return result.results().collect{it["_id"]}
+    }
+
+    def getActiveProjectsWithNumberOfUsers() {
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+
+        def xSecondAgo = Utils.getDatePlusSecond(-120)
+        def match = [$match : [ created : [$gte : xSecondAgo]]];
+
+        def group1 = [$group : [_id : [project : '$project', user : '$user']]]
+        def group2 = [$group : [_id : '$_id.project', "users" :[$sum:1]]]
+        def result;
+
+        result = db.persistentProjectConnection.aggregate(
+                match,
+                group1,
+                group2
+        )
+
+        def tmp = [];
+        result.results().each{
+            tmp << [project : it["_id"], users : it["users"]]
+        }
+        def projects = Project.findAllByIdInList(tmp.collect{it.project});
+
+        result = [];
+        projects.each{ project ->
+            result << [project : project, users : tmp.find{it.project == project.id}.users]
+        }
+
+        return result
     }
 
     /**

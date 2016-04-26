@@ -36,7 +36,10 @@ class ProjectConnectionUrlMappings {
             action = [GET: "userProjectConnectionHistory"]
         }
         "/api/connectionFrequency.$format"(controller: "restProjectConnection") {
-            action = [GET: "totalNumberOfConnections"]
+            action = [GET: "numberOfProjectConnections"]
+        }
+        "/api/averageConnections.$format"(controller: "restProjectConnection") {
+            action = [GET: "averageOfProjectConnections"]
         }
     }
 }

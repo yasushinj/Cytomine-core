@@ -33,6 +33,7 @@ class RestProjectConnectionController extends RestController {
     def projectService
     def projectConnectionService
     def imageConsultationService
+    def securityACLService
 
     def add = {
         try {
@@ -69,6 +70,22 @@ class RestProjectConnectionController extends RestController {
         } else {
             responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
         }
+    }
+
+    def numberOfProjectConnections = {
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        Long afterThan = params.long("afterThan");
+        String period = params.get("period").toString()
+
+        responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
+    }
+
+    def averageOfProjectConnections= {
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        Long afterThan = params.long("afterThan");
+        String period = params.get("period").toString()
+
+        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,period))
     }
 
     def userProjectConnectionHistory = {
@@ -142,9 +159,5 @@ class RestProjectConnectionController extends RestController {
         params.remove("offset")
 
         responseSuccess(result)
-    }
-
-    def totalNumberOfConnections = {
-        responseError("TODO")
     }
 }

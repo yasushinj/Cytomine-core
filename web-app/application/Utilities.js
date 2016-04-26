@@ -101,3 +101,33 @@ Status.prototype.stop = function () {
         delete this.watcher;
     }
 };
+
+/*
+ * Return 1 for the January first and 365 or 366 for the Decembert 31th.
+ */
+Date.prototype.getDayOfYear = function(){
+    var now = new Date(+this);
+    var start = new Date(now.getFullYear(), 0, 0);
+    var diff = now - start;
+    var oneDay = 1000 * 60 * 60 * 24;
+    var day = Math.round(diff / oneDay);
+    return day;
+};
+/*
+    First week begin at the first sunday of the year.
+    Results is between 0 and 52.
+ */
+Date.prototype.getWeekNumber = function(){
+    /*var d = new Date(+this);
+    d.setHours(0,0,0);
+    d.setDate(d.getDate()+4-(d.getDay()||7));
+    return Math.ceil((((d-new Date(d.getFullYear(),0,1))/8.64e7)+1)/7)-1;*/
+    var now = new Date(+this);
+    now.setHours(0,0,0);
+    var d = new Date(now.getFullYear(), 0, 1);
+    // set to first sunday of the year
+    d.setDate(d.getDate()+(7-d.getDay())%7);
+    if(now < d) return 52;
+    return Math.floor((now.getDayOfYear() - d.getDayOfYear())/7);
+
+};
