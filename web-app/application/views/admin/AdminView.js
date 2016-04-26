@@ -19,6 +19,7 @@ var AdminView = Backbone.View.extend({
     adminUsersView: null,
     adminGroupsView: null,
     adminPermissionsView : null,
+    adminConfigView : null,
     initialize: function (options) {
         _.bindAll(this, 'render');
     },
@@ -34,6 +35,16 @@ var AdminView = Backbone.View.extend({
             $("#" + hash).attr('style', 'overflow:none;');
             window.app.controllers.admin.navigate("#" + hash, true);
         });
+    },
+    destroy: function() {
+        var self = this;
+        var views = [self.adminDashboard,self.adminUsersView,self.adminGroupsView,self.adminPermissionsView,self.adminConfigView];
+        for(var i=0;i<views.length;i++){
+            if(views[i]) {
+                $(views[i].el).empty();
+                views[i] = null;
+            }
+        }
     },
     refreshDashboard: function () {
         var self = this;

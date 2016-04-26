@@ -30,25 +30,39 @@ var AdminController = Backbone.Router.extend({
     },
 
     init: function (callback) {
+        var self = this;
         $(window).scrollTop(0);
-        if (this.view == null) {
-            this.createView(callback);
-        } else {
-            callback();
-        }
-        this.showView();
-
+        $.get( "api/user/current.json", function( data ) {
+            if(data.adminByNow){
+                if (self.view == null) {
+                    self.createView(callback);
+                } else {
+                    callback();
+                }
+            } else {
+                self.destroyView();
+            }
+            self.showView();
+        });
     },
 
     createView: function (callback) {
-        console.log("createView");
         var self = this;
 
+        $("#admin-tab").show();
+        $("#admin-unauthorized").hide();
         self.view = new AdminView({
             el: $("#admin-tab-content")
         }).render();
         callback.call();
     },
+
+    destroyView: function() {
+        if(this.view) this.view.destroy();
+        $("#admin-unauthorized").show();
+        $("#admin-tab").hide();
+    },
+
     showView: function () {
         window.app.view.showComponent(window.app.view.components.admin);
     },
@@ -63,7 +77,6 @@ var AdminController = Backbone.Router.extend({
         };
         self.init(func);
     },
-
 
     users: function () {
 
