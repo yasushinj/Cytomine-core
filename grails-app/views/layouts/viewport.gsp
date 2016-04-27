@@ -223,6 +223,7 @@ body {
 
 <script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
 <script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
+<script type="text/javascript" src="application/views/user/DetailedUserInfoDialog.js"></script>
 <script type="text/javascript" src="application/views/user/DetailedUserProjectInfoDialog.js"></script>
 
 

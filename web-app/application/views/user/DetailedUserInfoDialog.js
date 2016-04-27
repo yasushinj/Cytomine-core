@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-var DetailedUserProjectInfoDialog = Backbone.View.extend({
+var DetailedUserInfoDialog = Backbone.View.extend({
     activitiesHistory : [],
     numberAnnotations : null,
-    lastConnexionDate : null,
-    numberConnexions : null,
+    numberProjects : null,
 
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -26,7 +25,7 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
     render: function () {
         var self = this;
         require([
-                "text!application/templates/user/DetailedUserProjectInfoDialog.tpl.html"
+                "text!application/templates/user/DetailedUserInfoDialog.tpl.html"
             ],
             function (tpl) {
                 self.doLayout(tpl);
@@ -49,55 +48,45 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
             self.renderInfoActivities();
         });
 
-        self.getValuesHistory(function() {
+        /*self.getValuesHistory(function() {
 
             $(self.el).find("#UserActivitiesHistory-"+self.model.id).find(".detailedUserInfoWaitingDiv").hide();
             $(self.el).find("#UserActivitiesHistory-"+self.model.id).find(".detailedUserInfoContent").show();
             self.renderHistory();
-        });
+        });*/
 
-        $("#detailedProjectUserInfoDialog").modal('show');
+        $("#detailedUserInfoDialog").modal('show');
     },
 
     getValuesActivities: function (creation) {
         var callback = function(){
-            if(self.numberAnnotations == null || self.lastConnexionDate == null || self.numberConnexions == null) return;
+            if(self.numberAnnotations == null || self.numberProjects == null) return;
             creation();
         };
 
         var self = this;
-        $.get("/api/user/"+self.model.id+"/userannotation/count.json?project="+self.model.get('projectId'), function(data) {
+        $.get("/api/user/"+self.model.id+"/userannotation/count.json", function(data) {
             self.numberAnnotations = data.total;
             callback();
         });
 
-        $.get("/api/project/"+self.model.get('projectId')+"/lastconnections.json", function(data) {
-            self.lastConnexionDate = data.collection[0].created;
-            callback();
+        new ProjectCollection({user:self.model.id}).fetch({
+            success: function (collection, response) {
+                self.numberProjects = collection.length;
+                callback();
+            }
         });
-
-        $.get("/api/project/"+self.model.get('projectId')+"/connectionFrequency/"+self.model.id+".json", function(data) {
-            self.numberConnexions = data.collection[0].frequency;
-            callback();
-        });
-        // TODO # consulted images
-
     },
     renderInfoActivities:function(){
         var self = this;
 
-        $(self.el).find("#totalProjectConnexions-"+self.model.id).html(self.numberConnexions);
-
-        //$(self.el).find("#totalConsultedImages"+self.model.id).html(self.);
+        // set the number of project than the user can see
+        $(self.el).find("#totalProjectAllowed-"+self.model.id).html(self.numberProjects);
 
         $(self.el).find("#totalUserAnnotations-"+self.model.id).html(self.numberAnnotations);
-
-        var prettyDate = window.app.convertLongToPrettyDate(self.lastConnexionDate);
-        $(self.el).find("#lastProjectConnexion-"+self.model.id).html(prettyDate);
-
-
-    },
-    getValuesHistory: function (creation) {
+    }
+    //,
+    /*getValuesHistory: function (creation) {
         var self = this;
         $.get("/api/project/"+self.model.get('projectId')+"/connectionHistory/"+self.model.id+".json?limit=50", function(data) {
             self.activitiesHistory = data.collection;
@@ -152,7 +141,7 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
             }
             for(var j=0;j<self.activitiesHistory[i].images.length;j++){
                 children2.push({
-                    title : "Image : "+self.activitiesHistory[i].images[j].imageName+" ("+self.activitiesHistory[i].images[j].mode+")"/*+" ("+self.activitiesHistory[i].images[j].created+")"*/,
+                    title : "Image : "+self.activitiesHistory[i].images[j].imageName+" ("+self.activitiesHistory[i].images[j].mode+")",
                     isFolder : false,
                     noLink : true,
                     unselectable : true,
@@ -197,5 +186,5 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
             onRender: function (node, nodeSpan) {
             }
         });
-    }
+    }*/
 });

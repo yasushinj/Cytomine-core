@@ -65,6 +65,20 @@ var AdminUsersView = Backbone.View.extend({
             });
         });
 
+        $(self.el).on("click", ".UserDetailsButton", function() {
+            var user = $(this).data("id");
+
+            new UserModel({id:user}).fetch({
+                success: function(model){
+                    new DetailedUserInfoDialog({
+                            el: "#dialogs",
+                            model : model
+                        }
+                    ).render();
+                }
+            });
+        });
+
         this.update();
 
         return this;

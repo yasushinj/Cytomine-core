@@ -304,11 +304,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             var userId = $(this).data("id");
             new UserModel({id: userId}).fetch({
                 success: function (model, response) {
-                    var viewModel = model;
-                    viewModel.set({projectId : self.model.id});
-                    viewModel.set({projectName : self.model.get('name')});
-
-                    new DetailedUserProjectInfoDialog({el: "#dialogs", model: viewModel}).render();
+                    new DetailedUserInfoDialog({el: "#dialogs", model: model}).render();
                 }
             });
 
