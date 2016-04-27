@@ -41,6 +41,8 @@ var DetailedUserInfoDialog = Backbone.View.extend({
 
         $(this.el).find(".detailedUserInfoContent").hide();
 
+        self.getAndRenderGeneralValues();
+
         self.getValuesActivities(function() {
 
             $(self.el).find("#UserActivitiesInfo-"+self.model.id).find(".detailedUserInfoWaitingDiv").hide();
@@ -58,13 +60,40 @@ var DetailedUserInfoDialog = Backbone.View.extend({
         $("#detailedUserInfoDialog").modal('show');
     },
 
+
+    getAndRenderGeneralValues: function () {
+        var self = this;
+        new UserSecRole({user:self.model.id}).fetch({
+            success: function (collection, response) {
+                $(self.el).find("#userRoles").empty();
+                var roles = collection.get('collection');
+                for(var i = 0;i<roles.length;i++) {
+                    switch(roles[i].authority){
+                        case "ROLE_SUPER_ADMIN" :
+                            $(self.el).find("#userRoles").append("<span class='label label-default'>Super Admin</span>");
+                            break;
+                        case "ROLE_ADMIN" :
+                            $(self.el).find("#userRoles").append("<span class='label label-danger'>Admin</span>");
+                            break;
+                        case "ROLE_USER" :
+                            $(self.el).find("#userRoles").append("<span class='label label-success'>User</span>");
+                            break;
+                        case "ROLE_GUEST" :
+                            $(self.el).find("#userRoles").append("<span class='label label-primary'>Guest</span>");
+                            break;
+                    }
+                }
+            }
+        });
+    },
     getValuesActivities: function (creation) {
+        var self = this;
+
         var callback = function(){
             if(self.numberAnnotations == null || self.numberProjects == null) return;
             creation();
         };
 
-        var self = this;
         $.get("/api/user/"+self.model.id+"/userannotation/count.json", function(data) {
             self.numberAnnotations = data.total;
             callback();
