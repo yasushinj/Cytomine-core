@@ -72,6 +72,13 @@ var AdminUserDialog = Backbone.View.extend({
             }
         });
 
+        if(!window.app.isUndefined(self.model.id)) {
+            new UserSecRole({user:self.model.id, highest : true}).fetch({
+                success: function (model, response) {
+                    $(self.el).find("#newUserRoleList").val(model.get("role"));
+                }
+            });
+        }
 
         $("#adminUserDialog").modal('show');
         $(self.el).find("form").on("keyup", function(e){

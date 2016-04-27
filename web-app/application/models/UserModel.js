@@ -207,6 +207,9 @@ var UserGroup = Backbone.Model.extend({
 var UserSecRole = Backbone.Model.extend({
     url: function () {
         if (!window.app.isUndefined(this.role) || this.isNew()) {
+            if (!window.app.isUndefined(this.highest)) {
+                return "api/user/" + this.user + "/role.json?highest=true";
+            }
             return "api/user/" + this.user + "/role.json";
         } else {
             return "api/user/" + this.user + "/role/" + this.role + ".json";
@@ -215,6 +218,7 @@ var UserSecRole = Backbone.Model.extend({
     initialize: function (options) {
         this.user = options.user;
         this.role = options.role;
+        this.highest = options.highest;
     }
 });
 
