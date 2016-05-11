@@ -314,6 +314,7 @@ var ProjectDashboardView = Backbone.View.extend({
         var refreshData = function () {
             require(["text!application/templates/dashboard/OnlineUser.tpl.html"],
                 function (userOnlineTpl) {
+                    // TODO better managment of data autorefreshing : see Github #1076
                     new UserOnlineCollection({project: self.model.id}).fetch({
                         success: function (collection, response) {
                             $("#userOnlineItem").empty();

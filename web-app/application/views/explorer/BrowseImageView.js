@@ -926,12 +926,14 @@ BrowseImageView = Backbone.View.extend({
             return;
         }
         this.watchOnlineUsersInterval = setInterval(function () {
-            new UserOnlineModel({image: self.model.get("id")}).fetch({
-                success: function (model, response) {
-                    var usersOnlineArray = model.get("users").split(",");
-                    self.layerSwitcherPanel.updateOnlineUsers(usersOnlineArray);
-                }
-            });
+            if(self.layerSwitcherPanel.getDisplayedLayers.length > 1){
+                new UserOnlineModel({image: self.model.get("id")}).fetch({
+                    success: function (model, response) {
+                        var usersOnlineArray = model.get("users").split(",");
+                        self.layerSwitcherPanel.updateOnlineUsers(usersOnlineArray);
+                    }
+                });
+            }
         }, 5000);
         window.app.view.intervals.push(this.watchOnlineUsersInterval);
     },

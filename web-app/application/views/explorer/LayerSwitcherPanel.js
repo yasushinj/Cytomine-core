@@ -466,6 +466,11 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         var self = this;
         var panel = $("#layerSwitcher" + self.model.get("id"));
         panel.find("#removeImageLayers" + id).click();
+    },
+    getDisplayedLayers: function () {
+        //TODO : make a function that return only user Layers (not Review and not job layers)
+        // ticket #1075 GitHub
+        return this.vectorLayers;
     }
 
 });
