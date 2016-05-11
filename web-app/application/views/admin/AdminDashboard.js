@@ -59,6 +59,8 @@ var AdminDashboard = Backbone.View.extend({
             el: $(self.el).find("#lastConnectionsGraph")}).render();
         new AverageConnexionsGraphsView({
             el: $(self.el).find("#avgConnectionsGraph")}).render();
+        /*new LastAnnotationsGraphsView({
+            el: $(self.el).find("#lastAnnotationsGraph")}).render();*/
 
         self.refreshCurrentConnections();
         //TODO When must I clear this interval ?
@@ -157,6 +159,11 @@ var LastConnexionsGraphsView = Backbone.View.extend({
 
         return this;
     }
+});
+
+var LastAnnotationsGraphsView = Backbone.View.extend({
+    graphs : []
+    //TODO mongodb entry for each created annotation
 });
 
 var AverageConnexionsGraphsView = Backbone.View.extend({
