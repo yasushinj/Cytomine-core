@@ -65,6 +65,9 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
+    void init20160503(){
+        bootstrapUtilsService.convertMimeTypes();
+    }
     void init20160324(){
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS mime_type;")
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS converted_filename;")

@@ -475,6 +475,23 @@ class BootstrapUtilsService {
         }
     }
 
+    void convertMimeTypes(){
+        SpringSecurityUtils.reauthenticate "admin", null
+        def currentUser = cytomineService.getCurrentUser()
+
+        Mime oldTif = Mime.findByMimeType("image/tif");
+        Mime oldTiff = Mime.findByMimeType("image/tiff");
+        Mime newTiff = Mime.findByMimeType("image/pyrtiff");
+
+        List<AbstractImage> abstractImages = AbstractImage.findAllByMimeInList([oldTif, oldTiff]);
+        log.info "images to convert : "+abstractImages.size()
+
+        abstractImages.each {
+            it.mime = newTiff;
+            it.save();
+        }
+    }
+
     void initRabbitMq() {
         log.info "init amqp service..."
         amqpQueueService.initialize()

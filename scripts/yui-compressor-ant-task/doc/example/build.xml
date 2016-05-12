@@ -110,7 +110,9 @@
 <fileset dir="${src.dir}" includes="application/models/AnnotationPropertyModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/ImageInstancePropertyModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/ProjectPropertyModel.js"/>
+<fileset dir="${src.dir}" includes="application/views/user/AddUserToProjectDialog.js"/>
 <fileset dir="${src.dir}" includes="application/views/user/UserDashboardView.js"/>
+<fileset dir="${src.dir}" includes="application/views/user/DetailedUserProjectInfoDialog.js"/>
 <fileset dir="${src.dir}" includes="application/views/activity/ActivityView.js"/>
 <fileset dir="${src.dir}" includes="application/views/search/SearchEngineFilterView.js"/>
 <fileset dir="${src.dir}" includes="application/views/search/SearchView.js"/>
@@ -130,7 +132,11 @@
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardAnnotations.js"/>
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardAlgos.js"/>
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardConfig.js"/>
+<fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardUsersConfig.js"/>
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardProperties.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersTotalActivitiesView.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersTotalActivitiesGraph.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersHeatmapView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobListingView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobComparatorView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobSelectionView.js"/>
