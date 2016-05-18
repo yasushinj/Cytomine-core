@@ -22,6 +22,10 @@ import be.cytomine.api.RestController
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.social.PersistentConnection
+import org.restapidoc.annotation.RestApiMethod
+import org.restapidoc.annotation.RestApiParam
+import org.restapidoc.annotation.RestApiParams
+import org.restapidoc.pojo.RestApiParamType
 
 /**
  * Controller for an user connection to a project
@@ -80,12 +84,19 @@ class RestProjectConnectionController extends RestController {
         responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
     }
 
-    def averageOfProjectConnections= {
+    @RestApiMethod(description="Get the average project connections on Cytomine.")
+    @RestApiParams(params=[
+            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.PATH, description = "Average on the project connection where created > the afterThan parameter. Optional, the beforeThan Date -1 year will be considered if none is given."),
+            @RestApiParam(name="beforeThan", type="long", paramType = RestApiParamType.PATH, description = "Average on the project connection where created < the beforeThan parameter. Optional, the current Date will be considered if none is given."),
+            @RestApiParam(name="period", type="string", paramType = RestApiParamType.PATH, description = "The period of connections (hour : by hours, day : by days, week : by weeks) (Mandatory)"),
+    ])
+    def averageOfProjectConnections() {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
         Long afterThan = params.long("afterThan");
+        Long beforeThan = params.long("beforeThan");
         String period = params.get("period").toString()
 
-        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,period))
+        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period))
     }
 
     def userProjectConnectionHistory = {

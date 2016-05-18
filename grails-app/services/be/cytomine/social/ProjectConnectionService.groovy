@@ -284,7 +284,13 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
-    def averageOfProjectConnections(Long afterThan = null, String period){
+    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period){
+
+        if(!afterThan){
+            use(TimeCategory) {
+                afterThan = (new Date(beforeThan) - 1.year).getTime();
+            }
+        }
 
         // what we want
         //db.persistentProjectConnection.aggregate( {"$match": {$and: [{project : ID_PROJECT}, {created : {$gte : new Date(AFTER) }}]}}, { "$project": { "created": {  "$subtract" : [  "$created",  {  "$add" : [  {"$millisecond" : "$created"}, { "$multiply" : [ {"$second" : "$created"}, 1000 ] }, { "$multiply" : [ {"$minute" : "$created"}, 60, 1000 ] } ] } ] } }  }, { "$project": { "y":{"$year":"$created"}, "m":{"$month":"$created"}, "d":{"$dayOfMonth":"$created"}, "h":{"$hour":"$created"}, "time":"$created" }  },  { "$group":{ "_id": { "year":"$y","month":"$m","day":"$d","hour":"$h"}, time:{"$first":"$time"},  "total":{ "$sum": 1}  }});
@@ -316,11 +322,7 @@ class ProjectConnectionService extends ModelService {
                 group = [$group : [_id : [ week: '$w'], "time":[$first:'$time'], "frequency":[$sum:1]]]
                 break;
         }
-        if(afterThan) {
-            match = [$match : [ created : [$gte : new Date(afterThan)]]]
-        } else {
-            match = [$match : [:]]
-        }
+        match = [$match : [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]]]]]
 
         result = db.persistentProjectConnection.aggregate(
                 match,
@@ -333,15 +335,19 @@ class ProjectConnectionService extends ModelService {
         def connections = []
 
         int total;
+        Date firstDay;
+        firstDay = new Date(afterThan);
+        Date lastDay = new Date(beforeThan);
+
         switch (period){
             case "hour" :
-                total = TimeCategory.minus(new Date(), new Date(afterThan)).getDays()
+                total = TimeCategory.minus(lastDay, firstDay).getDays()
                 break;
             case "day" :
-                total = TimeCategory.minus(new Date(), new Date(afterThan)).getDays()/7
+                total = TimeCategory.minus(lastDay, firstDay).getDays()/7
                 break;
             case "week" :
-                total = TimeCategory.minus(new Date(), new Date(afterThan)).getYears()
+                total = TimeCategory.minus(lastDay, firstDay).getYears()
                 break;
         }
         if(total == 0) total = 1

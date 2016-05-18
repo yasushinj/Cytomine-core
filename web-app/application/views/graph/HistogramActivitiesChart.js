@@ -4,6 +4,7 @@ var HistogramActivitiesChart = Backbone.View.extend({
         this.format = this.options.format;
         this.period = this.options.period;
         this.url = this.options.url;
+        this.enableTooltip = this.options.enableTooltip;
     },
     render: function () {
         var self = this;
@@ -15,6 +16,13 @@ var HistogramActivitiesChart = Backbone.View.extend({
 
                 if(!self.format) self.format = 'f';
 
+                if(self.enableTooltip && self.period === "week") {
+                    self.enableTooltip = true;
+                } else {
+                    // tooltip not implemented for other than week
+                    self.enableTooltip = false;
+                }
+
                 var chart = nv.models.discreteBarChart()
                         .x(function (d) {
                             return d.label
@@ -24,7 +32,24 @@ var HistogramActivitiesChart = Backbone.View.extend({
                         })
                         .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
                         .valueFormat(d3.format(self.format))
-                        .tooltips(false)        //Don't show tooltips
+                        .tooltips(self.enableTooltip)        //Don't show tooltips
+                        .tooltipContent(function(key, y, e, graph) {
+                            var now = new Date();
+                            now.setHours(0,0,0);
+                            var d = new Date(now.getFullYear(), 0, 1);
+                            // set to first sunday of the year
+                            d.setDate(d.getDate()+(7-d.getDay())%7);
+                            var result;
+                            if(now.getWeekNumber() >= key.data.label-1) {
+                                d.setDate(d.getDate()+(7*(key.data.label-1)));
+                            } else {
+                                d.setDate(d.getDate()-(7*(53-key.data.label)));
+                            }
+                            result = '<p>From '+(d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+' to ';
+                            d.setDate(d.getDate()+6);
+                            result += (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+'</p>'
+                            return result;
+                        })
                         .showValues(true)       //...instead, show the bar value right on top of each bar.
                     ;
 
