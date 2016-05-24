@@ -1516,7 +1516,6 @@ class BasicInstanceBuilder {
             uploadedFile.filename = abstractImage.filename
             uploadedFile.originalFilename = abstractImage.originalFilename
             uploadedFile.user = abstractImage.user
-            uploadedFile.mimeType = abstractImage.mime.mimeType
             uploadedFile.path = storage.getBasePath()
             uploadedFile.storages = [storage.id]
             uploadedFile.projects = [project.id]
