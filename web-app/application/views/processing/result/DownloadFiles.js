@@ -60,9 +60,9 @@ var DownloadFiles = Backbone.View.extend({
             });
         };
         refresh();
-        var interval = setInterval(refresh, 5000);
+        var interval = window.app.view.addInterval(refresh, 5000);
         $(window).bind('hashchange', function () {
-            clearInterval(interval);
+            clearInterval(interval.loop);
         });
 
 

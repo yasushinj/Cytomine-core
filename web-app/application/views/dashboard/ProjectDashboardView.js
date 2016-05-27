@@ -61,13 +61,13 @@ var ProjectDashboardView = Backbone.View.extend({
           $(this).tab('show');
         });
         //Refresh dashboard
-        setInterval(function () {
+        window.app.view.addInterval(function () {
             if ($("#tabs-dashboard-" + self.model.id).hasClass('active')) {
                 self.refreshDashboard();
             }
         }, 60000);
 
-        setInterval(function () {
+        window.app.view.addInterval(function () {
             if ($("#tabs-dashboard-" + self.model.id).hasClass('active')) {
                 self.fetchTasks();
                 self.fetchCommands();
@@ -343,9 +343,9 @@ var ProjectDashboardView = Backbone.View.extend({
             )
         };
         refreshData();
-        var interval = setInterval(refreshData, 5000);
+        var interval = window.app.view.addInterval(refreshData, 5000);
         $(window).bind('hashchange', function () {
-            clearInterval(interval);
+            clearInterval(interval.loop);
         });
     },
     fetchCommands: function () {

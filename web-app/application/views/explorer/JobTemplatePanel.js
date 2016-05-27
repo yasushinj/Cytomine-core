@@ -121,7 +121,7 @@ var JobTemplatePanel = SideBarPanel.extend({
                     selectRunElem.append(item);
                     if(model.get('status')=="3" && self.currentInterval!=null) {
                         panel.find(".jobTemplateStatus").css("border-color","#47a447");
-                        clearInterval(self.currentInterval);
+                        clearInterval(self.currentInterval.loop);
                         self.currentInterval = null
                     }
 
@@ -130,11 +130,11 @@ var JobTemplatePanel = SideBarPanel.extend({
         };
         refreshData();
         if(self.currentInterval!=null) {
-            clearInterval(self.currentInterval);
+            clearInterval(self.currentInterval.loop);
         }
-        self.currentInterval = setInterval(refreshData, 2000);
+        self.currentInterval = window.app.view.addInterval(refreshData, 2000);
         $(window).bind('hashchange', function () {
-            clearInterval(self.currentInterval);
+            clearInterval(self.currentInterval.loop);
         });
 
 

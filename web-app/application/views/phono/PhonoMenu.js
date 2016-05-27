@@ -102,6 +102,7 @@ var PhonoMenu = Backbone.View.extend({
     },
 
     deactivate: function () {
+        var self = this;
         _.each(this.itemsMenuActivated, function (item) {
             $("#" + item).hide();
         });
@@ -112,7 +113,7 @@ var PhonoMenu = Backbone.View.extend({
             self.phono.disconnect();
         }
         self.phono = null;
-        clearInterval(self.loadUsersInterval);
+        clearInterval(self.loadUsersInterval.loop);
         self.loadUsersInterval = null;
         this.message("Info", "Live chat/call offline", 3000);
     },
@@ -123,7 +124,7 @@ var PhonoMenu = Backbone.View.extend({
         require([
             "text!application/templates/phono/phonoUser.tpl.html"
         ], function (tplPhonoUser) {
-            self.loadUsersInterval = setInterval(function () {
+            self.loadUsersInterval = window.app.view.addInterval(function () {
                 self.loadUsers(tplPhonoUser);
             }, 5000);
         });

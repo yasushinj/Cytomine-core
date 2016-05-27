@@ -493,9 +493,9 @@ BrowseImageView = Backbone.View.extend({
             });
         }
         refreshData();
-        var interval = setInterval(refreshData, 5000);
+        var interval = window.app.view.addInterval(refreshData, 5000);
         $(window).bind('hashchange', function () {
-            clearInterval(interval);
+            clearInterval(interval.loop);
         });
 
     }, createAnnotationPropertiesPanel: function () { //annotationProperties
@@ -912,20 +912,19 @@ BrowseImageView = Backbone.View.extend({
     },
     initBroadcastingInterval: function (width, height) {
         var self = this;
-        this.broadcastPositionInterval = setInterval(function () {
+        this.broadcastPositionInterval = window.app.view.addInterval(function () {
             self.broadcastPosition(width, height);
         }, 5000);
-        window.app.view.intervals.push(this.broadcastPositionInterval);
     },
     stopBroadcastingInterval: function () {
-        clearInterval(this.broadcastPositionInterval);
+        clearInterval(this.broadcastPositionInterval.loop);
     },
     initWatchOnlineUsersInterval: function () {
         var self = this;
         if (this.review) {
             return;
         }
-        this.watchOnlineUsersInterval = setInterval(function () {
+        this.watchOnlineUsersInterval = window.app.view.addInterval(function () {
             if(self.layerSwitcherPanel.getDisplayedLayers.length > 1){
                 new UserOnlineModel({image: self.model.get("id")}).fetch({
                     success: function (model, response) {
@@ -935,10 +934,9 @@ BrowseImageView = Backbone.View.extend({
                 });
             }
         }, 5000);
-        window.app.view.intervals.push(this.watchOnlineUsersInterval);
     },
     stopWatchOnlineUsersInterval: function () {
-        clearInterval(this.watchOnlineUsersInterval);
+        clearInterval(this.watchOnlineUsersInterval.loop);
     },
     initAutoAnnoteTools: function () {
         var self = this;

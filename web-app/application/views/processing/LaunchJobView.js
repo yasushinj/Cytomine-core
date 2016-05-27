@@ -233,7 +233,7 @@ var LaunchJobView = Backbone.View.extend({
         var job = new JobModel({ id : idJob})
         $.post(job.previewUrl())
         .done(function() {
-            var interval = setInterval(function() {
+            var interval = window.app.view.addInterval(function() {
                 var previewJob = $("#previewJob");
                 previewJob.html('<div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div>');
                 job.fetch({
@@ -244,12 +244,12 @@ var LaunchJobView = Backbone.View.extend({
                                 previewRoiUrl : model.previewRoiUrl(),
                                 previewUrl : model.previewUrl()
                             }));
-                            clearInterval(interval);
+                            clearInterval(interval.loop);
                         }
                     },
                     error : function(model, response){
                         //display error message + clear interval
-                        clearInterval(interval);
+                        clearInterval(interval.loop);
                     }
                 })
             }, 2000);

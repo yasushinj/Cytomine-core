@@ -32,10 +32,34 @@ var ApplicationView = Backbone.View.extend({
     events: {
 
     },
+
+    /* Will add an interval that will execute the function fct only if the tab is visible, if we are into the parentComponent and if condition is true (if condition is given).
+    * Each time a component is selected, all the interval of this component will immediately be triggered.*/
+    addInterval: function (fct, time, condition) {
+        var self = this;
+        var interval = {
+            //paused : false,
+            parentComponent : self.currentComponent,
+            run: function(){
+                if(!document.hidden && this.parentComponent === self.currentComponent){
+                    if(window.app.isUndefined(condition) || condition){
+                        fct();
+                    }
+                }
+            }
+        };
+        interval.loop = setInterval(function () {
+            interval.run();
+        }, time);
+        this.intervals.push(interval);
+
+        return interval;
+    },
     clearIntervals: function () {
         _.each(this.intervals, function (interval) {
-            clearInterval(interval);
+            clearInterval(interval.loop);
         });
+        this.intervals = [];
     },
     /**
      *  UNDO the last command
@@ -269,6 +293,15 @@ var ApplicationView = Backbone.View.extend({
         ],
             function (userDashboardTpl,uploadTpl, projectTpl, ontologyTpl, explorerTpl, adminTpl, activityTpl, accountTpl,searchTpl) {
 
+                var activeInterval = function(){
+                    _.each(self.intervals, function (interval) {
+                        if(interval.parentComponent === self.currentComponent){
+                            // I don't wait x seconds to see the changes, if I go back to my tabs, the ajax will be made immediately
+                            interval.run();
+                        }
+                    });
+                };
+
                 self.components.userdashboard = new Component({
                     el: "#content",
                     template: _.template(userDashboardTpl, {}),
@@ -289,6 +322,7 @@ var ApplicationView = Backbone.View.extend({
                     divId: "search",
                     onActivate: function () {
                         self.currentComponent = this;
+                        activeInterval();
                     }
                 });
                 self.components.activity = new Component({
@@ -300,6 +334,7 @@ var ApplicationView = Backbone.View.extend({
                     divId: "activity",
                     onActivate: function () {
                         self.currentComponent = this;
+                        activeInterval();
                     }
                 });
                 self.components.upload = new Component({
@@ -311,6 +346,7 @@ var ApplicationView = Backbone.View.extend({
                     divId: "upload",
                     onActivate: function () {
                         self.currentComponent = this;
+                        activeInterval();
                     }
                 });
                 self.components.account = new Component({
@@ -322,6 +358,7 @@ var ApplicationView = Backbone.View.extend({
                     divId: "account",
                     onActivate: function () {
                         self.currentComponent = this;
+                        activeInterval();
                     }
                 });
                 self.components.project = new Component({
@@ -353,6 +390,7 @@ var ApplicationView = Backbone.View.extend({
                     divId: "ontology",
                     onActivate: function () {
                         self.currentComponent = this;
+                        activeInterval();
                     }
                 });
                 self.components.explorer = new Component({
@@ -370,6 +408,7 @@ var ApplicationView = Backbone.View.extend({
                             $("#explorer > .noProject").hide();
                         }
                         self.currentComponent = this;
+                        activeInterval();
                         $("#" + this.divId).show();
                         $("#" + this.buttonAttr.elButton).parent().addClass("active");
                     }

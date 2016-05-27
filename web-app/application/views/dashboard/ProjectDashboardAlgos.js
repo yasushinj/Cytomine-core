@@ -264,9 +264,9 @@ var ProjectDashboardAlgos = Backbone.View.extend({
             });
         };
         refreshData();
-        var interval = setInterval(refreshData, 5000);
+        var interval = window.app.view.addInterval(refreshData, 5000);
         $(window).bind('hashchange', function () {
-            clearInterval(interval);
+            clearInterval(interval.loop);
         });
     },
     printProjectJobInfo: function () {
@@ -359,9 +359,9 @@ var ProjectDashboardAlgos = Backbone.View.extend({
             });
         };
         refreshData();
-        var interval = setInterval(refreshData, 5000);
+        var interval = window.app.view.addInterval(refreshData, 5000);
         $(window).bind('hashchange', function () {
-            clearInterval(interval);
+            clearInterval(interval.loop);
         });
 
         var selectRunParamElem = $('#selectRunParamsTable').find('tbody').empty();

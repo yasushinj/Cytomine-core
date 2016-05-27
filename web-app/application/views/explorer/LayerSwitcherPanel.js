@@ -131,7 +131,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         window.app.view.message("", "Start following " + window.app.models.projectUser.get(self.userFollowed).prettyName(), "success");
         var image = this.model.get("id");
         var project = this.model.get("project");
-        this.followInterval = setInterval(function () {
+        this.followInterval = window.app.view.addInterval(function () {
             // horrible hack. only do GET if we are currently looking at the image
             if($("#tabs-image-"+project+"-"+image+"-").hasClass("active")){
                 new UserPositionModel({ image: image, user: self.userFollowed }).fetch({
@@ -154,7 +154,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         var self = this;
         if (self.followInterval != undefined) {
             window.app.view.message("", "Stop following " + window.app.models.projectUser.get(self.userFollowed).prettyName(), "success");
-            clearInterval(self.followInterval);
+            clearInterval(self.followInterval.loop);
             self.followInterval = null;
             self.userFollowed = null;
         }
