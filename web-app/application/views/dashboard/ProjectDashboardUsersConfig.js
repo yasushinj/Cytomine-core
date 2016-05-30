@@ -146,11 +146,11 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         self.representativeMagicSuggest.clear();
         self.representativeMagicSuggest.setValue(self.projectRepresentatives);
 
-        $(self.adminMagicSuggest).on('selectionchange', function(e,m){
+        $(self.adminMagicSuggest).on('selectionchange', function(){
             self.projectAdmins = this.getValue();
             self.updateUsersInProject(null,self.projectAdmins,null);
         });
-        $(self.representativeMagicSuggest).on('selectionchange', function(e,m){
+        $(self.representativeMagicSuggest).on('selectionchange', function(){
             self.projectRepresentatives = this.getValue();
             self.updateUsersInProject(null, null, self.projectRepresentatives);
         });
@@ -303,7 +303,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         $(this.el).on("click", ".UserDetailsButton"+self.model.get('id'), function() {
             var userId = $(this).data("id");
             new UserModel({id: userId}).fetch({
-                success: function (model, response) {
+                success: function (model) {
                     var viewModel = model;
                     viewModel.set({projectId : self.model.id});
                     viewModel.set({projectName : self.model.get('name')});
@@ -344,7 +344,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             return ( Number(n.dataset.id) );
         });
 
-        if(usersToArchive.length == 0) return;
+        if(usersToArchive.length === 0) return;
 
         /*var level = 'CONFIRMATIONWARNING';
         // todo put the after br in red
@@ -362,12 +362,12 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         new UserCollection({project: self.model.id}).fetch({
             success: function (projectUserCollection) {
                 projectUserCollection.each(function (user) {
-                    users.push(user.id)
+                    users.push(user.id);
                 });
                 for(var i = 0; i< newUsersId.length; i++) {
                     users.push(newUsersId[i]);
                 }
-                self.updateUsersInProject(users, null, null)
+                self.updateUsersInProject(users, null, null);
             }
         });
     },
@@ -380,7 +380,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             return ( Number(n.dataset.id) );
         });
 
-        if(usersToDelete.length == 0) return;
+        if(usersToDelete.length === 0) return;
 
         var level = 'CONFIRMATIONWARNING';
         var message = 'Do you want to delete these users ?';
@@ -406,10 +406,10 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                     success: function (projectUserCollection) {
                         projectUserCollection.each(function (user) {
                             if(usersToDelete.indexOf(user.id) == -1) {
-                                users.push(user.id)
+                                users.push(user.id);
                             }
                         });
-                        self.updateUsersInProject(users, null, null)
+                        self.updateUsersInProject(users, null, null);
                     }
                 });
             };

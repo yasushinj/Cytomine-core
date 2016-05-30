@@ -132,7 +132,7 @@ var ProjectDashboardStats = Backbone.View.extend({
                 chartData.push({
                     label : stat.get("key"),
                     value : stat.get("value")
-                })
+                });
                 colors.push(stat.get("color"));
             }
         });
@@ -237,7 +237,7 @@ var ProjectDashboardStats = Backbone.View.extend({
             chartData[0].values.push({
                 date : date,
                 value : stat.get("size")
-            })
+            });
         });
 
         chartData.map(function(series) {

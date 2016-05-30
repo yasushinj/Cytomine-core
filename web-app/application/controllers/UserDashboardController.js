@@ -39,7 +39,7 @@ var UserDashboardController = Backbone.Router.extend({
 
             self.view.container.show(self.view, "#userdashboard", "userdashboard");
             window.app.view.showComponent(window.app.view.components.userdashboard);
-        }
+        };
 
 
         window.app.models.projects.fetch({
@@ -63,7 +63,7 @@ var UserDashboardController = Backbone.Router.extend({
                 callback.call();
             }
             self.view.render();
-        }
+        };
 
         if (!this.view) {
             this.initView();

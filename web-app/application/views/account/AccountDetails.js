@@ -149,7 +149,7 @@ var AccountDetails = Backbone.View.extend({
             if (self.model.get("passwordExpired")) {
                 return;
             }
-            var data = { 'j_username': self.model.get('username'), 'j_password': newPassword}
+            var data = { 'j_username': self.model.get('username'), 'j_password': newPassword};
             $.ajax({
                 url: 'j_spring_security_check',
                 type: 'post',

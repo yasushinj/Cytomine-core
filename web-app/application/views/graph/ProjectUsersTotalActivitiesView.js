@@ -41,7 +41,7 @@ var ProjectUsersTotalActivitiesView = Backbone.View.extend({
         $(self.el).append(_.template(tpl, {id : self.model.get('id')}));
 
 
-        $(self.el).find("#activitySelection"+self.model.id).on("change", function(e){
+        $(self.el).find("#activitySelection"+self.model.id).on("change", function(){
 
             $(self.el).find(".graph").hide();
 

@@ -20,7 +20,7 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
     lastConnexionDate : null,
     numberConnexions : null,
 
-    initialize: function (options) {
+    initialize: function () {
         _.bindAll(this, 'render');
     },
     render: function () {
@@ -60,12 +60,13 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
     },
 
     getValuesActivities: function (creation) {
+        var self = this;
+
         var callback = function(){
             if(self.numberAnnotations == null || self.lastConnexionDate == null || self.numberConnexions == null) return;
             creation();
         };
 
-        var self = this;
         $.get("/api/user/"+self.model.id+"/userannotation/count.json?project="+self.model.get('projectId'), function(data) {
             self.numberAnnotations = data.total;
             callback();
@@ -122,7 +123,7 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
                     time = time+" seconds";
                 }
             } else {
-                time = Math.round(time/60)
+                time = Math.round(time/60);
                 if(time <= 1){
                     time = time+" minute";
                 } else {
@@ -180,7 +181,7 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
             ajaxDefaults: { // Used by initAjax option
                 cache: false // false: Append random '_' argument to the request url to prevent caching.
             },
-            children: nodes,//self.activitiesHistory,
+            children: nodes/*,
             onExpand: function () {
             },
             onClick: function (node, event) {
@@ -192,7 +193,7 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
             onDblClick: function (node, event) {
             },
             onRender: function (node, nodeSpan) {
-            }
+            }*/
         });
     }
 });

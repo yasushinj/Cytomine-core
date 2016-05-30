@@ -58,7 +58,7 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
             }
         }
 
-        var dayLabels = svg.selectAll(".dayLabel")
+        svg.selectAll(".dayLabel")
             .data(days)
             .enter().append("text")
             .text(function (d) { return d; })
@@ -68,7 +68,7 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
             .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
             .attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
 
-        var timeLabels = svg.selectAll(".timeLabel")
+        svg.selectAll(".timeLabel")
             .data(times)
             .enter().append("text")
             .text(function(d) { return d; })

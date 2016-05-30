@@ -488,7 +488,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
                 software: self.software,
                 terms : window.app.status.currentTermsCollection
             }).render();
-        }
+        };
         if (window.app.status.currentTermsCollection == undefined) {
             new TermCollection({idProject: self.model.id}).fetch({
                 success: function (terms, response) {

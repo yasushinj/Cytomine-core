@@ -175,7 +175,7 @@ var DashboardController = Backbone.Router.extend({
             tabs.find('a.annotationTabLink').click();
             self.view.refreshProperties(idDomain, nameDomain);
             window.app.controllers.browse.tabs.triggerRoute = true;
-        }
+        };
         self.init(project, func);
     },
     algos: function (project, software, job) {
@@ -197,7 +197,7 @@ var DashboardController = Backbone.Router.extend({
             success: function (model, response) {
                 new JobModel({id: model.get("job")}).fetch({
                     success: function (job, response) {
-                        window.location = "#tabs-algos-"+job.get('project')+"-"+job.get('software')+"-" + job.get('id')
+                        window.location = "#tabs-algos-"+job.get('project')+"-"+job.get('software')+"-" + job.get('id');
                     }
                 });
             }
@@ -286,7 +286,7 @@ var DashboardController = Backbone.Router.extend({
                 el: $("#explorer-tab-content")
             }).render();
             callback.call();
-        }
+        };
         new UserJobCollection({project: window.app.status.currentProject}).fetch({
             success: function (collection, response) {
                 window.app.models.projectUserJob = collection;
@@ -448,13 +448,13 @@ var DashboardController = Backbone.Router.extend({
         };
 
         new UserCollection({project: window.app.status.currentProject}).fetch({
-            success: function (collection, response) {
+            success: function (collection) {
                 window.app.models.projectUser = collection;
                 collectionFetched();
             }
         });
         new UserLayerCollection({project: window.app.status.currentProject}).fetch({
-            success: function (collection, response) {
+            success: function (collection) {
                 window.app.models.userLayer = collection;
                 collectionFetched();
             }

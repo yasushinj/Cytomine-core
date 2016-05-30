@@ -36,7 +36,7 @@ var ProjectDashboardImages = Backbone.View.extend({
                 idProject: this.model.id,
                 project: this.model
             }).render();
-            $(this.el).append(this.imagesTabsView.el)
+            $(this.el).append(this.imagesTabsView.el);
         }
     },
 

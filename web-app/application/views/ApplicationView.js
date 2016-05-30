@@ -16,11 +16,11 @@
 
 Storage.prototype.setObject = function (key, value) {
     this.setItem(key, JSON.stringify(value));
-}
+};
 
 Storage.prototype.getObject = function (key) {
     return JSON.parse(this.getItem(key));
-}
+};
 
 var ApplicationView = Backbone.View.extend({
 
@@ -271,7 +271,7 @@ var ApplicationView = Backbone.View.extend({
 
         checkTask();
         var timer = setInterval(function () {
-            checkTask()
+            checkTask();
         }, timeout);
         return timer;
     },
@@ -471,7 +471,7 @@ ApplicationView.prototype.message = function (title, message, type,timer) {
         $("#alert" + timestamp).remove();
     }, timer);
 
-}
+};
 
 
 
