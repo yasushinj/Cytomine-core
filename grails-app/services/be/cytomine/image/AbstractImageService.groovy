@@ -27,7 +27,6 @@ import be.cytomine.command.Transaction
 import be.cytomine.image.server.ImageProperty
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
-import be.cytomine.image.server.StorageAbstractImageService
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User

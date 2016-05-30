@@ -1,8 +1,5 @@
 package be.cytomine.test.http
 
-import be.cytomine.processing.ImageFilter
-import be.cytomine.processing.ProcessingServer
-
 /*
 * Copyright (c) 2009-2016. Authors: see NOTICE file.
 *
@@ -19,6 +16,7 @@ import be.cytomine.processing.ProcessingServer
 * limitations under the License.
 */
 
+import be.cytomine.processing.ProcessingServer
 import be.cytomine.test.Infos
 import grails.converters.JSON
 

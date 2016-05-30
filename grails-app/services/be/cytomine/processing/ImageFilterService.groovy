@@ -1,18 +1,5 @@
 package be.cytomine.processing
 
-import be.cytomine.Exception.CytomineException
-import be.cytomine.command.AddCommand
-import be.cytomine.command.Command
-import be.cytomine.command.DeleteCommand
-import be.cytomine.command.EditCommand
-import be.cytomine.command.Transaction
-import be.cytomine.security.SecUser
-import be.cytomine.utils.ModelService
-import be.cytomine.utils.Task
-
-import static org.springframework.security.acls.domain.BasePermission.DELETE
-import static org.springframework.security.acls.domain.BasePermission.WRITE
-
 /*
 * Copyright (c) 2009-2016. Authors: see NOTICE file.
 *
@@ -28,6 +15,15 @@ import static org.springframework.security.acls.domain.BasePermission.WRITE
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+import be.cytomine.Exception.CytomineException
+import be.cytomine.command.AddCommand
+import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
+import be.cytomine.command.Transaction
+import be.cytomine.security.SecUser
+import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
 
 class ImageFilterService extends ModelService {
 

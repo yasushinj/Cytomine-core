@@ -109,7 +109,7 @@ class CreateRabbitJobWithArgsService extends AbstractJobService{
         printStartJobInfo(job,allArgs)
 
 
-        println "Command tab : " + jsonArgs
+        log.info "Command tab : " + jsonArgs
         amqpQueueService.publishMessage(amqpQueueService.read(queueName), jsonArgs)
 
         //launchSoftware(allArgs,job)

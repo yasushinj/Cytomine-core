@@ -21,7 +21,6 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
-import be.cytomine.social.PersistentConnection
 
 /**
  * Controller for an user connection to a project

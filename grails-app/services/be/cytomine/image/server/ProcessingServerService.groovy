@@ -1,7 +1,6 @@
 package be.cytomine.image.server
 
 import be.cytomine.Exception.CytomineException
-import be.cytomine.Exception.ServerException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
