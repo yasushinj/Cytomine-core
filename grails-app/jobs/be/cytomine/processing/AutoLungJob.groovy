@@ -38,19 +38,20 @@ class AutoLungJob  {
         Job job = (Job) context.mergedJobDataMap.get('job')
         UserJob userJob = (UserJob) context.mergedJobDataMap.get('userJob')
 
-        SpringSecurityUtils.reauthenticate userJob.getUser().getUsername(), null
+        SpringSecurityUtils.doWithAuth(userJob.getUser().getUsername(), {
+            def jobParameters = []
+            jobParameterService.list(job).each {
+                jobParameters << [ name : "--"+it.getSoftwareParameter().getName(), value : it.getValue()]
+            }
 
-        def jobParameters = []
-        jobParameterService.list(job).each {
-            jobParameters << [ name : "--"+it.getSoftwareParameter().getName(), value : it.getValue()]
-        }
+            if (preview) {
+                jobParameters << [ name : "--preview", value : ""]
+            }
+            // execute job
+            log.info "execute $job with $jobParameters"
 
-        if (preview) {
-            jobParameters << [ name : "--preview", value : ""]
-        }
-        // execute job
-        log.info "execute $job with $jobParameters"
+            rabbitSend('detectSampleQueue', (jobParameters as JSON).toString())
+        })
 
-        rabbitSend('detectSampleQueue', (jobParameters as JSON).toString())
     }
 }

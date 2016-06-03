@@ -44,19 +44,20 @@ class HelloWorldJob {
         Job job = (Job) context.mergedJobDataMap.get('job')
         UserJob userJob = (UserJob) context.mergedJobDataMap.get('userJob')
         def jobParameters = context.mergedJobDataMap.get('jobParameters')
-        SpringSecurityUtils.reauthenticate userJob.getUser().getUsername(), null
+        SpringSecurityUtils.doWithAuth(userJob.getUser().getUsername(), {
+            def args = []
+            jobParameters.each {
+                args << [ name : "--"+it.getSoftwareParameter().getName(), value : it.getValue()]
+            }
 
-        def args = []
-        jobParameters.each {
-            args << [ name : "--"+it.getSoftwareParameter().getName(), value : it.getValue()]
-        }
+            if (preview) {
+                args << [ name : "--preview", value : ""]
+            }
+            // execute job
+            log.info "execute $job with $args"
 
-        if (preview) {
-            args << [ name : "--preview", value : ""]
-        }
-        // execute job
-        log.info "execute $job with $args"
+            rabbitSend('helloWorldQueue', (args as JSON).toString())
+        })
 
-        rabbitSend('helloWorldQueue', (args as JSON).toString())
     }
 }

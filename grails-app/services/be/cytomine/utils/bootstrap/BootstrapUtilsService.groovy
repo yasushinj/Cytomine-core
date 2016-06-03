@@ -367,129 +367,133 @@ class BootstrapUtilsService {
     }
 
     def transfertProperty() {
-        SpringSecurityUtils.reauthenticate "admin", null
-        def ips = ImageProperty.list()
-        ips.eachWithIndex { ip,index ->
-            ip.attach()
-            Property property = new Property(domainIdent: ip.image.id, domainClassName: AbstractImage.class.name,key:ip.key,value:ip.value)
-            property.save(failOnError: true)
-            ip.delete()
-            if(index%500==0) {
-                log.info "Image property ${(index/ips.size())*100}"
-                cleanUpGorm()
+        SpringSecurityUtils.doWithAuth("admin", {
+            def ips = ImageProperty.list()
+            ips.eachWithIndex { ip,index ->
+                ip.attach()
+                Property property = new Property(domainIdent: ip.image.id, domainClassName: AbstractImage.class.name,key:ip.key,value:ip.value)
+                property.save(failOnError: true)
+                ip.delete()
+                if(index%500==0) {
+                    log.info "Image property ${(index/ips.size())*100}"
+                    cleanUpGorm()
+                }
             }
-        }
+        })
     }
 
     def checkImages2() {
-        SpringSecurityUtils.reauthenticate "admin", null
+        SpringSecurityUtils.doWithAuth("admin", {
+            def uploadedFiles = UploadedFile.findAllByPathLike("notfound").plus(UploadedFile.findAllByPathLike("/tmp/cytomine_buffer/")).plus(UploadedFile.findAllByPathLike("/tmp/imageserver_buffer"))
 
-        def uploadedFiles = UploadedFile.findAllByPathLike("notfound").plus(UploadedFile.findAllByPathLike("/tmp/cytomine_buffer/")).plus(UploadedFile.findAllByPathLike("/tmp/imageserver_buffer"))
+            uploadedFiles.eachWithIndex { uploadedFile,index->
+                if(index%1==0) {
+                    log.info "Check ${(index/uploadedFiles.size())*100}"
+                    cleanUpGorm()
+                }
 
-        uploadedFiles.eachWithIndex { uploadedFile,index->
-            if(index%1==0) {
-                log.info "Check ${(index/uploadedFiles.size())*100}"
-                cleanUpGorm()
-            }
-
-            uploadedFile.attach()
-            AbstractImage abstractImage = uploadedFile.image
-            if (!abstractImage) { //
-                UploadedFile parentUploadedFile = uploadedFile
-                int max = 10
-                while (parentUploadedFile.parent && !abstractImage && max <10) {
-                    parentUploadedFile.attach()
-                    parentUploadedFile.parent.attach()
-                    parentUploadedFile = parentUploadedFile.parent
-                    abstractImage = parentUploadedFile.image
-                    max++
+                uploadedFile.attach()
+                AbstractImage abstractImage = uploadedFile.image
+                if (!abstractImage) { //
+                    UploadedFile parentUploadedFile = uploadedFile
+                    int max = 10
+                    while (parentUploadedFile.parent && !abstractImage && max <10) {
+                        parentUploadedFile.attach()
+                        parentUploadedFile.parent.attach()
+                        parentUploadedFile = parentUploadedFile.parent
+                        abstractImage = parentUploadedFile.image
+                        max++
+                    }
+                }
+                if (abstractImage) {
+                    def data = StorageAbstractImage.findByAbstractImage(abstractImage)
+                    if(data) {
+                        Storage storage = data.storage
+                        uploadedFile.path = storage.getBasePath()
+                        uploadedFile = uploadedFile.save()
+                    }
+                } else {
+                    log.error "DID NOT FIND AN ABSTRACT_IMAGE for uploadedFile $uploadedFile"
                 }
             }
-            if (abstractImage) {
-                def data = StorageAbstractImage.findByAbstractImage(abstractImage)
-                if(data) {
-                    Storage storage = data.storage
-                    uploadedFile.path = storage.getBasePath()
-                    uploadedFile = uploadedFile.save()
-                }
-            } else {
-                log.error "DID NOT FIND AN ABSTRACT_IMAGE for uploadedFile $uploadedFile"
-            }
-        }
+        })
 
     }
 
     def checkImages() {
-        SpringSecurityUtils.reauthenticate "admin", null
-        def currentUser = cytomineService.getCurrentUser()
+        SpringSecurityUtils.doWithAuth("admin", {
+            def currentUser = cytomineService.getCurrentUser()
 
-        List<AbstractImage> ok = []
-        List<AbstractImage> notok = []
-        def list = AbstractImage.findAll()
-        list.eachWithIndex { abstractImage,index->
-            if(index%500==0) {
-                log.info "Check ${(index/list.size())*100}"
-                cleanUpGorm()
-            }
-
-            if (UploadedFile.findByImage(abstractImage)) {
-                ok << abstractImage
-            } else {
-                notok << abstractImage
-            }
-        }
-
-        notok.eachWithIndex { abstractImage, index ->
-            abstractImage.attach()
-            UploadedFile uploadedFile = UploadedFile.findByFilename(abstractImage.filename)
-            SecUser user = abstractImage.user ? abstractImage.user : currentUser
-            if (!uploadedFile) {
-                def imageServerStorage = abstractImage.imageServersStorage
-                uploadedFile = new UploadedFile(
-                        user : user,
-                        filename : abstractImage.getPath(),
-                        projects: ImageInstance.findAllByBaseImage(abstractImage).collect { it.project.id}.unique(),
-                        storages : abstractImage.getImageServersStorage().collect { it.storage.id},
-                        originalFilename: abstractImage.getOriginalFilename(),
-                        ext: abstractImage.mime.extension,
-                        size : 0,
-                        path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),
-                        contentType: abstractImage.mimeType)
-
-                if (uploadedFile.validate()) {
-                    uploadedFile = uploadedFile.save()
-                } else {
-                    uploadedFile.errors.each {
-                        log.info it
-                    }
+            List<AbstractImage> ok = []
+            List<AbstractImage> notok = []
+            def list = AbstractImage.findAll()
+            list.eachWithIndex { abstractImage,index->
+                if(index%500==0) {
+                    log.info "Check ${(index/list.size())*100}"
+                    cleanUpGorm()
                 }
 
+                if (UploadedFile.findByImage(abstractImage)) {
+                    ok << abstractImage
+                } else {
+                    notok << abstractImage
+                }
             }
 
-            uploadedFile.image = abstractImage
-            uploadedFile.save()
-            if(index%100==0) {
-                log.info "Create upload ${(index/notok.size())*100}"
-                cleanUpGorm()
+            notok.eachWithIndex { abstractImage, index ->
+                abstractImage.attach()
+                UploadedFile uploadedFile = UploadedFile.findByFilename(abstractImage.filename)
+                SecUser user = abstractImage.user ? abstractImage.user : currentUser
+                if (!uploadedFile) {
+                    def imageServerStorage = abstractImage.imageServersStorage
+                    uploadedFile = new UploadedFile(
+                            user : user,
+                            filename : abstractImage.getPath(),
+                            projects: ImageInstance.findAllByBaseImage(abstractImage).collect { it.project.id}.unique(),
+                            storages : abstractImage.getImageServersStorage().collect { it.storage.id},
+                            originalFilename: abstractImage.getOriginalFilename(),
+                            ext: abstractImage.mime.extension,
+                            size : 0,
+                            path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),
+                            contentType: abstractImage.mimeType)
+
+                    if (uploadedFile.validate()) {
+                        uploadedFile = uploadedFile.save()
+                    } else {
+                        uploadedFile.errors.each {
+                            log.info it
+                        }
+                    }
+
+                }
+
+                uploadedFile.image = abstractImage
+                uploadedFile.save()
+                if(index%100==0) {
+                    log.info "Create upload ${(index/notok.size())*100}"
+                    cleanUpGorm()
+                }
             }
-        }
+
+        })
     }
 
     void convertMimeTypes(){
-        SpringSecurityUtils.reauthenticate "admin", null
-        def currentUser = cytomineService.getCurrentUser()
+        SpringSecurityUtils.doWithAuth("admin", {
+            def currentUser = cytomineService.getCurrentUser()
 
-        Mime oldTif = Mime.findByMimeType("image/tif");
-        Mime oldTiff = Mime.findByMimeType("image/tiff");
-        Mime newTiff = Mime.findByMimeType("image/pyrtiff");
+            Mime oldTif = Mime.findByMimeType("image/tif");
+            Mime oldTiff = Mime.findByMimeType("image/tiff");
+            Mime newTiff = Mime.findByMimeType("image/pyrtiff");
 
-        List<AbstractImage> abstractImages = AbstractImage.findAllByMimeInList([oldTif, oldTiff]);
-        log.info "images to convert : "+abstractImages.size()
+            List<AbstractImage> abstractImages = AbstractImage.findAllByMimeInList([oldTif, oldTiff]);
+            log.info "images to convert : "+abstractImages.size()
 
-        abstractImages.each {
-            it.mime = newTiff;
-            it.save();
-        }
+            abstractImages.each {
+                it.mime = newTiff;
+                it.save();
+            }
+        })
     }
 
     void initRabbitMq() {

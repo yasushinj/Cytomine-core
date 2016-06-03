@@ -42,18 +42,14 @@ var ProjectDashboardView = Backbone.View.extend({
     render: function () {
         var self = this;
         require(["text!application/templates/dashboard/Dashboard.tpl.html"], function (tpl) {
-
-
             self.doLayout(tpl);
             self.rendered = true;
         });
         return this;
-
     },
     doLayout: function (tpl) {
         var self = this;
         $(self.el).append(_.template(tpl, self.model.toJSON()));
-
 
         window.app.controllers.browse.tabs.addDashboard(self);
         $('#activityTab a').click(function (e) {

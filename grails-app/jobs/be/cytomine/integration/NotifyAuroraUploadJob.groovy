@@ -30,7 +30,6 @@ class NotifyAuroraUploadJob {
     def group = "MyGroup"
 
     def execute() {
-        SpringSecurityUtils.reauthenticate "superadmin", null
-        auroraService.notifyImage()
+        SpringSecurityUtils.doWithAuth("superadmin", {auroraService.notifyImage()})
     }
 }
