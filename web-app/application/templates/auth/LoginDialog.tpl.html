@@ -39,7 +39,13 @@
                             <button id="submit-forgotUsername" type="submit" class="btn btn-success btn-sm">Get my username</button>
                         </div>
                     </div>
-                    <br/><span id="help-inline">Forgot your <a id="forgotUsername">username</a> or your <a id="forgotPassword">password</a> ?</span>
+                    <div class="form-group" id="formGroupSubmitCreateAccount" style="display: none;">
+                        <div class="col-md-3" style="text-align: left;">
+                            <button id="submit-CreateAccount" type="submit" class="btn btn-success btn-sm">Create</button>
+                        </div>
+                    </div>
+                    <br/><span id="help-inline">Forgot your <a id="forgotUsername">username</a> or your <a id="forgotPassword">password</a> ?
+                    <br/>Don't have an account yet ? Create an <a id="createAccount">account</a> now!</span>
                     <% if (url === "http://demo.cytomine.be") { %>
                         <br/><span>See our <a href="http://www.cytomine.be/Cytomine_userguide.pdf">user guide</a> for default demo usernames or <a href="mailto:info@cytomine.be?subject=Request Cytomine demo account">request a personal account</a>.</span>
                     <% } %>

@@ -17,6 +17,7 @@ package be.cytomine.security
 */
 
 import be.cytomine.api.RestController
+import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.AccountExpiredException
@@ -25,12 +26,16 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
+import be.cytomine.Exception.CytomineException
 
 import javax.servlet.http.HttpServletResponse
 
 class LoginController extends RestController {
 
     def secUserService
+    def projectService
+    def secRoleService
+    def secUserSecRoleService
     def currentRoleServiceProxy
     def cytomineService
 
@@ -275,6 +280,35 @@ class LoginController extends RestController {
                 response([success: true, message: "Check your inbox"], 200)
             }
 
+        }
+    }
+    def createAccount () {
+        String username = params.j_username
+        String email = params.j_email
+
+        if (username && email) {
+
+            def creation = {
+                try {
+                    def guestUser = [name: username, firstname: 'Firstname', lastname: 'Lastname',
+                                     mail: email, password: 'passwordExpired', color: "#FF0000"]
+
+                    User user = projectService.inviteUser(null, JSON.parse(JSONUtils.toJSONString(guestUser)));
+                    SecRole secRole = secRoleService.findByAuthority("ROLE_USER")
+                    def userRole = secUserSecRoleService.get(user, secRole)
+                    if(userRole) secUserSecRoleService.delete(userRole);
+                    response([success: true, message: "Check your inbox"], 200)
+                } catch (CytomineException e) {
+                    log.error(e)
+                    response([success: false, errors: e.msg], e.code)
+                }
+            }
+
+            SpringSecurityUtils.doWithAuth("superadmin", creation)
+        } else if (username) {
+            response([success: false, errors: "The email cannot be blank"], 400)
+        } else {
+            response([success: false, errors: "The username cannot be blank"], 400)
         }
     }
 

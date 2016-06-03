@@ -116,7 +116,6 @@ class StorageService extends ModelService {
 
 
     def initUserStorage(SecUser user) {  //:to do => use command instead of domains
-        SpringSecurityUtils.reauthenticate "admin", null
         String storage_base_path = grailsApplication.config.storage_path
         String remotePath;
         if(storage_base_path.charAt(storage_base_path.length()-1) == File.separator) {

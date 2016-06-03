@@ -48,6 +48,10 @@ var LoginDialogView = Backbone.View.extend({
             e.preventDefault();
             window.app.controllers.auth.doForgotUsername();
         });
+        $('#submit-CreateAccount').click(function(e) {
+            e.preventDefault();
+            window.app.controllers.auth.createAccount();
+        });
         $('#forgotUsername').click(function(e) {
             e.preventDefault();
             self.forgotUsername();
@@ -59,6 +63,10 @@ var LoginDialogView = Backbone.View.extend({
         $('#restoreLogin').click(function(e) {
             e.preventDefault();
             self.restoreLogin();
+        });
+        $('#createAccount').click(function(e) {
+            e.preventDefault();
+            self.createAccount();
         });
 
 
@@ -106,6 +114,18 @@ var LoginDialogView = Backbone.View.extend({
         $("#formGroupSubmitForgotPassword").hide();
         $("#formGroupSubmitForgotUsername").hide();
         $("#formGrouploginEmail").hide();
+        $("#formGroupSubmitCreateAccount").hide();
+    },
+    createAccount : function () {
+        $("#formGrouploginPassword").hide();
+        $("#formGroupSubmitLogin").hide();
+        $("#formGroupSubmitForgotPassword").hide();
+        $("#help-inline").hide();
+
+        $("#help-inline-forgot").show();
+        $("#formGrouploginUsername").show();
+        $("#formGrouploginEmail").show();
+        $("#formGroupSubmitCreateAccount").show();
     }
 
 });

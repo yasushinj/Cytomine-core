@@ -70,6 +70,26 @@ var AuthController = Backbone.Router.extend({
         });
         return false;
     },
+    createAccount : function () {
+        var app = new ApplicationView(); //in order to use message function
+        var data = $("#login-form").serialize(); //should be in LoginDIalogView
+        var self = this;
+        $.ajax({
+            url: 'login/createAccount',
+            type: 'post',
+            dataType: 'json',
+            data: data,
+            success: function (data) {
+                app.message("Success", "Check your inbox", "success",6000);
+                self.loginDialog.restoreLogin();
+            },
+            error: function (data) {
+                var resp = $.parseJSON(data.responseText);
+                app.message("Error", resp.errors, "error");
+            }
+        });
+        return false;
+    },
     doLogin: function () {
         var app = new ApplicationView(); //in order to use message function
         var data = $("#login-form").serialize(); //should be in LoginDIalogView
