@@ -33,14 +33,16 @@ class ConfigTests {
     void testConfigShow() {
 
         def config = BasicInstanceBuilder.getConfigNotExist()
-        def result = ConfigAPI.create(config.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ConfigAPI.update(config.key, config.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-        String key =  result.data.key
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        String key =  json.config.key
 
         result = ConfigAPI.show(key, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        def json = JSON.parse(result.data)
+        json = JSON.parse(result.data)
         assert json instanceof JSONObject
     }
 
@@ -63,8 +65,7 @@ class ConfigTests {
 //        assert configToDelete.save(flush: true) != null
 
         def key = configToDelete.key
-        def id = configToDelete.id
-        def result = ConfigAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ConfigAPI.delete(key, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         //UNDO & REDO
@@ -88,9 +89,12 @@ class ConfigTests {
     void testConfigAddCorrect() {
         def configToAdd = BasicInstanceBuilder.getConfigNotExist()
 
-        def result = ConfigAPI.create(configToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ConfigAPI.update(configToAdd.key, configToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
         assert 200 == result.code
-        String key =  result.data.key
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        String key =  json.config.key
 
         //UNDO & REDO
         result = ConfigAPI.show(key, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -107,12 +111,6 @@ class ConfigTests {
 
         result = ConfigAPI.show(key, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-    }
-
-    void testConfigAddAlreadyExist() {
-        def configToAdd = BasicInstanceBuilder.getConfig()
-        def result = ConfigAPI.create(configToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert (409 == result.code) || (400 == result.code)
     }
 
     //TEST UPDATE

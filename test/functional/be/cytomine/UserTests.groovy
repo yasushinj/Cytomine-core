@@ -334,9 +334,7 @@ class UserTests  {
         assert 200 == resAddUser.code
     }
 
-    /*
-          SHOW USER JOB
-     */
+    // SHOW USER JOB
 
     void testShowUserJob() {
         def userJob = BasicInstanceBuilder.getUserJob()
@@ -384,23 +382,6 @@ class UserTests  {
        json = JSON.parse(response)
        assert json instanceof JSONObject
      }
-
-            /**
-         if(project.checkPermission(ADMINISTRATION)) {
-             return users
-         } else if(project.hideAdminsLayers && project.hideUsersLayers && users.contains(currentUser)) {
-             return [currentUser]
-         } else if(project.hideAdminsLayers && !project.hideUsersLayers && users.contains(currentUser)) {
-             users.removeAll(admins)
-             return users
-         } else if(!project.hideAdminsLayers && project.hideUsersLayers && users.contains(currentUser)) {
-             admins.add(currentUser)
-             return admins
-          }else if(!project.hideAdminsLayers && !project.hideUsersLayers && users.contains(currentUser)) {
-             return users
-          }else { //should no arrive but possible if user is admin and not in project
-              []
-          }**/
 
 
 

@@ -109,12 +109,9 @@ class UserAPI extends DomainAPI {
         return doPUT(URL,jsonUser,username,password)
     }
     static def resetPassword(def id,def newPassword, String username, String password) {
-        def queryString = ""
-        if (newPassword) {
-            queryString = "password=$newPassword&oldPassword=$password"
-        }
-        String URL = Infos.CYTOMINEURL + "api/user/$id/password.json?$queryString"
-        return doPUT(URL,"",username,password)
+        String json = ([password: newPassword, oldPassword :password] as JSON).toString()
+        String URL = Infos.CYTOMINEURL + "api/user/$id/password.json"
+        return doPUT(URL,json,username,password)
     }
 
 

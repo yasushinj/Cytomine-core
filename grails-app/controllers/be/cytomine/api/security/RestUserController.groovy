@@ -27,6 +27,7 @@ import be.cytomine.security.User
 import be.cytomine.utils.SecurityUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
@@ -431,7 +432,9 @@ class RestUserController extends RestController {
             if (user.password != oldPassword && !user.passwordExpired) {
                 responseNotFound("Password",params.password)
             } */
-            String newPassword = request.JSON.password
+
+            String newPassword = request.JSON.password == JSONObject.NULL ? null : request.JSON.password;
+
             log.info "change password for user $user with new password $newPassword"
             if(user && newPassword) {
                 securityACLService.checkIsCreator(user,cytomineService.currentUser)

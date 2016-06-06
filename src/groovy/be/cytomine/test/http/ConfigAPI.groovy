@@ -52,8 +52,8 @@ class ConfigAPI extends DomainAPI {
     }
 
     //DELETE
-    static def delete(def id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/config/${id}.json"
+    static def delete(String key, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/config/key/${key}.json"
         return doDELETE(URL,username,password)
     }
 }
