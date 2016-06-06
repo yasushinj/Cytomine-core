@@ -17,23 +17,29 @@
 class ProjectConnectionUrlMappings {
 
     static mappings = {
-        "/api/project/$project/userconnection.$format" (controller : "restProjectConnection") {
-            action = [POST:"add"]
+        "/api/project/$project/userconnection.$format"(controller: "restProjectConnection") {
+            action = [POST: "add"]
         }
-        "/api/project/$project/userconnection/$user.$format" (controller : "restProjectConnection") {
-            action = [GET:"getConnectionByUserAndProject"]
+        "/api/project/$project/userconnection/$user.$format"(controller: "restProjectConnection") {
+            action = [GET: "getConnectionByUserAndProject"]
         }
-        "/api/project/$project/lastconnections.$format" (controller : "restProjectConnection") {
-            action = [GET:"lastConnectionInProject"]
+        "/api/project/$project/lastconnections.$format"(controller: "restProjectConnection") {
+            action = [GET: "lastConnectionInProject"]
         }
-        "/api/project/$project/connectionFrequency.$format"(controller:"restProjectConnection") {
-            action = [GET : "numberOfConnectionsByProjectAndUser"]
+        "/api/project/$project/connectionFrequency.$format"(controller: "restProjectConnection") {
+            action = [GET: "numberOfConnectionsByProjectAndUser"]
         }
-        "/api/project/$project/connectionFrequency/$user.$format"(controller:"restProjectConnection") {
-            action = [GET : "numberOfConnectionsByProjectAndUser"]
+        "/api/project/$project/connectionFrequency/$user.$format"(controller: "restProjectConnection") {
+            action = [GET: "numberOfConnectionsByProjectAndUser"]
         }
-        "/api/project/$project/connectionHistory/$user.$format"(controller:"restProjectConnection") {
-            action = [GET : "userProjectConnectionHistory"]
+        "/api/project/$project/connectionHistory/$user.$format"(controller: "restProjectConnection") {
+            action = [GET: "userProjectConnectionHistory"]
+        }
+        "/api/connectionFrequency.$format"(controller: "restProjectConnection") {
+            action = [GET: "numberOfProjectConnections"]
+        }
+        "/api/averageConnections.$format"(controller: "restProjectConnection") {
+            action = [GET: "averageOfProjectConnections"]
         }
     }
 }

@@ -205,7 +205,9 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
     def getAbsolutePath() {
-        return [ StorageAbstractImage.findByAbstractImage(this).storage.basePath, this.path].join(File.separator)
+        if(this.version) {
+            return [ StorageAbstractImage.findByAbstractImage(this).storage.basePath, this.path].join(File.separator)
+        }
     }
 
     def getMimeType(){

@@ -23,8 +23,8 @@ var ApplicationController = Backbone.Router.extend({
 
     routes: {
         "": "initialRoute",
-        "explorer": "explorer",
-        "admin": "admin"
+        "explorer": "explorer"/*,
+        "admin": "admin"*/
     },
 
     startup: function () {
@@ -125,7 +125,7 @@ var ApplicationController = Backbone.Router.extend({
         window.app.controllers.account = new AccountController();
         window.app.controllers.phono = new PhonoController();
         window.app.controllers.userdashboard = new UserDashboardController();
-        //window.app.controllers.admin        = new AdminController();
+        window.app.controllers.admin = new AdminController();
 
         window.app.view.initPreferences();
         window.app.view.initUserMenu();

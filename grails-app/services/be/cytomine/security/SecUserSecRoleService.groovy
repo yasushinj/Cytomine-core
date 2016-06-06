@@ -47,6 +47,22 @@ class SecUserSecRoleService extends ModelService {
         SecUserSecRole.findAllBySecUser(user)
     }
 
+    def getHighest(User user) {
+        securityACLService.checkGuest(cytomineService.currentUser)
+        def result;
+        def userRoles = SecUserSecRole.findAllBySecUser(user)
+        def roles = userRoles.collect{it.secRole.authority}
+
+        result = roles.find{it == "ROLE_SUPER_ADMIN"}
+        if(result) return userRoles.find{it.secRole.authority == result};
+        result = roles.find{it == "ROLE_ADMIN"}
+        if(result) return userRoles.find{it.secRole.authority == result};
+        result = roles.find{it == "ROLE_USER"}
+        if(result) return userRoles.find{it.secRole.authority == result};
+        result = roles.find{it == "ROLE_GUEST"}
+        return userRoles.find{it.secRole.authority == result};
+    }
+
     def get(User user, SecRole role) {
         securityACLService.checkGuest(cytomineService.currentUser)
         SecUserSecRole.findBySecUserAndSecRole(user, role)

@@ -286,7 +286,7 @@ var ApplicationView = Backbone.View.extend({
             "text!application/templates/project/ProjectComponent.tpl.html",
             "text!application/templates/ontology/OntologyComponent.tpl.html",
             "text!application/templates/explorer/ExplorerComponent.tpl.html",
-            "text!application/templates/AdminComponent.tpl.html",
+            "text!application/templates/admin/AdminComponent.tpl.html",
             "text!application/templates/activity/ActivityComponent.tpl.html",
             "text!application/templates/account/AccountComponent.tpl.html",
             "text!application/templates/search/SearchComponent.tpl.html"
@@ -311,6 +311,7 @@ var ApplicationView = Backbone.View.extend({
                     divId: "userdashboard",
                     onActivate: function () {
                         self.currentComponent = this;
+                        activeInterval();
                     }
                 });
                 self.components.search = new Component({
@@ -368,18 +369,18 @@ var ApplicationView = Backbone.View.extend({
                         elButton: "project-button"
                     },
                     divId: "project"/*,
-                    activate: function () {
-                        if(self.currentComponent != this && self.currentComponent != self.components.explorer && window.app.status.currentProject != null){
-                            // go to explore component
-                            window.location="#explorer"
-                        } else {
-                            // if we are already in project panel, explore panel or if currentProject is null, go to project panel
-                            self.currentComponent = self.components.project;
+                     activate: function () {
+                     if(self.currentComponent != this && self.currentComponent != self.components.explorer && window.app.status.currentProject != null){
+                     // go to explore component
+                     window.location="#explorer"
+                     } else {
+                     // if we are already in project panel, explore panel or if currentProject is null, go to project panel
+                     self.currentComponent = self.components.project;
 
-                            $("#" + this.divId).show();
-                            $("#" + this.buttonAttr.elButton).parent().addClass("active");
-                        }
-                    }*/
+                     $("#" + this.divId).show();
+                     $("#" + this.buttonAttr.elButton).parent().addClass("active");
+                     }
+                     }*/
                 });
                 self.components.ontology = new Component({
                     el: "#content",
@@ -393,6 +394,20 @@ var ApplicationView = Backbone.View.extend({
                         activeInterval();
                     }
                 });
+
+                self.components.admin = new Component({
+                    el: "#content",
+                    template: _.template(adminTpl, {}),
+                    buttonAttr: {
+                        elButton: "admin-button"
+                    },
+                    divId: "admin",
+                    onActivate: function () {
+                        self.currentComponent = this;
+                        activeInterval();
+                    }
+                });
+
                 self.components.explorer = new Component({
                     el: "#content",
                     template: _.template(explorerTpl, {}),

@@ -38,7 +38,6 @@ class StatsService extends ModelService {
     }
 
     def mostActiveProjects(){
-        println "here2"
         return projectService.getActiveProjectsWithNumberOfUsers().max{it.users};
     }
 

@@ -47,6 +47,11 @@ class StatsUrlMappings {
         "/api/term/$id/project/stat.$format"(controller:"stats"){
             action = [GET:"statAnnotationTermedByProject"]
         }
+        // social
+        // project connection
+        "/api/total/project/connections.$format"(controller:"stats") {
+            action = [GET:"totalNumberOfConnectionsByProject"]
+        }
 
         //retrieval
         "/api/stats/retrieval/avg.$format"(controller:"retrievalSuggestStats"){
@@ -80,6 +85,13 @@ class StatsUrlMappings {
         "/api/total/$domain.$format"(controller:"stats"){
             action = [GET:"totalDomains"]
         }
+        "/api/stats/all.$format"(controller:"stats"){
+            action = [GET:"allGlobalStats"]
+        }
+        "/api/stats/currentStats.$format"(controller:"stats"){
+            action = [GET:"statsOfCurrentActions"]
+        }
+
 
     }
 }

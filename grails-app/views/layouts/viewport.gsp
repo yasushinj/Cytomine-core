@@ -212,8 +212,18 @@ body {
 
 
 <!-- View -->
+<script type="text/javascript" src="application/views/admin/AdminView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminDashboard.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminUsersView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminUserDialog.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminGroupsView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminPermissionsView.js"></script>
+<script type="text/javascript" src="application/views/admin/AdminConfigView.js"></script>
+
+
 <script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
 <script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
+<script type="text/javascript" src="application/views/user/DetailedUserInfoDialog.js"></script>
 <script type="text/javascript" src="application/views/user/DetailedUserProjectInfoDialog.js"></script>
 
 
@@ -247,6 +257,7 @@ body {
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
+<script type="text/javascript" src="application/views/graph/HistogramActivitiesChart.js" ></script>
 
 <script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>
 <script type="text/javascript" src="application/views/processing/JobComparatorView.js" ></script>

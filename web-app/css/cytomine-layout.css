@@ -306,6 +306,10 @@ div .annotations-panel-mini {
     float: none;
 }
 
+.errorMessage {
+    color: rgb(255, 0, 0);
+}
+
 .tree > ul.dynatree-container
 {
 

@@ -51,7 +51,11 @@ class RestSecUserSecRoleController extends RestController {
     ])
     def list() {
         User user = secUserService.read(params.long('user'));
-        responseSuccess(secUserSecRoleService.list(user))
+        if (params.highest){
+            responseSuccess(secUserSecRoleService.getHighest(user))
+        } else {
+            responseSuccess(secUserSecRoleService.list(user))
+        }
     }
 
     /**

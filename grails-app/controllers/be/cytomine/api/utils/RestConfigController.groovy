@@ -57,7 +57,15 @@ class RestConfigController extends RestController {
 
     @RestApiMethod(description="Edit a config")
     def update() {
-        update(configService, request.JSON)
+        Config config = configService.readByKey(params.key)
+
+        if (config) {
+            request.JSON.id = config.id
+            configService.update(config, request.JSON)
+            update(configService, request.JSON)
+        } else {
+            add(configService, request.JSON)
+        }
     }
 
     /**
@@ -68,7 +76,9 @@ class RestConfigController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The config id")
     ])
     def delete()  {
-        delete(configService, JSON.parse("{id : $params.id}"),null)
+        Config config = configService.readByKey(params.key)
+        def result = configService.delete(config)
+        responseResult(result)
     }
 
     @RestApiMethod(description="Get the boolean LDAP enabled")

@@ -6,6 +6,8 @@ import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
+import groovy.time.TimeCategory
+
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
 
@@ -132,16 +134,40 @@ class ProjectConnectionService extends ModelService {
                     [$group : [_id : [ user: '$user'], "frequency":[$sum:1]]]
             )
 
-            def usersWithPosition = []
+            def usersConnections = []
             result.results().each {
                 def userId = it["_id"]["user"]
                 def frequency = it["frequency"]
-                usersWithPosition << [user: userId, frequency: frequency]
+                usersConnections << [user: userId, frequency: frequency]
             }
-            result = usersWithPosition
+            result = usersConnections
         }
         return result
     }
+
+    def totalNumberOfConnectionsByProject(){
+
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        def result;
+        // what we want
+        // db.persistentProjectConnection.aggregate([{ $group : { _id : {project:"$project"} , total : { $sum : 1 }}}])
+
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+
+        result = db.persistentProjectConnection.aggregate(
+                [$group : [_id : '$project', "total":[$sum:1]]]
+        )
+
+        def projectConnections = []
+        result.results().each {
+            def projectId = it["_id"]
+            def total = it["total"]
+            projectConnections << [project: projectId, total: total]
+        }
+        result = projectConnections
+        return result
+    }
+
 
     def numberOfConnectionsByProjectOrderedByHourAndDays(Project project, Long afterThan = null, User user = null){
 
@@ -152,6 +178,7 @@ class ProjectConnectionService extends ModelService {
 
         def result;
         def match
+        //substract all minutes,seconds & milliseconds (last unit is hour)
         def projection1 = [$project : [ created : [$subtract:['$created', [$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]] ]]]]]]
         def projection2 = [$project : [ y : [$year:'$created'], m : [$month:'$created'], d : [$dayOfMonth:'$created'], h : [$hour:'$created'], time : '$created']]
         def group = [$group : [_id : [ year: '$y', month: '$m', day: '$d', hour: '$h'], "time":[$first:'$time'], "frequency":[$sum:1]]]
@@ -195,4 +222,145 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
+    def numberOfProjectConnections(Long afterThan = null, String period){
+
+        // what we want
+        //db.persistentProjectConnection.aggregate( {"$match": {$and: [{project : ID_PROJECT}, {created : {$gte : new Date(AFTER) }}]}}, { "$project": { "created": {  "$subtract" : [  "$created",  {  "$add" : [  {"$millisecond" : "$created"}, { "$multiply" : [ {"$second" : "$created"}, 1000 ] }, { "$multiply" : [ {"$minute" : "$created"}, 60, 1000 ] } ] } ] } }  }, { "$project": { "y":{"$year":"$created"}, "m":{"$month":"$created"}, "d":{"$dayOfMonth":"$created"}, "h":{"$hour":"$created"}, "time":"$created" }  },  { "$group":{ "_id": { "year":"$y","month":"$m","day":"$d","hour":"$h"}, time:{"$first":"$time"},  "total":{ "$sum": 1}  }});
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+
+        def match
+        def projection1;
+        def projection2;
+        def group;
+        def result;
+
+        if(!period) period = "hour";
+
+        switch (period){
+            case "hour" :
+                //substract all minutes,seconds & milliseconds (last unit is hour)
+                projection1 = [$project : [ created : [$subtract:['$created', [$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]] ]]]]]]
+                projection2 = [$project : [ y : [$year:'$created'], m : [$month:'$created'], d : [$dayOfMonth:'$created'], h : [$hour:'$created'], time : '$created']]
+                group = [$group : [_id : [ year: '$y', month: '$m', day: '$d', hour: '$h'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+                break;
+            case "day" :
+                //also substract hours (last unit is day)
+                projection1 = [$project : [ created : [$subtract:['$created', [$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]], [$multiply : [[$hour : '$created'], 60*60*1000]]]]]]]]
+                projection2 = [$project : [ y : [$year:'$created'], m : [$month:'$created'], d : [$dayOfMonth:'$created'], time : '$created']]
+                group = [$group : [_id : [ year: '$y', month: '$m', day: '$d'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+                break;
+            case "week" :
+                //also substract days (last unit is week)
+                projection1 = [$project : [ created :[$subtract:['$created',[$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]], [$multiply : [[$hour : '$created'], 60*60*1000]], [$multiply : [ [$subtract:[[$dayOfWeek : '$created'],1]], 24*60*60*1000]]]]]]]]
+                projection2 = [$project : [ y : [$year:'$created'], m : [$month:'$created'], w : [$week:'$created'], time : '$created']]
+                group = [$group : [_id : [ year: '$y', month: '$m', week: '$w'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+                break;
+        }
+        if(afterThan) {
+            match = [$match : [ created : [$gte : new Date(afterThan)]]]
+        } else {
+            match = [$match : [:]]
+        }
+
+        result = db.persistentProjectConnection.aggregate(
+                match,
+                projection1,
+                projection2,
+                group
+        )
+
+
+        def connections = []
+        result.results().each {
+            // TODO evolve when https://jira.mongodb.org/browse/SERVER-6310 is resolved
+            // as we groupBy hours in UTC, the GMT + xh30 have problems.
+
+            def time = it["time"]
+            def frequency = it["frequency"]
+
+            connections << [time : time, frequency: frequency]
+        }
+        result = connections
+        return result
+    }
+
+    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period){
+
+        if(!afterThan){
+            use(TimeCategory) {
+                afterThan = (new Date(beforeThan) - 1.year).getTime();
+            }
+        }
+
+        // what we want
+        //db.persistentProjectConnection.aggregate( {"$match": {$and: [{project : ID_PROJECT}, {created : {$gte : new Date(AFTER) }}]}}, { "$project": { "created": {  "$subtract" : [  "$created",  {  "$add" : [  {"$millisecond" : "$created"}, { "$multiply" : [ {"$second" : "$created"}, 1000 ] }, { "$multiply" : [ {"$minute" : "$created"}, 60, 1000 ] } ] } ] } }  }, { "$project": { "y":{"$year":"$created"}, "m":{"$month":"$created"}, "d":{"$dayOfMonth":"$created"}, "h":{"$hour":"$created"}, "time":"$created" }  },  { "$group":{ "_id": { "year":"$y","month":"$m","day":"$d","hour":"$h"}, time:{"$first":"$time"},  "total":{ "$sum": 1}  }});
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+
+        def match
+        def projection1;
+        def projection2;
+        def group;
+        def result;
+
+        switch (period){
+            case "hour" :
+                //substract all minutes,seconds & milliseconds (last unit is hour)
+                projection1 = [$project : [ created : [$subtract:['$created', [$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]] ]]]]]]
+                projection2 = [$project : [ h : [$hour:'$created'], time : '$created']]
+                group = [$group : [_id : [ hour: '$h'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+                break;
+            case "day" :
+                //also substract hours (last unit is day)
+                projection1 = [$project : [ created : [$subtract:['$created', [$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]], [$multiply : [[$hour : '$created'], 60*60*1000]]]]]]]]
+                projection2 = [$project : [ d : [$dayOfWeek:'$created'], time : '$created']]
+                group = [$group : [_id : [ day: '$d'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+                break;
+            case "week" :
+                //also substract days (last unit is week)
+                projection1 = [$project : [ created :[$subtract:['$created',[$add : [[$millisecond : '$created'], [$multiply : [[$second : '$created'], 1000]], [$multiply : [[$minute : '$created'], 60*1000]], [$multiply : [[$hour : '$created'], 60*60*1000]], [$multiply : [ [$subtract:[[$dayOfWeek : '$created'],1]], 24*60*60*1000]]]]]]]]
+                projection2 = [$project : [ w : [$week:'$created'], time : '$created']]
+                group = [$group : [_id : [ week: '$w'], "time":[$first:'$time'], "frequency":[$sum:1]]]
+                break;
+        }
+        match = [$match : [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]]]]]
+
+        result = db.persistentProjectConnection.aggregate(
+                match,
+                projection1,
+                projection2,
+                group
+        )
+
+
+        def connections = []
+
+        int total;
+        Date firstDay;
+        firstDay = new Date(afterThan);
+        Date lastDay = new Date(beforeThan);
+
+        switch (period){
+            case "hour" :
+                total = TimeCategory.minus(lastDay, firstDay).getDays()
+                break;
+            case "day" :
+                total = TimeCategory.minus(lastDay, firstDay).getDays()/7
+                break;
+            case "week" :
+                total = TimeCategory.minus(lastDay, firstDay).getYears()
+                break;
+        }
+        if(total == 0) total = 1
+        result.results().each {
+            // TODO evolve when https://jira.mongodb.org/browse/SERVER-6310 is resolved
+            // as we groupBy hours in UTC, the GMT + xh30 have problems.
+
+            def time = it["time"]
+            def frequency = it["frequency"]/total
+
+            connections << [time : time, frequency: frequency]
+        }
+        result = connections
+        return result
+    }
 }

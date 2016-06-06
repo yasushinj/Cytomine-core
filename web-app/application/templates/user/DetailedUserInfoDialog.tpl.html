@@ -1,13 +1,17 @@
-<div id="detailedProjectUserInfoDialog" class="modal fade modal-wide">
+<div id="detailedUserInfoDialog" class="modal fade modal-wide">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Detailed informations on user <%= username %> into the project <%= projectName %></h4>
+                <h4 class="modal-title">Detailed informations on user <%= username %></h4>
             </div>
             <div class="modal-body">
                 <p></p>
                 <div class="col-md-9 col-md-offset-1">
+                    <form action="/j_spring_security_switch_user" method="POST" class="pull-right">
+                        <input type="hidden" name="j_username" value="<%= username %>">
+                        <input class="btn btn-danger" type="submit" value="Connect as user <%= username %>">
+                    </form>
                     <div id="BasicUserInfo">
                         <h4 class="header_h"> Basic Informations</h4>
                         <div class="row">
@@ -28,7 +32,20 @@
                                 <label class="control-label">E-mail: </label> <%= email %>
                             </div>
                             <div class="col-md-6">
-                                <label class="control-label">Created: </label> <span class="creationDate"><%= window.app.convertLongToPrettyDate(created) %></span>
+                                <label class="control-label">Created: </label> <%= window.app.convertLongToPrettyDate(created) %>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="control-label">Updated: </label>
+                                <%if(updated) {%>
+                                <%= window.app.convertLongToPrettyDate(updated) %>
+                                <%}else{%>
+                                No record
+                                <%}%>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="control-label">Roles: </label> <span id="userRoles"></span>
                             </div>
                         </div>
                     </div>
@@ -37,19 +54,17 @@
                         <h4 class="header_h"> User activities resume</h4>
                         <div class="detailedUserInfoWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
                         <div class="detailedUserInfoContent">
-                            <label class="control-label">Number of connexion to this project : </label> <span id ="totalProjectConnexions-<%= id %>"></span> <br/>
-                            <!--<label class="control-label">Number of consulted images: </label> <span id ="totalConsultedImages-<%= id %>"></span> <br/>-->
+                            <label class="control-label">Number of project : </label> <span id ="totalProjectAllowed-<%= id %>"></span> <br/>
                             <label class="control-label">Number of annotations : </label> <span id ="totalUserAnnotations-<%= id %>"></span> <br/>
-                            <label class="control-label">Last connexion on the project : </label> <span id ="lastProjectConnexion-<%= id %>"></span> <br/>
                         </div>
                     </div>
-                    <br/>
+                    <!--<br/>
                     <div id="UserActivitiesHistory-<%= id %>">
                         <h4 class="header_h"> User activities history</h4>
                         <div class="detailedUserInfoWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
                         <div id="treehistory" class="detailedUserInfoContent">
                         </div>
-                    </div>
+                    </div>-->
 
                 </div>
 
