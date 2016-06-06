@@ -101,6 +101,9 @@ class BootstrapUtilsService {
                 }
             }
         }
+
+        SpringSecurityUtils.reauthenticate "admin", null
+
         usersCreated.each { user ->
             /*Create Storage*/
             storageService.initUserStorage(user)

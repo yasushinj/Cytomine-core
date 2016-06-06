@@ -110,8 +110,16 @@
 <fileset dir="${src.dir}" includes="application/models/AnnotationPropertyModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/ImageInstancePropertyModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/ProjectPropertyModel.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminView.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminDashboard.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminUsersView.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminUserDialog.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminGroupsView.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminPermissionsView.js"/>
+<fileset dir="${src.dir}" includes="application/views/admin/AdminConfigView.js"/>
 <fileset dir="${src.dir}" includes="application/views/user/AddUserToProjectDialog.js"/>
 <fileset dir="${src.dir}" includes="application/views/user/UserDashboardView.js"/>
+<fileset dir="${src.dir}" includes="application/views/user/DetailedUserInfoDialog.js"/>
 <fileset dir="${src.dir}" includes="application/views/user/DetailedUserProjectInfoDialog.js"/>
 <fileset dir="${src.dir}" includes="application/views/activity/ActivityView.js"/>
 <fileset dir="${src.dir}" includes="application/views/search/SearchEngineFilterView.js"/>
@@ -137,6 +145,7 @@
 <fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersTotalActivitiesView.js"/>
 <fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersTotalActivitiesGraph.js"/>
 <fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersHeatmapView.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/HistogramActivitiesChart.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobListingView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobComparatorView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobSelectionView.js"/>
