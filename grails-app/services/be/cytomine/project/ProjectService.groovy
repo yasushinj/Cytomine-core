@@ -27,7 +27,6 @@ import be.cytomine.security.ForgotPasswordToken
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
-import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
@@ -128,9 +127,7 @@ class ProjectService extends ModelService {
             sql.eachRow(request2,[]) {
                 data << [id:it.id, date:it.date, opened: false]
             }
-            try {
-                sql.close()
-            }catch (Exception e) {}
+            sql.close()
         }
         data = data.sort{-it.date.getTime()}
         return data
@@ -170,9 +167,7 @@ class ProjectService extends ModelService {
          sql.eachRow("select * from creator_project where user_id = ?",[user.id]) {
             data << [id:it.id, name:it.name]
         }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
         return data
     }
 
@@ -183,9 +178,7 @@ class ProjectService extends ModelService {
         sql.eachRow("select * from admin_project where user_id = ?",[user.id]) {
             data << [id:it.id, name:it.name]
         }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
         return data
     }
 
@@ -196,9 +189,7 @@ class ProjectService extends ModelService {
         sql.eachRow("select * from user_project where user_id = ?",[user.id]) {
             data << [id:it.id, name:it.name]
         }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
         return data
     }
 

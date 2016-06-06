@@ -25,15 +25,15 @@ var HistogramActivitiesChart = Backbone.View.extend({
 
                 var chart = nv.models.discreteBarChart()
                         .x(function (d) {
-                            return d.label
+                            return d.label;
                         })    //Specify the data accessors.
                         .y(function (d) {
-                            return d.value
+                            return d.value;
                         })
                         .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
                         .valueFormat(d3.format(self.format))
                         .tooltips(self.enableTooltip)        //Don't show tooltips
-                        .tooltipContent(function(key, y, e, graph) {
+                        .tooltipContent(function(key) {
                             var now = new Date();
                             now.setHours(0,0,0);
                             var d = new Date(now.getFullYear(), 0, 1);
@@ -47,7 +47,7 @@ var HistogramActivitiesChart = Backbone.View.extend({
                             }
                             result = '<p>From '+(d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+' to ';
                             d.setDate(d.getDate()+6);
-                            result += (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+'</p>'
+                            result += (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+'</p>';
                             return result;
                         })
                         .showValues(true)       //...instead, show the bar value right on top of each bar.
@@ -74,13 +74,19 @@ var HistogramActivitiesChart = Backbone.View.extend({
                 var getPeriod;
                 if(self.period === "week") {
                     for(var i=1;i<=52;i++) labels.push(""+i);
-                    getPeriod = function(date){return date.getWeekNumber()};
+                    getPeriod = function(date){
+                        return date.getWeekNumber();
+                    };
                 } else if(self.period === "day"){
                     labels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                    getPeriod = function(date){return date.getDay()};
+                    getPeriod = function(date){
+                        return date.getDay();
+                    };
                 } else if(self.period === "hour") {
                     for(var i=0;i<24;i++) labels.push(""+i);
-                    getPeriod = function(date){return date.getHours()};
+                    getPeriod = function(date){
+                        return date.getHours();
+                    };
                 }
 
                 for (var i = 0; i < labels.length; i++) {

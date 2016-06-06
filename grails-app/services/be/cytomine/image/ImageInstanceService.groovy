@@ -99,9 +99,7 @@ class ImageInstanceService extends ModelService {
         sql.eachRow(request) {
             data << it[0]
         }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
         return data
     }
 
@@ -114,9 +112,7 @@ class ImageInstanceService extends ModelService {
          sql.eachRow("select * from user_image where user_image_id = ? order by original_filename",[user.id]) {
             data << [id:it.id, filename:it.filename, originalFilename: it.original_filename, projectName:it.project_name,  project:it.project_id]
         }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
         return data
     }
 
@@ -290,24 +286,20 @@ class ImageInstanceService extends ModelService {
                }
 
            }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
 
         def req2 = getLayersFromAbtrsactImageSQLRequestStr(false,project)
 
-            sql = new Sql(dataSource)
-            sql.eachRow(req2,[image.id,exclude.id]) {
-                if(!adminsMap.get(it.image+"_"+it.user) && currentUsersProject.contains(it.project) && layerFromNewImage.contains(it.user)) {
-                    layers << [image:it.image,user:it.user,projectName:it.projectName,project:it.project,lastname:it.lastname,firstname:it.firstname,username:it.username,admin:it.admin]
-                }
-
+        sql = new Sql(dataSource)
+        sql.eachRow(req2,[image.id,exclude.id]) {
+            if(!adminsMap.get(it.image+"_"+it.user) && currentUsersProject.contains(it.project) && layerFromNewImage.contains(it.user)) {
+                layers << [image:it.image,user:it.user,projectName:it.projectName,project:it.project,lastname:it.lastname,firstname:it.firstname,username:it.username,admin:it.admin]
             }
-        try {
-            sql.close()
-        }catch (Exception e) {}
 
-            return layers
+        }
+        sql.close()
+
+        return layers
 
     }
 

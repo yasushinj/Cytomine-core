@@ -319,7 +319,6 @@ class AbstractImageService extends ModelService {
      */
     def thumb(long id, int maxSize) {
         AbstractImage abstractImage = AbstractImage.read(id)
-        UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
         String url = "/image/thumb.jpg?fif=$fif&mimeType=$mimeType&maxSize=$maxSize"
@@ -368,9 +367,7 @@ class AbstractImageService extends ModelService {
 
     def downloadURI(AbstractImage abstractImage) {
         List<UploadedFile> files = UploadedFile.findAllByImage(abstractImage)
-        UploadedFile file;
-        if(files.size() == 1) file = files[0]
-        else file = files.find{it.parent!=null}
+        UploadedFile file = files.size() == 1 ? files[0] : files.find{it.parent!=null}
         String fif = file?.absolutePath
         if (fif) {
             String imageServerURL = abstractImage.getRandomImageServerURL()
@@ -383,7 +380,6 @@ class AbstractImageService extends ModelService {
 
     def getAvailableAssociatedImages(AbstractImage abstractImage) {
         String imageServerURL = abstractImage.getRandomImageServerURL()
-        UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
         String url = "$imageServerURL/image/associated.json?fif=$fif&mimeType=$mimeType"
@@ -391,7 +387,6 @@ class AbstractImageService extends ModelService {
     }
 
     def getAssociatedImage(AbstractImage abstractImage, String label, def maxWidth) {
-        UploadedFile uploadedFile = getMainUploadedFile(abstractImage)
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
         String url = "/image/nested.jpg?fif=$fif&mimeType=$mimeType&label=$label&maxSize=$maxWidth"

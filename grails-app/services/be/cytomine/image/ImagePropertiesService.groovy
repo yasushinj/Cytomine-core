@@ -39,7 +39,6 @@ class ImagePropertiesService implements Serializable{
 
     def populate(AbstractImage abstractImage) {
         String imageServerURL = abstractImage.getRandomImageServerURL()
-        UploadedFile uploadedFile = abstractImageService.getMainUploadedFile(abstractImage)
         String fif = abstractImage.absolutePath
         fif = fif.replace(" ","%20")
         String mimeType = abstractImage.mimeType

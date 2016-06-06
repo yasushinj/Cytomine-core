@@ -79,7 +79,7 @@ var AdminGroupsView = Backbone.View.extend({
                 url: "/api/ldap/"+self.currentGroup+"/group.json",
                 contentType:"application/json; charset=utf-8",
                 dataType:"json",
-                success: function(response) {
+                success: function() {
                     self.updateCurrentGroupPanel();
                 }
             });
@@ -113,7 +113,7 @@ var AdminGroupsView = Backbone.View.extend({
         $(self.el).find("#deleteGroupButton").on("click", function(){
 
             new GroupModel({id : self.currentGroup}).destroy({
-                success: function (model,response) {
+                success: function () {
                     var index = $.map(self.allGroups, function(e){return e.id}).indexOf(Number(self.currentGroup));
 
                     if (index > -1) {
@@ -138,7 +138,7 @@ var AdminGroupsView = Backbone.View.extend({
             var newName = $(self.el).find("#editinputGroupname").val();
 
             new GroupModel({id : self.currentGroup, name: newName}).save({},{
-                success: function (model,response) {
+                success: function () {
                     var index = $.map(self.allGroups, function(e){return e.id}).indexOf(Number(self.currentGroup));
                     self.allGroups[index].label = newName;
                     self.update();
@@ -152,7 +152,7 @@ var AdminGroupsView = Backbone.View.extend({
             var userName = $(self.el).find("#usersNotInGroupList").find("option:selected").text();
 
             new UserGroup({group : self.currentGroup, user: chosenUser}).save({},{
-                success: function (model,response) {
+                success: function () {
                     self.usersInGroup.push({id:chosenUser, label:userName});
                     self.updateUserTable();
                 }
@@ -182,7 +182,7 @@ var AdminGroupsView = Backbone.View.extend({
             });
         });
 
-        $(self.el).find("#addGroupForm").submit(function( event ) {
+        $(self.el).find("#addGroupForm").submit(function() {
             $(self.el).find("#addGroupForm").find(".error").hide();
             var groupName = $(self.el).find("#addGroupForm").find("#inputGroupName").val();
             if(groupName.length === 0){
@@ -229,7 +229,7 @@ var AdminGroupsView = Backbone.View.extend({
                 self.usersInGroup = $.map(allUsersCollection.models, function(item){return {id: item.id, label: item.prettyName()}});
 
                 self.updateUserTable();
-                $(self.el).find("#selectedGroupDetails").show()
+                $(self.el).find("#selectedGroupDetails").show();
             }
         });
 

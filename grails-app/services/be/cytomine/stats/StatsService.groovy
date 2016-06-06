@@ -1,20 +1,12 @@
 package be.cytomine.stats
 
-import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
-import be.cytomine.security.SecUser
-import be.cytomine.social.LastUserPosition
-import be.cytomine.social.PersistentUserPosition
-import be.cytomine.social.UserPosition
-import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
-import org.joda.time.DateTime
 
-import static org.springframework.security.acls.domain.BasePermission.READ
 
 @Transactional
 class StatsService extends ModelService {

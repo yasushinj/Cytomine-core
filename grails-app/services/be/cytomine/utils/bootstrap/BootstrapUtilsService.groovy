@@ -483,7 +483,6 @@ class BootstrapUtilsService {
 
     void convertMimeTypes(){
         SpringSecurityUtils.doWithAuth("admin", {
-            def currentUser = cytomineService.getCurrentUser()
 
             Mime oldTif = Mime.findByMimeType("image/tif");
             Mime oldTiff = Mime.findByMimeType("image/tiff");

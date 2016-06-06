@@ -74,7 +74,7 @@ var AdminUserDialog = Backbone.View.extend({
 
         if(!window.app.isUndefined(self.model.id)) {
             new UserSecRole({user:self.model.id, highest : true}).fetch({
-                success: function (model, response) {
+                success: function (model) {
                     $(self.el).find("#newUserRoleList").val(model.get("role"));
                 }
             });
@@ -136,7 +136,7 @@ var AdminUserDialog = Backbone.View.extend({
         });
 
         if(!window.app.isUndefined(self.model.id)){
-            var fields = $(self.el).find("form").find("input[required]")
+            var fields = $(self.el).find("form").find("input[required]");
             for(var i =0; i < fields.length; i++){
                 $("#"+fields[i].id).keyup();
             }

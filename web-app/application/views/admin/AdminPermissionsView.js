@@ -57,12 +57,12 @@ var AdminPermissionsView = Backbone.View.extend({
                     users : self.allUsers,
                     domains : self.allDomains
                 });
-                self.domainPermissionsPanel.render()
+                self.domainPermissionsPanel.render();
             } else {
                 self.domainPermissionsPanel.show();
             }
             if(self.userPermissionsPanel !== null){
-                self.userPermissionsPanel.hide()
+                self.userPermissionsPanel.hide();
             }
         });
         $(self.el).find("#userPermissionsPanelBtn").on("click", function(){
@@ -215,7 +215,7 @@ var AdminUserPermissionsPanel = AdminGenericPermissionsPanel.extend({
 
         var selectBox = $(self.el).find("#selectUserForPermission");
         $.each(self.allUsers, function(index, value) {
-            selectBox.append("<option value='"+value.id+"'>"+value.username+"</option>")
+            selectBox.append("<option value='"+value.id+"'>"+value.username+"</option>");
         });
 
         selectBox.on("change", function(){
