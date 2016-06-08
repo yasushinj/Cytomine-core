@@ -94,17 +94,17 @@ var AdminUsersView = Backbone.View.extend({
 
         var columns = [
             { "mDataProp": "id", "bSearchable": false,"bSortable": false},
-            { "mDataProp": "Username", sDefaultContent: "", "bSearchable": false, "fnRender" : function(o) {
+            { "mDataProp": "Username", sDefaultContent: "", "bSearchable": true, "fnRender" : function(o) {
                 return o.aData["username"];
             }},
-            { "mData": "Lastname", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
+            { "mData": "Lastname", sDefaultContent: "", "bSearchable": true,"bSortable": false, "fnRender" : function (o) {
                 return o.aData["lastname"];
             }},
             { "mData": "Firstname", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
                 return o.aData["firstname"];
             }},
             { "mDataProp": "email", "bSearchable": false,"bSortable": true },
-            { "mData": "created", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
+            { "mData": "created", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
                 return window.app.convertLongToPrettyDate(o.aData["created"]);
             }},
             { "mData": "updated", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
