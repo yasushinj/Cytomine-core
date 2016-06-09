@@ -108,6 +108,8 @@ var UserCollection = PaginatedCollection.extend({
             return "api/ontology/" + this.ontology + "/user.json";
         } else if (!window.app.isUndefined(this.group)) {
             return "api/group/" + this.group + "/user.json";
+        } else if (!window.app.isUndefined(this.withRoles)) {
+            return "api/user.json?withRoles="+this.withRoles;
         } else {
             return "api/user.json";
         }
@@ -121,6 +123,7 @@ var UserCollection = PaginatedCollection.extend({
         this.online = options.online;
         this.representative = options.representative;
         this.group = options.group;
+        this.withRoles = options.withRoles;
     },
     comparator: function (user) {
         if (user.get("lastname") != undefined) {

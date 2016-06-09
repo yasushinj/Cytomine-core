@@ -193,6 +193,8 @@ class RestUserController extends RestController {
     def list() {
         if (params.publicKey != null) {
             responseSuccess(secUserService.getByPublicKey(params.publicKey))
+        } else if (params.getBoolean("withRoles")) {
+            responseSuccess(secUserService.listWithRoles())
         } else {
             responseSuccess(secUserService.list())
         }

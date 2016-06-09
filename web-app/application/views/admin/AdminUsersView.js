@@ -103,6 +103,18 @@ var AdminUsersView = Backbone.View.extend({
             { "mData": "Firstname", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
                 return o.aData["firstname"];
             }},
+            { "mData": "Role", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
+                switch(o.aData["role"]){
+                    case "ROLE_SUPER_ADMIN" :
+                        return "<span class='label label-default'>Super Admin</span>";
+                    case "ROLE_ADMIN" :
+                        return "<span class='label label-danger'>Admin</span>";
+                    case "ROLE_USER" :
+                        return "<span class='label label-success'>User</span>";
+                    case "ROLE_GUEST" :
+                        return "<span class='label label-primary'>Guest</span>";
+                }
+            }},
             { "mDataProp": "email", "bSearchable": false,"bSortable": true },
             { "mData": "created", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
                 return window.app.convertLongToPrettyDate(o.aData["created"]);
@@ -119,7 +131,7 @@ var AdminUsersView = Backbone.View.extend({
         table.dataTable({
             "bProcessing": true,
             "bServerSide": false,
-            "sAjaxSource": new UserCollection({}).url(),
+            "sAjaxSource": new UserCollection({withRoles:true}).url(),
             "fnServerParams": function ( aoData ) {
                 aoData.push( { "name": "datatables", "value": "true" } );
             },

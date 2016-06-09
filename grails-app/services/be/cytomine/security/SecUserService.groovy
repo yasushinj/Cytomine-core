@@ -36,6 +36,7 @@ import be.cytomine.utils.ModelService
 import be.cytomine.utils.News
 import be.cytomine.utils.Task
 import be.cytomine.utils.Utils
+import grails.converters.JSON
 import grails.plugin.springsecurity.acl.AclSid
 import groovy.sql.Sql
 import org.apache.commons.collections.ListUtils
@@ -124,6 +125,31 @@ class SecUserService extends ModelService {
     def list() {
         securityACLService.checkGuest(cytomineService.currentUser)
         User.list(sort: "username", order: "asc")
+    }
+
+    def listWithRoles() {
+        securityACLService.checkAdmin(cytomineService.currentUser)
+
+        def data = User.executeQuery("select u,r from User u, SecUserSecRole sur, SecRole r where u = sur.secUser and sur.secRole = r.id order by LOWER(u.username)").groupBy {it[0].id}
+
+        def getHigherAuth = {item ->
+            def result;
+            for(String role : ["ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_USER", "ROLE_GUEST"]) {
+                result = item.find{it[1].authority.equals(role)}
+                if(result) return result
+            }
+        }
+
+        def result = []
+        def tmp, json;
+        data.each { item ->
+            tmp = getHigherAuth(item.value)
+            json = (tmp[0] as JSON)
+            json = JSON.parse(json.toString())
+            json.putAt("role", tmp[1].authority)
+            result << json
+        }
+        return result
     }
 
     def list(Project project, List ids) {
