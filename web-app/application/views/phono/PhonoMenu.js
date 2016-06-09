@@ -113,7 +113,7 @@ var PhonoMenu = Backbone.View.extend({
             self.phono.disconnect();
         }
         self.phono = null;
-        clearInterval(self.loadUsersInterval.loop);
+        if(self.loadUsersInterval) clearInterval(self.loadUsersInterval.loop);
         self.loadUsersInterval = null;
         this.message("Info", "Live chat/call offline", 3000);
     },

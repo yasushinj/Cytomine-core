@@ -936,7 +936,7 @@ BrowseImageView = Backbone.View.extend({
         }, 5000);
     },
     stopWatchOnlineUsersInterval: function () {
-        clearInterval(this.watchOnlineUsersInterval.loop);
+        if(this.watchOnlineUsersInterval) clearInterval(this.watchOnlineUsersInterval.loop);
     },
     initAutoAnnoteTools: function () {
         var self = this;

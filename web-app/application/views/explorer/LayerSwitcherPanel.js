@@ -154,7 +154,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         var self = this;
         if (self.followInterval != undefined) {
             window.app.view.message("", "Stop following " + window.app.models.projectUser.get(self.userFollowed).prettyName(), "success");
-            clearInterval(self.followInterval.loop);
+            if(self.followInterval) clearInterval(self.followInterval.loop);
             self.followInterval = null;
             self.userFollowed = null;
         }
