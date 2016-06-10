@@ -41,7 +41,7 @@ class RequestFilters {
                 if(controllerName.equals("restUserPosition") && actionName.equals("add")) return
                 request.currentTime = System.currentTimeMillis()
                 String userInfo = ""
-                try { userInfo = springSecurityService.principal.id} catch(Exception e) { userInfo = springSecurityService.principal}
+                try { userInfo = springSecurityService.principal.id} catch(MissingPropertyException e) { userInfo = springSecurityService.principal}
                 log.info controllerName+"."+actionName + ": user:" + userInfo
             }
             after = {}
