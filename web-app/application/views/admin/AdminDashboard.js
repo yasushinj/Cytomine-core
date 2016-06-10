@@ -63,8 +63,7 @@ var AdminDashboard = Backbone.View.extend({
             el: $(self.el).find("#lastAnnotationsGraph")}).render();*/
 
         self.refreshCurrentConnections();
-        //TODO When must I clear this interval ?
-        this.refreshCurrentStatsInterval = setInterval(function () {
+        this.refreshCurrentStatsInterval = window.app.view.addInterval(function () {
             self.refreshCurrentConnections();
         }, 30*1000);
         window.app.view.intervals.push(this.refreshCurrentStatsInterval);
