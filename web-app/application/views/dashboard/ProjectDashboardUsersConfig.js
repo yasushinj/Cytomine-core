@@ -329,6 +329,14 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         this.statsUsersGlobalActivitiesView.render();
         this.statsUsersHeatmapView.render();
 
+        new LastConnexionsGraphsView({
+            project : self.model.id,
+            el: $(self.el).find("#LastConnections-"+self.model.id)
+        }).render();
+        new AverageConnexionsGraphsView({
+            project : self.model.id,
+            el: $(self.el).find("#avgConnections-"+self.model.id)}).render();
+
 
     },
 

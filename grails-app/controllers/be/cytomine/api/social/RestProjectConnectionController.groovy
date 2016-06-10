@@ -26,6 +26,8 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
+import static org.springframework.security.acls.domain.BasePermission.READ
+
 /**
  * Controller for an user connection to a project
  */
@@ -67,9 +69,12 @@ class RestProjectConnectionController extends RestController {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
         Long afterThan = params.long("afterThan");
+        String period = params.period
 
         if(params.boolean('heatmap')) {
             responseSuccess(projectConnectionService.numberOfConnectionsByProjectOrderedByHourAndDays(project, afterThan, user))
+        }else if(period) {
+            responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period, project))
         } else {
             responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
         }
@@ -90,12 +95,17 @@ class RestProjectConnectionController extends RestController {
             @RestApiParam(name="period", type="string", paramType = RestApiParamType.PATH, description = "The period of connections (hour : by hours, day : by days, week : by weeks) (Mandatory)"),
     ])
     def averageOfProjectConnections() {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser())
         Long afterThan = params.long("afterThan");
         Long beforeThan = params.long("beforeThan");
         String period = params.get("period").toString()
+        Project project = params.project ? projectService.read(params.project) : null;
+        if(params.project){
+            securityACLService.check(project,READ)
+        } else{
+            securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        }
 
-        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period))
+        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
     }
 
     def userProjectConnectionHistory = {

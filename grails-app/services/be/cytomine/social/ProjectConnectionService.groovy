@@ -222,7 +222,7 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
-    def numberOfProjectConnections(Long afterThan = null, String period){
+    def numberOfProjectConnections(Long afterThan = null, String period, Project project = null){
 
         // what we want
         //db.persistentProjectConnection.aggregate( {"$match": {$and: [{project : ID_PROJECT}, {created : {$gte : new Date(AFTER) }}]}}, { "$project": { "created": {  "$subtract" : [  "$created",  {  "$add" : [  {"$millisecond" : "$created"}, { "$multiply" : [ {"$second" : "$created"}, 1000 ] }, { "$multiply" : [ {"$minute" : "$created"}, 60, 1000 ] } ] } ] } }  }, { "$project": { "y":{"$year":"$created"}, "m":{"$month":"$created"}, "d":{"$dayOfMonth":"$created"}, "h":{"$hour":"$created"}, "time":"$created" }  },  { "$group":{ "_id": { "year":"$y","month":"$m","day":"$d","hour":"$h"}, time:{"$first":"$time"},  "total":{ "$sum": 1}  }});
@@ -257,10 +257,14 @@ class ProjectConnectionService extends ModelService {
                 break;
         }
         if(afterThan) {
-            match = [$match : [ created : [$gte : new Date(afterThan)]]]
+            match = [ created : [$gte : new Date(afterThan)]]
         } else {
-            match = [$match : [:]]
+            match = [:]
         }
+        if(project){
+            match = [$and: [match, [ project : project.id]]]
+        }
+        match = [$match : match]
 
         result = db.persistentProjectConnection.aggregate(
                 match,
@@ -284,7 +288,7 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
-    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period){
+    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period, Project project = null){
 
         if(!afterThan){
             use(TimeCategory) {
@@ -322,7 +326,13 @@ class ProjectConnectionService extends ModelService {
                 group = [$group : [_id : [ week: '$w'], "time":[$first:'$time'], "frequency":[$sum:1]]]
                 break;
         }
-        match = [$match : [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]]]]]
+
+        if(project){
+            match = [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]], [ project : project.id]]]
+        } else {
+            match = [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]]]]
+        }
+        match = [$match : match]
 
         result = db.persistentProjectConnection.aggregate(
                 match,

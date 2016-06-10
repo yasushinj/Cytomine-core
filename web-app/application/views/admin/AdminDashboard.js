@@ -93,8 +93,13 @@ var AdminDashboard = Backbone.View.extend({
 
 var LastConnexionsGraphsView = Backbone.View.extend({
     graphs : [],
-    initialize: function () {
-        var url = "api/connectionFrequency.json?period=";
+    initialize: function (options) {
+        var url;
+        if(window.app.isUndefined(options.project)){
+            url = "api/connectionFrequency.json?period=";
+        } else {
+            url = "api/project/"+options.project+"/connectionFrequency.json?period=";
+        }
 
         var lastDay = new Date();
         var firstDay = new Date(lastDay.getTime());
@@ -169,8 +174,12 @@ var LastAnnotationsGraphsView = Backbone.View.extend({
 
 var AverageConnexionsGraphsView = Backbone.View.extend({
     graphs : [],
-    initialize: function () {
-        var url = "api/averageConnections.json?period=";
+    initialize: function (options) {
+        var url = "api/averageConnections.json?";
+        if(!window.app.isUndefined(options.project)){
+            url += "project="+options.project+"&";
+        }
+        url += "period=";
 
         this.graphs.push({name : "Hour", period : "hour", url: url+"hour", panel : null});
         this.graphs.push({name : "Day", period : "day", url: url+"day", panel : null});
