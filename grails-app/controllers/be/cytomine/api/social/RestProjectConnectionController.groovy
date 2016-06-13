@@ -127,7 +127,8 @@ class RestProjectConnectionController extends RestController {
         Date before;
         def result = []
         if(connections.size() == 0) {
-            return result
+            responseSuccess(result)
+            return
         }
         if(getPrevious) {
             before = connections.remove(0).created;

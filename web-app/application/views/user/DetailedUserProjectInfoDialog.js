@@ -108,8 +108,13 @@ var DetailedUserProjectInfoDialog = Backbone.View.extend({
     },
     renderHistory:function(){
         var self = this;
-        //here create the treeview
 
+        if(self.activitiesHistory.length === 0){
+            $("#treehistory").html("No records");
+            return;
+        }
+
+        //here create the treeview
         var nodes = [];
         for(var i=0;i<self.activitiesHistory.length;i++){
             var children = [];
