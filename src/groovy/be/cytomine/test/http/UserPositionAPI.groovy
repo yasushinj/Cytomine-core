@@ -36,6 +36,30 @@ class UserPositionAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def listByImage(Long idImage, String username, String password, Long afterThan = null) {
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json"
+        if(afterThan) URL += "?afterThan=$afterThan"
+        return doGET(URL, username, password)
+    }
+
+    static def listByImageAndUser(Long idImage,Long idUser, String username, String password, Long afterThan = null) {
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json?user=$idUser"
+        if(afterThan) URL += "&afterThan=$afterThan"
+        return doGET(URL, username, password)
+    }
+
+    static def summarizeByImage(Long idImage,String username, String password, Long afterThan = null) {
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions/total.json"
+        if(afterThan) URL += "?afterThan=$afterThan"
+        return doGET(URL, username, password)
+    }
+
+    static def summarizeByImageAndUser(Long idImage,Long idUser, String username, String password, Long afterThan = null) {
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions/total.json?user=$idUser"
+        if(afterThan) URL += "&afterThan=$afterThan"
+        return doGET(URL, username, password)
+    }
+
     static def create(Long idImage, def json, String username, String password) {
         String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/position.json"
         def result = doPOST(URL,json,username,password)

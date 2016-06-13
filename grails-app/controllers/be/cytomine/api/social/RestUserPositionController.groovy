@@ -21,6 +21,7 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.security.SecUser
+import be.cytomine.security.User
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
@@ -72,6 +73,32 @@ class RestUserPositionController extends RestController {
         ImageInstance image = imageInstanceService.read(params.id)
         SecUser user = secUserService.read(params.user)
         responseSuccess(userPositionService.lastPositionByUser(image, user))
+    }
+
+    @RestApiMethod(description="List the UserPosition entries.")
+    @RestApiParams(params=[
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "The user id (Optional)"),
+            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "A date. Will select all the entries created after this date. (Optional)"),
+    ])
+    def list() {
+        ImageInstance image = imageInstanceService.read(params.image)
+        User user = secUserService.read(params.user)
+        Long afterThan = params.long("afterThan")
+        responseSuccess(userPositionService.list(image, user, afterThan))
+    }
+
+    @RestApiMethod(description="Summarize the UserPosition entries.")
+    @RestApiParams(params=[
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "The user id (Optional)"),
+            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "A date. Will select all the entries created after this date. (Optional)"),
+    ])
+    def summarize() {
+        ImageInstance image = imageInstanceService.read(params.image)
+        User user = secUserService.read(params.user)
+        Long afterThan = params.long("afterThan")
+        responseSuccess(userPositionService.summarize(image, user, afterThan))
     }
 
     @RestApiMethod(description="Get users that have opened an image recently.")

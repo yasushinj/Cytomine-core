@@ -2,12 +2,14 @@ package be.cytomine.social
 
 import be.cytomine.image.ImageInstance
 import be.cytomine.security.SecUser
+import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import org.joda.time.DateTime
 
 import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 @Transactional
 class UserPositionService extends ModelService {
@@ -57,15 +59,6 @@ class UserPositionService extends ModelService {
     def listOnlineUsersByImage(ImageInstance image){
         securityACLService.check(image,READ)
         DateTime thirtySecondsAgo = new DateTime().minusSeconds(30)
-        /*def userPositions = LastUserPosition.createCriteria().list(sort: "created", order: "desc") {
-            eq("image", image)
-            or {
-                gt("created", thirtySecondsAgo.toDate())
-                gt("updated", thirtySecondsAgo.toDate())
-            }
-        }.collect { it.user.id }.unique()
-        def result = ["users": userPositions.join(",")]
-        return result*/
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
         def userPositions = db.lastUserPosition.aggregate(
@@ -76,5 +69,36 @@ class UserPositionService extends ModelService {
 
         def result= userPositions.results().collect{it["_id"]}
         return ["users": result.join(",")]
+    }
+
+    def list(ImageInstance image, User user, Long afterThan = null){
+        securityACLService.check(image,WRITE)
+        return PersistentUserPosition.createCriteria().list(sort: "created", order: "asc") {
+            if(user) eq("user", user)
+            eq("image", image)
+            if(afterThan) gte("created", new Date(afterThan))
+        }
+    }
+
+    def summarize(ImageInstance image, User user, Long afterThan = null){
+        securityACLService.check(image,WRITE)
+
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def userPositions
+
+        def match = [image: image.id]
+        if(afterThan) match.created = [$gte: new Date(afterThan)];
+        if(user) match.user = user.id
+
+        userPositions = db.persistentUserPosition.aggregate(
+                [$match: match],
+                [$group : [_id : [location : '$location', zoom : '$zoom'], frequency : [$sum : 1], image : [$first: '$image']]]
+        );
+
+        def results = []
+        userPositions.results().each{
+            results << [location : it["_id"].location, zoom : it["_id"].zoom, frequency : it.frequency, image : it.image]
+        }
+        return results
     }
 }

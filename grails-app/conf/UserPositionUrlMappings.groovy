@@ -24,13 +24,19 @@ class UserPositionUrlMappings {
 
     static mappings = {
         "/api/imageinstance/$id/position.$format" (controller : "restUserPosition") {
-             action = [POST:"add"]
-         }
-         "/api/imageinstance/$id/position/$user.$format" (controller : "restUserPosition") {
-             action = [GET:"lastPositionByUser"]
-         }
-         "/api/imageinstance/$id/online.$format"(controller: "restUserPosition"){
-             action = [GET:"listOnlineUsersByImage"]
-         }
+            action = [POST:"add"]
+        }
+        "/api/imageinstance/$id/position/$user.$format" (controller : "restUserPosition") {
+            action = [GET:"lastPositionByUser"]
+        }
+        "/api/imageinstance/$image/positions.$format" (controller : "restUserPosition") {
+            action = [GET:"list"]
+        }
+        "/api/imageinstance/$image/positions/total.$format" (controller : "restUserPosition") {
+            action = [GET:"summarize"]
+        }
+        "/api/imageinstance/$id/online.$format"(controller: "restUserPosition"){
+            action = [GET:"listOnlineUsersByImage"]
+        }
     }
 }
