@@ -18,6 +18,7 @@ var DetailedUserInfoDialog = Backbone.View.extend({
     activitiesHistory : [],
     numberAnnotations : null,
     numberProjects : null,
+    numberManagedProjects : null,
 
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -57,6 +58,16 @@ var DetailedUserInfoDialog = Backbone.View.extend({
             self.renderHistory();
         });*/
 
+        $(self.el).off("click", ".lessMore");
+        $(self.el).on("click", ".lessMore", function(e) {
+            if(this.text === "More"){
+                this.text = "Less";
+            } else {
+                this.text = "More"
+            }
+            $("#"+$(this).data("id")).toggle(400);
+        });
+
         $("#detailedUserInfoDialog").modal('show');
     },
 
@@ -90,7 +101,7 @@ var DetailedUserInfoDialog = Backbone.View.extend({
         var self = this;
 
         var callback = function(){
-            if(self.numberAnnotations == null || self.numberProjects == null) return;
+            if(self.numberAnnotations == null || self.numberProjects == null || self.numberManagedProjects == null) return;
             creation();
         };
 
@@ -101,7 +112,17 @@ var DetailedUserInfoDialog = Backbone.View.extend({
 
         new ProjectCollection({user:self.model.id}).fetch({
             success: function (collection, response) {
-                self.numberProjects = collection.length;
+                self.numberProjects = $.map(collection.models,function(item){
+                    return  {id: item.id, name : item.get('name')}
+                });
+                callback();
+            }
+        });
+        new ProjectCollection({user:self.model.id, admin:true}).fetch({
+            success: function (collection) {
+                self.numberManagedProjects = $.map(collection.models,function(item){
+                    return  {id: item.id, name : item.get('name')}
+                });
                 callback();
             }
         });
@@ -110,7 +131,19 @@ var DetailedUserInfoDialog = Backbone.View.extend({
         var self = this;
 
         // set the number of project than the user can see
-        $(self.el).find("#totalProjectAllowed-"+self.model.id).html(self.numberProjects);
+        $(self.el).find("#totalProjectAllowed-"+self.model.id).html(self.numberProjects.length);
+        var html="";
+        $.each(self.numberProjects, function(i,project){
+            html += "<li>"+project.name+"</li>";
+        });
+        $(self.el).find("#projectAllowed-"+self.model.id).append("<ul>"+html+"</ul>")
+
+        $(self.el).find("#totalProjectManaged-"+self.model.id).html(self.numberManagedProjects.length);
+        html="";
+        $.each(self.numberManagedProjects, function(i,project){
+            html += "<li>"+project.name+"</li>";
+        });
+        $(self.el).find("#projectManaged-"+self.model.id).append("<ul>"+html+"</ul>")
 
         $(self.el).find("#totalUserAnnotations-"+self.model.id).html(self.numberAnnotations);
     }

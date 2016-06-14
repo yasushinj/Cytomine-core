@@ -54,7 +54,10 @@
                         <h4 class="header_h"> User activities resume</h4>
                         <div class="detailedUserInfoWaitingDiv" class="alert alert-info"><i class="glyphicon glyphicon-refresh"/> Loading...</div>
                         <div class="detailedUserInfoContent">
-                            <label class="control-label">Number of project : </label> <span id ="totalProjectAllowed-<%= id %>"></span> <br/>
+                            <label class="control-label">Number of project (as contributor): </label> <span id ="totalProjectAllowed-<%= id %>"></span> (<a class="lessMore" data-id="projectAllowed-<%= id %>">More</a>)<br/>
+                            <div id="projectAllowed-<%= id %>" style="display:none"></div>
+                            <label class="control-label">Number of project (as manager): </label> <span id ="totalProjectManaged-<%= id %>"></span> (<a class="lessMore" data-id="projectManaged-<%= id %>">More</a>)<br/>
+                            <div id="projectManaged-<%= id %>" style="display:none"></div>
                             <label class="control-label">Number of annotations : </label> <span id ="totalUserAnnotations-<%= id %>"></span> <br/>
                         </div>
                     </div>

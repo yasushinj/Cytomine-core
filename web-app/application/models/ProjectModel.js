@@ -143,7 +143,11 @@ var ProjectCollection = PaginatedCollection.extend({
     fullSize : -1,
     url: function () {
         if (!window.app.isUndefined(this.user)) {
-            return "api/user/" + this.user + "/project.json";
+            if (window.app.isUndefined(this.admin)) {
+                return "api/user/" + this.user + "/project.json";
+            } else {
+                return "api/user/" + this.user + "/project/light.json?admin="+this.admin;
+            }
         } else if (!window.app.isUndefined(this.ontology)) {
             return "api/ontology/" + this.ontology + "/project.json";
         } else {
@@ -155,6 +159,7 @@ var ProjectCollection = PaginatedCollection.extend({
         if (!window.app.isUndefined(options)) {
             this.user = options.user;
             this.ontology = options.ontology;
+            this.admin = options.admin;
         }
     },
     comparator: function (project) {
