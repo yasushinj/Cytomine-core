@@ -485,6 +485,10 @@ AnnotationLayer.prototype = {
                     if (self.deleteOnSelect == true) {
                         self.removeSelection(false);
                     } else {
+                        new AnnotationActionModel({
+                            annotation: evt.feature.attributes.idAnnotation,
+                            action : "select"
+                        }).save();
                         self.showPopup(map, evt);
                         self.browseImageView.jobTemplatePanel.changeAnnotation(evt.feature.attributes.idAnnotation);
                     }

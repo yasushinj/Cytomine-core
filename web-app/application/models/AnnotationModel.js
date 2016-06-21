@@ -162,3 +162,9 @@ var AnnotationCommentCollection = PaginatedCollection.extend({
         return'api/annotation/' + this.annotation + '/comment.json';
     }
 });
+
+var AnnotationActionModel = Backbone.Model.extend({
+    url: function () {
+        return '/api/annotationaction.json';
+    }
+});

@@ -80,6 +80,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         self.initToggle(el, elContent, sourceEvent, panelName);
     },
     createPopup : function(tpl,annotation) {
+        console.log("create annotation pop-up");
         var self = this;
         var user = window.app.models.projectUser.get(annotation.get("user"));
         if (window.app.isUndefined(user)) {

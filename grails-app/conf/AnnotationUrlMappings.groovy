@@ -196,7 +196,12 @@ class AnnotationUrlMappings {
             action = [GET:"downloadIncludedAnnotation"]
         }
 
-
+        /**
+         * Tracking
+         */
+        "/api/annotationaction.$format"(controller: "restAnnotationAction"){
+            action = [POST:"add"]
+        }
 
 
     }
