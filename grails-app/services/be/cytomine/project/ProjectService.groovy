@@ -520,7 +520,7 @@ class ProjectService extends ModelService {
         } else if(retrievalDisable && !retrievalProjectEmpty) {
             throw new WrongArgumentException("Retrieval cannot be disable of some Projects are selected")
         } else if(retrievalAllOntology && !retrievalProjectEmpty) {
-            throw new WrongArgumentException("Retrieval cannot be set for all procects if some projects are selected")
+            throw new WrongArgumentException("Retrieval cannot be set for all projects if some projects are selected")
         }
     }
 
