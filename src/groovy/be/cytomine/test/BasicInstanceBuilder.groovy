@@ -862,6 +862,11 @@ class BasicInstanceBuilder {
         save ? saveDomain(job) : checkDomain(job)
     }
 
+    static Job getJobNotExist(boolean save = false, Software software, Project project) {
+        Job job =  new Job(software:software, project : project)
+        save ? saveDomain(job) : checkDomain(job)
+    }
+
     static JobTemplate getJobTemplate() {
         def job = JobTemplate.findByProjectAndSoftwareAndName(getProject(),getSoftware(),"jobtemplate")
         if(!job) {
@@ -895,7 +900,11 @@ class BasicInstanceBuilder {
     }
 
     static JobData getJobDataNotExist() {
-        JobData jobData =  new JobData(job:saveDomain(getJobNotExist()), key : "TESTKEY", filename: "filename.jpg")
+        getJobDataNotExist(saveDomain(getJobNotExist()))
+    }
+
+    static JobData getJobDataNotExist(Job job) {
+        JobData jobData =  new JobData(job:job, key : "TESTKEY", filename: "filename.jpg")
         checkDomain(jobData)
     }
 

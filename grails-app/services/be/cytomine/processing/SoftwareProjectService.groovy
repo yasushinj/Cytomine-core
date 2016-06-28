@@ -30,7 +30,7 @@ import static org.springframework.security.acls.domain.BasePermission.READ
 
 class SoftwareProjectService extends ModelService{
 
-   static transactional = true
+    static transactional = true
 
     def cytomineService
     def transactionService
@@ -64,8 +64,9 @@ class SoftwareProjectService extends ModelService{
      * @param json New domain data
      * @return Response structure (created domain data,..)
      */
-   def add(def json) throws CytomineException {
+    def add(def json) throws CytomineException {
         securityACLService.check(json.project,Project, READ)
+        securityACLService.checkisNotReadOnly(json.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id
         return executeCommand(new AddCommand(user: currentUser),null,json)
@@ -82,6 +83,7 @@ class SoftwareProjectService extends ModelService{
     def delete(SoftwareProject domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),READ)
+        securityACLService.checkisNotReadOnly(domain)
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
     }

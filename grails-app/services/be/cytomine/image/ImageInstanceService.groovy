@@ -331,7 +331,7 @@ class ImageInstanceService extends ModelService {
      */
     def add(def json) {
         securityACLService.check(json.project,Project,READ)
-        securityACLService.checkReadOnly(json.project,Project)
+        securityACLService.checkisNotReadOnly(json.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id
         log.info "json=$json"
@@ -344,7 +344,7 @@ class ImageInstanceService extends ModelService {
         if(alreadyExist && alreadyExist.checkDeleted()) {
             //Image was previously deleted, restore it
             securityACLService.check(alreadyExist.container(),ADMINISTRATION)
-            securityACLService.checkReadOnly(alreadyExist.container())
+            securityACLService.checkisNotReadOnly(alreadyExist.container())
             def jsonNewData = JSON.parse(alreadyExist.encodeAsJSON())
             jsonNewData.deleted = null
             Command c = new EditCommand(user: currentUser)
@@ -369,8 +369,8 @@ class ImageInstanceService extends ModelService {
     def update(ImageInstance domain, def jsonNewData) {
         securityACLService.check(domain.container(),READ)
         securityACLService.check(jsonNewData.project,Project,READ)
-        securityACLService.checkReadOnly(domain.container())
-        securityACLService.checkReadOnly(jsonNewData.project,Project)
+        securityACLService.checkisNotReadOnly(domain.container())
+        securityACLService.checkisNotReadOnly(jsonNewData.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new EditCommand(user: currentUser)
         executeCommand(c,domain,jsonNewData)
@@ -386,14 +386,13 @@ class ImageInstanceService extends ModelService {
      */
     def delete(ImageInstance domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
 //        securityACLService.check(domain.container(),READ)
-//        securityACLService.checkReadOnly(domain.container())
+//        securityACLService.checkisNotReadOnly(domain.container())
 //        SecUser currentUser = cytomineService.getCurrentUser()
 //        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
 //        return executeCommand(c,domain,null)
 
         //We don't delete domain, we juste change a flag
-        securityACLService.check(domain.container(),ADMINISTRATION)
-        securityACLService.checkReadOnly(domain.container())
+        securityACLService.checkEditingMode(domain.container())
         def jsonNewData = JSON.parse(domain.encodeAsJSON())
         jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()

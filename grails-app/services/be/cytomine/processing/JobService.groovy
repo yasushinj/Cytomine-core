@@ -28,6 +28,8 @@ import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import groovy.sql.Sql
 
+import java.text.SimpleDateFormat
+
 import static org.springframework.security.acls.domain.BasePermission.READ
 
 class JobService extends ModelService {
@@ -89,7 +91,7 @@ class JobService extends ModelService {
      */
     def add(def json) {
         securityACLService.check(json.project,Project, READ)
-        securityACLService.checkReadOnly(json.project,Project)
+        securityACLService.checkisNotReadOnly(json.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
 
         //Start transaction
@@ -124,7 +126,7 @@ class JobService extends ModelService {
     def update(Job job, def jsonNewData) {
         log.info "update"
         securityACLService.check(job.container(),READ)
-        securityACLService.checkReadOnly(job.container())
+        securityACLService.checkisNotReadOnly(job.container())
         log.info "securityACLService.check"
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new EditCommand(user: currentUser),job, jsonNewData)
@@ -141,7 +143,7 @@ class JobService extends ModelService {
     def delete(Job domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),READ)
-        securityACLService.checkReadOnly(domain.container())
+        securityACLService.checkisNotReadOnly(domain.container())
 
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
@@ -262,7 +264,7 @@ class JobService extends ModelService {
         securityACLService.check(job.container(),READ)
         UserJob userJob = new UserJob()
         userJob.job = job
-        userJob.username = "JOB[" + user.username + " ], " + new Date().toString()
+        userJob.username = "JOB[" + user.username + " ], " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SS").format(new Date())
         userJob.password = user.password
         userJob.generateKeys()
         userJob.enabled = user.enabled
@@ -270,7 +272,7 @@ class JobService extends ModelService {
         userJob.accountLocked = user.accountLocked
         userJob.passwordExpired = user.passwordExpired
         userJob.user = user
-        userJob = userJob.save(flush: true)
+        userJob = userJob.save(flush: true, failOnError: true)
 
         currentRoleServiceProxy.findCurrentRole(user).each { secRole ->
             SecUserSecRole.create(userJob, secRole)

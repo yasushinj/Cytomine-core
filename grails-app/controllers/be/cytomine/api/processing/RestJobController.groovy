@@ -210,7 +210,7 @@ class RestJobController extends RestController {
         if (!job) {
             responseNotFound("Job",params.id)
         } else {
-            securityACLService.checkReadOnly(job.container())
+            securityACLService.checkisNotReadOnly(job.container())
             securityACLService.checkIsAdminContainer(job.project,cytomineService.currentUser)
             Task task = taskService.read(params.long('task'))
             log.info "load all annotations..."

@@ -142,9 +142,10 @@ class PropertyService extends ModelService {
         } else {
             domain = Class.forName(domainClass, false, Thread.currentThread().contextClassLoader).read(JSONUtils.getJSONAttrLong(json,'domainIdent',0))
         }
+
         if (domain != null && !domain.class.name.contains("AbstractImage")) {
             securityACLService.check(domain.container(),READ)
-            securityACLService.checkReadOnly(domain.container())
+            securityACLService.checkEditingMode(domain, domain.user)
         }
 
         SecUser currentUser = cytomineService.getCurrentUser()
@@ -161,7 +162,7 @@ class PropertyService extends ModelService {
     def update(Property ap, def jsonNewData) {
         if(!ap.domainClassName.contains("AbstractImage")) {
             securityACLService.check(ap.container(),READ)
-            securityACLService.checkReadOnly(ap.container())
+            securityACLService.checkEditingMode(ap, ap.retrieveCytomineDomain().user)
         }
 
         SecUser currentUser = cytomineService.getCurrentUser()
@@ -181,7 +182,7 @@ class PropertyService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         if(!domain.domainClassName.contains("AbstractImage")) {
             securityACLService.check(domain.container(),READ)
-            securityACLService.checkReadOnly(domain.container())
+            securityACLService.checkEditingMode(domain, domain.retrieveCytomineDomain().user)
         }
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)

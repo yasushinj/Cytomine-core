@@ -189,275 +189,22 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         //not implemented (no undo/redo for project)
     }
 
-    void testReadOnlyProject() {
 
-        def simpleUsername = "simpleUserRO"
-        def adminUsername = "adminRO"
-        def password = "password"
 
-        //Create a project
-        Project project = BasicInstanceBuilder.getProjectNotExist(true)
 
-        //Force project to Read Only
-        project.isReadOnly = true
-        BasicInstanceBuilder.saveDomain(project)
-
-        //Add a simple project user
-        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
-        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
-
-        //Add a project admin
-        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
-        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
-
-        //Test as simple user
-
-        //update project
-        assert 403 == ProjectAPI.update(project.id,project.encodeAsJSON(),simpleUsername, password).code
-        // TODO dowload empty image list & annotations list
-
-        //Now run test as a project admin
-
-        //update project
-        assert 200 == ProjectAPI.update(project.id,project.encodeAsJSON(),simpleUsername, password).code
-        // TODO dowload empty image list & annotations list
-
-    }
-
-    void testReadOnlyProjectWithImageData() {
-
+    void testClassicProject() {
         // Init dataset
 
         def simpleUsername = "simpleUserRO"
         def adminUsername = "adminRO"
         def password = "password"
-
-        //Create a project
-        Project project = BasicInstanceBuilder.getProjectNotExist(true)
-
-        //Set project as Readonly
-        project.isReadOnly = true
-        BasicInstanceBuilder.saveDomain(project)
-
-        //Add a simple project user
-        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
-        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
-
-        //Add a project admin
-        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
-        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
-
-        //super admin data
-        //Create an annotation (by superadmin)
-        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project,true)
-        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,true)
-        //Create a description
-        Description description = BasicInstanceBuilder.getDescriptionNotExist(annotation,true)
-        //Create a property
-        Property property = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,true)
-
-        //admin data
-        //Create an annotation (by admin)
-        ImageInstance imageAdmin = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
-        imageAdmin.user = admin;
-        BasicInstanceBuilder.saveDomain(imageAdmin)
-        UserAnnotation annotationAdmin = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,false)
-        annotationAdmin.user = admin;
-        BasicInstanceBuilder.saveDomain(annotationAdmin)
-        //Create a description
-        Description descriptionAdmin = BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin,true)
-        //Create a property
-        Property propertyAdmin = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,true)
-
-        //simple user data
-        //Create an annotation (by user)
-        ImageInstance imageUser = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
-        imageUser.user = simpleUser;
-        BasicInstanceBuilder.saveDomain(imageUser)
-        UserAnnotation annotationUser = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,false)
-        annotationUser.user = admin;
-        BasicInstanceBuilder.saveDomain(annotationUser)
-        //Create a description
-        Description descriptionUser = BasicInstanceBuilder.getDescriptionNotExist(annotationUser,true)
-        //Create a property
-        Property propertyUser = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,true)
-
-
-        /*
-           Now Test as simple user
-         */
-
-
-
-        //add,update, delete property (simple user data)
-        assert 403 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),simpleUsername,password).code
-        assert 403 == PropertyAPI.update(propertyUser.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
-        assert 403 == PropertyAPI.delete(propertyUser.id, property.domainIdent, "annotation", simpleUsername, password).code
-
-        //add,update, delete property (admin data)
-        assert 403 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),simpleUsername,password).code
-        assert 403 == PropertyAPI.update(propertyAdmin.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
-        assert 403 == PropertyAPI.delete(propertyAdmin.id, property.domainIdent, "annotation", simpleUsername, password).code
-
-        //add,update, delete property (superadmin data)
-        assert 403 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),simpleUsername,password).code
-        assert 403 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
-        assert 403 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", simpleUsername, password).code
-
-        //add image instance
-        assert 403 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
-
-        //update, delete image instance (simple user data)
-        assert 403 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(), simpleUsername, password).code
-        assert 403 == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
-
-        //update, delete image instance (admin data)
-        assert 403 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(), simpleUsername, password).code
-        assert 403 == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
-
-        //update, delete image instance (superadmin data)
-        assert 403 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(), simpleUsername, password).code
-        assert 403 == ImageInstanceAPI.delete(image, simpleUsername, password).code
-
-        println "###"+image.id
-        //start reviewing image (simple user data)
-        assert 403 == ReviewedAnnotationAPI.markStartReview(imageUser.id,simpleUsername, password).code
-        //start reviewing image (admin data)
-        assert 403 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,simpleUsername, password).code
-        //start reviewing image (superadmin data)
-        assert 403 == ReviewedAnnotationAPI.markStartReview(image.id,simpleUsername, password).code
-
-        //add annotation
-        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
-
-        //update, delete annotation (simple user data)
-        def jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 403 == UserAnnotationAPI.update(annotationUser.id, jsonAnnotation, simpleUsername, password).code
-        assert 403 == UserAnnotationAPI.delete(annotationUser,simpleUsername, password).code
-
-        //update, delete annotation (admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 403 == UserAnnotationAPI.update(annotationAdmin.id, jsonAnnotation, simpleUsername, password).code
-        assert 403 == UserAnnotationAPI.delete(annotationAdmin,simpleUsername, password).code
-
-        //update, delete annotation (super admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 403 == UserAnnotationAPI.update(annotation.id, jsonAnnotation, simpleUsername, password).code
-        assert 403 == UserAnnotationAPI.delete(annotation,simpleUsername, password).code
-
-
-        //add, update, delete description (simple user data)
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,descriptionUser.encodeAsJSON(),simpleUsername, password).code
-        assert 403 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),simpleUsername, password).code
-        assert 403 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,simpleUsername, password).code
-
-        //add, update, delete description (admin data)
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
-        assert 403 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
-        assert 403 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,simpleUsername, password).code
-
-        //add, update, delete description (super admin data)
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,description.encodeAsJSON(),simpleUsername, password).code
-        assert 403 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),simpleUsername, password).code
-        assert 403 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,simpleUsername, password).code
-
-
-        /*
-          Now run test as a project admin
-         */
-
-        //add,update, delete property (simple user data)
-        assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,annotationUser.encodeAsJSON(),adminUsername,password).code
-        assert 200 == PropertyAPI.update(propertyUser.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
-        assert 200 == PropertyAPI.delete(propertyUser.id, property.domainIdent, "annotation", adminUsername, password).code
-
-        //add,update, delete property (admin data)
-        assert 403 == PropertyAPI.create(annotationAdmin.id, "annotation" ,annotationAdmin.encodeAsJSON(),adminUsername,password).code
-        assert 403 == PropertyAPI.update(propertyAdmin.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
-        assert 403 == PropertyAPI.delete(propertyAdmin.id, property.domainIdent, "annotation", adminUsername, password).code
-
-        //add,update, delete property (superadmin data)
-        assert 403 == PropertyAPI.create(annotation.id, "annotation" ,annotation.encodeAsJSON(),adminUsername,password).code
-        assert 403 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
-        assert 403 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", adminUsername, password).code
-
-        //add image instance
-        assert 403 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),adminUsername, password).code
-
-        //update, delete image instance (simple user data)
-        assert 403 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),adminUsername, password).code
-        assert 403 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
-
-        //update, delete image instance (admin data)
-        assert 403 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),adminUsername, password).code
-        assert 403 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
-
-        //update, delete image instance (superadmin data)
-        assert 403 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),adminUsername, password).code
-        assert 403 == ImageInstanceAPI.delete(image, adminUsername, password).code
-
-        println "###"+image.id
-        //start reviewing image (simple user data)
-        assert 403 == ReviewedAnnotationAPI.markStartReview(imageUser.id,adminUsername, password).code
-        //start reviewing image (admin data)
-        assert 403 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,adminUsername, password).code
-        //start reviewing image (superadmin data)
-        assert 403 == ReviewedAnnotationAPI.markStartReview(image.id,adminUsername, password).code
-
-        //add annotation
-        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
-
-        //update, delete annotation (simple user data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 403 == UserAnnotationAPI.update(annotationUser.id, jsonAnnotation, adminUsername, password).code
-        assert 403 == UserAnnotationAPI.delete(annotationUser,simpleUsername, password).code
-
-        //update, delete annotation (admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 403 == UserAnnotationAPI.update(annotationAdmin.id, jsonAnnotation, adminUsername, password).code
-        assert 403 == UserAnnotationAPI.delete(annotationAdmin,simpleUsername, password).code
-
-        //update, delete annotation (super admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 403 == UserAnnotationAPI.update(annotation.id, jsonAnnotation, adminUsername, password).code
-        assert 403 == UserAnnotationAPI.delete(annotation,simpleUsername, password).code
-
-
-        //add, update, delete description (simple user data)
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,descriptionUser.encodeAsJSON(),adminUsername, password).code
-        assert 403 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),adminUsername, password).code
-        assert 403 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,adminUsername, password).code
-
-        //add, update, delete description (admin data)
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
-        assert 403 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
-        assert 403 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,adminUsername, password).code
-
-        //add, update, delete description (super admin data)
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,description.encodeAsJSON(),adminUsername, password).code
-        assert 403 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),adminUsername, password).code
-        assert 403 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,adminUsername, password).code
-    }
-
-
-    void testReadOnlyProjectWithJobData() {
-        //Init dataset
-
-        def simpleUsername = "simpleUserRO"
-        def adminUsername = "adminRO"
-        def password = "password"
+        def testUsername = "testUser"
 
         //Create a project
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
 
         //Force project to Read and write
-        project.isReadOnly = false
+        project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
 
         //Add a simple project user
@@ -468,101 +215,53 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         User admin = BasicInstanceBuilder.getUser(adminUsername,password)
         assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
 
-        //data
-        JobData jobData = BasicInstanceBuilder.getJobDataNotExist()
-        Job job = jobData.job
-        Software software = job.software;
-        BasicInstanceBuilder.saveDomain(software)
-        BasicInstanceBuilder.saveDomain(job)
-        BasicInstanceBuilder.saveDomain(jobData)
+        //create user test
+        User test = BasicInstanceBuilder.getUser(testUsername,password)
 
 
-        /*
-           Now Test as simple user
-         */
-
-        assert 200 == JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist().encodeAsJSON(),simpleUser, password).code
-        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), simpleUser, password).code
-        assert 200 == JobDataAPI.download(jobData.id, simpleUser, password).code
-        assert 200 == JobDataAPI.delete(jobData.id, simpleUser, password).code
-
-        assert 200 == JobAPI.create(BasicInstanceBuilder.getJobNotExist().encodeAsJSON(),simpleUser, password).code
-        assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), simpleUser, password).code
-        assert 200 == JobAPI.delete(job.id, simpleUser, password).code
-
-        assert 200 == SoftwareAPI.create(BasicInstanceBuilder.getSoftwareNotExist().encodeAsJSON(),simpleUser, password).code
-        assert 200 == SoftwareAPI.update(software.id, software.encodeAsJSON(), simpleUser, password).code
-        assert 200 == SoftwareAPI.delete(software.id, simpleUser, password).code
-
-
-        /*
-          Now run test as a project admin
-         */
-
-        assert 200 == JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist().encodeAsJSON(),adminUsername, password).code
-        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), adminUsername, password).code
-        assert 200 == JobDataAPI.download(jobData.id, adminUsername, password).code
-        assert 200 == JobDataAPI.delete(jobData.id, adminUsername, password).code
-
-        assert 200 == JobAPI.create(BasicInstanceBuilder.getJobNotExist().encodeAsJSON(),adminUsername, password).code
-        assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), adminUsername, password).code
-        assert 200 == JobAPI.delete(job.id, adminUsername, password).code
-
-        assert 200 == SoftwareAPI.create(BasicInstanceBuilder.getSoftwareNotExist().encodeAsJSON(),adminUsername, password).code
-        assert 200 == SoftwareAPI.update(software.id, software.encodeAsJSON(), adminUsername, password).code
-        assert 200 == SoftwareAPI.delete(software.id, adminUsername, password).code
-
-    }
-
-
-
-
-    void testClassicProject() {
-        /*
-           Init dataset
-         */
-
-        def simpleUsername = "simpleUserRO"
-        def adminUsername = "adminRO"
-        def password = "password"
-
-        //Create a project
-        Project project = BasicInstanceBuilder.getProjectNotExist(true)
-
-        //Force project to Read and write
-        project.isReadOnly = false
-        BasicInstanceBuilder.saveDomain(project)
-
-        //Add a simple project user
-        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
-        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
-
-        //Add a project admin
-        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
-        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
-
-        /*
-           Now Test as simple user
-         */
-
-        //update project
-        assert 403 == ProjectAPI.update(project.id,project.encodeAsJSON(),simpleUsername, password).code
-        // TODO dowload empty image list & annotations list
-
-        /*
-          Now run test as a project admin
-         */
+        // Test as a project admin
 
         //update project
         assert 200 == ProjectAPI.update(project.id,project.encodeAsJSON(),adminUsername, password).code
-        // TODO dowload empty image list & annotations list
+        // add & delete users
+        assert 200 == ProjectAPI.addUserProject(project.id,test.id,adminUsername,password).code
+        assert 200 == ProjectAPI.deleteUserProject(project.id,test.id,adminUsername,password).code
+        // add & delete admins
+        assert 200 == ProjectAPI.addAdminProject(project.id,test.id,adminUsername,password).code
+        assert 200 == ProjectAPI.deleteAdminProject(project.id,test.id,adminUsername,password).code
+        // add & delete representatives
+        def refToAdd = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        refToAdd.project = project
+        def result = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password)
+        assert 200 == result.code
+        int idRef = result.data.id
+        assert 200 == ProjectRepresentativeUserAPI.delete(idRef, project.id, adminUsername,password).code
 
+        assert 200 == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+
+        // Test as simple user
+
+        //update project
+        assert 403 == ProjectAPI.update(project.id,project.encodeAsJSON(),simpleUsername, password).code
+        // add & delete users
+        assert 403 == ProjectAPI.addUserProject(project.id,test.id,simpleUsername,password).code
+        assert 200 == ProjectAPI.addUserProject(project.id,test.id,adminUsername,password).code
+        assert 403 == ProjectAPI.deleteUserProject(project.id,test.id,simpleUsername,password).code
+        // add & delete admins
+        assert 403 == ProjectAPI.addAdminProject(project.id,test.id,simpleUsername,password).code
+        assert 200 == ProjectAPI.addAdminProject(project.id,test.id,adminUsername,password).code
+        assert 403 == ProjectAPI.deleteAdminProject(project.id,test.id,simpleUsername,password).code
+        // add & delete representatives
+        refToAdd = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        refToAdd.project = project
+        assert 403 == ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), simpleUsername,password).code
+        idRef = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password).data.id
+        assert 403 == ProjectRepresentativeUserAPI.delete(idRef, project.id, simpleUsername,password).code
+
+        assert 200 == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
     }
 
-    void testClassicProjectWithImageData() {
-        /*
-           Init dataset
-         */
+    void testClassicProjectWithImageDataAsContributor() {
 
         def simpleUsername = "simpleUserRO"
         def adminUsername = "adminRO"
@@ -572,88 +271,59 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
 
         //Force project to Read and write
-        project.isReadOnly = false
+        project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
 
-        //Add a simple project user
-        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
-        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+        def data = initProjectDataSet(project, simpleUsername, adminUsername, password)
 
-        //Add a project admin
-        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
-        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+        //super admin data
+        ImageInstance image = data.image
+        UserAnnotation annotation = data.annotation
+        Description description = data.description
+        Property property = data.property
 
+        //admin data
+        ImageInstance imageAdmin = data.imageAdmin
+        UserAnnotation annotationAdmin = data.annotationAdmin
+        Description descriptionAdmin = data.descriptionAdmin
+        Property propertyAdmin = data.propertyAdmin
 
-        /*super admin data*/
-        //Create an annotation (by superadmin)
-        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project,true)
-        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,true)
-        //Create a description
-        Description description = BasicInstanceBuilder.getDescriptionNotExist(annotation,true)
-        //Create a property
-        Property property = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,true)
-
-        /*admin data*/
-        //Create an annotation (by admin)
-        ImageInstance imageAdmin = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
-        imageAdmin.user = admin;
-        BasicInstanceBuilder.saveDomain(imageAdmin)
-        UserAnnotation annotationAdmin = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,false)
-        annotationAdmin.user = admin;
-        BasicInstanceBuilder.saveDomain(annotationAdmin)
-        //Create a description
-        Description descriptionAdmin = BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin,true)
-        //Create a property
-        Property propertyAdmin = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,true)
-
-        /*simple user data*/
-        //Create an annotation (by user)
-        ImageInstance imageUser = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
-        imageUser.user = simpleUser;
-        BasicInstanceBuilder.saveDomain(imageUser)
-        UserAnnotation annotationUser = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,false)
-        annotationUser.user = admin;
-        BasicInstanceBuilder.saveDomain(annotationUser)
-        //Create a description
-        Description descriptionUser = BasicInstanceBuilder.getDescriptionNotExist(annotationUser,true)
-        //Create a property
-        Property propertyUser = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,true)
-
-
-        /*
-           Now Test as simple user
-         */
+        //simple user data
+        ImageInstance imageUser = data.imageUser
+        UserAnnotation annotationUser = data.annotationUser
+        Description descriptionUser = data.descriptionUser
+        Property propertyUser = data.propertyUser
 
 
         //add,update, delete property (simple user data)
         assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),simpleUsername,password).code
-        assert 200 == PropertyAPI.update(propertyUser.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
-        assert 200 == PropertyAPI.delete(propertyUser.id, property.domainIdent, "annotation", simpleUsername, password).code
+        assert 200 == PropertyAPI.update(propertyUser.id, propertyUser.domainIdent, "annotation" ,propertyUser.encodeAsJSON(), simpleUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyUser.id, propertyUser.domainIdent, "annotation", simpleUsername, password).code
 
         //add,update, delete property (admin data)
         assert 200 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),simpleUsername,password).code
-        assert 200 == PropertyAPI.update(propertyAdmin.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
-        assert 200 == PropertyAPI.delete(propertyAdmin.id, property.domainIdent, "annotation", simpleUsername, password).code
+        assert 200 == PropertyAPI.update(propertyAdmin.id, propertyAdmin.domainIdent, "annotation" ,propertyAdmin.encodeAsJSON(), simpleUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyAdmin.id, propertyAdmin.domainIdent, "annotation", simpleUsername, password).code
 
         //add,update, delete property (superadmin data)
         assert 200 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),simpleUsername,password).code
         assert 200 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
         assert 200 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", simpleUsername, password).code
 
-        //add image instance
-        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
+        //add, update, delete description (simple user data)
+        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,simpleUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),simpleUsername, password).code
 
-        //update, delete image instance (simple user data)
-        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
+        //add, update, delete description (admin data)
+        assert 200 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,simpleUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),simpleUsername, password).code
 
-        //update, delete image instance (admin data)
-        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
-
-        //update, delete image instance (superadmin data)
-        assert 200 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == ImageInstanceAPI.delete(image, simpleUsername, password).code
+        //add, update, delete description (super admin data)
+        assert 200 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,simpleUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),simpleUsername, password).code
 
         println "###"+image.id
         //start reviewing image (simple user data)
@@ -670,73 +340,98 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
 
         //update, delete annotation (simple user data)
-        def jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 200 == UserAnnotationAPI.update(annotationUser.id, jsonAnnotation, simpleUsername, password).code
-        assert 200 == UserAnnotationAPI.delete(annotationUser,simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationUser.id,simpleUsername, password).code
 
         //update, delete annotation (admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 200 == UserAnnotationAPI.update(annotationAdmin.id, jsonAnnotation, simpleUsername, password).code
-        assert 200 == UserAnnotationAPI.delete(annotationAdmin,simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.update(annotationAdmin.id, annotationAdmin.encodeAsJSON(), simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationAdmin.id,simpleUsername, password).code
 
         //update, delete annotation (super admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 200 == UserAnnotationAPI.update(annotation.id, jsonAnnotation, simpleUsername, password).code
-        assert 200 == UserAnnotationAPI.delete(annotation,simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.update(annotation.id, annotation.encodeAsJSON(), simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotation.id,simpleUsername, password).code
+
+        //add image instance
+        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
+
+        //update, delete image instance (simple user data)
+        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
+
+        //update, delete image instance (admin data)
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
+
+        //update, delete image instance (superadmin data)
+        assert 200 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(image, simpleUsername, password).code
+    }
+
+    void testClassicProjectWithImageDataAsManager() {
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.CLASSIC
+        BasicInstanceBuilder.saveDomain(project)
 
 
-        //add, update, delete description (simple user data)
-        assert 200 == DescriptionAPI.create(project.id,project.class.name,descriptionUser.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,simpleUsername, password).code
+        def data = initProjectDataSet(project, simpleUsername, adminUsername, password)
 
-        //add, update, delete description (admin data)
-        assert 200 == DescriptionAPI.create(project.id,project.class.name,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,simpleUsername, password).code
+        //super admin data
+        ImageInstance image = data.image
+        UserAnnotation annotation = data.annotation
+        Description description = data.description
+        Property property = data.property
 
-        //add, update, delete description (super admin data)
-        assert 200 == DescriptionAPI.create(project.id,project.class.name,description.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),simpleUsername, password).code
-        assert 200 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,simpleUsername, password).code
+        //admin data
+        ImageInstance imageAdmin = data.imageAdmin
+        UserAnnotation annotationAdmin = data.annotationAdmin
+        Description descriptionAdmin = data.descriptionAdmin
+        Property propertyAdmin = data.propertyAdmin
 
+        //simple user data
+        ImageInstance imageUser = data.imageUser
+        UserAnnotation annotationUser = data.annotationUser
+        Description descriptionUser = data.descriptionUser
+        Property propertyUser = data.propertyUser
 
-        /*
-          Now run test as a project admin
-         */
 
         //add,update, delete property (simple user data)
-        assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,annotationUser.encodeAsJSON(),adminUsername,password).code
-        assert 200 == PropertyAPI.update(propertyUser.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
-        assert 200 == PropertyAPI.delete(propertyUser.id, property.domainIdent, "annotation", adminUsername, password).code
+        assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(propertyUser.id, propertyUser.domainIdent, "annotation" ,propertyUser.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyUser.id, propertyUser.domainIdent, "annotation", adminUsername, password).code
 
         //add,update, delete property (admin data)
-        assert 200 == PropertyAPI.create(annotationAdmin.id, "annotation" ,annotationAdmin.encodeAsJSON(),adminUsername,password).code
-        assert 200 == PropertyAPI.update(propertyAdmin.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
-        assert 200 == PropertyAPI.delete(propertyAdmin.id, property.domainIdent, "annotation", adminUsername, password).code
+        assert 200 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(propertyAdmin.id, propertyAdmin.domainIdent, "annotation" ,propertyAdmin.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyAdmin.id, propertyAdmin.domainIdent, "annotation", adminUsername, password).code
 
         //add,update, delete property (superadmin data)
-        assert 200 == PropertyAPI.create(annotation.id, "annotation" ,annotation.encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),adminUsername,password).code
         assert 200 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
         assert 200 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", adminUsername, password).code
 
-        //add image instance
-        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),adminUsername, password).code
+        //add, update, delete description (simple user data)
+        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),adminUsername, password).code
 
-        //update, delete image instance (simple user data)
-        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),adminUsername, password).code
-        assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
+        //add, update, delete description (admin data)
+        assert 200 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),adminUsername, password).code
 
-        //update, delete image instance (admin data)
-        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
-        assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
+        //add, update, delete description (super admin data)
+        assert 200 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),adminUsername, password).code
 
-        //update, delete image instance (superadmin data)
-        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
-        assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
 
         println "###"+image.id
         //start reviewing image (simple user data)
@@ -755,46 +450,35 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
 
         //update, delete annotation (simple user data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 200 == UserAnnotationAPI.update(annotationUser.id, jsonAnnotation, adminUsername, password).code
-        assert 200 == UserAnnotationAPI.delete(annotationUser,simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationUser.id,adminUsername, password).code
 
         //update, delete annotation (admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 200 == UserAnnotationAPI.update(annotationAdmin.id, jsonAnnotation, adminUsername, password).code
-        assert 200 == UserAnnotationAPI.delete(annotationAdmin,simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.update(annotationAdmin.id, annotationAdmin.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationAdmin.id,adminUsername, password).code
 
         //update, delete annotation (super admin data)
-        jsonAnnotation = JSON.parse(annotation.encodeAsJSON())
-        jsonAnnotation.id = "5"
-        assert 200 == UserAnnotationAPI.update(annotation.id, jsonAnnotation, adminUsername, password).code
-        assert 200 == UserAnnotationAPI.delete(annotation,simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.update(annotation.id, annotation.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotation.id,adminUsername, password).code
 
+        //add image instance
+        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),adminUsername, password).code
 
-        //add, update, delete description (simple user data)
-        assert 200 == DescriptionAPI.create(project.id,project.class.name,descriptionUser.encodeAsJSON(),adminUsername, password).code
-        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),adminUsername, password).code
-        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,adminUsername, password).code
+        //update, delete image instance (simple user data)
+        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
 
-        //add, update, delete description (admin data)
-        assert 200 == DescriptionAPI.create(project.id,project.class.name,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
-        assert 200 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
-        assert 200 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,adminUsername, password).code
+        //update, delete image instance (admin data)
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
 
-        //add, update, delete description (super admin data)
-        assert 200 == DescriptionAPI.create(project.id,project.class.name,description.encodeAsJSON(),adminUsername, password).code
-        assert 200 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),adminUsername, password).code
-        assert 200 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,adminUsername, password).code
-
+        //update, delete image instance (superadmin data)
+        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
     }
 
-
     void testClassicProjectWithJobData() {
-        /*
-           Init dataset
-         */
+        // Init dataset
 
         def simpleUsername = "simpleUserRO"
         def adminUsername = "adminRO"
@@ -804,7 +488,7 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
 
         //Force project to Read and write
-        project.isReadOnly = false
+        project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
 
         //Add a simple project user
@@ -815,50 +499,833 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         User admin = BasicInstanceBuilder.getUser(adminUsername,password)
         assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
 
-        /*data*/
-        JobData jobData = BasicInstanceBuilder.getJobDataNotExist()
-        Job job = jobData.job
-        Software software = job.software;
-        BasicInstanceBuilder.saveDomain(software)
-        BasicInstanceBuilder.saveDomain(job)
+        // data
+        Software software = BasicInstanceBuilder.getSoftwareNotExist(true);
+        Job job = BasicInstanceBuilder.getJobNotExist(true, software, project)
+        JobData jobData = BasicInstanceBuilder.getJobDataNotExist(job)
         BasicInstanceBuilder.saveDomain(jobData)
 
 
-        /*
-           Now Test as simple user
-         */
+        // Now Test as simple user
 
-        assert 200 == JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist().encodeAsJSON(),simpleUsername, password).code
-        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), simpleUsername, password).code
+
+        assert 200 == JobDataAPI.upload(jobData.id, new byte[5], simpleUsername, password).code
         assert 200 == JobDataAPI.download(jobData.id, simpleUsername, password).code
-        assert 200 == JobDataAPI.delete(jobData.id, simpleUsername, password).code
+        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), simpleUsername, password).code
 
-        assert 200 == JobAPI.create(BasicInstanceBuilder.getJobNotExist().encodeAsJSON(),simpleUsername, password).code
+        def result = JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),simpleUsername, password)
+        assert 200 == result.code
+        assert 200 == JobDataAPI.delete(result.data.id, simpleUsername, password).code
+
         assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), simpleUsername, password).code
-        assert 200 == JobAPI.delete(job.id, simpleUsername, password).code
+        result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),simpleUsername, password)
+        assert 200 == result.code
+        assert 200 == JobAPI.delete(result.data.id, simpleUsername, password).code
 
-        assert 200 == SoftwareAPI.create(BasicInstanceBuilder.getSoftwareNotExist().encodeAsJSON(),simpleUsername, password).code
-        assert 200 == SoftwareAPI.update(software.id, software.encodeAsJSON(), simpleUsername, password).code
-        assert 200 == SoftwareAPI.delete(software.id, simpleUsername, password).code
+        result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),simpleUsername, password)
+        assert 200 == result.code
+        assert 200 == SoftwareProjectAPI.delete(result.data.id, simpleUsername, password).code
 
 
-        /*
-          Now run test as a project admin
-         */
+        // Now run test as a project admin
 
-        assert 200 == JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist().encodeAsJSON(),adminUsername, password).code
-        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), adminUsername, password).code
+        assert 200 == JobDataAPI.upload(jobData.id, new byte[5], adminUsername, password).code
         assert 200 == JobDataAPI.download(jobData.id, adminUsername, password).code
-        assert 200 == JobDataAPI.delete(jobData.id, adminUsername, password).code
+        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), adminUsername, password).code
 
-        assert 200 == JobAPI.create(BasicInstanceBuilder.getJobNotExist().encodeAsJSON(),adminUsername, password).code
+        result = JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == JobDataAPI.delete(result.data.id, adminUsername, password).code
+
         assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), adminUsername, password).code
-        assert 200 == JobAPI.delete(job.id, adminUsername, password).code
+        result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == JobAPI.delete(result.data.id, adminUsername, password).code
 
-        assert 200 == SoftwareAPI.create(BasicInstanceBuilder.getSoftwareNotExist().encodeAsJSON(),adminUsername, password).code
-        assert 200 == SoftwareAPI.update(software.id, software.encodeAsJSON(), adminUsername, password).code
-        assert 200 == SoftwareAPI.delete(software.id, adminUsername, password).code
+        result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == SoftwareProjectAPI.delete(result.data.id, adminUsername, password).code
 
+    }
+
+    void testRestrictedProject() {
+        // Init dataset
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+        def testUsername = "testUser"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
+        //Add a simple project user
+        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
+        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //Add a project admin
+        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
+        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //create user test
+        User test = BasicInstanceBuilder.getUser(testUsername,password)
+
+
+        // Test as a project admin
+
+        //update project
+        assert 200 == ProjectAPI.update(project.id,project.encodeAsJSON(),adminUsername, password).code
+        // add & delete users
+        assert 200 == ProjectAPI.addUserProject(project.id,test.id,adminUsername,password).code
+        assert 200 == ProjectAPI.deleteUserProject(project.id,test.id,adminUsername,password).code
+        // add & delete admins
+        assert 200 == ProjectAPI.addAdminProject(project.id,test.id,adminUsername,password).code
+        assert 200 == ProjectAPI.deleteAdminProject(project.id,test.id,adminUsername,password).code
+        // add & delete representatives
+        def refToAdd = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        refToAdd.project = project
+        def result = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password)
+        assert 200 == result.code
+        int idRef = result.data.id
+        assert 200 == ProjectRepresentativeUserAPI.delete(idRef, project.id, adminUsername,password).code
+
+        assert 200 == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+
+        // Test as simple user
+
+        //update project
+        assert 403 == ProjectAPI.update(project.id,project.encodeAsJSON(),simpleUsername, password).code
+        // add & delete users
+        assert 403 == ProjectAPI.addUserProject(project.id,test.id,simpleUsername,password).code
+        assert 200 == ProjectAPI.addUserProject(project.id,test.id,adminUsername,password).code
+        assert 403 == ProjectAPI.deleteUserProject(project.id,test.id,simpleUsername,password).code
+        // add & delete admins
+        assert 403 == ProjectAPI.addAdminProject(project.id,test.id,simpleUsername,password).code
+        assert 200 == ProjectAPI.addAdminProject(project.id,test.id,adminUsername,password).code
+        assert 403 == ProjectAPI.deleteAdminProject(project.id,test.id,simpleUsername,password).code
+        // add & delete representatives
+        refToAdd = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        refToAdd.project = project
+        assert 403 == ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), simpleUsername,password).code
+        idRef = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password).data.id
+        assert 403 == ProjectRepresentativeUserAPI.delete(idRef, project.id, simpleUsername,password).code
+
+        //TODO
+        //assert ??? == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+    }
+
+    void testRestrictedProjectWithImageDataAsContributor() {
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
+        def data = initProjectDataSet(project, simpleUsername, adminUsername, password)
+
+        //super admin data
+        ImageInstance image = data.image
+        UserAnnotation annotation = data.annotation
+        Description description = data.description
+        Property property = data.property
+
+        //admin data
+        ImageInstance imageAdmin = data.imageAdmin
+        UserAnnotation annotationAdmin = data.annotationAdmin
+        Description descriptionAdmin = data.descriptionAdmin
+        Property propertyAdmin = data.propertyAdmin
+
+        //simple user data
+        ImageInstance imageUser = data.imageUser
+        UserAnnotation annotationUser = data.annotationUser
+        Description descriptionUser = data.descriptionUser
+        Property propertyUser = data.propertyUser
+
+
+        //add,update, delete property (simple user data)
+        assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),simpleUsername,password).code
+        assert 200 == PropertyAPI.update(propertyUser.id, propertyUser.domainIdent, "annotation" ,propertyUser.encodeAsJSON(), simpleUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyUser.id, propertyUser.domainIdent, "annotation", simpleUsername, password).code
+
+        //add,update, delete property (admin data)
+        assert 403 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),simpleUsername,password).code
+        assert 403 == PropertyAPI.update(propertyAdmin.id, propertyAdmin.domainIdent, "annotation" ,propertyAdmin.encodeAsJSON(), simpleUsername,password).code
+        assert 403 == PropertyAPI.delete(propertyAdmin.id, propertyAdmin.domainIdent, "annotation", simpleUsername, password).code
+
+        //add,update, delete property (superadmin data)
+        assert 403 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),simpleUsername,password).code
+        assert 403 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
+        assert 403 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", simpleUsername, password).code
+
+        //add, update, delete description (simple user data)
+        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,simpleUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),simpleUsername, password).code
+
+        //add, update, delete description (admin data)
+        assert 403 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,simpleUsername, password).code
+        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),simpleUsername, password).code
+
+        //add, update, delete description (super admin data)
+        assert 403 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,simpleUsername, password).code
+        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),simpleUsername, password).code
+
+        //TODO
+        /*
+        println "###"+image.id
+        //start reviewing image (simple user data)
+        assert ??? == ReviewedAnnotationAPI.markStartReview(imageUser.id,simpleUsername, password).code
+        //start reviewing image (admin data)
+        assert 403 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,simpleUsername, password).code
+        //start reviewing image (superadmin data)
+        assert 403 == ReviewedAnnotationAPI.markStartReview(image.id,simpleUsername, password).code
+
+        //add annotation
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
+
+        //update, delete annotation (simple user data)
+        assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationUser.id,simpleUsername, password).code
+
+        //update, delete annotation (admin data)
+        assert 403 == UserAnnotationAPI.update(annotationAdmin.id, annotationAdmin.encodeAsJSON(), simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.delete(annotationAdmin.id,simpleUsername, password).code
+
+        //update, delete annotation (super admin data)
+        assert 403 == UserAnnotationAPI.update(annotation.id, annotation.encodeAsJSON(), simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.delete(annotation.id,simpleUsername, password).code
+
+        //add image instance
+        assert ??? == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
+
+        //update, delete image instance (simple user data)
+        assert ??? == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),simpleUsername, password).code
+        assert ??? == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
+
+        //update, delete image instance (admin data)
+        assert ??? == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert ??? == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
+
+        //update, delete image instance (superadmin data)
+        assert ??? == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),simpleUsername, password).code
+        assert ??? == ImageInstanceAPI.delete(image, simpleUsername, password).code
+        */
+    }
+
+    void testRestrictedProjectWithImageDataAsManager() {
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
+
+        def data = initProjectDataSet(project, simpleUsername, adminUsername, password)
+
+        //super admin data
+        ImageInstance image = data.image
+        UserAnnotation annotation = data.annotation
+        Description description = data.description
+        Property property = data.property
+
+        //admin data
+        ImageInstance imageAdmin = data.imageAdmin
+        UserAnnotation annotationAdmin = data.annotationAdmin
+        Description descriptionAdmin = data.descriptionAdmin
+        Property propertyAdmin = data.propertyAdmin
+
+        //simple user data
+        ImageInstance imageUser = data.imageUser
+        UserAnnotation annotationUser = data.annotationUser
+        Description descriptionUser = data.descriptionUser
+        Property propertyUser = data.propertyUser
+
+
+        //add,update, delete property (simple user data)
+        assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(propertyUser.id, propertyUser.domainIdent, "annotation" ,propertyUser.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyUser.id, propertyUser.domainIdent, "annotation", adminUsername, password).code
+
+        //add,update, delete property (admin data)
+        assert 200 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(propertyAdmin.id, propertyAdmin.domainIdent, "annotation" ,propertyAdmin.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyAdmin.id, propertyAdmin.domainIdent, "annotation", adminUsername, password).code
+
+        //add,update, delete property (superadmin data)
+        assert 200 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", adminUsername, password).code
+
+        //add, update, delete description (simple user data)
+        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),adminUsername, password).code
+
+        //add, update, delete description (admin data)
+        assert 200 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),adminUsername, password).code
+
+        //add, update, delete description (super admin data)
+        assert 200 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),adminUsername, password).code
+
+
+        println "###"+image.id
+        //start reviewing image (simple user data)
+        assert 200 == ReviewedAnnotationAPI.markStartReview(imageUser.id,adminUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStopReview(imageUser.id,adminUsername, password).code
+        //start reviewing image (admin data)
+        assert 200 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,adminUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStopReview(imageAdmin.id,adminUsername, password).code
+        //start reviewing image (superadmin data)
+        assert 200 == ReviewedAnnotationAPI.markStartReview(image.id,adminUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStopReview(image.id,adminUsername, password).code
+
+
+
+        //add annotation
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
+
+        //update, delete annotation (simple user data)
+        assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationUser.id,adminUsername, password).code
+
+        //update, delete annotation (admin data)
+        assert 200 == UserAnnotationAPI.update(annotationAdmin.id, annotationAdmin.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationAdmin.id,adminUsername, password).code
+
+        //update, delete annotation (super admin data)
+        assert 200 == UserAnnotationAPI.update(annotation.id, annotation.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotation.id,adminUsername, password).code
+
+        //add image instance
+        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),adminUsername, password).code
+
+        //update, delete image instance (simple user data)
+        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
+
+        //update, delete image instance (admin data)
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
+
+        //update, delete image instance (superadmin data)
+        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
+    }
+
+
+    // TODO
+    /*void testRestrictedProjectWithJobData() {
+        // Init dataset
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
+        //Add a simple project user
+        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
+        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //Add a project admin
+        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
+        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        // data
+        Software software = BasicInstanceBuilder.getSoftwareNotExist(true);
+        Job job = BasicInstanceBuilder.getJobNotExist(true, software, project)
+        JobData jobData = BasicInstanceBuilder.getJobDataNotExist(job)
+        BasicInstanceBuilder.saveDomain(jobData)
+
+
+        // Now Test as simple user
+
+
+        assert 200 == JobDataAPI.upload(jobData.id, new byte[5], simpleUsername, password).code
+        assert 200 == JobDataAPI.download(jobData.id, simpleUsername, password).code
+        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), simpleUsername, password).code
+
+        def result = JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),simpleUsername, password)
+        assert 200 == result.code
+        assert 200 == JobDataAPI.delete(result.data.id, simpleUsername, password).code
+
+        assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), simpleUsername, password).code
+        result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),simpleUsername, password)
+        assert 200 == result.code
+        assert 200 == JobAPI.delete(result.data.id, simpleUsername, password).code
+
+        result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),simpleUsername, password)
+        assert 200 == result.code
+        assert 200 == SoftwareProjectAPI.delete(result.data.id, simpleUsername, password).code
+
+
+        // Now run test as a project admin
+
+        assert 200 == JobDataAPI.upload(jobData.id, new byte[5], adminUsername, password).code
+        assert 200 == JobDataAPI.download(jobData.id, adminUsername, password).code
+        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), adminUsername, password).code
+
+        result = JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == JobDataAPI.delete(result.data.id, adminUsername, password).code
+
+        assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), adminUsername, password).code
+        result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == JobAPI.delete(result.data.id, adminUsername, password).code
+
+        result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == SoftwareProjectAPI.delete(result.data.id, adminUsername, password).code
+
+    }*/
+
+    void testReadOnlyProject() {
+        // Init dataset
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+        def testUsername = "testUser"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.READ_ONLY
+        BasicInstanceBuilder.saveDomain(project)
+
+        //Add a simple project user
+        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
+        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //Add a project admin
+        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
+        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //create user test
+        User test = BasicInstanceBuilder.getUser(testUsername,password)
+
+
+        // Test as a project admin
+
+        //update project
+        assert 200 == ProjectAPI.update(project.id,project.encodeAsJSON(),adminUsername, password).code
+        // add & delete users
+        assert 200 == ProjectAPI.addUserProject(project.id,test.id,adminUsername,password).code
+        assert 200 == ProjectAPI.deleteUserProject(project.id,test.id,adminUsername,password).code
+        // add & delete admins
+        assert 200 == ProjectAPI.addAdminProject(project.id,test.id,adminUsername,password).code
+        assert 200 == ProjectAPI.deleteAdminProject(project.id,test.id,adminUsername,password).code
+        // add & delete representatives
+        def refToAdd = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        refToAdd.project = project
+        def result = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password)
+        assert 200 == result.code
+        int idRef = result.data.id
+        assert 200 == ProjectRepresentativeUserAPI.delete(idRef, project.id, adminUsername,password).code
+
+        assert 200 == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+
+        // Test as simple user
+
+        //update project
+        assert 403 == ProjectAPI.update(project.id,project.encodeAsJSON(),simpleUsername, password).code
+        // add & delete users
+        assert 403 == ProjectAPI.addUserProject(project.id,test.id,simpleUsername,password).code
+        assert 200 == ProjectAPI.addUserProject(project.id,test.id,adminUsername,password).code
+        assert 403 == ProjectAPI.deleteUserProject(project.id,test.id,simpleUsername,password).code
+        // add & delete admins
+        assert 403 == ProjectAPI.addAdminProject(project.id,test.id,simpleUsername,password).code
+        assert 200 == ProjectAPI.addAdminProject(project.id,test.id,adminUsername,password).code
+        assert 403 == ProjectAPI.deleteAdminProject(project.id,test.id,simpleUsername,password).code
+        // add & delete representatives
+        refToAdd = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        refToAdd.project = project
+        assert 403 == ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), simpleUsername,password).code
+        idRef = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password).data.id
+        assert 403 == ProjectRepresentativeUserAPI.delete(idRef, project.id, simpleUsername,password).code
+
+        //TODO this
+        //assert ??? == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+    }
+
+    void testReadOnlyProjectWithImageDataAsContributor() {
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.READ_ONLY
+        BasicInstanceBuilder.saveDomain(project)
+
+        def data = initProjectDataSet(project, simpleUsername, adminUsername, password)
+
+        //super admin data
+        ImageInstance image = data.image
+        UserAnnotation annotation = data.annotation
+        Description description = data.description
+        Property property = data.property
+
+        //admin data
+        ImageInstance imageAdmin = data.imageAdmin
+        UserAnnotation annotationAdmin = data.annotationAdmin
+        Description descriptionAdmin = data.descriptionAdmin
+        Property propertyAdmin = data.propertyAdmin
+
+        //simple user data
+        ImageInstance imageUser = data.imageUser
+        UserAnnotation annotationUser = data.annotationUser
+        Description descriptionUser = data.descriptionUser
+        Property propertyUser = data.propertyUser
+
+
+        //add,update, delete property (simple user data)
+        assert 403 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),simpleUsername,password).code
+        assert 403 == PropertyAPI.update(propertyUser.id, propertyUser.domainIdent, "annotation" ,propertyUser.encodeAsJSON(), simpleUsername,password).code
+        assert 403 == PropertyAPI.delete(propertyUser.id, propertyUser.domainIdent, "annotation", simpleUsername, password).code
+
+        //add,update, delete property (admin data)
+        assert 403 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),simpleUsername,password).code
+        assert 403 == PropertyAPI.update(propertyAdmin.id, propertyAdmin.domainIdent, "annotation" ,propertyAdmin.encodeAsJSON(), simpleUsername,password).code
+        assert 403 == PropertyAPI.delete(propertyAdmin.id, propertyAdmin.domainIdent, "annotation", simpleUsername, password).code
+
+        //add,update, delete property (superadmin data)
+        assert 403 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),simpleUsername,password).code
+        assert 403 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), simpleUsername,password).code
+        assert 403 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", simpleUsername, password).code
+
+        //add, update, delete description (simple user data)
+        assert 403 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,simpleUsername, password).code
+        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),simpleUsername, password).code
+
+        //add, update, delete description (admin data)
+        assert 403 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,simpleUsername, password).code
+        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),simpleUsername, password).code
+
+        //add, update, delete description (super admin data)
+        assert 403 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,simpleUsername, password).code
+        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),simpleUsername, password).code
+
+        println "###"+image.id
+        //start reviewing image (simple user data)
+        assert 403 == ReviewedAnnotationAPI.markStartReview(imageUser.id,simpleUsername, password).code
+        //start reviewing image (admin data)
+        assert 403 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,simpleUsername, password).code
+        //start reviewing image (superadmin data)
+        assert 403 == ReviewedAnnotationAPI.markStartReview(image.id,simpleUsername, password).code
+
+        //add annotation
+        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
+
+        //update, delete annotation (simple user data)
+        assert 403 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.delete(annotationUser.id,simpleUsername, password).code
+
+        //update, delete annotation (admin data)
+        assert 403 == UserAnnotationAPI.update(annotationAdmin.id, annotationAdmin.encodeAsJSON(), simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.delete(annotationAdmin.id,simpleUsername, password).code
+
+        //update, delete annotation (super admin data)
+        assert 403 == UserAnnotationAPI.update(annotation.id, annotation.encodeAsJSON(), simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.delete(annotation.id,simpleUsername, password).code
+
+        //add image instance
+        assert 403 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
+
+        //update, delete image instance (simple user data)
+        assert 403 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
+
+        //update, delete image instance (admin data)
+        assert 403 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
+
+        //update, delete image instance (superadmin data)
+        assert 403 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == ImageInstanceAPI.delete(image, simpleUsername, password).code
+    }
+
+    void testReadOnlyProjectWithImageDataAsManager() {
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.READ_ONLY
+        BasicInstanceBuilder.saveDomain(project)
+
+
+        def data = initProjectDataSet(project, simpleUsername, adminUsername, password)
+
+        //super admin data
+        ImageInstance image = data.image
+        UserAnnotation annotation = data.annotation
+        Description description = data.description
+        Property property = data.property
+
+        //admin data
+        ImageInstance imageAdmin = data.imageAdmin
+        UserAnnotation annotationAdmin = data.annotationAdmin
+        Description descriptionAdmin = data.descriptionAdmin
+        Property propertyAdmin = data.propertyAdmin
+
+        //simple user data
+        ImageInstance imageUser = data.imageUser
+        UserAnnotation annotationUser = data.annotationUser
+        Description descriptionUser = data.descriptionUser
+        Property propertyUser = data.propertyUser
+
+
+        //add,update, delete property (simple user data)
+        assert 200 == PropertyAPI.create(annotationUser.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(propertyUser.id, propertyUser.domainIdent, "annotation" ,propertyUser.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyUser.id, propertyUser.domainIdent, "annotation", adminUsername, password).code
+
+        //add,update, delete property (admin data)
+        assert 200 == PropertyAPI.create(annotationAdmin.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(propertyAdmin.id, propertyAdmin.domainIdent, "annotation" ,propertyAdmin.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(propertyAdmin.id, propertyAdmin.domainIdent, "annotation", adminUsername, password).code
+
+        //add,update, delete property (superadmin data)
+        assert 200 == PropertyAPI.create(annotation.id, "annotation" ,BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,false).encodeAsJSON(),adminUsername,password).code
+        assert 200 == PropertyAPI.update(property.id, property.domainIdent, "annotation" ,property.encodeAsJSON(), adminUsername,password).code
+        assert 200 == PropertyAPI.delete(property.id, property.domainIdent, "annotation", adminUsername, password).code
+
+        //add, update, delete description (simple user data)
+        assert 200 == DescriptionAPI.update(descriptionUser.domainIdent,descriptionUser.domainClassName,descriptionUser.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),adminUsername, password).code
+
+        //add, update, delete description (admin data)
+        assert 200 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),adminUsername, password).code
+
+        //add, update, delete description (super admin data)
+        assert 200 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),adminUsername, password).code
+        assert 200 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,adminUsername, password).code
+        assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),adminUsername, password).code
+
+
+        println "###"+image.id
+        //start reviewing image (simple user data)
+        assert 200 == ReviewedAnnotationAPI.markStartReview(imageUser.id,adminUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStopReview(imageUser.id,adminUsername, password).code
+        //start reviewing image (admin data)
+        assert 200 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,adminUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStopReview(imageAdmin.id,adminUsername, password).code
+        //start reviewing image (superadmin data)
+        assert 200 == ReviewedAnnotationAPI.markStartReview(image.id,adminUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStopReview(image.id,adminUsername, password).code
+
+
+
+        //add annotation
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
+
+        //update, delete annotation (simple user data)
+        assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationUser.id,adminUsername, password).code
+
+        //update, delete annotation (admin data)
+        assert 200 == UserAnnotationAPI.update(annotationAdmin.id, annotationAdmin.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotationAdmin.id,adminUsername, password).code
+
+        //update, delete annotation (super admin data)
+        assert 200 == UserAnnotationAPI.update(annotation.id, annotation.encodeAsJSON(), adminUsername, password).code
+        assert 200 == UserAnnotationAPI.delete(annotation.id,adminUsername, password).code
+
+        //add image instance
+        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),adminUsername, password).code
+
+        //update, delete image instance (simple user data)
+        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
+
+        //update, delete image instance (admin data)
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
+
+        //update, delete image instance (superadmin data)
+        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
+    }
+
+    void testReadOnlyProjectWithJobData() {
+        // Init dataset
+
+        def simpleUsername = "simpleUserRO"
+        def adminUsername = "adminRO"
+        def password = "password"
+
+        //Create a project
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        //Force project to Read and write
+        project.mode = Project.EditingMode.READ_ONLY
+        BasicInstanceBuilder.saveDomain(project)
+
+        //Add a simple project user
+        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
+        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //Add a project admin
+        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
+        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        // data
+        Software software = BasicInstanceBuilder.getSoftwareNotExist(true);
+        Job job = BasicInstanceBuilder.getJobNotExist(true, software, project)
+        JobData jobData = BasicInstanceBuilder.getJobDataNotExist(job)
+        BasicInstanceBuilder.saveDomain(jobData)
+
+
+        // Now Test as simple user
+
+
+        assert 403 == JobDataAPI.upload(jobData.id, new byte[5], simpleUsername, password).code
+        JobDataAPI.upload(jobData.id, new byte[5], adminUsername, password)
+        assert 200 == JobDataAPI.download(jobData.id, simpleUsername, password).code
+        assert 403 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), simpleUsername, password).code
+
+        assert 403 == JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),simpleUsername, password).code
+        def result = JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),adminUsername, password)
+        assert 403 == JobDataAPI.delete(result.data.id, simpleUsername, password).code
+
+        assert 403 == JobAPI.update(job.id, job.encodeAsJSON(), simpleUsername, password).code
+        assert 403 == JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),simpleUsername, password).code
+        result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),adminUsername, password)
+        assert 403 == JobAPI.delete(result.data.id, simpleUsername, password).code
+
+        assert 403 == SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),simpleUsername, password).code
+        result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),adminUsername, password)
+        assert 403 == SoftwareProjectAPI.delete(result.data.id, simpleUsername, password).code
+
+
+        // Now run test as a project admin
+
+        assert 200 == JobDataAPI.upload(jobData.id, new byte[5], adminUsername, password).code
+        assert 200 == JobDataAPI.download(jobData.id, adminUsername, password).code
+        assert 200 == JobDataAPI.update(jobData.id, jobData.encodeAsJSON(), adminUsername, password).code
+
+        result = JobDataAPI.create(BasicInstanceBuilder.getJobDataNotExist(job).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == JobDataAPI.delete(result.data.id, adminUsername, password).code
+
+        assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), adminUsername, password).code
+        result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == JobAPI.delete(result.data.id, adminUsername, password).code
+
+        result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),adminUsername, password)
+        assert 200 == result.code
+        assert 200 == SoftwareProjectAPI.delete(result.data.id, adminUsername, password).code
+
+    }
+
+
+    private def initProjectDataSet(Project project, String simpleUsername, String adminUsername, String password){
+
+        def result = [:]
+        //Add a simple project user
+        User simpleUser = BasicInstanceBuilder.getUser(simpleUsername,password)
+        assert 200 == ProjectAPI.addUserProject(project.id,simpleUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+        //Add a project admin
+        User admin = BasicInstanceBuilder.getUser(adminUsername,password)
+        assert 200 == ProjectAPI.addAdminProject(project.id,admin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+
+        /*super admin data*/
+        //Create an annotation (by superadmin)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project,true)
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,true)
+        //Create a description
+        Description description = BasicInstanceBuilder.getDescriptionNotExist(annotation,true)
+        //Create a property
+        Property property = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotation,true)
+
+        result.image = image
+        result.annotation = annotation
+        result.description = description
+        result.property = property
+
+        /*admin data*/
+        //Create an annotation (by admin)
+        ImageInstance imageAdmin = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
+        imageAdmin.user = admin;
+        BasicInstanceBuilder.saveDomain(imageAdmin)
+        UserAnnotation annotationAdmin = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,false)
+        annotationAdmin.user = admin;
+        BasicInstanceBuilder.saveDomain(annotationAdmin)
+        //Create a description
+        Description descriptionAdmin = BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin,true)
+        //Create a property
+        Property propertyAdmin = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationAdmin,true)
+
+        result.imageAdmin = imageAdmin
+        result.annotationAdmin = annotationAdmin
+        result.descriptionAdmin = descriptionAdmin
+        result.propertyAdmin = propertyAdmin
+
+        /*simple user data*/
+        //Create an annotation (by user)
+        ImageInstance imageUser = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
+        imageUser.user = simpleUser;
+        BasicInstanceBuilder.saveDomain(imageUser)
+        UserAnnotation annotationUser = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,false)
+        annotationUser.user = simpleUser;
+        BasicInstanceBuilder.saveDomain(annotationUser)
+        //Create a description
+        Description descriptionUser = BasicInstanceBuilder.getDescriptionNotExist(annotationUser,true)
+        //Create a property
+        Property propertyUser = BasicInstanceBuilder.getAnnotationPropertyNotExist(annotationUser,true)
+
+        result.imageUser = imageUser
+        result.annotationUser = annotationUser
+        result.descriptionUser = descriptionUser
+        result.propertyUser = propertyUser
+
+        return result
     }
 
 }

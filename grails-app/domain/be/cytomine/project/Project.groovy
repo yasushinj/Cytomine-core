@@ -265,7 +265,7 @@ class Project extends CytomineDomain implements Serializable {
 
 
     boolean canUpdateContent() {
-        return !isReadOnly
+        return !mode.equals(EditingMode.READ_ONLY)
     }
 
 

@@ -149,7 +149,7 @@ class RestReviewedAnnotationController extends RestController {
             def response = [:]
 
             if (image) {
-                securityACLService.checkReadOnly(image.container())
+                securityACLService.checkisNotReadOnly(image.container())
                 image.reviewStart = new Date()
                 image.reviewUser = cytomineService.currentUser
                 reviewedAnnotationService.saveDomain(image)

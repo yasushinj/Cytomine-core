@@ -415,7 +415,7 @@ class ProjectService extends ModelService {
 
         //We don't delete domain, we juste change a flag
         securityACLService.check(domain.container(),ADMINISTRATION)
-        securityACLService.checkReadOnly(domain.container())
+        securityACLService.checkisNotReadOnly(domain.container())
         def jsonNewData = JSON.parse(domain.encodeAsJSON())
         jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()

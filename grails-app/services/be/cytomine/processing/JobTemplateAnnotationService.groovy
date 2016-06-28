@@ -93,7 +93,7 @@ class JobTemplateAnnotationService extends ModelService {
       */
      def delete(JobTemplateAnnotation domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
          securityACLService.check(domain.container(),READ)
-         securityACLService.checkReadOnly(domain.container())
+         securityACLService.checkisNotReadOnly(domain.container())
          SecUser currentUser = cytomineService.getCurrentUser()
          Command c = new DeleteCommand(user: currentUser,transaction:transaction)
          return executeCommand(c,domain,null)

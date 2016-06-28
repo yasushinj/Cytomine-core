@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest
 class RestJobDataController extends RestController {
 
     def jobDataService
+    def securityACLService
 
     /**
      * List all job data
@@ -119,6 +120,7 @@ class RestJobDataController extends RestController {
         log.info "Upload file = " + params.getLong('id')
 
         JobData jobData = jobDataService.read(params.getLong('id'))
+        securityACLService.checkEditingMode(jobData)
         JobDataBinaryValue value = new JobDataBinaryValue(jobData:jobData)
         jobDataService.saveDomain(value)
         jobData.value = value
