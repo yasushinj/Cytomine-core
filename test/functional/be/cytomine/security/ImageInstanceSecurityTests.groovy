@@ -100,6 +100,7 @@ class ImageInstanceSecurityTests extends SecurityTestsAbstract{
       //Get user1
       User user1 = getUser1()
       User user2 = getUser2()
+      User user3 = getUser3()
 
       //Get admin user
       User admin = getUserAdmin()
@@ -109,6 +110,9 @@ class ImageInstanceSecurityTests extends SecurityTestsAbstract{
       assert 200 == result.code
       Project project = result.data
       def resAddUser = ProjectAPI.addUserProject(project.id,user2.id,SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
+      Infos.printRight(project)
+      assert 200 == resAddUser.code
+      resAddUser = ProjectAPI.addUserProject(project.id,user3.id,SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
       Infos.printRight(project)
       assert 200 == resAddUser.code
 
@@ -125,7 +129,14 @@ class ImageInstanceSecurityTests extends SecurityTestsAbstract{
       assert 200 == result.code
       assert (true ==ImageInstanceAPI.containsInJSONList(image.id,JSON.parse(result.data)))
       //assert (200 == ImageInstanceAPI.update(image,USERNAME2,PASSWORD2).code)
-      assert (403 == ImageInstanceAPI.delete(image,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
+
+      project.mode = Project.EditingMode.CLASSIC
+      BasicInstanceBuilder.saveDomain(project)
+      assert (200 == ImageInstanceAPI.delete(image,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
+
+      project.mode = Project.EditingMode.RESTRICTED
+      BasicInstanceBuilder.saveDomain(project)
+      assert (403 == ImageInstanceAPI.delete(image,SecurityTestsAbstract.USERNAME3,SecurityTestsAbstract.PASSWORD3).code)
   }
 
   void testImageInstanceSecurityForSimpleUser() {

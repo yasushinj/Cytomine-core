@@ -120,7 +120,7 @@ class RestJobDataController extends RestController {
         log.info "Upload file = " + params.getLong('id')
 
         JobData jobData = jobDataService.read(params.getLong('id'))
-        securityACLService.checkEditingMode(jobData)
+        securityACLService.checkisNotReadOnly(jobData)
         JobDataBinaryValue value = new JobDataBinaryValue(jobData:jobData)
         jobDataService.saveDomain(value)
         jobData.value = value

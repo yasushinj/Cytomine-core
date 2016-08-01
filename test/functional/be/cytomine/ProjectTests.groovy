@@ -49,7 +49,7 @@ class ProjectTests  {
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
-        assert json.collection.length() == 0
+        int length = json.collection.length()
 
         def projectToAdd = BasicInstanceBuilder.getProjectNotExist()
         result = ProjectAPI.create(projectToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -60,7 +60,7 @@ class ProjectTests  {
 
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
-        assert json.collection.length() == 1
+        assert json.collection.length() == length+1
     }
 
     void testListProjectWithoutCredential() {

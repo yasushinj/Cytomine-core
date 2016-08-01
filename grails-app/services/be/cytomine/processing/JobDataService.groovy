@@ -175,7 +175,7 @@ class JobDataService extends ModelService {
      */
     def add(def json) {
         securityACLService.check(json.job, Job,"container",READ)
-        securityACLService.checkEditingMode(json.job, Job)
+        securityACLService.checkisNotReadOnly(json.job, Job)
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
@@ -188,7 +188,7 @@ class JobDataService extends ModelService {
      */
     def update(JobData jd, def jsonNewData) {
         securityACLService.check(jd.container(),READ)
-        securityACLService.checkEditingMode(jd)
+        securityACLService.checkisNotReadOnly(jd)
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new EditCommand(user: currentUser),jd,jsonNewData)
     }
@@ -204,7 +204,7 @@ class JobDataService extends ModelService {
     def delete(JobData domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),READ)
-        securityACLService.checkEditingMode(domain)
+        securityACLService.checkisNotReadOnly(domain)
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
     }

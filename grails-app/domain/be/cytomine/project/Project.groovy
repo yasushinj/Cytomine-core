@@ -190,6 +190,8 @@ class Project extends CytomineDomain implements Serializable {
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
         domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
         domain.isClosed = JSONUtils.getJSONAttrBoolean(json, 'isClosed', false)
+        domain.mode = EditingMode.CLASSIC;
+        if(JSONUtils.getJSONAttrBoolean(json, 'isRestricted', false)) domain.mode = EditingMode.RESTRICTED;
         if(JSONUtils.getJSONAttrBoolean(json, 'isReadOnly', false)) domain.mode = EditingMode.READ_ONLY;
 
         domain.hideUsersLayers = JSONUtils.getJSONAttrBoolean(json, 'hideUsersLayers', false)
@@ -231,10 +233,13 @@ class Project extends CytomineDomain implements Serializable {
         returnArray['retrievalDisable'] = domain?.retrievalDisable
         returnArray['retrievalAllOntology'] = domain?.retrievalAllOntology
         returnArray['isClosed'] = domain?.isClosed
+
+        returnArray['isReadOnly'] = false
+        returnArray['isRestricted'] = false
         if(domain.mode.equals(EditingMode.READ_ONLY)){
             returnArray['isReadOnly'] = true
-        } else {
-            returnArray['isReadOnly'] = false
+        } else if(domain.mode.equals(EditingMode.RESTRICTED)){
+            returnArray['isRestricted'] = true
         }
         returnArray['hideUsersLayers'] = domain?.hideUsersLayers
         returnArray['hideAdminsLayers'] = domain?.hideAdminsLayers

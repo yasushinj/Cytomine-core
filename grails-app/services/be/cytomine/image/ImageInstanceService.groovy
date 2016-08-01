@@ -369,6 +369,7 @@ class ImageInstanceService extends ModelService {
     def update(ImageInstance domain, def jsonNewData) {
         securityACLService.check(domain.container(),READ)
         securityACLService.check(jsonNewData.project,Project,READ)
+        securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
         securityACLService.checkisNotReadOnly(domain.container())
         securityACLService.checkisNotReadOnly(jsonNewData.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
@@ -392,7 +393,7 @@ class ImageInstanceService extends ModelService {
 //        return executeCommand(c,domain,null)
 
         //We don't delete domain, we juste change a flag
-        securityACLService.checkEditingMode(domain.container())
+        securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
         def jsonNewData = JSON.parse(domain.encodeAsJSON())
         jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()

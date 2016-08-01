@@ -152,16 +152,16 @@ class SecurityACLService {
         }
     }
 
-    void checkEditingMode(def id, Class className, String owner = null) {
-        checkEditingMode(id,className.getName(), owner)
+    void checkFullOrRestrictedForOwner(def id, Class className, String owner = null) {
+        checkFullOrRestrictedForOwner(id,className.getName(), owner)
     }
 
 
-    void checkEditingMode(def id, String className, String owner = null) {
+    void checkFullOrRestrictedForOwner(def id, String className, String owner = null) {
         try {
             def domain = Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
             if (domain) {
-                checkEditingMode(domain, owner ? domain."$owner" : null)
+                checkFullOrRestrictedForOwner(domain, owner ? domain."$owner" : null)
             } else {
                 throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
             }
@@ -171,7 +171,7 @@ class SecurityACLService {
 
     }
     //check if the container (e.g. Project) has the minimal editing mode or is Admin. If not, exception will be thown
-    void checkEditingMode(CytomineDomain domain, SecUser owner = null) {
+    void checkFullOrRestrictedForOwner(CytomineDomain domain, SecUser owner = null) {
         if (domain) {
             if(domain.container().hasACLPermission(domain.container(),ADMINISTRATION)) return;
             switch (domain.container().mode) {

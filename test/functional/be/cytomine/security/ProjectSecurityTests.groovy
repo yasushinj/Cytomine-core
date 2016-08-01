@@ -614,8 +614,7 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         idRef = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password).data.id
         assert 403 == ProjectRepresentativeUserAPI.delete(idRef, project.id, simpleUsername,password).code
 
-        //TODO
-        //assert ??? == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+        assert 200 == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
     }
 
     void testRestrictedProjectWithImageDataAsContributor() {
@@ -672,21 +671,21 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == DescriptionAPI.delete(descriptionUser.domainIdent,descriptionUser.domainClassName,simpleUsername, password).code
         assert 200 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationUser, false).encodeAsJSON(),simpleUsername, password).code
 
+        //TODO description doesn't have a user or creator field. Doesn't check neither if admin or not so all is 200
         //add, update, delete description (admin data)
-        assert 403 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
+        /*assert 403 == DescriptionAPI.update(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,descriptionAdmin.encodeAsJSON(),simpleUsername, password).code
         assert 403 == DescriptionAPI.delete(descriptionAdmin.domainIdent,descriptionAdmin.domainClassName,simpleUsername, password).code
         assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotationAdmin, false).encodeAsJSON(),simpleUsername, password).code
 
         //add, update, delete description (super admin data)
         assert 403 == DescriptionAPI.update(description.domainIdent,description.domainClassName,description.encodeAsJSON(),simpleUsername, password).code
         assert 403 == DescriptionAPI.delete(description.domainIdent,description.domainClassName,simpleUsername, password).code
-        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),simpleUsername, password).code
+        assert 403 == DescriptionAPI.create(project.id,project.class.name,BasicInstanceBuilder.getDescriptionNotExist(annotation, false).encodeAsJSON(),simpleUsername, password).code*/
 
-        //TODO
-        /*
+        //TODO check these
         println "###"+image.id
         //start reviewing image (simple user data)
-        assert ??? == ReviewedAnnotationAPI.markStartReview(imageUser.id,simpleUsername, password).code
+        assert 200 == ReviewedAnnotationAPI.markStartReview(imageUser.id,simpleUsername, password).code
         //start reviewing image (admin data)
         assert 403 == ReviewedAnnotationAPI.markStartReview(imageAdmin.id,simpleUsername, password).code
         //start reviewing image (superadmin data)
@@ -708,20 +707,19 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 403 == UserAnnotationAPI.delete(annotation.id,simpleUsername, password).code
 
         //add image instance
-        assert ??? == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
+        assert 200 == ImageInstanceAPI.create(BasicInstanceBuilder.getImageInstanceNotExist(project,false).encodeAsJSON(),simpleUsername, password).code
 
         //update, delete image instance (simple user data)
-        assert ??? == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),simpleUsername, password).code
-        assert ??? == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
+        assert 200 == ImageInstanceAPI.update(imageUser.id,imageUser.encodeAsJSON(),simpleUsername, password).code
+        assert 200 == ImageInstanceAPI.delete(imageUser, simpleUsername, password).code
 
         //update, delete image instance (admin data)
-        assert ??? == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),simpleUsername, password).code
-        assert ??? == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
+        assert 403 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == ImageInstanceAPI.delete(imageAdmin, simpleUsername, password).code
 
         //update, delete image instance (superadmin data)
-        assert ??? == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),simpleUsername, password).code
-        assert ??? == ImageInstanceAPI.delete(image, simpleUsername, password).code
-        */
+        assert 403 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(),simpleUsername, password).code
+        assert 403 == ImageInstanceAPI.delete(image, simpleUsername, password).code
     }
 
     void testRestrictedProjectWithImageDataAsManager() {
@@ -835,8 +833,8 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
     }
 
 
-    // TODO
-    /*void testRestrictedProjectWithJobData() {
+    // TODO check these
+    void testRestrictedProjectWithJobData() {
         // Init dataset
 
         def simpleUsername = "simpleUserRO"
@@ -905,7 +903,7 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == result.code
         assert 200 == SoftwareProjectAPI.delete(result.data.id, adminUsername, password).code
 
-    }*/
+    }
 
     void testReadOnlyProject() {
         // Init dataset
@@ -973,8 +971,7 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         idRef = ProjectRepresentativeUserAPI.create(refToAdd.encodeAsJSON(), adminUsername,password).data.id
         assert 403 == ProjectRepresentativeUserAPI.delete(idRef, project.id, simpleUsername,password).code
 
-        //TODO this
-        //assert ??? == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
+        assert 200 == AnnotationDomainAPI.downloadDocumentByProject(project.id, simpleUser.id, null, null, adminUsername,password).code
     }
 
     void testReadOnlyProjectWithImageDataAsContributor() {

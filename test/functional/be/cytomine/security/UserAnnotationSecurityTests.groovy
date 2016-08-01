@@ -182,11 +182,24 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
         assert 200 == result.code
         assert (true ==UserAnnotationAPI.containsInJSONList(annotation.id, JSON.parse(result.data)))
 
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
         //update annotation 1 with user 2
         assert (403 == UserAnnotationAPI.update(annotation.id,annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2).code)
 
         //Delete annotation 1 with user 2
         assert (403 == UserAnnotationAPI.delete(annotation.id, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2).code)
+
+        project.mode = Project.EditingMode.CLASSIC
+        BasicInstanceBuilder.saveDomain(project)
+
+        //update annotation 1 with user 2
+        assert (200 == UserAnnotationAPI.update(annotation.id,annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2).code)
+
+        //Delete annotation 1 with user 2
+        assert (200 == UserAnnotationAPI.delete(annotation.id, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2).code)
+
     }
 
 
