@@ -412,6 +412,7 @@ class SecUserService extends ModelService {
         if(domain.algo()) {
             Job job = ((UserJob)domain).job
             securityACLService.check(job?.container(),READ)
+            securityACLService.checkFullOrRestrictedForOwner(job, ((UserJob)domain).user)
         } else {
             securityACLService.checkAdmin(currentUser)
             securityACLService.checkIsNotSameUser(domain,currentUser)

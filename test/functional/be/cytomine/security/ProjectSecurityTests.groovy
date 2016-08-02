@@ -897,6 +897,12 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == JobAPI.update(job.id, job.encodeAsJSON(), adminUsername, password).code
         result = JobAPI.create(BasicInstanceBuilder.getJobNotExist(false, software, project).encodeAsJSON(),adminUsername, password)
         assert 200 == result.code
+
+        // begin test for simple user
+        assert 403 == JobAPI.delete(result.data.id, simpleUsername, password).code
+        assert 200 == JobAPI.show(result.data.id, simpleUsername, password).code
+        // end test for simple user
+
         assert 200 == JobAPI.delete(result.data.id, adminUsername, password).code
 
         result = SoftwareProjectAPI.create(BasicInstanceBuilder.getSoftwareProjectNotExist(software, project, false).encodeAsJSON(),adminUsername, password)
