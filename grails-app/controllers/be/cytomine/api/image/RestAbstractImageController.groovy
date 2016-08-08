@@ -28,9 +28,10 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.test.HttpClient
 import grails.converters.JSON
+import groovyx.net.http.HTTPBuilder
+import org.apache.commons.io.IOUtils
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
-
 import java.awt.image.BufferedImage
 
 /**
@@ -225,11 +226,39 @@ class RestAbstractImageController extends RestController {
     //TODO:APIDOC
     def crop() {
         log.info params
-        log.info params.queryString
+        log.info request.queryString
         log.info params.increaseArea
-        String url = abstractImageService.crop(params, request.queryString)
-        log.info "redirect $url"
-        redirect (url : url )
+        String redirection = abstractImageService.crop(params, request.queryString)
+
+        if(redirection.length()<2000){
+            log.info "redirect $redirection"
+            redirect (url : redirection )
+        } else {
+            URL url = new URL(redirection)
+
+            def postBody = [:]
+            for(String parameter : url.query.split("&")){
+                String[] tmp = parameter.split('=');
+                postBody.put(tmp[0], URLDecoder.decode(tmp[1]))
+            }
+
+            def http = new HTTPBuilder( "http://"+url.host)
+            http.post( path: url.path , requestContentType: groovyx.net.http.ContentType.URLENC,
+                    body : postBody) { resp,json ->
+
+                // response handler for a success response code:
+
+                byte[] bytesOut = IOUtils.toByteArray(resp.getEntity().getContent());
+                response.contentLength = bytesOut.length;
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                response.setHeader("Content-Type", "image/png")
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
+
+            }
+        }
+
     }
 
     //TODO:APIDOC

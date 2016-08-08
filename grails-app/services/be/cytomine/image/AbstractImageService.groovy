@@ -245,6 +245,24 @@ class AbstractImageService extends ModelService {
         return "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
     }
 
+    def getCropIMSUrl(params) {
+        AbstractImage abstractImage = read(params.id)
+        params.remove("id")
+        String imageServerURL = abstractImage.getRandomImageServerURL()
+        String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
+        String mimeType = abstractImage.mimeType
+        String url = "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType"
+
+        String query = params.collect { key, value ->
+            if (value instanceof String)
+                value = URLEncoder.encode(value, "UTF-8")
+            "$key=$value"
+        }.join("&")
+        url += "&$query"
+        url += "&resolution=${abstractImage.resolution}"
+        return url
+    }
+
     def window(def params, String queryString, Long width = null, Long height = null) {
         Long id = params.long('id')
         AbstractImage abstractImage = read(id)

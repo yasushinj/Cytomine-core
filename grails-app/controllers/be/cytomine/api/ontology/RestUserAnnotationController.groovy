@@ -30,6 +30,8 @@ import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
+import groovyx.net.http.HTTPBuilder
+import org.apache.commons.io.IOUtils
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
@@ -299,8 +301,39 @@ class RestUserAnnotationController extends RestController {
             responseNotFound("Annotation", params.id)
         } else {
             String url = annotation.toCropURL(params)
-            log.info "redirect to ${url}"
-            redirect (url : url)
+            if(url.length()<2000){
+                log.info "redirect to ${url}"
+                redirect (url : url)
+            } else {
+                def parameters = annotation.toCropParams(params)
+                url = abstractImageService.getCropIMSUrl(parameters)
+
+                //POST request
+                URL destination = new URL(url)
+
+                def postBody = [:]
+                for(String parameter : destination.query.split("&")){
+                    String[] tmp = parameter.split('=');
+                    postBody.put(tmp[0], URLDecoder.decode(tmp[1]))
+                }
+
+                def http = new HTTPBuilder( "http://"+destination.host)
+                log.info "URL too long "+url.length()+". Post request to ${destination.host}${destination.path}"
+                http.post( path: destination.path, requestContentType: groovyx.net.http.ContentType.URLENC,
+                        body : postBody) { resp,json ->
+
+                    // response handler for a success response code:
+
+                    byte[] bytesOut = IOUtils.toByteArray(resp.getEntity().getContent());
+                    response.contentLength = bytesOut.length;
+                    response.setHeader("Connection", "Keep-Alive")
+                    response.setHeader("Accept-Ranges", "bytes")
+                    response.setHeader("Content-Type", "image/png")
+                    response.getOutputStream() << bytesOut
+                    response.getOutputStream().flush()
+
+                }
+            }
         }
 
     }

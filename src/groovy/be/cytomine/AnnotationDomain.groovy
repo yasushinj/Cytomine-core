@@ -298,9 +298,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def toCropParams(params=[:]) {
-        def parameters = [:]
         def boundaries = retrieveCropParams(params)
-        parameters = boundaries
+        def parameters = boundaries
         parameters.id = image.baseImage.id
         return parameters
     }
