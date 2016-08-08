@@ -339,8 +339,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
             boundaries.point = true
         }
 
-
-        if (boundaries.location) {
+        boolean complete = Boolean.parseBoolean(params.complete)
+        if (boundaries.location && !complete) {
             //limit the size (text) for the geometry (url max lenght)
             boundaries.location = simplifyGeometryService.simplifyPolygonTextSize(boundaries.location)
         }
