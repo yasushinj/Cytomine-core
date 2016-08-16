@@ -17,7 +17,7 @@
 var ProjectUsersTotalActivitiesView = Backbone.View.extend({
     activities : [],
     initialize: function () {
-        this.activities.push({name : "Connexions",  url : "api/project/" + this.model.get('id') + "/usersActivity.json", property : "frequency", panel : null});
+        this.activities.push({name : "Connections",  url : "api/project/" + this.model.get('id') + "/usersActivity.json", property : "frequency", panel : null});
         this.activities.push({name : "Annotations", url : "api/project/" + this.model.get('id') + "/stats/user.json", property : "value", panel : null});
     },
     render: function () {

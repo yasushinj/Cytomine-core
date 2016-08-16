@@ -186,7 +186,7 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip .html(d.value + " Connexions")
+                    tooltip .html(d.value + " Connections")
                         .style("left", (d3.event.pageX) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                 })
