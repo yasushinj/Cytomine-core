@@ -32,9 +32,6 @@ class UserPositionUrlMappings {
         "/api/imageinstance/$image/positions.$format" (controller : "restUserPosition") {
             action = [GET:"list"]
         }
-        "/api/imageinstance/$image/positions/total.$format" (controller : "restUserPosition") {
-            action = [GET:"summarize"]
-        }
         "/api/imageinstance/$id/online.$format"(controller: "restUserPosition"){
             action = [GET:"listOnlineUsersByImage"]
         }

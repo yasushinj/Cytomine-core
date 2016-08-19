@@ -37,25 +37,25 @@ class UserPositionAPI extends DomainAPI {
     }
 
     static def listByImage(Long idImage, String username, String password, Long afterThan = null) {
-        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json"
-        if(afterThan) URL += "?afterThan=$afterThan"
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json?showDetails=true"
+        if(afterThan) URL += "&afterThan=$afterThan"
         return doGET(URL, username, password)
     }
 
     static def listByImageAndUser(Long idImage,Long idUser, String username, String password, Long afterThan = null) {
-        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json?user=$idUser"
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json?user=$idUser&showDetails=true"
         if(afterThan) URL += "&afterThan=$afterThan"
         return doGET(URL, username, password)
     }
 
     static def summarizeByImage(Long idImage,String username, String password, Long afterThan = null) {
-        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions/total.json"
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json"
         if(afterThan) URL += "?afterThan=$afterThan"
         return doGET(URL, username, password)
     }
 
     static def summarizeByImageAndUser(Long idImage,Long idUser, String username, String password, Long afterThan = null) {
-        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions/total.json?user=$idUser"
+        String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/positions.json?user=$idUser"
         if(afterThan) URL += "&afterThan=$afterThan"
         return doGET(URL, username, password)
     }

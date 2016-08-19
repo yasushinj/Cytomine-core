@@ -75,30 +75,24 @@ class RestUserPositionController extends RestController {
         responseSuccess(userPositionService.lastPositionByUser(image, user))
     }
 
-    @RestApiMethod(description="List the UserPosition entries.")
-    @RestApiParams(params=[
-            @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
-            @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "The user id (Optional)"),
-            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "A date. Will select all the entries created after this date. (Optional)"),
-    ])
-    def list() {
-        ImageInstance image = imageInstanceService.read(params.image)
-        User user = secUserService.read(params.user)
-        Long afterThan = params.long("afterThan")
-        responseSuccess(userPositionService.list(image, user, afterThan))
-    }
-
     @RestApiMethod(description="Summarize the UserPosition entries.")
     @RestApiParams(params=[
             @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
             @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "The user id (Optional)"),
             @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "A date. Will select all the entries created after this date. (Optional)"),
+            @RestApiParam(name="showDetails", type="boolean", paramType = RestApiParamType.QUERY, description = "Optional. If true, will give the complete list"),
     ])
-    def summarize() {
+    def list() {
         ImageInstance image = imageInstanceService.read(params.image)
         User user = secUserService.read(params.user)
         Long afterThan = params.long("afterThan")
-        responseSuccess(userPositionService.summarize(image, user, afterThan))
+        if(params.getBoolean("showDetails")){
+            println "LISSTTTT"
+            responseSuccess(userPositionService.list(image, user, afterThan))
+        } else {
+            println "SUMMARY"
+            responseSuccess(userPositionService.summarize(image, user, afterThan))
+        }
     }
 
     @RestApiMethod(description="Get users that have opened an image recently.")

@@ -142,10 +142,13 @@
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardConfig.js"/>
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardUsersConfig.js"/>
 <fileset dir="${src.dir}" includes="application/views/dashboard/ProjectDashboardProperties.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/GraphView.js"/>
 <fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersTotalActivitiesView.js"/>
 <fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersTotalActivitiesGraph.js"/>
 <fileset dir="${src.dir}" includes="application/views/graph/ProjectUsersHeatmapView.js"/>
 <fileset dir="${src.dir}" includes="application/views/graph/HistogramActivitiesChart.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/AverageConnexionsGraphsView.js"/>
+<fileset dir="${src.dir}" includes="application/views/graph/LastConnexionsGraphsView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobListingView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobComparatorView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobSelectionView.js"/>
