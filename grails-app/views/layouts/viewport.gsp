@@ -254,10 +254,13 @@ body {
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
 
+<script type="text/javascript" src="application/views/graph/GraphView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
 <script type="text/javascript" src="application/views/graph/HistogramActivitiesChart.js" ></script>
+<script type="text/javascript" src="application/views/graph/AverageConnexionsGraphsView.js" ></script>
+<script type="text/javascript" src="application/views/graph/LastConnexionsGraphsView.js" ></script>
 
 <script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>
 <script type="text/javascript" src="application/views/processing/JobComparatorView.js" ></script>

@@ -1,10 +1,14 @@
 var HistogramActivitiesChart = Backbone.View.extend({
     data : null,
+    chart : null,
     initialize: function () {
         this.format = this.options.format;
         this.period = this.options.period;
         this.url = this.options.url;
         this.enableTooltip = this.options.enableTooltip;
+    },
+    resize: function() {
+        this.chart.update()
     },
     render: function () {
         var self = this;
@@ -23,7 +27,7 @@ var HistogramActivitiesChart = Backbone.View.extend({
                     self.enableTooltip = false;
                 }
 
-                var chart = nv.models.discreteBarChart()
+                self.chart = nv.models.discreteBarChart()
                         .x(function (d) {
                             return d.label;
                         })    //Specify the data accessors.
@@ -57,11 +61,12 @@ var HistogramActivitiesChart = Backbone.View.extend({
                     .append("div")
                     .append("svg")
                     .datum(parseData())
-                    .call(chart);
+                    .call(self.chart);
 
-                nv.utils.windowResize(chart.update);
 
-                return chart;
+                nv.utils.windowResize(self.chart.update);
+
+                return self.chart;
             });
             //Each bar represents a single discrete quantity.
             function parseData() {

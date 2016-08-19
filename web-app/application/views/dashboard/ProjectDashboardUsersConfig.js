@@ -320,12 +320,14 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         if (this.statsUsersGlobalActivitiesView == null) {
             this.statsUsersGlobalActivitiesView = new ProjectUsersTotalActivitiesView({
                 model: self.model,
+                title : "Activities of contributors",
                 el: $(self.el).find("#UsersGlobalActivities"+self.model.id)
             });
         }
         if (this.statsUsersHeatmapView == null) {
             this.statsUsersHeatmapView = new ProjectUsersHeatmapView({
                 model: self.model,
+                title : "Heatmap of contributor connections",
                 el: $(self.el).find("#UsersActivitiesHeatmap"+self.model.id)
             });
         }
@@ -335,10 +337,12 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
 
         new LastConnexionsGraphsView({
             project : self.model.id,
+            title : "Last Connections",
             el: $(self.el).find("#LastConnections-"+self.model.id)
         }).render();
         new AverageConnexionsGraphsView({
             project : self.model.id,
+            title : "Average Connections",
             el: $(self.el).find("#avgConnections-"+self.model.id)}).render();
 
 

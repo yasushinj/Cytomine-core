@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-var ProjectUsersHeatmapView = Backbone.View.extend({
-    initialize: function () {
-        $(window).on("resize", _.debounce(_.bind(this.resize, this), 100));
-    },
-    resize: function () {
-        var chart = $(".heatmap"),
-            aspect = chart.width() / chart.height(),
-            container = chart.parent();
-        var targetWidth = container.width();
-        var margin = 0;
-        chart.attr("width", targetWidth-2*margin);
-        chart.attr("height", Math.round((targetWidth-margin) / aspect));
+var ProjectUsersHeatmapView = GraphView.extend({
+    initialize: function (options) {
+        this.constructor.__super__.initialize.apply(this,[options]);
     },
     render: function () {
+        this.constructor.__super__.render.apply(this);
         var self = this;
 
         var margin = { top: 30, right: 0, bottom: 100, left: 30 },
@@ -40,12 +32,13 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
             days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
             times = ["0a", "1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p"];
 
-        var svg = d3.select(this.el).append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+        var svg = d3.select(this.el)
+            .append("div")
+            .classed("svg-container", true) //container class to make it responsive
+            .append("svg")
+            .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox","0 0 960 430")
-            .attr("perserveAspectRatio","xMinYMid")
-            .attr("class", "heatmap")
+            .classed("heatmap", true)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -227,6 +220,5 @@ var ProjectUsersHeatmapView = Backbone.View.extend({
 
             legend.exit().remove();
         });
-        $(window).trigger('resize');
     }
 });
