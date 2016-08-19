@@ -142,9 +142,14 @@ class PropertyService extends ModelService {
         } else {
             domain = Class.forName(domainClass, false, Thread.currentThread().contextClassLoader).read(JSONUtils.getJSONAttrLong(json,'domainIdent',0))
         }
+
         if (domain != null && !domain.class.name.contains("AbstractImage")) {
             securityACLService.check(domain.container(),READ)
-            securityACLService.checkReadOnly(domain.container())
+            if (domain.hasProperty('user') && domain.user) {
+                securityACLService.checkFullOrRestrictedForOwner(domain, domain.user)
+            } else {
+                securityACLService.checkisNotReadOnly(domain)
+            }
         }
 
         SecUser currentUser = cytomineService.getCurrentUser()
@@ -161,7 +166,11 @@ class PropertyService extends ModelService {
     def update(Property ap, def jsonNewData) {
         if(!ap.domainClassName.contains("AbstractImage")) {
             securityACLService.check(ap.container(),READ)
-            securityACLService.checkReadOnly(ap.container())
+            if (ap.retrieveCytomineDomain().hasProperty('user') && ap.retrieveCytomineDomain().user) {
+                securityACLService.checkFullOrRestrictedForOwner(ap, ap.retrieveCytomineDomain().user)
+            } else {
+                securityACLService.checkisNotReadOnly(ap)
+            }
         }
 
         SecUser currentUser = cytomineService.getCurrentUser()
@@ -181,7 +190,11 @@ class PropertyService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         if(!domain.domainClassName.contains("AbstractImage")) {
             securityACLService.check(domain.container(),READ)
-            securityACLService.checkReadOnly(domain.container())
+            if (domain.retrieveCytomineDomain().hasProperty('user') && domain.retrieveCytomineDomain().user) {
+                securityACLService.checkFullOrRestrictedForOwner(domain, domain.retrieveCytomineDomain().user)
+            } else {
+                securityACLService.checkisNotReadOnly(domain)
+            }
         }
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)

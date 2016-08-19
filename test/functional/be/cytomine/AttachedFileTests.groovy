@@ -93,7 +93,7 @@ class AttachedFileTests {
 
       //create a project in r/o
       Project project = BasicInstanceBuilder.getProjectNotExist()
-      project.isReadOnly = true
+      project.mode = Project.EditingMode.READ_ONLY
       BasicInstanceBuilder.saveDomain(project)
 
       //add an annotation to project

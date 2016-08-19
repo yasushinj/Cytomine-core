@@ -30,6 +30,11 @@ import org.restapidoc.annotation.RestApiObjectFields
  */
 @RestApiObject(name = "project", description="A project is the main cytomine domain, its a workspace to store images, annotations,...")
 class Project extends CytomineDomain implements Serializable {
+
+    static enum EditingMode {
+        CLASSIC, RESTRICTED, READ_ONLY
+    }
+
     /**
      * Project name
      */
@@ -93,14 +98,14 @@ class Project extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "If true, project is closed",mandatory = false)
     boolean isClosed = false
 
-    @RestApiObjectField(description = "If true, project is in read only mode",mandatory = false)
-    boolean isReadOnly = false
-
     @RestApiObjectField(description = "If true, an user (which is not an administrator of the project) cannot see others users layers",mandatory = false)
     boolean hideUsersLayers = false
 
     @RestApiObjectField(description = "If true, an user (which is not an administrator of the project) cannot see admins layers", mandatory = false)
     boolean hideAdminsLayers = false
+
+    @RestApiObjectField(description = "Editing mode of the current project (read_only, restricted or classic)", mandatory = true)
+    EditingMode mode = EditingMode.CLASSIC;
 
     @RestApiObjectFields(params=[
         @RestApiObjectField(apiFieldName = "users", description = "Users id that will be in the project",allowedType = "list",useForCreation = true, presentInResponse = false),
@@ -185,7 +190,9 @@ class Project extends CytomineDomain implements Serializable {
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
         domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
         domain.isClosed = JSONUtils.getJSONAttrBoolean(json, 'isClosed', false)
-        domain.isReadOnly = JSONUtils.getJSONAttrBoolean(json, 'isReadOnly', false)
+        domain.mode = EditingMode.CLASSIC;
+        if(JSONUtils.getJSONAttrBoolean(json, 'isRestricted', false)) domain.mode = EditingMode.RESTRICTED;
+        if(JSONUtils.getJSONAttrBoolean(json, 'isReadOnly', false)) domain.mode = EditingMode.READ_ONLY;
 
         domain.hideUsersLayers = JSONUtils.getJSONAttrBoolean(json, 'hideUsersLayers', false)
         domain.hideAdminsLayers = JSONUtils.getJSONAttrBoolean(json, 'hideAdminsLayers', false)
@@ -226,7 +233,14 @@ class Project extends CytomineDomain implements Serializable {
         returnArray['retrievalDisable'] = domain?.retrievalDisable
         returnArray['retrievalAllOntology'] = domain?.retrievalAllOntology
         returnArray['isClosed'] = domain?.isClosed
-        returnArray['isReadOnly'] = domain?.isReadOnly
+
+        returnArray['isReadOnly'] = false
+        returnArray['isRestricted'] = false
+        if(domain.mode.equals(EditingMode.READ_ONLY)){
+            returnArray['isReadOnly'] = true
+        } else if(domain.mode.equals(EditingMode.RESTRICTED)){
+            returnArray['isRestricted'] = true
+        }
         returnArray['hideUsersLayers'] = domain?.hideUsersLayers
         returnArray['hideAdminsLayers'] = domain?.hideAdminsLayers
 
@@ -256,7 +270,7 @@ class Project extends CytomineDomain implements Serializable {
 
 
     boolean canUpdateContent() {
-        return !isReadOnly
+        return !mode.equals(EditingMode.READ_ONLY)
     }
 
 

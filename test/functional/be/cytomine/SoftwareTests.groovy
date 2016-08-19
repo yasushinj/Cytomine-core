@@ -19,6 +19,7 @@ package be.cytomine
 import be.cytomine.processing.Software
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
+import be.cytomine.test.http.JobAPI
 import be.cytomine.test.http.SoftwareAPI
 import be.cytomine.test.http.SoftwareParameterAPI
 import be.cytomine.test.http.SoftwareProjectAPI
@@ -121,18 +122,37 @@ class SoftwareTests  {
          def result = SoftwareAPI.update(softwareToAdd.id, jsonSoftware, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
          assert 400 == result.code
      }
- 
-   void testDeleteSoftware() {
-       def softwareToDelete = BasicInstanceBuilder.getSoftwareNotExist(true)
-       def id = softwareToDelete.id
-       def result = SoftwareAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       assert 200 == result.code
- 
-       def showResult = SoftwareAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       assert 404 == showResult.code
-   }
- 
-   void testDeleteSoftwareNotExist() {
+
+    void testDeleteSoftware() {
+        def softwareToDelete = BasicInstanceBuilder.getSoftwareNotExist(true)
+        def id = softwareToDelete.id
+        def result = SoftwareAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        def showResult = SoftwareAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == showResult.code
+    }
+
+    void testDeleteDependencySoftware() {
+        def softwareToDelete = BasicInstanceBuilder.getSoftwareNotExist(true)
+        def id = softwareToDelete.id
+
+        def job = BasicInstanceBuilder.getJobNotExist(true, softwareToDelete)
+
+        def result = JobAPI.show(job.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = SoftwareAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = SoftwareAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+
+        result = JobAPI.show(job.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
+
+    void testDeleteSoftwareNotExist() {
        def result = SoftwareAPI.delete(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
        assert 404 == result.code
    }

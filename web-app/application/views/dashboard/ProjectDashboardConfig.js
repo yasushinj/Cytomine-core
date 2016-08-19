@@ -166,7 +166,13 @@ var GeneralConfigPanel = Backbone.View.extend({
         $(self.el).find("input#blindMode-checkbox-config").attr('checked', self.model.get('blindMode'));
         $(self.el).find("input#hideUsersLayers-checkbox-config").attr('checked', self.model.get('hideUsersLayers'));
         $(self.el).find("input#hideAdminsLayers-checkbox-config").attr('checked', self.model.get('hideAdminsLayers'));
-        $(self.el).find("input#isReadOnly-checkbox-config").attr('checked', self.model.get('isReadOnly'));
+        if(self.model.get('isReadOnly')) {
+            $(self.el).find("input#EditingModeReadOnly-radio-config").attr('checked', 'checked');
+        } else if(self.model.get('isRestricted')) {
+            $(self.el).find("input#EditingModeRestricted-radio-config").attr('checked', 'checked');
+        } else {
+            $(self.el).find("input#EditingModeFull-radio-config").attr('checked', 'checked');
+        }
 
 
         new ProjectCollection().fetch({
@@ -214,6 +220,9 @@ var GeneralConfigPanel = Backbone.View.extend({
             }
         });
 
+        $(self.el).find("input#EditingModeFull-radio-config,input#EditingModeRestricted-radio-config,input#EditingModeReadOnly-radio-config").change(function () {
+            self.update();
+        });
 
 
         $(self.el).on('click', '.general-checkbox-config', function() {
@@ -272,9 +281,11 @@ var GeneralConfigPanel = Backbone.View.extend({
         var project = self.model;
 
         var blindMode = $(self.el).find("input#blindMode-checkbox-config").is(':checked');
-        var isReadOnly = $(self.el).find("input#isReadOnly-checkbox-config").is(':checked');
         var hideUsersLayers = $(self.el).find("input#hideUsersLayers-checkbox-config").is(':checked');
         var hideAdminsLayers = $(self.el).find("input#hideAdminsLayers-checkbox-config").is(':checked');
+
+        var isRestricted = $(self.el).find("input#EditingModeRestricted-radio-config").is(':checked');
+        var isReadOnly = $(self.el).find("input#EditingModeReadOnly-radio-config").is(':checked');
 
         var retrievalDisable = $(self.el).find("input#retrievalProjectNone-radio-config").is(':checked');
         var retrievalProjectAll = $(self.el).find("input#retrievalProjectAll-radio-config").is(':checked');
@@ -288,9 +299,9 @@ var GeneralConfigPanel = Backbone.View.extend({
         name = changeName ? $(self.el).find("#project-edit-name").val() : self.model.get('name');
 
         project.set({name: name, retrievalDisable: retrievalDisable, retrievalAllOntology: retrievalProjectAll, retrievalProjects: self.projectRetrieval,
-            blindMode:blindMode,isReadOnly:isReadOnly,hideUsersLayers:hideUsersLayers,hideAdminsLayers:hideAdminsLayers});
+            blindMode:blindMode,isReadOnly:isReadOnly,isRestricted:isRestricted,hideUsersLayers:hideUsersLayers,hideAdminsLayers:hideAdminsLayers});
         project.save({name: name, retrievalDisable: retrievalDisable, retrievalAllOntology: retrievalProjectAll, retrievalProjects: self.projectRetrieval,
-            blindMode:blindMode,isReadOnly:isReadOnly,hideUsersLayers:hideUsersLayers,hideAdminsLayers:hideAdminsLayers}, {
+            blindMode:blindMode,isReadOnly:isReadOnly,isRestricted:isRestricted,hideUsersLayers:hideUsersLayers,hideAdminsLayers:hideAdminsLayers}, {
             success: function (model, response) {
                 console.log("1. Project edited!");
                 window.app.view.message("Project", response.message, "success");

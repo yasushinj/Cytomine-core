@@ -118,16 +118,16 @@ class SecurityACLService {
     }
 
 
-    void checkReadOnly(def id, Class className) {
-        checkReadOnly(id,className.getName())
+    void checkisNotReadOnly(def id, Class className) {
+        checkisNotReadOnly(id,className.getName())
     }
 
 
-    void checkReadOnly(def id, String className) {
+    void checkisNotReadOnly(def id, String className) {
         try {
             def domain = Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
             if (domain) {
-                checkReadOnly(domain)
+                checkisNotReadOnly(domain)
             } else {
                 throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
             }
@@ -139,7 +139,7 @@ class SecurityACLService {
 
 
     //check if the container (e.g. Project) is not in readonly. If in readonly, only admins can edit this.
-    void checkReadOnly(CytomineDomain domain) {
+    void checkisNotReadOnly(CytomineDomain domain) {
         if (domain) {
             boolean readOnly = !domain.container().canUpdateContent()
             boolean containerAdmin = domain.container().hasACLPermission(domain.container(),ADMINISTRATION)
@@ -147,6 +147,51 @@ class SecurityACLService {
                 throw new ForbiddenException("The project for this data is in readonly mode! You must be project manager to add, edit or delete this resource in a readonly project.")
             }
 
+        } else {
+            throw new ObjectNotFoundException("ACL error: domain is null! Unable to process project auth checking")
+        }
+    }
+
+    void checkFullOrRestrictedForOwner(def id, Class className, String owner = null) {
+        checkFullOrRestrictedForOwner(id,className.getName(), owner)
+    }
+
+
+    void checkFullOrRestrictedForOwner(def id, String className, String owner = null) {
+        try {
+            def domain = Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
+            if (domain) {
+                checkFullOrRestrictedForOwner(domain, owner ? domain."$owner" : null)
+            } else {
+                throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
+            }
+        } catch(IllegalArgumentException ex) {
+            throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
+        }
+
+    }
+    //check if the container (e.g. Project) has the minimal editing mode or is Admin. If not, exception will be thown
+    void checkFullOrRestrictedForOwner(CytomineDomain domain, SecUser owner = null) {
+        if (domain) {
+            if(domain.container().hasACLPermission(domain.container(),ADMINISTRATION)) return;
+            switch (domain.container().mode) {
+                case Project.EditingMode.CLASSIC :
+                    return;
+                case Project.EditingMode.RESTRICTED :
+                    if(owner) {
+                        if (owner.id!=cytomineService.currentUser.id) {
+                            throw new ForbiddenException("You don't have the right to do this. You must be the creator or the container admin")
+                        }
+                    } else {
+                        throw new ForbiddenException("The project for this data is in "+domain.container().mode.name()+" mode! You must be project manager to add, edit or delete this resource.")
+                    }
+                    break;
+                case Project.EditingMode.READ_ONLY :
+                    throw new ForbiddenException("The project for this data is in "+domain.container().mode.name()+" mode! You must be project manager to add, edit or delete this resource.")
+                default :
+                    throw new ObjectNotFoundException("ACL error: project editing mode is unknown! Unable to process project auth checking")
+
+            }
         } else {
             throw new ObjectNotFoundException("ACL error: domain is null! Unable to process project auth checking")
         }

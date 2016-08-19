@@ -43,12 +43,12 @@ class NoSQLCollectionService {
     public def cleanActivityDB() {
         log.info "Clean data from "+ getDatabaseName()
         def db = mongo.getDB(getDatabaseName())
-        db.persistentConnection.drop()
-        db.lastConnection.drop()
-        db.persistentUserPosition.drop()
+        db.annotationAction.drop()
         db.lastUserPosition.drop()
-        db.persistentProjectConnection.drop()
+        db.persistentConnection.drop()
         db.persistentImageConsultation.drop()
+        db.persistentProjectConnection.drop()
+        db.persistentUserPosition.drop()
     }
 
 

@@ -63,7 +63,11 @@ class DescriptionService extends ModelService {
      */
     def add(def json) {
         securityACLService.check(json.domainIdent,json.domainClassName,READ)
-        securityACLService.checkReadOnly(json.domainIdent,json.domainClassName)
+        if(!json.domainClassName.equals("be.cytomine.project.Project")){
+            securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,json.domainClassName, "user")
+        } else {
+            securityACLService.checkisNotReadOnly(json.domainIdent,json.domainClassName)
+        }
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
@@ -76,7 +80,11 @@ class DescriptionService extends ModelService {
      */
     def update(Description description, def jsonNewData) {
         securityACLService.check(description.container(),READ)
-        securityACLService.checkReadOnly(description.container())
+        if(!description.domainClassName.equals("be.cytomine.project.Project")){
+            securityACLService.checkFullOrRestrictedForOwner(description.domainIdent,description.domainClassName, "user")
+        } else {
+            securityACLService.checkisNotReadOnly(description)
+        }
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new EditCommand(user: currentUser), description,jsonNewData)
     }
@@ -92,7 +100,11 @@ class DescriptionService extends ModelService {
     def delete(Description domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),READ)
-        securityACLService.checkReadOnly(domain.container())
+        if (domain.hasProperty('user') && domain.user) {
+            securityACLService.checkFullOrRestrictedForOwner(domain,domain.user)
+        } else {
+            securityACLService.checkisNotReadOnly(domain)
+        }
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
     }

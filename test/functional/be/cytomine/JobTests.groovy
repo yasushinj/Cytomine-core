@@ -26,6 +26,7 @@ import be.cytomine.security.UserJob
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.JobAPI
+import be.cytomine.test.http.JobDataAPI
 import be.cytomine.test.http.TaskAPI
 import be.cytomine.utils.UpdateData
 import grails.converters.JSON
@@ -138,11 +139,19 @@ class JobTests  {
         def jobToDelete = BasicInstanceBuilder.getJobNotExist()
         assert jobToDelete.save(flush: true)!= null
         def id = jobToDelete.id
-        def result = JobAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        def jobData = BasicInstanceBuilder.getJobDataNotExist(jobToDelete)
+        def result = JobDataAPI.show(jobData.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = JobAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         def showResult = JobAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == showResult.code
+
+        result = JobDataAPI.show(jobData.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
     }
 
     void testDeleteJobNotExist() {
