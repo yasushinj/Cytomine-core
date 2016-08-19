@@ -65,6 +65,10 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
+    void init20160819(){
+        new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255);")
+    }
+
     void init20160503(){
         bootstrapUtilsService.convertMimeTypes();
     }

@@ -46,7 +46,7 @@ import java.awt.image.BufferedImage
  * Date: 18/05/11
  * Controller that handle request for project images.
  */
-@RestApi(name = "image instance services", description = "Methods for managing an abstract image in a project")
+@RestApi(name = "image instance services", description = "Methods for managing an image instance : abstract image linked to a project")
 class RestImageInstanceController extends RestController {
 
     def imageProcessingService

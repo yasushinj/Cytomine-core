@@ -22,6 +22,7 @@ import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
@@ -31,6 +32,7 @@ import org.restapidoc.pojo.RestApiParamType
  * Controller for user position
  * Position of the user (x,y) on an image for a time
  */
+@RestApi(name = "user position services", description = "Methods for managing user positions in an image")
 class RestUserPositionController extends RestController {
 
     def cytomineService

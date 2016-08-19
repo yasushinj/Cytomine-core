@@ -236,9 +236,9 @@ class Project extends CytomineDomain implements Serializable {
 
         returnArray['isReadOnly'] = false
         returnArray['isRestricted'] = false
-        if(domain.mode.equals(EditingMode.READ_ONLY)){
+        if(domain?.mode.equals(EditingMode.READ_ONLY)){
             returnArray['isReadOnly'] = true
-        } else if(domain.mode.equals(EditingMode.RESTRICTED)){
+        } else if(domain?.mode.equals(EditingMode.RESTRICTED)){
             returnArray['isRestricted'] = true
         }
         returnArray['hideUsersLayers'] = domain?.hideUsersLayers
