@@ -25,6 +25,7 @@ import be.cytomine.security.User
 import be.cytomine.utils.Version
 import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
+import org.postgresql.util.PSQLException
 
 /**
  * Cytomine @ GIGA-ULG
@@ -66,7 +67,14 @@ class BootstrapOldVersionService {
     }
 
     void init20160819(){
-        new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255);")
+
+        boolean exists = new Sql(dataSource).rows("SELECT column_name "+
+                "FROM information_schema.columns "+
+                "WHERE table_name='project' and column_name='mode';").size() == 1;
+        if(!exists){
+            new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255);")
+        }
+
     }
 
     void init20160503(){
