@@ -141,6 +141,8 @@ class JobTests  {
         def id = jobToDelete.id
 
         def jobData = BasicInstanceBuilder.getJobDataNotExist(jobToDelete)
+        assert jobData.save(flush: true)!= null
+
         def result = JobDataAPI.show(jobData.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
