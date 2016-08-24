@@ -53,6 +53,11 @@ class StatsUrlMappings {
             action = [GET:"totalNumberOfConnectionsByProject"]
         }
 
+        //image server
+        "/api/stats/imageserver/total.$format"(controller:"stats") {
+            action = [GET:"statUsedStorage"]
+        }
+
         //retrieval
         "/api/stats/retrieval/avg.$format"(controller:"retrievalSuggestStats"){
             action = [GET:"statRetrievalAVG"]

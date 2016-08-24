@@ -203,4 +203,9 @@ class StatsController extends RestController {
         result["mostActiveProject"] = statsService.mostActiveProjects()
         responseSuccess(result)
     }
+
+    def statUsedStorage(){
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        responseSuccess(statsService.statUsedStorage())
+    }
 }

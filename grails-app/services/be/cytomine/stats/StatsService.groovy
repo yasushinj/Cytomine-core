@@ -13,6 +13,7 @@ class StatsService extends ModelService {
 
     def secUserService
     def projectService
+    def imageServerService
 
     def total(def domain){
 
@@ -310,6 +311,22 @@ class StatsService extends ModelService {
         }
 
         return result.values()
+    }
+
+    def statUsedStorage(){
+        def spaces = imageServerService.getStorageSpaces()
+        Long used = 0;
+        Long available = 0;
+
+        spaces.each {
+            used+=Long.parseLong(it.used)
+            available+=Long.parseLong(it.available)
+        }
+
+        Long total = used+available
+
+        return [total : total, available : available, used : used, usedP:(double)(used/total)];
+
     }
 
 }
