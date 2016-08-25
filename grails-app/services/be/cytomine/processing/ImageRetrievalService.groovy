@@ -259,7 +259,7 @@ class ImageRetrievalService {
 
         RetrievalServer server = RetrievalServer.findByDeletedIsNull()
         if(server==null) {
-            throw ServerException("No retrieval found!")
+            throw new ServerException("No retrieval found!")
         }
 
         //Get indexed resources

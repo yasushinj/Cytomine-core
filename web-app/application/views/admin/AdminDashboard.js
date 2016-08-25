@@ -44,6 +44,21 @@ var AdminDashboard = Backbone.View.extend({
             }
             $(self.el).find("#statsMostActiveProject").text(mostActiveProject);
         });
+        $.get( "api/stats/imageserver/total.json", function( data ) {
+            var percent = data.usedP * 100;
+            percent = percent.toPrecision(2);
+            $(self.el).find("#statUsedStorage").text(percent+"%");
+            if(percent >= 95){
+                $(self.el).find("#statUsedStorage").css("color", "red");
+                $(self.el).find("#statUsedStorage").css("font-weight", "bold");
+            } else if(percent >= 80){
+                $(self.el).find("#statUsedStorage").css("color", "orange");
+            }
+        }).fail(function(){
+            $(self.el).find("#statUsedStorage").text("Unknown");
+            $(self.el).find("#statUsedStorage").css("color", "red");
+            $(self.el).find("#statUsedStorage").css("font-weight", "bold");
+        });
     },
 
     doLayout: function(tpl) {

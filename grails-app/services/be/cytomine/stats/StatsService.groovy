@@ -1,5 +1,6 @@
 package be.cytomine.stats
 
+import be.cytomine.Exception.ServerException
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
@@ -318,12 +319,15 @@ class StatsService extends ModelService {
         Long used = 0;
         Long available = 0;
 
+        if(spaces.isEmpty()) throw new ServerException("No Image Server found!");
+
         spaces.each {
-            used+=Long.parseLong(it.used)
-            available+=Long.parseLong(it.available)
+            used+=it.used
+            available+=it.available
         }
 
         Long total = used+available
+
 
         return [total : total, available : available, used : used, usedP:(double)(used/total)];
 

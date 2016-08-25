@@ -27,7 +27,9 @@ class ImageServerService {
             String response = client.getResponseData()
             int code = client.getResponseCode()
             log.info "code=$code response=$response"
-            result << JSON.parse(response)
+            if(code < 400){
+                result << JSON.parse(response)
+            }
         }
 
         // if dns sharding, multiple link are to the same IMS. We merge the same IMS.
