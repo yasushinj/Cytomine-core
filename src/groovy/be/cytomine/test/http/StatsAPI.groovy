@@ -65,4 +65,18 @@ class StatsAPI  extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def totalNumberOfConnectionsByProject(String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/total/project/connections.json"
+        return doGET(URL, username, password)
+    }
+
+    static def statsOfCurrentActions(String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/stats/currentStats.json"
+        return doGET(URL, username, password)
+    }
+
+    static def statUsedStorage(String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/stats/imageserver/total.json"
+        return doGET(URL, username, password)
+    }
 }

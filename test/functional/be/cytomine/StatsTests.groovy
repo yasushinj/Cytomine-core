@@ -275,6 +275,40 @@ class StatsTests  {
         assert json.collection.find{it.key == project.name}.value == total +1
     }
 
+    void testTotalNumberOfConnectionsByProject() {
+        def result = StatsAPI.totalNumberOfConnectionsByProject(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+    void testTotalDomains() {
+        def result;
+
+        result = StatsAPI.totalProjects(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.total >= 0
+        assert json.total instanceof Integer
+
+        result = StatsAPI.totalUsers(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.total >= 0
+        assert json.total instanceof Integer
+    }
+    void testStatsOfCurrentActions() {
+        def result = StatsAPI.statsOfCurrentActions(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.users >= 0
+        assert json.projects >= 0
+    }
+    void testStatUsedStorage() {
+        def result = StatsAPI.statUsedStorage(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.total > 0
+    }
 
     private void doGET(String URL, int expect) {
         HttpClient client = new HttpClient();
