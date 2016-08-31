@@ -506,10 +506,9 @@ class RestUserController extends RestController {
         Project project = projectService.read(params.long('id'))
 
         //Get all project user online
-        def users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
-        def usersId = users.collect {it}
+        def usersId = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project).collect {it.id}
 
-        //Get all user oonline and their pictures
+        //Get all user online and their pictures
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
         DateTime thirtySecondsAgo = new DateTime().minusSeconds(30)
         def result = db.lastUserPosition.aggregate(
@@ -528,16 +527,16 @@ class RestUserController extends RestController {
             def imageName = it["_id"]["imageName"]
             def date = it["date"]
 
-            long currenUser = userId
-            if (previousUser != currenUser) {
+            long currentUser = userId
+            if (previousUser != currentUser) {
                 //new user, create a new line
-                userInfo = [id: currenUser, position: []]
+                userInfo = [id: currentUser, position: []]
                 usersWithPosition << userInfo
-                usersId.remove(currenUser)
+                usersId.remove(currentUser)
             }
             //add position to the current user
             userInfo['position'] << [id: imageId,image: imageId, filename: imageName, originalFilename:imageName, date: date]
-            previousUser = currenUser
+            previousUser = currentUser
         }
         //user online with no image open
         usersId.each {
