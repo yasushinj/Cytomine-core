@@ -115,14 +115,12 @@ class CustomUITests {
         assert 200==result.code
         def json = JSON.parse(result.data)
         assert true == json["project-annotations-tab"]["ADMIN_PROJECT"]
-        assert false == json["project-jobs-tab"]["GUEST_PROJECT"]
-        assert false == json["project-configuration-tab"]["GUEST_PROJECT"]
-        assert false == json["project-configuration-tab"]["USER_PROJECT"]
+        assert false == json["project-jobs-tab"]["CONTRIBUTOR_PROJECT"]
+        assert false == json["project-configuration-tab"]["CONTRIBUTOR_PROJECT"]
 
         json["project-annotations-tab"]["ADMIN_PROJECT"] = false
-        json["project-jobs-tab"]["GUEST_PROJECT"] = true
-        json["project-configuration-tab"]["GUEST_PROJECT"] = true
-        json["project-configuration-tab"]["USER_PROJECT"] = true
+        json["project-jobs-tab"]["CONTRIBUTOR_PROJECT"] = true
+        json["project-configuration-tab"]["CONTRIBUTOR_PROJECT"] = true
 
 
         result = UserAPI.setCustomUIProject(project.id,json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -130,59 +128,53 @@ class CustomUITests {
         println result.data
         def value = JSON.parse(result.data)
         assert false == value["project-annotations-tab"]["ADMIN_PROJECT"]
-        assert true == value["project-jobs-tab"]["GUEST_PROJECT"]
-        assert true == value["project-configuration-tab"]["GUEST_PROJECT"]
-        assert true == value["project-configuration-tab"]["USER_PROJECT"]
+        assert true == value["project-jobs-tab"]["CONTRIBUTOR_PROJECT"]
+        assert true == value["project-configuration-tab"]["CONTRIBUTOR_PROJECT"]
 
 
         result = UserAPI.retrieveCustomUIProject(project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200==result.code
         json = JSON.parse(result.data)
         assert false == json["project-annotations-tab"]["ADMIN_PROJECT"]
-        assert true == json["project-jobs-tab"]["GUEST_PROJECT"]
-        assert true == json["project-configuration-tab"]["GUEST_PROJECT"]
-        assert true == json["project-configuration-tab"]["USER_PROJECT"]
+        assert true == json["project-jobs-tab"]["CONTRIBUTOR_PROJECT"]
+        assert true == json["project-configuration-tab"]["CONTRIBUTOR_PROJECT"]
 
-        json["project-configuration-tab"]["GUEST_PROJECT"] = false
+        json["project-configuration-tab"]["CONTRIBUTOR_PROJECT"] = false
 
         result = UserAPI.setCustomUIProject(project.id,json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200==result.code
         println result.data
         value = JSON.parse(result.data)
         assert false == value["project-annotations-tab"]["ADMIN_PROJECT"]
-        assert true == value["project-jobs-tab"]["GUEST_PROJECT"]
-        assert false == value["project-configuration-tab"]["GUEST_PROJECT"]
-        assert true == value["project-configuration-tab"]["USER_PROJECT"]
+        assert true == value["project-jobs-tab"]["CONTRIBUTOR_PROJECT"]
+        assert false == value["project-configuration-tab"]["CONTRIBUTOR_PROJECT"]
 
         result = UserAPI.retrieveCustomUIProject(project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200==result.code
         json = JSON.parse(result.data)
         assert false == json["project-annotations-tab"]["ADMIN_PROJECT"]
-        assert true == json["project-jobs-tab"]["GUEST_PROJECT"]
-        assert false == json["project-configuration-tab"]["GUEST_PROJECT"]
-        assert true == json["project-configuration-tab"]["USER_PROJECT"]
+        assert true == json["project-jobs-tab"]["CONTRIBUTOR_PROJECT"]
+        assert false == json["project-configuration-tab"]["CONTRIBUTOR_PROJECT"]
     }
 
 
     void testCustomUIProjectFlag() {
 
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
-        User projectGuest = BasicInstanceBuilder.getGhest("testCustomUIProjectFlagGuest","password")
         User projectUser = BasicInstanceBuilder.getUser("testCustomUIProjectFlagUser","password")
         User projectAdmin = BasicInstanceBuilder.getUser("testCustomUIProjectFlagAdmin","password")
         User superAdmin = BasicInstanceBuilder.getSuperAdmin("testCustomUIProjectFlagSuperAdmin","password")
 
-        ProjectAPI.addUserProject(project.id,projectGuest.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         ProjectAPI.addUserProject(project.id,projectUser.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         ProjectAPI.addAdminProject(project.id,projectAdmin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         ProjectAPI.addUserProject(project.id,superAdmin.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
 
 
         Holders.getGrailsApplication().config.cytomine.customUI.project = [
-                "project-annotations-tab":["ADMIN_PROJECT":true,"USER_PROJECT":true,"GUEST_PROJECT":true],
-                "project-properties-tab":["ADMIN_PROJECT":false,"USER_PROJECT":true,"GUEST_PROJECT":true],
-                "project-jobs-tab":["ADMIN_PROJECT":true,"USER_PROJECT":true,"GUEST_PROJECT":false],
-                "project-configuration-tab":["ADMIN_PROJECT":true,"USER_PROJECT":false,"GUEST_PROJECT":false]
+                "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+                "project-properties-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+                "project-jobs-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
+                "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
         ]
 
         //no config by now, check if default config is ok
@@ -209,25 +201,16 @@ class CustomUITests {
         json = JSON.parse(result.data)
         assert true == json["project-annotations-tab"]
         assert true == json["project-properties-tab"]
-        assert true == json["project-jobs-tab"]
-        assert false == json["project-configuration-tab"]
-
-        result = UserAPI.retrieveCustomUI(project.id,projectGuest.username,"password")
-        assert 200==result.code
-        json = JSON.parse(result.data)
-        assert true == json["project-annotations-tab"]
-        assert true == json["project-properties-tab"]
         assert false == json["project-jobs-tab"]
         assert false == json["project-configuration-tab"]
 
 
 
-
         //we set a new config. we hide property tab for everyone and show the job tab for everyone
-        def jsonConfig = ["project-annotations-tab":["ADMIN_PROJECT":true,"USER_PROJECT":true,"GUEST_PROJECT":true],
-                "project-properties-tab":["ADMIN_PROJECT":false,"USER_PROJECT":false,"GUEST_PROJECT":false],
-                "project-jobs-tab":["ADMIN_PROJECT":true,"USER_PROJECT":true,"GUEST_PROJECT":true],
-                "project-configuration-tab":["ADMIN_PROJECT":true,"USER_PROJECT":false,"GUEST_PROJECT":false]
+        def jsonConfig = ["project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+                "project-properties-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
+                "project-jobs-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+                "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
         ]
 
         result = UserAPI.setCustomUIProject(project.id,(jsonConfig as JSON).toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -256,16 +239,6 @@ class CustomUITests {
         assert false == json["project-properties-tab"]
         assert true == json["project-jobs-tab"]
         assert false == json["project-configuration-tab"]
-
-        result = UserAPI.retrieveCustomUI(project.id,projectGuest.username,"password")
-        assert 200==result.code
-        json = JSON.parse(result.data)
-        assert true == json["project-annotations-tab"]
-        assert false == json["project-properties-tab"]
-        assert true == json["project-jobs-tab"]
-        assert false == json["project-configuration-tab"]
-
-
     }
 
 
