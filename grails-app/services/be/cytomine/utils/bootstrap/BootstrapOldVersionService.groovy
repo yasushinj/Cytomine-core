@@ -18,11 +18,14 @@ package be.cytomine.utils.bootstrap
 
 import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.Storage
+import be.cytomine.ontology.Property
+import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
 import be.cytomine.security.SecUserSecRole
 import be.cytomine.security.User
 import be.cytomine.utils.Version
+import grails.converters.JSON
 import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
 import org.postgresql.util.PSQLException
@@ -66,7 +69,7 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
-    void init20160819(){
+    void init20160901(){
 
         boolean exists = new Sql(dataSource).rows("SELECT column_name "+
                 "FROM information_schema.columns "+
@@ -74,7 +77,19 @@ class BootstrapOldVersionService {
         if(!exists){
             new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255);")
         }
+        List<Property> properties = Property.findAllByDomainClassNameAndKey(Project.name,"@CUSTOM_UI_PROJECT")
+        def configProject;
+        properties.each { prop ->
+            configProject = JSON.parse(prop.value)
+            configProject.each{
+                it.value["CONTRIBUTOR_PROJECT"] = it.value["GUEST_PROJECT"]
+                it.value.remove("GUEST_PROJECT")
+                it.value.remove("USER_PROJECT")
+            }
+            prop.value = configProject.toString()
 
+            prop.save(true)
+        }
     }
 
     void init20160503(){

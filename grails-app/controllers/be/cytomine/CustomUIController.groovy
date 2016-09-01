@@ -134,15 +134,11 @@ class CustomUIController extends RestController {
         if(currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser))
             return true;
 
-        boolean mustBeShow = false
+        boolean mustBeShow;
         if(isProjectAdmin) {
             mustBeShow = config["ADMIN_PROJECT"]
-        } else if(roles.find{it.authority=="ROLE_USER"}) {
-            mustBeShow = config["USER_PROJECT"]
-        }else if(roles.find{it.authority=="ROLE_GUEST"}) {
-            mustBeShow = config["GUEST_PROJECT"]
         } else {
-            return true
+            mustBeShow = config["CONTRIBUTOR_PROJECT"]
         }
         return mustBeShow
     }
