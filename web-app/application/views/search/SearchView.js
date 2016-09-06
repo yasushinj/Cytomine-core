@@ -19,8 +19,23 @@ var SearchView = Backbone.View.extend({
     suggestProject : null,
     currentFilter:null,
     render: function () {
-        console.log("render");
         var self = this;
+
+        if(!CustomUI.mustBeShow("search")){
+            $(self.el).empty();
+
+            $(self.el).append("<div style='margin: auto;margin-top:300px;max-width:400px;width:auto;'>"+
+                "<div class='alert alert-warning'>"+
+                    "<h4 class='alert-heading'>Oops !</h4>"+
+                    "<br>"+
+                        "<i class='icon icon-warning-sign'></i> You don't have the permission to see this page."+
+                    "</div>"+
+                "</div>");
+
+            return this;
+        }
+
+
 
         if(window.app.models.projects.length>1) { //don't know why an empty window.app.models.projects has 1 item
             self.doLayout();
