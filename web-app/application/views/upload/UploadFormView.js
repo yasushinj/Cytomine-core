@@ -773,13 +773,21 @@ var UploadFormView = Backbone.View.extend({
                 {
                     "mData": "image","bSearchable": false,"bSortable": false,
                     fnRender: function (o, image) {
+                        var result = "";
+                        // we allow deletion of non deployed image after a security gap of 24h.
                         if(o.aData.to_deploy || o.aData.error_format || o.aData.error_convert){
-                            // we allow deletion of non deployed image after a security gap of 24h.
                             if(($.now() - o.aData.updated)/3600000 > 24) {
-                                return "<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.id+"-"+o.aData.image+"'>Delete</button>";
+                                result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.image+"' data-ufid="+o.aData.id+" data-aiid="+o.aData.image+">Delete</button>";
+                            } else {
+                                result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.image+"' data-ufid="+o.aData.id+" data-aiid="+o.aData.image+" disabled>Delete</button>";
+                            }
+                        }else {
+                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.image+"' data-ufid="+o.aData.id+" data-aiid="+o.aData.image+" disabled>Delete</button> ";
+                            if(o.aData.image !== null && window.app.status.user.model.get("adminByNow")){
+                                result+="<a class='btn btn-info btn-xs' href='api/abstractimage/"+o.aData.image+"/download'> Download</a>";
                             }
                         }
-                        return "<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.id+"-"+o.aData.image+"' disabled>Delete</button>";
+                        return result;
                     },
                     "aTargets": [ 6 ]
                 }
@@ -807,10 +815,8 @@ var UploadFormView = Backbone.View.extend({
             self.uploadDataTables.fnReloadAjax();
         });
         $(document).on('click', ".deleteimage", function (e) {
-            var ids = e.currentTarget.id;
-            ids = ids.replace("deleteimage-", "").split("-");
-            var idUpload = ids[0];
-            var idImage = ids[1];
+            var idUpload = $(e.currentTarget).data("ufid");
+            var idImage = $(e.currentTarget).data("aiid");
 
              DialogModal.initDialogModal(null, idUpload, 'UploadFile', 'Do you want to delete this image ?', 'CONFIRMATIONWARNING', function(){
                  var deleteUploadFile = function() {
