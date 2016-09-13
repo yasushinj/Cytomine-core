@@ -50,6 +50,7 @@ class BootstrapOldVersionService {
     def bootstrapUtilsService
     def dataSource
     def storageService
+    def tableService
 
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
@@ -75,8 +76,31 @@ class BootstrapOldVersionService {
                 "FROM information_schema.columns "+
                 "WHERE table_name='project' and column_name='mode';").size() == 1;
         if(!exists){
-            new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255);")
+            new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255) NOT NULL DEFAULT 'CLASSIC';")
+
+            String request = "SELECT id FROM project WHERE is_read_only;"
+            def sql = new Sql(dataSource)
+            def data = []
+            sql.eachRow(request) {
+                data << it[0]
+            }
+            sql.close()
+            new Sql(dataSource).executeUpdate("UPDATE project SET mode = 'READ_ONLY' WHERE id IN ("+data.join(",")+");")
+
+
+            exists = new Sql(dataSource).rows("SELECT column_name "+
+                    "FROM information_schema.columns "+
+                    "WHERE table_name='project' and column_name='is_read_only';").size() == 1;
+            if(exists){
+                log.info "reinit table..."
+                new Sql(dataSource).executeUpdate("DROP VIEW user_project;")
+                new Sql(dataSource).executeUpdate("DROP VIEW admin_project;")
+                new Sql(dataSource).executeUpdate("DROP VIEW creator_project;")
+                new Sql(dataSource).executeUpdate("ALTER TABLE project DROP COLUMN is_read_only;")
+                tableService.initTable()
+            }
         }
+
         List<Property> properties = Property.findAllByDomainClassNameAndKey(Project.name,"@CUSTOM_UI_PROJECT")
         def configProject;
         properties.each { prop ->

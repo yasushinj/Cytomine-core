@@ -206,9 +206,10 @@ var DescriptionModal = {
         modal.addButtons("saveDescription" + idDescription, "Save", true, true);
         modal.addButtons("closeDescription" + idDescription, "Close", false, true);
     },
-    initDescriptionView: function (domainIdent, domainClassName, container, maxPreviewCharNumber, callbackGet, callbackUpdate) {
+    initDescriptionView: function (domainIdent, domainClassName, isOwner, container, maxPreviewCharNumber, callbackGet, callbackUpdate) {
         var self = this;
         self.editable = !window.app.status.currentProjectModel.isReadOnly(window.app.models.projectAdmin);
+        if(self.editable && window.app.status.currentProjectModel.get('isRestricted')) self.editable = isOwner;
 
         new DescriptionModel({domainIdent: domainIdent, domainClassName: domainClassName}).fetch(
                 {success: function (description, response) {

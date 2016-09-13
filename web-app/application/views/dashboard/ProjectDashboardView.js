@@ -222,7 +222,7 @@ var ProjectDashboardView = Backbone.View.extend({
 
             $("#projectInfoPanel").find(".description");
 
-            DescriptionModal.initDescriptionView(self.model.id, self.model.get('class'), $("#projectInfoPanel").find(".description"), 800,
+            DescriptionModal.initDescriptionView(self.model.id, self.model.get('class'), false, $("#projectInfoPanel").find(".description"), 800,
                     function() {
                         var text = $("#projectInfoPanel").find(".description").html();
                         $("#projectInfoPanel").find(".description").empty().append(text.replace(new RegExp("<h.>", "g"),'<br>').replace(new RegExp("</h.>", "g"),'<br>'));

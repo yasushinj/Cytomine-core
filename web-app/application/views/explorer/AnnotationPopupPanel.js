@@ -292,7 +292,7 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         var self = this;
         var content = $(".textcontent"+annotation.id);
         console.log("retrieveDescription");
-        DescriptionModal.initDescriptionView(annotation.id, annotation.get('class'), content, 150, function() {
+        DescriptionModal.initDescriptionView(annotation.id, annotation.get('class'), annotation.get("user") === window.app.status.user.id,content, 150, function() {
             var text = content.html();
             content.empty().append(text.replace(new RegExp("<h.>", "g"),'<br>').replace(new RegExp("</h.>", "g"),'<br>'));
         },function() {self.render();});
