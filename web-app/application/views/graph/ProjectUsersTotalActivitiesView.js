@@ -18,6 +18,7 @@ var ProjectUsersTotalActivitiesView = GraphView.extend({
     activities : [],
     initialize: function (options) {
         this.constructor.__super__.initialize.apply(this,[options]);
+        this.activities = [];
         this.activities.push({name : "Connections",  url : "api/project/" + this.model.get('id') + "/usersActivity.json", property : "frequency", panel : null});
         this.activities.push({name : "Annotations", url : "api/project/" + this.model.get('id') + "/stats/user.json", property : "value", panel : null});
     },

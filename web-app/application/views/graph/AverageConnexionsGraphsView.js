@@ -1,6 +1,7 @@
 var AverageConnexionsGraphsView = GraphView.extend({
     graphs : [],
     initialize: function (options) {
+        this.graphs = [];
         this.constructor.__super__.initialize.apply(this,[options]);
         var url = "api/averageConnections.json?";
         if(!window.app.isUndefined(options.project)){

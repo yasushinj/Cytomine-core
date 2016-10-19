@@ -12,6 +12,7 @@ var LastConnexionsGraphsView = GraphView.extend({
         var lastDay = new Date();
         var firstDay = new Date(lastDay.getTime());
 
+        this.graphs = [];
         firstDay.setDate(lastDay.getDate()-1);
         firstDay.setHours(lastDay.getHours()+1,0,0);
         this.graphs.push({name : "Day", period : "hour", url: url+"hour&afterThan="+firstDay.getTime(), panel : null});
