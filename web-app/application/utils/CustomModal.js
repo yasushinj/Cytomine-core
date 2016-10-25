@@ -513,7 +513,7 @@ var DialogModal = {
         var header;
         if(level == 'WARNING' || level == 'CONFIRMATIONWARNING'){
             body = '<div class="alert alert-warning">';
-            header = "Be carefull !";
+            header = "Be careful !";
         } else if(level == 'INFO'){
             body = '<div class="alert alert-info">';
             header = "Information";
