@@ -36,6 +36,7 @@ import be.cytomine.utils.Task
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTWriter
 import groovy.sql.Sql
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.hibernate.criterion.Restrictions
 import org.hibernate.spatial.criterion.SpatialRestrictions
 
@@ -189,6 +190,14 @@ class UserAnnotationService extends ModelService {
         securityACLService.check(json.project, Project,READ)
         securityACLService.checkisNotReadOnly(json.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
+        //Add annotation user
+        if(!json.user || json.user instanceof JSONObject.Null){
+            json.user = currentUser.id
+        } else {
+            if(json.user != currentUser.id){
+            securityACLService.checkFullOrRestrictedForOwner(json.project, Project)
+            }
+        }
 
         //simplify annotation
         try {
@@ -204,24 +213,22 @@ class UserAnnotationService extends ModelService {
         def annotationID
         def result
 
-            //Add annotation user
-            json.user = currentUser.id
-            //Add Annotation
-            log.debug this.toString()
+        //Add Annotation
+        log.debug this.toString()
         //def image = ImageInstance.lock(Long.parseLong(json["image"].toString()))
-            result = executeCommand(new AddCommand(user: currentUser, transaction: transaction),null,json)
+        result = executeCommand(new AddCommand(user: currentUser, transaction: transaction),null,json)
 
-            annotationID = result?.data?.annotation?.id
-            log.info "userAnnotation=" + annotationID + " json.term=" + json.term
-            //Add annotation-term if term
-            if (annotationID) {
-                def term = JSONUtils.getJSONList(json.term);
-                if (term) {
-                    term.each { idTerm ->
-                        annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
-                    }
+        annotationID = result?.data?.annotation?.id
+        log.info "userAnnotation=" + annotationID + " json.term=" + json.term
+        //Add annotation-term if term
+        if (annotationID) {
+            def term = JSONUtils.getJSONList(json.term);
+            if (term) {
+                term.each { idTerm ->
+                    annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
                 }
             }
+        }
 
 
             //add annotation on the retrieval

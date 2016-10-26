@@ -83,11 +83,13 @@ var LayerSwitcherPanel = SideBarPanel.extend({
 
         var layerOptionTpl;
         if (layer.isOwner) {
-            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox'  value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' disabled/><span style='color :<%=   color %>;'> <%=   name %> <span class='numberOfAnnotation'></span></span>" + button + "</li>", {id: layerID, name: layer.vectorsLayer.name, color: color, userID: userID});
+            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox'  value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='drawableLayer' data-user-id='<%= userID %>' checked/>&nbsp;&nbsp;<input type='checkbox' disabled/><span style='color :<%=   color %>;'> <%=   name %> <span class='numberOfAnnotation'></span></span>" + button + "</li>", {id: layerID, name: layer.vectorsLayer.name, color: color, userID: userID});
         } else if (userID != "REVIEW" && layer.user.get('algo')) {
-            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " <a href='#tabs-useralgo-<%= userID %>'>See job details...</a></li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
+            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='drawableLayer' disabled/>&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " <a href='#tabs-useralgo-<%= userID %>'>See job details...</a></li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
+        } else if (userID == "REVIEW") {
+            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='drawableLayer' disabled/>&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " </li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
         } else {
-            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " </li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
+            layerOptionTpl = _.template("<li style='display:none;' id='entry<%= userID %>' data-id='<%= userID %>'><input id='<%= id %>' class='showUser' type='checkbox' value='<%= name %>' />&nbsp;&nbsp;<input type='checkbox' class='drawableLayer' data-user-id='<%= userID %>'/>&nbsp;&nbsp;<input type='checkbox' class='followUser' data-user-id='<%= userID %>' disabled/>&nbsp;<span style='color : <%=   color %>;'><%= name %> <span class='numberOfAnnotation'></span></span></a>" + button + " </li>", {userID: userID, id: layerID, name: layer.vectorsLayer.name, color: color});
         }
         $("#" + this.browseImageView.divId).find("#layerSwitcher" + model.get("id")).find("ul.annotationLayers").append(layerOptionTpl);
 
@@ -104,6 +106,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
             //update annotation proprety layers
             self.browseImageView.annotationProperties.updateAnnotationProperyLayers();
         });
+        self.browseImageView.setLayerDrawable(layer.userID, layer.isOwner);
 
     },
     updateOnlineUsers: function (onlineUsers) {
@@ -203,6 +206,10 @@ var LayerSwitcherPanel = SideBarPanel.extend({
                 almostOneCheckedState = true;
             }
             self.browseImageView.setAllLayersVisibility(!almostOneCheckedState);
+        });
+
+        $(self.el).on("click", ".drawableLayer", function (event) {
+            self.browseImageView.setLayerDrawable($(this).data("userId"), $(this).is(":checked"));
         });
 
         var el = $('#layerSwitcher' + self.model.get('id'));
@@ -312,6 +319,7 @@ var LayerSwitcherPanel = SideBarPanel.extend({
 
             var item = panel.find("#entry" + window.app.status.user.id);
 
+            self.browseImageView.reinitControls();
         });
         panel.find("#layerComp" + self.model.get("id")).show();
         panel.find(".removeImageLayers").show();

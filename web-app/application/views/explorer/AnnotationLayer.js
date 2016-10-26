@@ -119,6 +119,7 @@ var AnnotationLayer = function (user,name, imageID, userID, color, ontologyTreeV
     this.reviewLayer = (name == "REVIEW") || (name == "Review layer");
     var roi  = (userID == "ROI");
     this.reviewMode = reviewMode;
+    this.drawable = false;
     var rules = [new OpenLayers.Rule({
         symbolizer: {strokeColor: "#0000ff", strokeWidth: 2},
         // symbolizer: {}, // instead if you want to keep default colors
@@ -765,7 +766,6 @@ AnnotationLayer.prototype = {
 
 
 
-
         var format = new OpenLayers.Format.WKT();
         var geomwkt = format.write(feature);
 
@@ -803,7 +803,9 @@ AnnotationLayer.prototype = {
             return;
         }
 
-        annotation.save({}, {
+        if(!self.drawable) return;
+        annotation.set({user: self.userID});
+        annotation.save({user: self.userID}, {
             success: function (annotation, response) {
                 new AnnotationModel({id: response.annotation.id}).fetch({
                     success: function (annotation, response) {
@@ -989,7 +991,7 @@ AnnotationLayer.prototype = {
                 }
             } else {
                 control.deactivate();
-                if (control == this.controls.modify) {
+                if (control === this.controls.modify) {
                     for (var i in this.vectorsLayer.selectedFeatures) {
                         var feature = this.vectorsLayer.selectedFeatures[i];
                         try{
