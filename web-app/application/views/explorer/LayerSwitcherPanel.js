@@ -93,6 +93,13 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         }
         $("#" + this.browseImageView.divId).find("#layerSwitcher" + model.get("id")).find("ul.annotationLayers").append(layerOptionTpl);
 
+        if(!self.browseImageView.isCurrentUserProjectAdmin()){
+            if(window.app.status.currentProjectModel.get("isReadOnly") || (window.app.status.currentProjectModel.get("isRestricted") && window.app.status.user.id !== userID)){
+                $("#layerSwitcher" + model.get("id")).find("#entry" + userID).find(".drawableLayer").attr("disabled", true);
+            }
+        }
+
+
         console.log("add layer!!!");
 
         layer.vectorsLayer.setVisibility(true);
