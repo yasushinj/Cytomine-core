@@ -63,7 +63,7 @@ var AddProjectDialog = Backbone.View.extend({
 
         self.open();
 
-        $("input#isReadOnly").attr('checked', window.app.params.readOnlyProjectsByDefault);
+        $("input#EditingModeReadOnly-radio-add").attr('checked', window.app.params.readOnlyProjectsByDefault);
 
         return this;
     },
@@ -307,12 +307,14 @@ var AddProjectDialog = Backbone.View.extend({
         var users = self.userMaggicSuggest.getValue();
         var admins = self.adminMaggicSuggest.getValue();
         var blindMode = $("input#blindMode").is(':checked');
-        var isReadOnly = $("input#isReadOnly").is(':checked');
+        var isReadOnly = $("input#EditingModeReadOnly-radio-add").is(':checked');
+        var isRestricted = $("input#EditingModeRestricted-radio-add").is(':checked');
         var hideUsersLayers = $("input#hideUsersLayers").is(':checked');
         var hideAdminsLayers = $("input#hideAdminsLayers").is(':checked');
 
         console.log("blindMode=" + blindMode);
         console.log("isReadOnly=" + isReadOnly);
+        console.log("isRestricted=" + isRestricted);
         console.log("hideUsersLayers=" + hideUsersLayers);
         console.log("hideAdminsLayers=" + hideAdminsLayers);
 
@@ -339,7 +341,7 @@ var AddProjectDialog = Backbone.View.extend({
                 var timer = window.app.view.printTaskEvolution(response.task, $("#progressBarAddProjectContainer").find("#task-" + response.task.id), 1000);
 
                 //create project
-                new ProjectModel({task:response.task.id,users: users, admins: admins,name: name, ontology: ontology, discipline: discipline, retrievalDisable: retrievalDisable, retrievalAllOntology: retrievalProjectAll, retrievalProjects: projectRetrieval}).save({name: name, ontology: ontology, discipline: discipline, retrievalDisable: retrievalDisable, retrievalAllOntology: retrievalProjectAll, retrievalProjects: projectRetrieval, blindMode: blindMode, isReadOnly: isReadOnly,hideUsersLayers:hideUsersLayers,hideAdminsLayers:hideAdminsLayers}, {
+                new ProjectModel({task:response.task.id,users: users, admins: admins,name: name, ontology: ontology, discipline: discipline, retrievalDisable: retrievalDisable, retrievalAllOntology: retrievalProjectAll, retrievalProjects: projectRetrieval}).save({name: name, ontology: ontology, discipline: discipline, retrievalDisable: retrievalDisable, retrievalAllOntology: retrievalProjectAll, retrievalProjects: projectRetrieval, blindMode: blindMode, isReadOnly: isReadOnly,isRestricted:isRestricted,hideUsersLayers:hideUsersLayers,hideAdminsLayers:hideAdminsLayers}, {
                     success: function (model, response) {
                         console.log("1. Project added!");
                         clearInterval(timer);

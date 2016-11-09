@@ -99,17 +99,47 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="isReadOnly"> Read-Only project
+                                <div class="col-md-10">
+                                    <label class="control-label">Editing mode</label><br>
+                                    Editing mode will change authorizations of contributors. A project manager will still be able to see, add,edit or delete data for this project.
                                 </div>
-                                <div class="col-md-9">
-
-                                    <div class="alert alert-info">
-                                        If you check read-only project, a "simple" contributor will not be able to add/edit or delete data except annotation on his own layer.
-                                        A project manager will still be able to see to add/edit or delete data for this project.
+                            </div>
+                            <br/>
+                            <div class="row">
+                                <div class="col-md-2 col-md-offset-1">
+                                    <input type="radio" id="EditingModeFull-radio-add" name="EditingModeGroup" value="all" checked>
+                                    Classic<br>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="alert alert-info" style="margin-bottom:10px;">
+                                        Contributors will be able to add/edit or delete project data, annotations, properties and descriptions on all layers.
                                     </div>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-2 col-md-offset-1">
+                                    <input type="radio" id="EditingModeRestricted-radio-add" name="EditingModeGroup" value="some"> Restricted<br>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="alert alert-info" style="margin-bottom:10px;">
+                                        Contributors will not be able to add/edit or delete project data except annotations, properties and descriptions on his own layer.
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-2 col-md-offset-1">
+                                    <input type="radio" id="EditingModeReadOnly-radio-add" name="EditingModeGroup" value="none"> Read Only <br>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="alert alert-info" style="margin-bottom:10px;">
+                                        Contributors will not be able to add/edit or delete project data, annotations, properties and descriptions even on his own layer.
+                                    </div>
+                                </div>
+                            </div>
+
+
                         </div>
 
                     </fieldset>
