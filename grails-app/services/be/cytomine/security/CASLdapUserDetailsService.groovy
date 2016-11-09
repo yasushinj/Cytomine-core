@@ -20,6 +20,7 @@ import be.cytomine.ldap.LdapUlgMemberPerson
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugin.springsecurity.userdetails.GormUserDetailsService
 import grails.plugin.springsecurity.userdetails.GrailsUser
+import org.apache.commons.lang.RandomStringUtils
 import org.springframework.dao.DataAccessException
 import org.springframework.security.core.authority.GrantedAuthorityImpl
 import org.springframework.security.core.userdetails.UserDetails
@@ -78,10 +79,10 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
 
        def authorities = []
 
-        if(user==null && casDisabled)  {
-            log.info "return null"
+        /*if(user==null && casDisabled)  {
+            log.info "loadUserByUsername return null"
             return null
-        }
+        }*/
 
         if (user == null) { //User does not exists in our database
             user = getUserByUsername(username)
@@ -107,17 +108,17 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
 
 
         if(user==null && ldapDisabled)  {
-            log.info "return null"
+            log.info "getUserByUsername return null"
             return null
         }
 
         if (user == null) { //User does not exists in our database
 
             //fetch its informations through LDAP
-            LdapUlgMemberPerson inetOrgPerson;
+            InetOrgPerson inetOrgPerson;
 
             try {
-                inetOrgPerson= (LdapUlgMemberPerson) ldapUserDetailsService.loadUserByUsername(username)
+                inetOrgPerson= (InetOrgPerson) ldapUserDetailsService.loadUserByUsername(username)
             } catch(UsernameNotFoundException e) {
                 inetOrgPerson = null;
             }
@@ -145,14 +146,14 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
                 user.firstname = firstname
                 user.email = inetOrgPerson.getMail()
                 user.enabled = true
-                user.password = "|0>%%Lyc>f(Zz!Q" //not used by the user
+                user.password = RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()) //not used by the user
                 user.generateKeys()
                 if (user.validate()) {
                     user.save(flush: true)
                     user.refresh()
 
                     // Assign the default role of client
-                    SecRole userRole = SecRole.findByAuthority("ROLE_USER")
+                    SecRole userRole = SecRole.findByAuthority("ROLE_GUEST")
                     SecUserSecRole secUsersecRole = new SecUserSecRole()
                     secUsersecRole.secUser = user
                     secUsersecRole.secRole = userRole

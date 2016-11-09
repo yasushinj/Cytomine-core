@@ -97,7 +97,7 @@ class RestAnnotationFilterController extends RestController {
     @RestApiMethod(description="Add a filter")
     def add() {
         def json= request.JSON
-        json.user = springSecurityService.principal.id
+        json.user = springSecurityService.currentUser.id
         add(annotationFilterService, json)
     }
 

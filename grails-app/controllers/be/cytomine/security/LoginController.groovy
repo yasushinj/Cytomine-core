@@ -61,7 +61,7 @@ class LoginController extends RestController {
     def notificationService
 
     def loginWithoutLDAP () {
-        println "loginWithoutLDAP"
+        log.info "loginWithoutLDAP"
         if (springSecurityService.isLoggedIn()) {
             redirect uri: SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl
         }
@@ -197,7 +197,7 @@ class LoginController extends RestController {
      * The Ajax success redirect url.
      */
     def ajaxSuccess () {
-        User user = User.read(springSecurityService.principal.id)
+        User user = User.read(springSecurityService.currentUser.id)
         render([success: true, id: user.id, fullname: user.firstname + " " + user.lastname] as JSON)
     }
 

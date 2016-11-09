@@ -81,7 +81,7 @@ class RestUserJobController extends RestController {
                 //get user job parent
                 User user
                 if (json.parent.toString().equals("null")) {
-                    user = User.read(springSecurityService.principal.id)
+                    user = User.read(springSecurityService.currentUser.id)
                 } else {
                     user = User.read(json.parent.toString())
                 }

@@ -25,7 +25,7 @@ class CytomineService implements Serializable {
     def springSecurityService
 
     SecUser getCurrentUser() {
-        return SecUser.read(springSecurityService.principal.id)
+        return SecUser.read(springSecurityService.currentUser.id)
     }
 
     boolean isUserAlgo() {

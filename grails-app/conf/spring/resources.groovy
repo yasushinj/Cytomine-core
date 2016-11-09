@@ -69,7 +69,7 @@ beans = {
         ignorePartialResultException = config.ldap.authorities.ignorePartialResultException
     }
 
-    ldapUserDetailsMapper(LdapUlgMemberPersonContextMapper)
+    //ldapUserDetailsMapper(LdapUlgMemberPersonContextMapper)
 
     ldapUserDetailsService(org.springframework.security.ldap.userdetails.LdapUserDetailsService,
             ldapUserSearch,

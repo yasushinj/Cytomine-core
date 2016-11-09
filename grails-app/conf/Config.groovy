@@ -307,7 +307,7 @@ grails.plugin.springsecurity.ldap.context.managerPassword = 'R5fH3qcY65nUdR3'
 grails.plugin.springsecurity.ldap.context.server = 'ldap://ldap.ulg.ac.be:389'
 grails.plugin.springsecurity.ldap.authorities.groupSearchBase = 'uid=x000126,ou=specialusers,dc=ulg,dc=ac,dc=be'
 grails.plugin.springsecurity.ldap.mapper.userDetailsClass= 'inetOrgPerson'// 'org.springframework.security.ldap.userdetails.InetOrgPerson'
-grails.plugin.springsecurity.ldap.mapper.usePassword= false
+grails.plugin.springsecurity.ldap.mapper.usePassword= true
 grails.plugin.springsecurity.ldap.authorities.ignorePartialResultException = true
 grails.plugin.springsecurity.ldap.authorities.retrieveDatabaseRoles = true
 

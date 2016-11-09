@@ -34,7 +34,7 @@ class CommandController extends RestController {
      * Do undo op on the last command/transaction done by this user
      */
     def undo = {
-        SecUser user = SecUser.read(springSecurityService.principal.id)
+        SecUser user = SecUser.read(springSecurityService.currentUser.id)
 
         //Get the last command list with max 1 command
         def lastCommands = UndoStackItem.findAllByUser(user, [sort: "created", order: "desc", max: 1, offset: 0])
@@ -114,7 +114,7 @@ class CommandController extends RestController {
      * Do redo op on the last undo done by this user
      */
     def redo = {
-        SecUser user = SecUser.read(springSecurityService.principal.id)
+        SecUser user = SecUser.read(springSecurityService.currentUser.id)
         //Get the last undo command
         def lastCommands = RedoStackItem.findAllByUser(user, [sort: "created", order: "desc", max: 1, offset: 0])
 

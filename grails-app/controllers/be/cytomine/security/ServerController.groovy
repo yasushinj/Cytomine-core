@@ -41,7 +41,7 @@ class ServerController {
         data.version = grailsApplication.metadata['app.version']
         data.serverURL = grailsApplication.config.grails.serverURL
         if (data.authenticated)  {
-            data.user = springSecurityService.principal.id
+            data.user = springSecurityService.currentUser.id
             def idProject = null
             def idUser = data.user
             if(!jsonContent.project.toString().equals("null")) {

@@ -121,7 +121,7 @@ class RestUserAnnotationController extends RestController {
     ])
     def addComment() {
 
-        User sender = User.read(springSecurityService.principal.id)
+        User sender = User.read(springSecurityService.currentUser.id)
         securityACLService.checkUser(sender)
         UserAnnotation annotation = userAnnotationService.read(params.getLong('userannotation'))
         String cid = UUID.randomUUID().toString()
@@ -240,7 +240,7 @@ class RestUserAnnotationController extends RestController {
     ])
     def listComments() {
         UserAnnotation annotation = userAnnotationService.read(params.long('userannotation'))
-        User user = User.read(springSecurityService.principal.id)
+        User user = User.read(springSecurityService.currentUser.id)
         if (annotation) {
             def sharedAnnotations = SharedAnnotation.createCriteria().list {
                 eq("userAnnotation", annotation)
