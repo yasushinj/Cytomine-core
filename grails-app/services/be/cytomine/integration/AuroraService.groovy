@@ -47,7 +47,7 @@ class AuroraService {
     public final static String IMAGE = "image_id"
 
     public void notifyImage() {
-        println "notify Aurora!"
+        log.info "notify Aurora!"
         //Get all images with PATIENT_ID, SAMPLE_ID, IMAGE_TYPE and VERSION and with NO NOTIFICATION
 
         //SEND HTTP POST TO AURORA
@@ -67,7 +67,7 @@ class AuroraService {
     }
 
     public def doHTTPRequestToAurora(AbstractImage imageToNotify) {
-        println "doHTTPRequestToAurora > ${imageToNotify.id}"
+        log.info "doHTTPRequestToAurora > ${imageToNotify.id}"
 
         def postData = createPostBody(imageToNotify) //'{"image_type": "HER2", "abstract_image_id": 122, "sample_type": "Primary", "patient_id": "0002"}'
 
@@ -77,9 +77,9 @@ class AuroraService {
         String request_signature = bytesToHex(hash)//hash.encodeBase64().toString()
         String signed_endpoint = endpoint + request_signature + "/"
 
-        println grailsApplication.config.grails.integration.aurora.url
-        println "postData=$postData"
-        println "signed_endpoint=$signed_endpoint"
+        log.info grailsApplication.config.grails.integration.aurora.url
+        log.info "postData=$postData"
+        log.info "signed_endpoint=$signed_endpoint"
         def http = new HTTPBuilder( grailsApplication.config.grails.integration.aurora.url )
         try {
             http.post(
@@ -87,9 +87,9 @@ class AuroraService {
                     body: postData,
                     requestContentType: groovyx.net.http.ContentType.JSON) { resp ->
                 resp.properties.each {
-                    println it.key + "=" + it.value
+                    log.info it.key + "=" + it.value
                 }
-                println "POST Success: ${resp.status}"
+                log.info "POST Success: ${resp.status}"
                 int code = resp.status
                 if(code==200 || code==201 || code==202 || code==203 || code==204) {
                     log.info "RESPONSE: $code => $resp"
@@ -101,11 +101,11 @@ class AuroraService {
         }
         catch ( HttpResponseException ex ) {
             // default failure handler throws an exception:
-            println "Unexpected response error: ${ex.statusCode}"
+            log.info "Unexpected response error: ${ex.statusCode}"
             ex.response.properties.each {
-                println it.key + "=" + it.value
+                log.info it.key + "=" + it.value
             }
-            println "Unexpected response error: ${ex.message}"
+            log.info "Unexpected response error: ${ex.message}"
         }
     }
 

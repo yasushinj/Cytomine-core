@@ -177,8 +177,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
         try {
             if (image) return image
             if (parent?.image) return parent.image
-            UploadedFile son = UploadedFile.findByParent(this)
-            if (son?.image) return son.image
             else return null
         } catch(Exception e) {
             return null

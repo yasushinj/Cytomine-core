@@ -336,8 +336,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == ReviewedAnnotationAPI.markStartReview(image.id,simpleUsername, password).code
         assert 200 == ReviewedAnnotationAPI.markStopReview(image.id,simpleUsername, password).code
 
-        //add annotation
-        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
+        //add annotation on my layer
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,imageUser.user,false).encodeAsJSON(),simpleUsername, password).code
+        //add annotation on other layers
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,image.user,false).encodeAsJSON(),simpleUsername, password).code
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,imageAdmin.user,false).encodeAsJSON(),simpleUsername, password).code
 
         //update, delete annotation (simple user data)
         assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), simpleUsername, password).code
@@ -446,8 +449,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
 
 
 
-        //add annotation
-        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
+        //add annotation on my layer
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,imageAdmin.user,false).encodeAsJSON(),adminUsername, password).code
+        //add annotation on other layers
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,image.user,false).encodeAsJSON(),adminUsername, password).code
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,imageUser.user,false).encodeAsJSON(),adminUsername, password).code
 
         //update, delete annotation (simple user data)
         assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), adminUsername, password).code
@@ -691,8 +697,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         //start reviewing image (superadmin data)
         assert 403 == ReviewedAnnotationAPI.markStartReview(image.id,simpleUsername, password).code
 
-        //add annotation
-        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
+        //add annotation on my layer
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,imageUser.user,false).encodeAsJSON(),simpleUsername, password).code
+        //add annotation on other layers
+        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,image.user,false).encodeAsJSON(),simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,imageAdmin.user,false).encodeAsJSON(),simpleUsername, password).code
 
         //update, delete annotation (simple user data)
         assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), simpleUsername, password).code
@@ -801,8 +810,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
 
 
 
-        //add annotation
-        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
+        //add annotation on my layer
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,imageAdmin.user,false).encodeAsJSON(),adminUsername, password).code
+        //add annotation on other layers
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,image.user,false).encodeAsJSON(),adminUsername, password).code
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,imageUser.user,false).encodeAsJSON(),adminUsername, password).code
 
         //update, delete annotation (simple user data)
         assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), adminUsername, password).code
@@ -1052,8 +1064,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         //start reviewing image (superadmin data)
         assert 403 == ReviewedAnnotationAPI.markStartReview(image.id,simpleUsername, password).code
 
-        //add annotation
-        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),simpleUsername, password).code
+        //add annotation on my layer
+        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,imageUser.user,false).encodeAsJSON(),simpleUsername, password).code
+        //add annotation on other layers
+        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,image.user,false).encodeAsJSON(),simpleUsername, password).code
+        assert 403 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,imageAdmin.user,false).encodeAsJSON(),simpleUsername, password).code
 
         //update, delete annotation (simple user data)
         assert 403 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), simpleUsername, password).code
@@ -1162,8 +1177,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
 
 
 
-        //add annotation
-        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,false).encodeAsJSON(),adminUsername, password).code
+        //add annotation on my layer
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,imageAdmin.user,false).encodeAsJSON(),adminUsername, password).code
+        //add annotation on other layers
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,imageUser.user,false).encodeAsJSON(),adminUsername, password).code
+        assert 200 == UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist(project,image,image.user,false).encodeAsJSON(),adminUsername, password).code
 
         //update, delete annotation (simple user data)
         assert 200 == UserAnnotationAPI.update(annotationUser.id, annotationUser.encodeAsJSON(), adminUsername, password).code
@@ -1297,7 +1315,7 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         ImageInstance imageAdmin = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
         imageAdmin.user = admin;
         BasicInstanceBuilder.saveDomain(imageAdmin)
-        UserAnnotation annotationAdmin = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,false)
+        UserAnnotation annotationAdmin = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageAdmin,admin,false)
         annotationAdmin.user = admin;
         BasicInstanceBuilder.saveDomain(annotationAdmin)
         //Create a description
@@ -1315,7 +1333,7 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         ImageInstance imageUser = BasicInstanceBuilder.getImageInstanceNotExist(project,false)
         imageUser.user = simpleUser;
         BasicInstanceBuilder.saveDomain(imageUser)
-        UserAnnotation annotationUser = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,false)
+        UserAnnotation annotationUser = BasicInstanceBuilder.getUserAnnotationNotExist(project,imageUser,simpleUser,false)
         annotationUser.user = simpleUser;
         BasicInstanceBuilder.saveDomain(annotationUser)
         //Create a description

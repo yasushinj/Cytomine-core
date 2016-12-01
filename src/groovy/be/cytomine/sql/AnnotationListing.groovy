@@ -169,10 +169,11 @@ abstract class AnnotationListing {
         def postComputedColumns = []
 
         columns.each {
-            if (!it.value.startsWith("#"))
+            if (!it.value.startsWith("#")) {
                 sqlColumns << it
-            else
+            } else {
                 postComputedColumns << it
+            }
         }
 
         String whereRequest =
@@ -206,7 +207,7 @@ abstract class AnnotationListing {
      * Generate SQL string for SELECT with only asked properties
      */
     def getSelect(def columns) {
-        if (!(kmeansValue < 3)) {
+        if (kmeansValue >= 3) {
             def requestHeadList = []
             columns.each {
                 requestHeadList << it.value + " as " + it.key
@@ -245,7 +246,9 @@ abstract class AnnotationListing {
         if (usersForTerm) {
             addIfMissingColumn('term')
             return "AND at.user_id IN (${usersForTerm.join(",")})\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getImagesConst() {
@@ -305,7 +308,9 @@ abstract class AnnotationListing {
             } catch (Exception e) {
                 return "AND ST_distance(a.location,ST_GeometryFromText('${baseAnnotation}')) <= $maxDistanceBaseAnnotation\n"
             }
-        } else return ""
+        } else {
+            return ""
+        }
     }
     //
 
@@ -320,13 +325,17 @@ abstract class AnnotationListing {
             }
             addIfMissingColumn('term')
             return " AND at.term_id = ${term}\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getParentsConst() {
         if (parents) {
             return " AND a.parent_ident IN (${parents.join(",")})\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
 
@@ -334,7 +343,9 @@ abstract class AnnotationListing {
         if (terms) {
             addIfMissingColumn('term')
             return "AND at.term_id IN (${terms.join(',')})\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getExcludedAnnotationConst() {
@@ -348,14 +359,18 @@ abstract class AnnotationListing {
             }
             addIfMissingColumn('algo')
             return "AND aat.term_id = ${suggestedTerm}\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getSuggestedTermsConst() {
         if (suggestedTerms) {
             addIfMissingColumn('algo')
             return "AND aat.term_id IN (${suggestedTerms.join(",")})\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getUserForTermAlgoConst() {
@@ -363,7 +378,9 @@ abstract class AnnotationListing {
             addIfMissingColumn('term')
             addIfMissingColumn('algo')
             return "AND aat.user_job_id = ${userForTermAlgo}\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getUsersForTermAlgoConst() {
@@ -371,7 +388,9 @@ abstract class AnnotationListing {
             addIfMissingColumn('algo')
             addIfMissingColumn('term')
             return "AND aat.user_job_id IN (${usersForTermAlgo.join(',')})\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     abstract def createOrderBy()
@@ -578,7 +597,9 @@ class AlgoAnnotationListing extends AnnotationListing {
         if (term) {
             addIfMissingColumn('term')
             return " AND aat.term_id = ${term}\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
     def getTermsConst() {
@@ -586,7 +607,9 @@ class AlgoAnnotationListing extends AnnotationListing {
         if (terms) {
             addIfMissingColumn('term')
             return "AND aat.term_id IN (${terms.join(',')})\n"
-        } else return ""
+        } else {
+            return ""
+        }
     }
 
 
@@ -605,10 +628,10 @@ class AlgoAnnotationListing extends AnnotationListing {
     def createOrderBy() {
 
         if (kmeansValue < 3) return ""
-        if (!orderBy) {
-            return "ORDER BY " + (columnToPrint.contains("term") ? "aat.rate desc ," : "") + " a.id desc "
-        } else {
+        if (orderBy) {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
+        } else {
+            return "ORDER BY " + (columnToPrint.contains("term") ? "aat.rate desc ," : "") + " a.id desc "
         }
     }
 }
@@ -746,10 +769,10 @@ class ReviewedAnnotationListing extends AnnotationListing {
 
     def createOrderBy() {
         if (kmeansValue < 3) return ""
-        if (!orderBy) {
-            return "ORDER BY a.id desc " + (columnToPrint.contains("term") ? ", term " : "")
-        } else {
+        if (orderBy) {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
+        } else {
+            return "ORDER BY a.id desc " + (columnToPrint.contains("term") ? ", term " : "")
         }
     }
 }
@@ -813,10 +836,10 @@ class RoiAnnotationListing extends AnnotationListing {
 
     def createOrderBy() {
         if (kmeansValue < 3) return ""
-        if (!orderBy) {
-            return "ORDER BY a.id desc"
-        } else {
+        if (orderBy) {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
+        } else {
+            return "ORDER BY a.id desc"
         }
     }
 

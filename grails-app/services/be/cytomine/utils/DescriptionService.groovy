@@ -63,10 +63,10 @@ class DescriptionService extends ModelService {
      */
     def add(def json) {
         securityACLService.check(json.domainIdent,json.domainClassName,READ)
-        if(!json.domainClassName.equals("be.cytomine.project.Project")){
-            securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,json.domainClassName, "user")
-        } else {
+        if(json.domainClassName.equals("be.cytomine.project.Project")){
             securityACLService.checkisNotReadOnly(json.domainIdent,json.domainClassName)
+        } else {
+            securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,json.domainClassName, "user")
         }
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new AddCommand(user: currentUser),null,json)
@@ -80,10 +80,10 @@ class DescriptionService extends ModelService {
      */
     def update(Description description, def jsonNewData) {
         securityACLService.check(description.container(),READ)
-        if(!description.domainClassName.equals("be.cytomine.project.Project")){
-            securityACLService.checkFullOrRestrictedForOwner(description.domainIdent,description.domainClassName, "user")
-        } else {
+        if(description.domainClassName.equals("be.cytomine.project.Project")){
             securityACLService.checkisNotReadOnly(description)
+        } else {
+            securityACLService.checkFullOrRestrictedForOwner(description.domainIdent,description.domainClassName, "user")
         }
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new EditCommand(user: currentUser), description,jsonNewData)
@@ -121,10 +121,10 @@ class DescriptionService extends ModelService {
             if (domain) {
                 description = get(domain)
             }
-            if(!description) {
-                throw new ObjectNotFoundException("Description not found for domain ${json.domainClassName} ${json.domainIdent}")
-            } else {
+            if(description) {
                 return description
+            } else {
+                throw new ObjectNotFoundException("Description not found for domain ${json.domainClassName} ${json.domainIdent}")
             }
         }catch(Exception e) {
             throw new ObjectNotFoundException("Description not found for domain ${json.domainClassName} ${json.domainIdent}")

@@ -195,7 +195,7 @@ class UserAnnotationService extends ModelService {
             json.user = currentUser.id
         } else {
             if(json.user != currentUser.id){
-            securityACLService.checkFullOrRestrictedForOwner(json.project, Project)
+                securityACLService.checkFullOrRestrictedForOwner(json.project, Project)
             }
         }
 
@@ -242,8 +242,6 @@ class UserAnnotationService extends ModelService {
                         }
                     } catch (CytomineException ex) {
                         log.error "CytomineException index in retrieval:" + ex.toString()
-                    } catch (Exception e) {
-                        log.error "Exception index in retrieval:" + e.toString()
                     }
                 }
             }
@@ -380,9 +378,7 @@ class UserAnnotationService extends ModelService {
             def url = UrlApi.getAnnotationMinCropWithAnnotationId(idAnnotation)
             data << [id: idAnnotation, container: idContainer, url: url]
         }
-        try {
-            sql.close()
-        }catch (Exception e) {}
+        sql.close()
         data
     }
 

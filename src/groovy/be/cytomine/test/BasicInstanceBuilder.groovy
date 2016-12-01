@@ -44,6 +44,7 @@ import grails.converters.JSON
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.springframework.dao.DataRetrievalFailureException
 
 /**
  * Created by IntelliJ IDEA.
@@ -91,26 +92,19 @@ class BasicInstanceBuilder {
         map.each {
             def propertyValue = it.value
             def compareValue = json[it.key]
-            assert toString(propertyValue).equals(toString(compareValue))
+            assert propertyValue.toString().equals(compareValue.toString())
         }
     }
-
-    static String toString(def data) {
-        try {
-            return data.toString()
-        } catch(Exception e) {
-            return data+""
-        }
-    }
-
 
     static boolean checkIfDomainExist(def domain, boolean exist=true) {
         try {
             domain.refresh()
-        } catch(Exception e) {}
+        } catch(DataRetrievalFailureException e){
+            log.debug("refresh impossible. Maybe the resource has been previously deleted")
+        }
         domain = domain.read(domain.id)
         boolean domainExist = domain && !domain.checkDeleted()
-       assert domainExist == exist
+        assert domainExist == exist
         domainExist
     }
 
@@ -172,12 +166,8 @@ class BasicInstanceBuilder {
             user = new UserJob(username: username, user:User.findByUsername(Infos.SUPERADMINLOGIN),password: password,enabled: true,job: getJob())
             user.generateKeys()
             saveDomain(user)
-            try {
-                SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
-                    SecUserSecRole.create(userJob, secRole)
-                }
-            } catch(Exception e) {
-                log.warn(e)
+            SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
+                SecUserSecRole.create(userJob, secRole)
             }
         }
         user
@@ -231,21 +221,13 @@ class BasicInstanceBuilder {
 
     static User getAdmin(String username, String password) {
         User user = getUser(username,password)
-            try {
-               SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_ADMIN"))
-            } catch(Exception e) {
-                log.warn(e)
-            }
+        SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_ADMIN"))
         user
     }
     static User getSuperAdmin(String username, String password) {
         User user = getUser(username,password)
-        try {
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_ADMIN"))
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_SUPER_ADMIN"))
-        } catch(Exception e) {
-            log.warn(e)
-        }
+        SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_ADMIN"))
+        SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_SUPER_ADMIN"))
         user
     }
 
@@ -315,6 +297,16 @@ class BasicInstanceBuilder {
         AlgoAnnotation annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image:getImageInstanceNotExist(job.project,true),
+                user: user,
+                project:job.project
+        )
+        save ? saveDomain(annotation) : checkDomain(annotation)
+    }
+
+    static AlgoAnnotation getAlgoAnnotationNotExist(Job job, UserJob user, ImageInstance image, boolean save = false) {
+        AlgoAnnotation annotation = new AlgoAnnotation(
+                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
+                image:image,
                 user: user,
                 project:job.project
         )
@@ -533,11 +525,12 @@ class BasicInstanceBuilder {
     }
 
     static UserAnnotation getUserAnnotation() {
+        ImageInstance image = getImageInstance()
         def annotation = UserAnnotation.findOrCreateWhere(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: getImageInstance(),
+                image: image,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:getImageInstance().project
+                project:image.project
         )
         saveDomain(annotation)
     }
@@ -548,10 +541,14 @@ class BasicInstanceBuilder {
     }
 
     static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image,boolean save = false) {
+        getUserAnnotationNotExist(project, image, User.findByUsername(Infos.SUPERADMINLOGIN), save)
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image, User user, boolean save = false) {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image:image,
-                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                user: user,
                 project:project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
@@ -1132,11 +1129,7 @@ class BasicInstanceBuilder {
             user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true)
             user.generateKeys()
             saveDomain(user)
-            try {
-               SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
-            } catch(Exception e) {
-                log.warn(e)
-            }
+            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
         }
         user
     }
@@ -1147,11 +1140,7 @@ class BasicInstanceBuilder {
             user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true)
             user.generateKeys()
             saveDomain(user)
-            try {
-               SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_GUEST"),true)
-            } catch(Exception e) {
-                log.warn(e)
-            }
+            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_GUEST"),true)
         }
         user
     }
@@ -1198,7 +1187,7 @@ class BasicInstanceBuilder {
     }
 
     static Storage getStorage() {
-        def storage = Storage.findByName("bidon")
+        def storage = Storage.findByUser(User.findByUsername(Infos.SUPERADMINLOGIN))
         if(!storage) {
             storage = new Storage(name:"bidon",basePath:"storagepath",ip:"192.168.0.0",user: User.findByUsername(Infos.SUPERADMINLOGIN),port: 123)
             saveDomain(storage)
@@ -1208,7 +1197,7 @@ class BasicInstanceBuilder {
     }
 
     static Storage getStorageNotExist(boolean save = false) {
-        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), ip: getRandomString(), port: 22, user: User.findByUsername(Infos.SUPERADMINLOGIN))
+        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), ip: getRandomString(), port: 22, user: getUser())
 
         if(save) {
             saveDomain(storage)
@@ -1464,7 +1453,7 @@ class BasicInstanceBuilder {
             BasicInstanceBuilder.saveDomain(mimeImageServer)
         }
 
-        Storage storage = Storage.findByName("lrollus test storage")
+        Storage storage = Storage.findByUser(user)
         if(!storage) {
             storage = new Storage()
             storage.basePath = "/data/test.cytomine.be/1"
@@ -1473,7 +1462,7 @@ class BasicInstanceBuilder {
             //storage.password = "toto" //unused
             //storage.port = 22 //unused
             //storage.username = "username" //unused
-            storage.user = User.findByUsername(Infos.SUPERADMINLOGIN)
+            storage.user = user
             BasicInstanceBuilder.saveDomain(storage)
         }
 

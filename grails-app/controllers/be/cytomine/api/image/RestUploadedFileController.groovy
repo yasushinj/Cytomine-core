@@ -219,6 +219,7 @@ class RestUploadedFileController extends RestController {
                 storageAbstractImageService.add(JSON.parse(JSONUtils.toJSONString([storage : storage.id, abstractimage : abstractImage.id])))
             }
 
+            log.info "Map image ${abstractImage.id} to uploaded file ${uploadedFile.id}"
             uploadedFile.image = abstractImage
             uploadedFile.save(flush:true,failOnError: true)
 
@@ -226,11 +227,6 @@ class RestUploadedFileController extends RestController {
             imagePropertiesService.populate(abstractImage)
             imagePropertiesService.extractUseful(abstractImage)
             abstractImage.save(flush: true,failOnError: true)
-
-
-            log.info "Map image ${abstractImage.id} to uploaded file ${uploadedFile.id}"
-            uploadedFile.image = abstractImage
-            uploadedFile.save(flush:true,failOnError: true)
             log.info "Image = ${uploadedFile.image?.id}"
 
             uploadedFile.getProjects()?.each { project_id ->

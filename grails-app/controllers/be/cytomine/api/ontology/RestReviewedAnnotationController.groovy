@@ -192,13 +192,13 @@ class RestReviewedAnnotationController extends RestController {
                 }
 
                 if(isCancel) {
-                    if(!image.reviewStop) {
+                    if(image.reviewStop) {
+                        //cancel finish reviewing (validate)
+                        image.reviewStop = null
+                    } else {
                         //cancel reviewing
                         image.reviewStart = null
                         image.reviewUser = null
-                    } else {
-                        //cancel finish reviewing (validate)
-                        image.reviewStop = null
                     }
                 } else {
                     image.reviewStop = new Date()
@@ -519,10 +519,10 @@ class RestReviewedAnnotationController extends RestController {
     ])
     def crop() {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
-        if (!annotation) {
-            responseNotFound("ReviewedAnnotation", params.id)
-        } else {
+        if (annotation) {
             redirect (url : annotation.toCropURL(params))
+        } else {
+            responseNotFound("ReviewedAnnotation", params.id)
         }
 
     }
@@ -530,11 +530,11 @@ class RestReviewedAnnotationController extends RestController {
     //TODO:APIDOC
     def cropMask () {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
-        if (!annotation) {
-            responseNotFound("ReviewedAnnotation", params.id)
-        } else {
+        if (annotation) {
             params.mask = true
             redirect (url : annotation.toCropURL(params))
+        } else {
+            responseNotFound("ReviewedAnnotation", params.id)
         }
 
     }
@@ -542,11 +542,11 @@ class RestReviewedAnnotationController extends RestController {
     //TODO:APIDOC
     def cropAlphaMask () {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
-        if (!annotation) {
-            responseNotFound("ReviewedAnnotation", params.id)
-        } else {
+        if (annotation) {
             params.alphaMask = true
             redirect (url : annotation.toCropURL(params))
+        } else {
+            responseNotFound("ReviewedAnnotation", params.id)
         }
 
     }

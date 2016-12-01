@@ -45,7 +45,7 @@ class RabbitConnectionService {
         try {
             connection = factory.newConnection()
         } catch(IOException e) {
-            e.printStackTrace()
+            log.error e.toString()
             throw new MiddlewareException("Connection to host : $mbsConnection.host could not be established. " + e.getMessage())
         }
 

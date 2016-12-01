@@ -305,7 +305,6 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def urlImageServerCrop(def abstractImageService) {
-        Long start = System.currentTimeMillis()
         def params = toCropParams()
         URL url = new URL(toCropURL())
         String urlCrop = abstractImageService.crop(params, url.query)

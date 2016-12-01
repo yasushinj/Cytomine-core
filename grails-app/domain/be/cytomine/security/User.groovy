@@ -135,7 +135,7 @@ class User extends SecUser {
         returnArray['lastname'] = domain?.lastname
         returnArray['email'] = domain?.email
         returnArray['sipAccount'] = domain?.sipAccount
-        if (!(domain?.springSecurityService?.currentUser instanceof String) && domain?.id == domain?.springSecurityService?.currentUser?.id) {
+        if (!(domain?.springSecurityService?.principal instanceof String) && domain?.id == domain?.springSecurityService?.currentUser?.id) {
             returnArray['publicKey'] = domain?.publicKey
             returnArray['privateKey'] = domain?.privateKey
             returnArray['passwordExpired'] = domain?.passwordExpired

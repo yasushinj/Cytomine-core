@@ -35,7 +35,6 @@ class DataTablesService {
     def process(params, domain, restrictions, returnFields, project) {
         params.max = params.iDisplayLength ? params.iDisplayLength as int : 10;
         params.offset = params.iDisplayStart ? params.iDisplayStart as int : 0;
-        def dataToRender = [:]
 
         String abstractImageAlias = "ai"
         String _search = params.sSearch ? "%"+params.sSearch+"%" : "%"

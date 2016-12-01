@@ -146,7 +146,7 @@ class UploadedFileTests {
         uploadedFile.ext = "tif"
         uploadedFile.contentType  = "image/tiff"
         uploadedFile.storages = new Long[1]
-        uploadedFile.storages[0] = Storage.findByName("lrollus test storage").id
+        uploadedFile.storages[0] = Storage.findByUser(User.findByUsername(Infos.SUPERADMINLOGIN)).id
         uploadedFile.projects = new Long[1]
         uploadedFile.projects[0] = oneAnotherImage.project.id
         uploadedFile.user = oneAnotherImage.user

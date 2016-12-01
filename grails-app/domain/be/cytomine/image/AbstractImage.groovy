@@ -183,7 +183,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
     def getImageServersStorage() {
         try {
 
-            def imageServers = MimeImageServer.findAllByMime(this.getMime())?.collect {it.imageServer}.findAll{it.available}
+            def imageServers = MimeImageServer.findAllByMime(this.getMime())?.collect {it.imageServer}.findAll{it.available}.unique()
 
             def storageAbstractImage = StorageAbstractImage.findAllByAbstractImage(this)?.collect { it.storage }
 

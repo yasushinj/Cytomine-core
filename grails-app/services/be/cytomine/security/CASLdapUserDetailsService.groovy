@@ -16,7 +16,6 @@ package be.cytomine.security
 * limitations under the License.
 */
 
-import be.cytomine.ldap.LdapUlgMemberPerson
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugin.springsecurity.userdetails.GormUserDetailsService
 import grails.plugin.springsecurity.userdetails.GrailsUser

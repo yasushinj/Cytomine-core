@@ -131,7 +131,7 @@ class AnnotationIndexTests {
         assert getCountAnnotationValue(json,user2.id, true)==0
 
         //add annotation by user 1
-        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,user1)
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
         int idAnnotation = result.data.id
@@ -158,6 +158,23 @@ class AnnotationIndexTests {
         assert getCountAnnotationValue(json,user2.id, false)==1
         assert getCountAnnotationValue(json,user2.id, true)==0
 
+
+        //test user1 add annotation on user2 layer
+        annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,user2)
+        result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
+        assert 200 == result.code
+        idAnnotation = result.data.id
+
+        //list index, check if 1 for user and 0 for other
+        result = AnnotationIndexAPI.listByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data).collection
+        assert json.size()==2
+        assert getCountAnnotationValue(json,user1.id, false)==0
+        assert getCountAnnotationValue(json,user1.id, true)==0
+        assert getCountAnnotationValue(json,user2.id, false)==2
+        assert getCountAnnotationValue(json,user2.id, true)==0
+
     }
 
 
@@ -177,7 +194,13 @@ class AnnotationIndexTests {
         assert getCountAnnotationValue(json,user2.id, true)==0
 
         //add annotation by user 1
-        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        def annotationToAdd
+        if(user1 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user1.job,user1,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image, user1)
+        }
+
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
         int idAnnotation = result.data.id
@@ -194,12 +217,20 @@ class AnnotationIndexTests {
 
 
         //add annotation by user 1
-        annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        if(user1 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user1.job,user1,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image, user1)
+        }
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
 
         //add annotation by user 2
-        annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        if(user2 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user2.job,user2,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image, user2)
+        }
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user2.username, PASSWORD)
         assert 200 == result.code
 
@@ -245,7 +276,12 @@ class AnnotationIndexTests {
         assert getCountAnnotationValue(json,user1.id, true)==0
 
         //add annotation by user 1
-        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        def annotationToAdd
+        if(user1 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user1.job,user1,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,user1)
+        }
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
         int idAnnotation = result.data.id
@@ -264,14 +300,22 @@ class AnnotationIndexTests {
 
 
         //add annotation by user 1
-        annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        if(user1 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user1.job,user1,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,user1)
+        }
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
         result = ReviewedAnnotationAPI.addReviewAnnotation(result.data.id,user1.username, PASSWORD)
         assert 200 == result.code
 
         //add annotation by user 1
-        annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
+        if(user1 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user1.job,user1,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,user1)
+        }
         result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
 
@@ -301,7 +345,7 @@ class AnnotationIndexTests {
     private checkAnnotationIndexReviewedWithoutAnnotationIndex(Project project, SecUser user1, SecUser user2) {
         //create image
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project,true)
-        def result = ReviewedAnnotationAPI.markStartReview(image.id,user1.username, PASSWORD)
+        def result = ReviewedAnnotationAPI.markStartReview(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         //list index, check if 0
@@ -313,24 +357,36 @@ class AnnotationIndexTests {
         assert getCountAnnotationValue(json,user1.id, true)==0
 
         //add annotation by user 1
-        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image)
-        result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def annotationToAdd
+        if(user1 instanceof UserJob){
+            annotationToAdd = BasicInstanceBuilder.getAlgoAnnotationNotExist(user1.job,user1,image)
+        } else {
+            annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project,image,user1)
+        }
+        result = AnnotationDomainAPI.create(annotationToAdd.encodeAsJSON(), user1.username, PASSWORD)
         assert 200 == result.code
         int idAnnotation = result.data.id
-        result = ReviewedAnnotationAPI.addReviewAnnotation(idAnnotation,user1.username, PASSWORD)
+
+        result = AnnotationIndexAPI.listByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data).collection
+        assert json.size()==1
+        assert getCountAnnotationValue(json,user1.id, false)==1
+        assert getCountAnnotationValue(json,user1.id, true)==0
+
+        result = ReviewedAnnotationAPI.addReviewAnnotation(idAnnotation,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         //list index, check if 1 for user and 0 for other
         result = AnnotationIndexAPI.listByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data).collection
-
-
         assert json.size()==2
-        assert getCountAnnotationValue(json,user1.id, false)==0
-        assert getCountAnnotationValue(json,user1.id, true)==1
-        assert getCountAnnotationValue(json,User.findByUsername(Infos.SUPERADMINLOGIN).id, false)==1
-        assert getCountAnnotationValue(json,User.findByUsername(Infos.SUPERADMINLOGIN).id, true)==0
+
+        assert getCountAnnotationValue(json,user1.id, false)==1
+        assert getCountAnnotationValue(json,user1.id, true)==0
+        assert getCountAnnotationValue(json,User.findByUsername(Infos.SUPERADMINLOGIN).id, false)==0
+        assert getCountAnnotationValue(json,User.findByUsername(Infos.SUPERADMINLOGIN).id, true)==1
 
     }
 

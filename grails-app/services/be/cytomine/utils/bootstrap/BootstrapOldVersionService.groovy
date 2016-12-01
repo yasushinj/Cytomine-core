@@ -28,7 +28,6 @@ import be.cytomine.utils.Version
 import grails.converters.JSON
 import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
-import org.postgresql.util.PSQLException
 
 /**
  * Cytomine @ GIGA-ULG

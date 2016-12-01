@@ -161,8 +161,6 @@ class RestAnnotationDomainController extends RestController {
             log.error("add error:" + e.msg)
             log.error(e)
             response([success: false, errors: e.msg], e.code)
-        }catch (Exception e) {
-            log.error("GetThumb:" + e)
         }
     }
 
@@ -187,8 +185,6 @@ class RestAnnotationDomainController extends RestController {
             log.error("add error:" + e.msg)
             log.error(e)
             response([success: false, errors: e.msg], e.code)
-        }catch (Exception e) {
-            log.error("GetThumb:" + e)
         }
     }
 
@@ -843,10 +839,10 @@ class RestAnnotationDomainController extends RestController {
                 throw new WrongArgumentException("There is no intersect annotation!")
             }
 
-            if (!idsUserAnnotation.isEmpty()) {
-                responseResult(doCorrectUserAnnotation(idsUserAnnotation,location, remove))
-            } else {
+            if (idsUserAnnotation.isEmpty()) {
                 responseResult(doCorrectReviewedAnnotation(idsReviewedAnnotation,location, remove))
+            } else {
+                responseResult(doCorrectUserAnnotation(idsUserAnnotation,location, remove))
             }
 
         } catch (CytomineException e) {
@@ -1019,17 +1015,7 @@ class RestAnnotationDomainController extends RestController {
         }
 
         def result
-        if (!remove) {
-            //union will be made:
-            // -add the new geometry to the based annotation location.
-            // -add all other annotation geometry to the based annotation location (and delete other annotation)
-            based.location = based.location.union(newGeometry)
-            allAnnotationWithSameTerm.eachWithIndex { other, i ->
-                based.location = based.location.union(other.location)
-                reviewedAnnotationService.delete(other)
-            }
-            result = reviewedAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
-        } else {
+        if (remove) {
             //diff will be made
             //-remove the new geometry from the based annotation location
             //-remove the new geometry from all other annotation location
@@ -1040,6 +1026,16 @@ class RestAnnotationDomainController extends RestController {
                 other.location = other.location.difference(newGeometry)
                 reviewedAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
             }
+        } else {
+            //union will be made:
+            // -add the new geometry to the based annotation location.
+            // -add all other annotation geometry to the based annotation location (and delete other annotation)
+            based.location = based.location.union(newGeometry)
+            allAnnotationWithSameTerm.eachWithIndex { other, i ->
+                based.location = based.location.union(other.location)
+                reviewedAnnotationService.delete(other)
+            }
+            result = reviewedAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
         }
         return result
     }
@@ -1067,17 +1063,7 @@ class RestAnnotationDomainController extends RestController {
         }
 
         def result
-        if (!remove) {
-            //union will be made:
-            // -add the new geometry to the based annotation location.
-            // -add all other annotation geometry to the based annotation location (and delete other annotation)
-            based.location = based.location.union(newGeometry)
-            allAnnotationWithSameTerm.eachWithIndex { other, i ->
-                based.location = based.location.union(other.location)
-                userAnnotationService.delete(other)
-            }
-            result = userAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
-        } else {
+        if (remove) {
             //diff will be made
             //-remove the new geometry from the based annotation location
             //-remove the new geometry from all other annotation location
@@ -1088,6 +1074,16 @@ class RestAnnotationDomainController extends RestController {
                 other.location = other.location.difference(newGeometry)
                 userAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
             }
+        } else {
+            //union will be made:
+            // -add the new geometry to the based annotation location.
+            // -add all other annotation geometry to the based annotation location (and delete other annotation)
+            based.location = based.location.union(newGeometry)
+            allAnnotationWithSameTerm.eachWithIndex { other, i ->
+                based.location = based.location.union(other.location)
+                userAnnotationService.delete(other)
+            }
+            result = userAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
         }
         return result
     }

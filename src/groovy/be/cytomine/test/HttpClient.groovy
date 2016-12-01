@@ -243,7 +243,7 @@ class HttpClient {
 
     public void post(String data, String contentType = null) throws Exception {
         HttpPost httpPost = new HttpPost(URL.toString());
-        println URL.toString()
+        log.info URL.toString()
 //        println "###"+data
 //        httpPost.addHeader("Content-Type","application/json")
 //        httpPost.addHeader("host",this.host)
@@ -564,7 +564,7 @@ class HttpClient {
         HttpGet httpGet = new HttpGet(URL.toString());
         HttpResponse response = client.execute(targetHost, httpGet, localcontext);
         int code = response.getStatusLine().getStatusCode();
-        System.out.println("url="+url + " is " + code + "(OK="+HttpURLConnection.HTTP_OK +",MOVED="+HttpURLConnection.HTTP_MOVED_TEMP+")");
+        println "url="+url + " is " + code + "(OK="+HttpURLConnection.HTTP_OK +",MOVED="+HttpURLConnection.HTTP_MOVED_TEMP+")";
 
         boolean isOK = (code == HttpURLConnection.HTTP_OK);
         boolean isFound = (code == HttpURLConnection.HTTP_MOVED_TEMP);

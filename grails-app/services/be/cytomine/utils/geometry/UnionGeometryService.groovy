@@ -289,7 +289,6 @@ class UnionGeometryService {
 
         log.info request
         def sql = new Sql(dataSource)
-        def data = []
         sql.eachRow(request) {
             log.info it[2] + "\t" + it[0] + "\t" + it[1]  + "\t" + it[3]  + "\t" + it[4]
         }

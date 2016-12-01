@@ -224,10 +224,10 @@ class RestUserAnnotationController extends RestController {
             responseNotFound("Annotation", params.annotation)
         }
         def sharedAnnotation = SharedAnnotation.findById(params.long('id'))
-        if (!sharedAnnotation) {
-            responseNotFound("SharedAnnotation", params.id)
-        } else {
+        if (sharedAnnotation) {
             responseSuccess(sharedAnnotation)
+        } else {
+            responseNotFound("SharedAnnotation", params.id)
         }
     }
 
@@ -298,9 +298,7 @@ class RestUserAnnotationController extends RestController {
     ])
     def crop() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
-        if (!annotation) {
-            responseNotFound("Annotation", params.id)
-        } else {
+        if (annotation) {
             String url = annotation.toCropURL(params)
             if(url.length()<2000){
                 log.info "redirect to ${url}"
@@ -335,6 +333,8 @@ class RestUserAnnotationController extends RestController {
 
                 }
             }
+        } else {
+            responseNotFound("Annotation", params.id)
         }
 
     }
@@ -342,12 +342,12 @@ class RestUserAnnotationController extends RestController {
     //TODO:APIDOC
     def cropMask () {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
-        if (!annotation) {
-            responseNotFound("UserAnnotation", params.id)
-        } else {
+        if (annotation) {
             params.mask = true
             // redirect to AbstractImageController crop
             redirect (url : annotation.toCropURL(params))
+        } else {
+            responseNotFound("UserAnnotation", params.id)
         }
 
     }
@@ -355,12 +355,12 @@ class RestUserAnnotationController extends RestController {
     //TODO:APIDOC
     def cropAlphaMask () {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
-        if (!annotation) {
-            responseNotFound("UserAnnotation", params.id)
-        } else {
+        if (annotation) {
             params.alphaMask = true
             // redirect to AbstractImageController crop
             redirect (url : annotation.toCropURL(params))
+        } else {
+            responseNotFound("UserAnnotation", params.id)
         }
 
     }
