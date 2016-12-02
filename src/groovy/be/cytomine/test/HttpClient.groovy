@@ -98,7 +98,8 @@ class HttpClient {
 
         // Add AuthCache to the execution context
         localcontext = new BasicHttpContext();
-        localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
+        //Dirty fix for error MissingPropertyException: No such property: AUTH_CACHE for class: org.apache.http.client.protocol.ClientContext in production.
+        localcontext.setAttribute("http.auth.auth-cache", authCache);
         // Set credentials
         UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password)
         HttpParams params = client.getParams()
