@@ -205,7 +205,7 @@ class UserAnnotationService extends ModelService {
             json.location = new WKTWriter().write(data.geometry)
             json.geometryCompression = data.rate
         } catch (Exception e) {
-            log.error("Cannot simplify:" + e)
+            log.error("add : Cannot simplify:" + e)
         }
 
         //Start transaction
@@ -261,10 +261,10 @@ class UserAnnotationService extends ModelService {
         securityACLService.checkFullOrRestrictedForOwner(annotation,annotation.user)
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(json.location, annotation?.geometryCompression)
-            json.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(jsonNewData.location, jsonNewData.geometryCompression)
+            jsonNewData.location = new WKTWriter().write(data.geometry)
         } catch (Exception e) {
-            log.error("Cannot simplify:" + e)
+            log.error("update : Cannot simplify:" + e)
         }
 
         def result = executeCommand(new EditCommand(user: currentUser),annotation,jsonNewData)

@@ -52,10 +52,10 @@ class RestDescriptionController extends RestController {
             if(desc) {
                 responseSuccess(desc)
             } else {
-                responseNotFound("Domain","$id and className=$className")
+                responseNotFound("Description with Project","$id and className=$className")
             }
         } else {
-            responseNotFound("Domain","$id and className=$className")
+            log.error "classname $className or id $id is missing"
         }
     }
 
