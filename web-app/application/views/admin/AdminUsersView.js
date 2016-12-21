@@ -93,7 +93,7 @@ var AdminUsersView = Backbone.View.extend({
         }
 
         var columns = [
-            { "mDataProp": "id", "bSearchable": false,"bSortable": false},
+            { "mDataProp": "id", "bSearchable": true,"bSortable": false},
             { "mDataProp": "Username", sDefaultContent: "", "bSearchable": true, "fnRender" : function(o) {
                 return o.aData["username"];
             }},
@@ -115,7 +115,7 @@ var AdminUsersView = Backbone.View.extend({
                         return "<span class='label label-primary'>Guest</span>";
                 }
             }},
-            { "mDataProp": "email", "bSearchable": false,"bSortable": true },
+            { "mDataProp": "email", "bSearchable": true,"bSortable": true },
             { "mData": "created", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
                 return window.app.convertLongToPrettyDate(o.aData["created"]);
             }},
