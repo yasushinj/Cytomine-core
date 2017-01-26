@@ -165,7 +165,7 @@ class RestPropertyController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Get a project property with tis id or its key")
+    @RestApiMethod(description="Get a project property with its id or its key")
     @RestApiParams(params=[
         @RestApiParam(name="idProject", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "(Optional, if null key must be set) The property id"),

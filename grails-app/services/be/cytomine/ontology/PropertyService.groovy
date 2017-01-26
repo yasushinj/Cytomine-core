@@ -126,11 +126,11 @@ class PropertyService extends ModelService {
     }
 
     def read(CytomineDomain domain, String key) {
-        def cytomineDomain = Property.findAllByDomainIdentAndKey(domain.id,key)
-        if (cytomineDomain && !cytomineDomain.isEmpty() && !cytomineDomain.contains("AbstractImage")) {
-            securityACLService.check(cytomineDomain.first().container(),READ)
+        def property = Property.findByDomainIdentAndKey(domain.id,key)
+        if (property && !property.domainClassName.contains("AbstractImage")) {
+            securityACLService.check(property.container(),READ)
         }
-        cytomineDomain
+        property
     }
 
     def add(def json) {
