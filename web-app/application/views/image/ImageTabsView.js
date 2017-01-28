@@ -87,10 +87,6 @@ var ImageTabsView = Backbone.View.extend({
                     }
                 }
                 return names;
-                return o.aData["originalFilename"];
-
-
-
 
             }}
             ,

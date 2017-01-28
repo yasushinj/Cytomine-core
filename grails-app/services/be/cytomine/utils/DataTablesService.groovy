@@ -42,8 +42,6 @@ class DataTablesService {
         //&iSortCol_0=7&sSortDir_0=asc
         //iSortCol_0=0&sSortDir_0=asc
 
-        //assert ["hi","hey","hello"] == ["hello","hi","hey"].sort { a, b -> a.length() <=> b.length() }
-
 
         def col = params.get("iSortCol_0");
         def sort = params.get("sSortDir_0")

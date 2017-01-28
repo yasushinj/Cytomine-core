@@ -179,7 +179,7 @@ BrowseImageView = Backbone.View.extend({
 
         layer.events.register("tileloaded", layer, function (evt) {
             return; //disabled but works
-            var ctx = evt.tile.getCanvasContext();
+            /*var ctx = evt.tile.getCanvasContext();
             if (ctx) {
                 var imgd = ctx.getImageData(0, 0, evt.tile.size.w, evt.tile.size.h);
 
@@ -187,7 +187,7 @@ BrowseImageView = Backbone.View.extend({
                 evt.tile.imgDiv.removeAttribute("crossorigin");
                 evt.tile.imgDiv.src = ctx.canvas.toDataURL();
 
-            }
+            }*/
         });
 
         layer.events.register("loadend", layer, function () {
@@ -1543,11 +1543,6 @@ BrowseImageView = Backbone.View.extend({
                             self.layerSwitcherPanel.initLayerSelection();
                         }
                     });
-
-
-                    console.log("GO TO LAYER 2 ");
-                    console.log(self.layers);
-
                 }
             });
         }

@@ -420,29 +420,29 @@ class ImageRetrievalService {
 
     public def doRetrievalIndex(String url, String username, String password, BufferedImage image,String id, String storage, Map<String,String> properties) {
         try {
-        List<String> keys = []
-        List<String> values = []
-        properties.each {
-            keys << it.key
-            values << it.value
-        }
+            List<String> keys = []
+            List<String> values = []
+            properties.each {
+                keys << it.key
+                values << it.value
+            }
 
-        url = url+"?id=$id&storage=$storage&keys=${keys.join(";")}&values=${values.join(";")}"
+            url = url+"?id=$id&storage=$storage&keys=${keys.join(";")}&values=${values.join(";")}"
 
-        HttpClient client = new HttpClient()
+            HttpClient client = new HttpClient()
 
-        log.info "url=$url"
+            log.info "url=$url"
 
-        client.connect(url,username,password)
+            client.connect(url,username,password)
 
-        MultipartEntity entity = createEntityFromImage(image)
+            MultipartEntity entity = createEntityFromImage(image)
 
-        client.post(entity)
+            client.post(entity)
 
-         String response = client.getResponseData()
-         int code = client.getResponseCode()
-         log.info "code=$code response=$response"
-        return [code:code,response:response] }
+            String response = client.getResponseData()
+            int code = client.getResponseCode()
+            log.info "code=$code response=$response"
+            return [code:code,response:response] }
         catch (Exception e) {
             log.info "Unable to index resource"
             log.error e
