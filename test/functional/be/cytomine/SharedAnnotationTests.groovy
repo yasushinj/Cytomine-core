@@ -16,6 +16,7 @@ package be.cytomine
 * limitations under the License.
 */
 
+import be.cytomine.image.ImageProcessingService
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AnnotationCommentAPI
@@ -33,31 +34,84 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 class SharedAnnotationTests  {
 
     void testGetAnnotationCommentWithCredential() {
+        //userAnnotation
         def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotation()
-        def result = AnnotationCommentAPI.show(sharedAnnotation.userAnnotation.id, sharedAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        def result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, sharedAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
+
+        //algoAnnotation
+        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
+        AnnotationDomain annotation = BasicInstanceBuilder.getAlgoAnnotation();
+        sharedAnnotation.annotationClassName = annotation.class.name
+        sharedAnnotation.annotationIdent = annotation.id
+        BasicInstanceBuilder.saveDomain(sharedAnnotation)
+
+        result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, sharedAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+
     }
 
     void testListAnnotationCommentsByAnnotationWithCredential() {
+        //userAnnotation
         def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotation()
-        def result = AnnotationCommentAPI.list(sharedAnnotation.userAnnotation.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = AnnotationCommentAPI.list(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
 
-        result = AnnotationCommentAPI.list(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        //algoAnnotation
+        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotation()
+        AnnotationDomain annotation = BasicInstanceBuilder.getAlgoAnnotation();
+        sharedAnnotation.annotationClassName = annotation.class.name
+        sharedAnnotation.annotationIdent = annotation.id
+        BasicInstanceBuilder.saveDomain(sharedAnnotation)
+
+        result = AnnotationCommentAPI.list(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        // not existing annotation
+        result = AnnotationCommentAPI.list(-99, sharedAnnotation.annotationClassName, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
+
     }
 
-//    void testAddAnnotationComments() {
-//        def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-//        def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-//        json.subject = "subject for test mail"
-//        json.message = "message for test mail"
-//        json.users = [BasicInstanceBuilder.getUser1().id]
-//        def result = AnnotationCommentAPI.create(sharedAnnotation.userAnnotation.id,json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-//        assert 200 == result.code
-//    }
+    {
+        ImageProcessingService.metaClass.getImageFromURL = {
+            String url -> println "\n\n mocked getImageFromURL \n\n";
+                return javax.imageio.ImageIO.read(new File("test/functional/be/cytomine/utils/images/thumb256.png"))
+        }
+    }
+
+
+    void testAddAnnotationComments() {
+
+
+        def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
+        def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
+        json.subject = "subject for test mail"
+        json.message = "message for test mail"
+        json.users = [BasicInstanceBuilder.getUser1().id]
+        def result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
+        AnnotationDomain annotation = BasicInstanceBuilder.getAlgoAnnotation();
+        sharedAnnotation.annotationClassName = annotation.class.name
+        sharedAnnotation.annotationIdent = annotation.id
+        BasicInstanceBuilder.saveDomain(sharedAnnotation)
+
+        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
+        json.subject = "subject for test mail"
+        json.message = "message for test mail"
+        json.users = [BasicInstanceBuilder.getUser1().id]
+        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
 }
