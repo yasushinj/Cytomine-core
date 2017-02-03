@@ -113,7 +113,7 @@ class RestUserAnnotationController extends RestController {
     @RestApiMethod(description="Add comment on an annotation to other user and send a mail to users")
     @RestApiResponseObject(objectIdentifier = "empty")
     @RestApiParams(params=[
-    @RestApiParam(name="userannotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
+    @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
     @RestApiParam(name="POST JSON: subject", type="string", paramType = RestApiParamType.PATH,description = "The subject"),
     @RestApiParam(name="POST JSON: message", type="string", paramType = RestApiParamType.PATH,description = "TODO:APIDOC, DIFF WITH COMMENT?"),
     @RestApiParam(name="POST JSON: users", type="list", paramType = RestApiParamType.PATH,description = "The list of user (id) to send the mail"),
@@ -123,7 +123,8 @@ class RestUserAnnotationController extends RestController {
 
         User sender = User.read(springSecurityService.currentUser.id)
         securityACLService.checkUser(sender)
-        UserAnnotation annotation = userAnnotationService.read(params.getLong('userannotation'))
+        UserAnnotation annotation = userAnnotationService.read(params.getLong('annotation'))
+        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
         String cid = UUID.randomUUID().toString()
 
         //create annotation crop (will be send with comment)
@@ -200,7 +201,8 @@ class RestUserAnnotationController extends RestController {
                 sender: sender,
                 receivers: receivers,
                 comment: request.JSON.comment,
-                userAnnotation: annotation
+                annotationIdent: annotation.id,
+                annotationClassName: annotation.class.name
         )
         if (sharedAnnotation.save()) {
             notificationService.notifyShareAnnotation(sender, receiversEmail, request, attachments, cid)
@@ -215,11 +217,11 @@ class RestUserAnnotationController extends RestController {
      */
     @RestApiMethod(description="Get a specific comment")
     @RestApiParams(params=[
-    @RestApiParam(name="userannotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
+    @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
     @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The comment id"),
     ])
     def showComment() {
-        UserAnnotation annotation = userAnnotationService.read(params.long('userannotation'))
+        UserAnnotation annotation = userAnnotationService.read(params.long('annotation'))
         if (!annotation) {
             responseNotFound("Annotation", params.annotation)
         }
@@ -236,14 +238,15 @@ class RestUserAnnotationController extends RestController {
      */
     @RestApiMethod(description="Get all comments on annotation", listing=true)
     @RestApiParams(params=[
-    @RestApiParam(name="userannotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
+    @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
     ])
     def listComments() {
-        UserAnnotation annotation = userAnnotationService.read(params.long('userannotation'))
+        UserAnnotation annotation = userAnnotationService.read(params.long('annotation'))
         User user = User.read(springSecurityService.currentUser.id)
         if (annotation) {
             def sharedAnnotations = SharedAnnotation.createCriteria().list {
-                eq("userAnnotation", annotation)
+                eq("annotationIdent", annotation.id)
+                eq("annotationClassName", annotation.class.name)
                 or {
                     eq("sender", user)
                     receivers {

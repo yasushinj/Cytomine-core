@@ -1,5 +1,7 @@
 package be.cytomine.security
 
+import be.cytomine.AnnotationDomain
+
 /*
 * Copyright (c) 2009-2016. Authors: see NOTICE file.
 *
@@ -20,7 +22,6 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
-import be.cytomine.test.Infos
 import be.cytomine.test.http.AnnotationCommentAPI
 import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.ProjectAPI
@@ -29,234 +30,223 @@ import grails.converters.JSON
 
 class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
 
+    //TODO test algo too
+
     // initialization block to record in DB the 3 users used in these tests
     {
         getUser1()
         getUser2()
+        getUser3()
         getUserAdmin()
     }
 
 
-    void testSharedAnnotationSecurityForCytomineAdmin() {
+    void testSharedAnnotationSecurityForClassicalProject() {
+        testSharedAnnotationSecurity(Project.EditingMode.CLASSIC);
+    }
+    void testSharedAnnotationSecurityForRestrictedProject() {
+        testSharedAnnotationSecurity(Project.EditingMode.RESTRICTED);
+    }
+    void testSharedAnnotationSecurityForReadOnlyProject() {
+        testSharedAnnotationSecurity(Project.EditingMode.READ_ONLY);
+    }
+
+    private void testSharedAnnotationSecurity(Project.EditingMode mode) {
 
         //Create project with user 1
         ImageInstance image = ImageInstanceAPI.buildBasicImage(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         Project project = image.project
 
-        //Add annotation 1 with cytomine admin
-        UserAnnotation annotation1 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, userAdmin)
-        annotation1.image = image
-        annotation1.project = project
-        def result = UserAnnotationAPI.create(annotation1.encodeAsJSON(), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        //Add contributor to project
+        ProjectAPI.addUserProject(project.id, getUser2().id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+
+        //Add annotation 1 with a contributor
+        UserAnnotation annotation1 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user2)
+        def result = UserAnnotationAPI.create(annotation1.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         annotation1 = result.data
 
-        //Add annotation 2 with user 1
+
+        //Add annotation 2 with project admin
         UserAnnotation annotation2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user1)
-        annotation2.image = image
-        annotation2.project = project
-        Infos.printRight(annotation2.project)
         result = UserAnnotationAPI.create(annotation2.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
         annotation2 = result.data
 
-        //Admin can add comment on the two annotations
-        def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation1.class.name
-        sharedAnnotation.annotationIdent = annotation1.id
-        def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
-        assert 200 == result.code
-
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation2.class.name
-        sharedAnnotation.annotationIdent = annotation2.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
-        assert 200 == result.code
-    }
-
-    void testSharedAnnotationSecurityForProjectAdmin() {
-
-        //Create project with user 1
-        ImageInstance image = ImageInstanceAPI.buildBasicImage(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        Project project = image.project
-
-        //Add annotation 1 with project admin
-        UserAnnotation annotation1 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user1)
-        annotation1.image = image
-        annotation1.project = project
-        def result = UserAnnotationAPI.create(annotation1.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        assert 200 == result.code
-        annotation1 = result.data
-
-        //Add contributor to project
-        ProjectAPI.addUserProject(project.id, getUser2().id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-
-        //Add annotation 2 with a contributor
-        UserAnnotation annotation2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user2)
-        annotation2.image = image
-        annotation2.project = project
-        Infos.printRight(annotation2.project)
-        result = UserAnnotationAPI.create(annotation2.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-        annotation2 = result.data
-
-        //Project admin can add comment on the two annotations
-        def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation1.class.name
-        sharedAnnotation.annotationIdent = annotation1.id
-        def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        assert 200 == result.code
-
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation2.class.name
-        sharedAnnotation.annotationIdent = annotation2.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        assert 200 == result.code
-    }
-
-
-    void testSharedAnnotationSecurityForProjectUser() {
-
-        //Create project with user 1
-        ImageInstance image = ImageInstanceAPI.buildBasicImage(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        Project project = image.project
-
-        //Add annotation 1 with project admin
-        UserAnnotation annotation1 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user1)
-        annotation1.image = image
-        annotation1.project = project
-        def result = UserAnnotationAPI.create(annotation1.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        assert 200 == result.code
-        annotation1 = result.data
-
-        //Add contributor to project
-        ProjectAPI.addUserProject(project.id, getUser2().id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-
-        //Add annotation 2 with a contributor
-        UserAnnotation annotation2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user2)
-        annotation2.image = image
-        annotation2.project = project
-        Infos.printRight(annotation2.project)
-        result = UserAnnotationAPI.create(annotation2.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-        annotation2 = result.data
-
-        //When project is classic
-
-        //Project user can add comment on the two annotations
-        def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation1.class.name
-        sharedAnnotation.annotationIdent = annotation1.id
-        def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation2.class.name
-        sharedAnnotation.annotationIdent = annotation2.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-
-        //When project is restricted
-        project.mode = Project.EditingMode.RESTRICTED
+        project.mode = mode
         BasicInstanceBuilder.saveDomain(project)
 
-        //Project user can add comment only on its annotations
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation1.class.name
-        sharedAnnotation.annotationIdent = annotation1.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
+        Integer expectedResult;
+        /*-------STEP 1 : Create SharedAnnotation & test show
+            On Annot1 (made by user2), Comments : [admin->user1, user1->user2, user2->user1]
+            On Annot2 (made by user1), Comments : [user2->admin]
+         */
 
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation2.class.name
-        sharedAnnotation.annotationIdent = annotation2.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
+        ProjectAPI.addUserProject(project.id, getUser2().id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
 
-        //When project is read-only
-        project.mode = Project.EditingMode.READ_ONLY
-        BasicInstanceBuilder.saveDomain(project)
-
-        //Project user cannot add comment even on its annotations
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation1.class.name
-        sharedAnnotation.annotationIdent = annotation1.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
-
-        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
-        sharedAnnotation.annotationClassName = annotation2.class.name
-        sharedAnnotation.annotationIdent = annotation2.id
-        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
-        json.subject = "subject for test mail"
-        json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
-    }
-
-
-    void testSharedAnnotationSecurityForNonProjectUser() {
-
-        //Create project with user 1
-        ImageInstance image = ImageInstanceAPI.buildBasicImage(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        Project project = image.project
-
-        //Add annotation 1 with project admin
-        UserAnnotation annotation1 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user1)
-        annotation1.image = image
-        annotation1.project = project
-        def result = UserAnnotationAPI.create(annotation1.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-        assert 200 == result.code
-        annotation1 = result.data
-
-        //User2 in not in the project si cannot add comment on the annotations
         def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
         sharedAnnotation.annotationClassName = annotation1.class.name
         sharedAnnotation.annotationIdent = annotation1.id
         def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
         json.subject = "subject for test mail"
         json.message = "message for test mail"
-        json.users = [BasicInstanceBuilder.getUser1().id]
+        json.users = [getUser1().id]
+        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        if(mode == Project.EditingMode.CLASSIC) {
+            expectedResult = 200;
+        } else{
+            expectedResult = 403;
+        }
+        assert expectedResult == result.code
+        Long idSharedAnnotationUser;
+
+        if(mode == Project.EditingMode.CLASSIC) {
+            idSharedAnnotationUser = result.data.id
+
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+            assert 200 == result.code
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+            assert 200 == result.code
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+            assert 200 == result.code
+        }
+
+        //contributor can create on its own annotation
+        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
+        sharedAnnotation.annotationClassName = annotation1.class.name
+        sharedAnnotation.annotationIdent = annotation1.id
+        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
+        json.subject = "subject for test mail"
+        json.message = "message for test mail"
+        json.users = [getUser1().id]
         result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
+        if(mode == Project.EditingMode.READ_ONLY) {
+            expectedResult = 403;
+        } else{
+            expectedResult = 200;
+        }
+        assert expectedResult == result.code
+        if(mode != Project.EditingMode.READ_ONLY) {
+            idSharedAnnotationUser = result.data.id
+
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+            assert 200 == result.code
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+            assert 200 == result.code
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+            assert 200 == result.code
+        }
+
+        //project admin can create on other annotation
+        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
+        sharedAnnotation.annotationClassName = annotation1.class.name
+        sharedAnnotation.annotationIdent = annotation1.id
+        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
+        json.subject = "subject for test mail"
+        json.message = "message for test mail"
+        json.users = [getUser2().id]
+        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        idSharedAnnotationUser = result.data.id
+
+        result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        assert 200 == result.code
+        result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+
+        sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
+        sharedAnnotation.annotationClassName = annotation2.class.name
+        sharedAnnotation.annotationIdent = annotation2.id
+        json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
+        json.subject = "subject for test mail"
+        json.message = "message for test mail"
+        json.users = [getUserAdmin().id]
+        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        //a contributor can create on other annotation only in classical mode
+        if(mode == Project.EditingMode.CLASSIC) {
+            expectedResult = 200;
+        } else{
+            expectedResult = 403;
+        }
+        assert expectedResult == result.code
+
+        if(mode == Project.EditingMode.CLASSIC) {
+            idSharedAnnotationUser = result.data.id
+
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+            assert 200 == result.code
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+            assert 200 == result.code
+            result = AnnotationCommentAPI.show(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, idSharedAnnotationUser, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+            assert 200 == result.code
+        }
+
+        /*-------STEP 2 : test list
+            On Annot1 (made by user2), Comments : [admin->user1, user1->user2, user2->user1]
+            On Annot2 (made by user1), Comments : [user2->admin]
+         */
+
+        Integer expectedSize;
+
+        result = AnnotationCommentAPI.list(annotation1.id, annotation1.class.name, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        expectedSize = 0
+        if(mode == Project.EditingMode.CLASSIC) {
+            expectedSize = 1
+        }
+        assert json.collection.size() == expectedSize
+        result = AnnotationCommentAPI.list(annotation2.id, annotation2.class.name, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        expectedSize = 0
+        if(mode == Project.EditingMode.CLASSIC) {
+            expectedSize = 1
+        }
+        assert json.collection.size() == expectedSize
+
+
+        result = AnnotationCommentAPI.list(annotation1.id, annotation1.class.name, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        switch (mode) {
+            case Project.EditingMode.CLASSIC:
+                expectedSize = 3;
+                break;
+            case Project.EditingMode.RESTRICTED:
+                expectedSize = 2;
+                break;
+            case Project.EditingMode.READ_ONLY:
+                expectedSize = 1;
+                break;
+        }
+        assert json.collection.size() == expectedSize
+
+        result = AnnotationCommentAPI.list(annotation2.id, annotation2.class.name, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection.size() == 0
+
+
+        result = AnnotationCommentAPI.list(annotation1.id, annotation1.class.name, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        expectedSize = 2
+        if(mode == Project.EditingMode.READ_ONLY) {
+            expectedSize = 1
+        }
+        assert json.collection.size() == expectedSize
+
+        result = AnnotationCommentAPI.list(annotation2.id, annotation2.class.name, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        expectedSize = 0
+        if(mode == Project.EditingMode.CLASSIC) {
+            expectedSize = 1
+        }
+        assert json.collection.size() == expectedSize
     }
-
-
 }

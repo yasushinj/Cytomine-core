@@ -18,6 +18,7 @@ package be.cytomine.ontology
 
 import be.cytomine.CytomineDomain
 import be.cytomine.security.User
+import org.restapidoc.annotation.RestApiObjectField
 
 /**
  * A shared annotation is a comment on a specific annotation
@@ -26,20 +27,20 @@ import be.cytomine.security.User
  */
 class SharedAnnotation extends CytomineDomain {
 
-    /**
-     * User that ask the question
-     */
+    @RestApiObjectField(description = "User that write the comment")
     User sender
 
-    /**
-     * Comment that will be share with other user
-     */
+    @RestApiObjectField(description = "Comment that will be share with other user")
     String comment
 
     /**
      * Only user annotation for now (not reviewed/algo annotation)
      */
-    UserAnnotation userAnnotation
+    @RestApiObjectField(description = "Id of the commented annotation ")
+    Long annotationIdent
+
+    @RestApiObjectField(description = "Class name of the commented annotation ")
+    String annotationClassName
 
     static hasMany = [receivers : User]
 
@@ -48,7 +49,7 @@ class SharedAnnotation extends CytomineDomain {
     }
     
     String toString() {
-        "Annotation " + userAnnotation + " shared by " + sender
+        "Annotation " + annotationIdent + " shared by " + sender
     }
 
     /**
@@ -60,7 +61,8 @@ class SharedAnnotation extends CytomineDomain {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['comment'] = domain?.comment
         returnArray['sender'] = domain?.sender?.toString()
-        returnArray['userannotation'] = domain?.userAnnotation?.id
+        returnArray['annotationIdent'] = domain?.annotationIdent
+        returnArray['annotationClassName'] = domain?.annotationClassName
         returnArray['receivers'] = domain?.receivers?.collect { it.toString() }
         returnArray
     }

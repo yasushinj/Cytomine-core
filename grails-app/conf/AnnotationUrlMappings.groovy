@@ -157,10 +157,16 @@ class AnnotationUrlMappings {
         /**
          * Comment annotation
          */
-        "/api/annotation/$userannotation/comment.$format"(controller:"restUserAnnotation"){
+        "/api/userannotation/$annotation/comment.$format"(controller:"restUserAnnotation"){
             action = [POST: "addComment", GET:"listComments"]
         }
-        "/api/annotation/$userannotation/comment/$id.$format"(controller:"restUserAnnotation"){
+        "/api/userannotation/$annotation/comment/$id.$format"(controller:"restUserAnnotation"){
+            action = [GET:"showComment"]
+        }
+        "/api/algoannotation/$annotation/comment.$format"(controller:"restAlgoAnnotation"){
+            action = [POST: "addComment", GET:"listComments"]
+        }
+        "/api/algoannotation/$annotation/comment/$id.$format"(controller:"restAlgoAnnotation"){
             action = [GET:"showComment"]
         }
 

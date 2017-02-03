@@ -28,18 +28,28 @@ import grails.converters.JSON
  */
 class AnnotationCommentAPI extends DomainAPI {
 
-    static def show(Long idAnnotation, Long idComment,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/annotation/$idAnnotation/comment/$idComment" + ".json"
+    static def show(Long idAnnotation, String annotationClass, Long idComment,String username, String password) {
+        String URL;
+        annotationClass = annotationClass.split("\\.").last().toLowerCase()
+
+        URL = Infos.CYTOMINEURL + "api/$annotationClass/$idAnnotation/comment/$idComment" + ".json"
+
         return doGET(URL, username, password)
     }
 
-    static def list(Long idAnnotation,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/annotation/$idAnnotation/comment.json"
+    static def list(Long idAnnotation, String annotationClass, String username, String password) {
+        String URL;
+        annotationClass = annotationClass.split("\\.").last().toLowerCase()
+
+        URL = Infos.CYTOMINEURL + "api/$annotationClass/$idAnnotation/comment.json"
         return doGET(URL, username, password)
     }
 
-    static def create(Long idAnnotation,String jsonAnnotationComment, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/annotation/$idAnnotation/comment.json"
+    static def create(Long idAnnotation, String annotationClass, String jsonAnnotationComment, String username, String password) {
+        String URL;
+        annotationClass = annotationClass.split("\\.").last().toLowerCase()
+
+        URL = Infos.CYTOMINEURL + "api/$annotationClass/$idAnnotation/comment.json"
         def result = doPOST(URL, jsonAnnotationComment,username, password)
         result.data = SharedAnnotation.read(JSON.parse(result.data)?.sharedannotation?.id)
         return result

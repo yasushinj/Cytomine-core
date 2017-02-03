@@ -639,19 +639,23 @@ class BasicInstanceBuilder {
 
 
     static SharedAnnotation getSharedAnnotation() {
+        AnnotationDomain annotation = getUserAnnotation()
         def sharedannotation = SharedAnnotation.findOrCreateWhere(
                 sender: User.findByUsername(Infos.SUPERADMINLOGIN),
                 comment: "This is a test",
-                userAnnotation: getUserAnnotation()
+                annotationIdent: annotation.id,
+                annotationClassName: annotation.class.name
         )
         saveDomain(sharedannotation)
     }
 
     static SharedAnnotation getSharedAnnotationNotExist(boolean save = false) {
+        AnnotationDomain annotation = getUserAnnotation()
         def sharedannotation = new SharedAnnotation(
                 sender: User.findByUsername(Infos.SUPERADMINLOGIN),
                 comment: "This is a test",
-                userAnnotation: getUserAnnotation()
+                annotationIdent: annotation.id,
+                annotationClassName: annotation.class.name
         )
         save ? saveDomain(sharedannotation) : checkDomain(sharedannotation)
     }

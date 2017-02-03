@@ -15,6 +15,7 @@
 */
 
 
+import be.cytomine.image.ImageProcessingService
 import be.cytomine.integration.NotifyAuroraUploadJob
 import be.cytomine.security.SecUser
 import be.cytomine.test.Infos
@@ -139,6 +140,13 @@ class BootStrap {
                     [username : Infos.ANOTHERLOGIN, firstname : 'Just an', lastname : 'Admin', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]]
             ]
             bootstrapUtilsService.createUsers(usersSamples)
+
+            //mock services which use IMS
+            ImageProcessingService.metaClass.getImageFromURL = {
+                String url -> println "\n\n mocked getImageFromURL \n\n";
+                    return javax.imageio.ImageIO.read(new File("test/functional/be/cytomine/utils/images/thumb256.png"))
+            }
+
         }  else if (SecUser.count() == 0) {
             //if database is empty, put minimal data
             bootstrapDataService.initData()

@@ -96,6 +96,7 @@ class Infos {
     }
 
     static void addUserRight(String username, Ontology ontology) {
+        assert(username)
         addUserRight(User.findByUsername(username), ontology)
     }
 
