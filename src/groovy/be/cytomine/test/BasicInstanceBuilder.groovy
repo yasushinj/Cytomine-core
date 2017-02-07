@@ -199,12 +199,14 @@ class BasicInstanceBuilder {
     }
 
     static UserJob getUserJobNotExist(boolean save = false) {
-        getUserJobNotExist(getJobNotExist(true), save)
+        getUserJobNotExist(User.findByUsername(Infos.SUPERADMINLOGIN), save)
     }
 
-    static UserJob getUserJobNotExist(Job job, boolean save = false) {
-        def user = User.findByUsername(Infos.SUPERADMINLOGIN)
+    static UserJob getUserJobNotExist(User user, boolean save = false) {
+        getUserJobNotExist(getJobNotExist(true), user, save)
+    }
 
+    static UserJob getUserJobNotExist(Job job, User user, boolean save = false) {
         UserJob userJob = new UserJob(username:getRandomString(),password: "PasswordUserJob",enabled: true,user : user,job: job)
         userJob.generateKeys()
 
@@ -646,6 +648,9 @@ class BasicInstanceBuilder {
                 annotationIdent: annotation.id,
                 annotationClassName: annotation.class.name
         )
+
+        sharedannotation.receivers = new HashSet<User>();
+        sharedannotation.receivers.add(BasicInstanceBuilder.getSuperAdmin( Infos.ADMINLOGIN, Infos.ADMINPASSWORD))
         saveDomain(sharedannotation)
     }
 
@@ -657,6 +662,8 @@ class BasicInstanceBuilder {
                 annotationIdent: annotation.id,
                 annotationClassName: annotation.class.name
         )
+        sharedannotation.receivers = new HashSet<User>();
+        sharedannotation.receivers.add(BasicInstanceBuilder.getSuperAdmin( Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD))
         save ? saveDomain(sharedannotation) : checkDomain(sharedannotation)
     }
 
@@ -860,6 +867,11 @@ class BasicInstanceBuilder {
 
     static Job getJobNotExist(boolean save = false, Software software) {
         Job job =  new Job(software:software, project : saveDomain(getProjectNotExist()))
+        save ? saveDomain(job) : checkDomain(job)
+    }
+
+    static Job getJobNotExist(boolean save = false, Project project) {
+        Job job =  new Job(software:saveDomain(getSoftwareNotExist()), project : project)
         save ? saveDomain(job) : checkDomain(job)
     }
 
@@ -1130,7 +1142,7 @@ class BasicInstanceBuilder {
     static User getUser(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username,firstname: "Basic",lastname: "User ($username)",email: "Basic@User.be",password: password,enabled: true)
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)

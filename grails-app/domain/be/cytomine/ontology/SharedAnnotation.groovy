@@ -18,6 +18,7 @@ package be.cytomine.ontology
 
 import be.cytomine.CytomineDomain
 import be.cytomine.security.User
+import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObjectField
 
 /**
@@ -46,8 +47,9 @@ class SharedAnnotation extends CytomineDomain {
 
     static constraints = {
         comment(type: 'text', nullable: true)
+        receivers(nullable: false)
     }
-    
+
     String toString() {
         "Annotation " + annotationIdent + " shared by " + sender
     }
@@ -60,10 +62,39 @@ class SharedAnnotation extends CytomineDomain {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['comment'] = domain?.comment
-        returnArray['sender'] = domain?.sender?.toString()
+        returnArray['sender'] = domain?.sender?.id
         returnArray['annotationIdent'] = domain?.annotationIdent
         returnArray['annotationClassName'] = domain?.annotationClassName
-        returnArray['receivers'] = domain?.receivers?.collect { it.toString() }
+        returnArray['receivers'] = domain?.receivers?.collect { it.id }
         returnArray
     }
+
+    /**
+     * Insert JSON data into domain in param
+     * @param domain Domain that must be filled
+     * @param json JSON containing data
+     * @return Domain with json data filled
+     */
+    static SharedAnnotation insertDataIntoDomain(def json, def domain = new SharedAnnotation()) {
+
+        domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
+
+        domain.annotationClassName = JSONUtils.getJSONAttrStr(json, 'annotationClassName',true)
+        domain.annotationIdent = JSONUtils.getJSONAttrLong(json,'annotationIdent',null)
+
+        json.receivers?.each { userID ->
+            User user = User.read(userID)
+            if (user) domain.addToReceivers(user)
+        }
+
+        domain.comment = JSONUtils.getJSONAttrStr(json, 'comment',false)
+        domain.created = JSONUtils.getJSONAttrDate(json, 'created')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
+        domain.sender = JSONUtils.getJSONAttrDomain(json, "sender", new User(), true)
+        domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+
+        return domain
+    }
+
 }
+

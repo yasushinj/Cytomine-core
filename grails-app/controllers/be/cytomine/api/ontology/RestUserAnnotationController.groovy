@@ -24,19 +24,13 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.SharedAnnotation
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
-import be.cytomine.security.ForgotPasswordToken
-import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
-import be.cytomine.security.User
-import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
 import groovyx.net.http.HTTPBuilder
 import org.apache.commons.io.IOUtils
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
-import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
 
 /**
  * Controller for annotation created by user
@@ -44,17 +38,12 @@ import java.awt.image.BufferedImage
 @RestApi(name = "user annotation services", description = "Methods for managing an annotation created by a human user")
 class RestUserAnnotationController extends RestController {
 
-    def exportService
     def userAnnotationService
     def termService
     def imageInstanceService
     def secUserService
-    def secUserSecRoleService
-    def secRoleService
     def projectService
     def cytomineService
-    def notificationService
-    def paramsService
     def annotationListingService
     def reportService
     def imageProcessingService
@@ -106,7 +95,7 @@ class RestUserAnnotationController extends RestController {
     }
 
     def bootstrapUtilsService
-
+    def sharedAnnotationService
     /**
      * Add comment on an annotation to other user
      */
@@ -121,100 +110,17 @@ class RestUserAnnotationController extends RestController {
     ])
     def addComment() {
 
-        User sender = User.read(springSecurityService.currentUser.id)
-        securityACLService.checkUser(sender)
         UserAnnotation annotation = userAnnotationService.read(params.getLong('annotation'))
-        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
-        String cid = UUID.randomUUID().toString()
-
-        //create annotation crop (will be send with comment)
-        File annnotationCrop = null
-        try {
-            String cropURL = annotation.toCropURL(params)
-            if (cropURL != null) {
-                log.info "Load image from " + annotation.toCropURL(params)
-                def parameters = annotation.toCropParams(params)
-                String url = abstractImageService.crop(parameters, parameters.collect{it.key+"="+it.value}.join("&"))
-                BufferedImage bufferedImage = imageProcessingService.getImageFromURL(url)
-
-                log.info "Image " + bufferedImage
-
-                if (bufferedImage != null) {
-                    annnotationCrop = File.createTempFile("temp", ".jpg")
-                    annnotationCrop.deleteOnExit()
-                    ImageIO.write(bufferedImage, "JPG", annnotationCrop)
-                }
-            }
-        } catch (FileNotFoundException e) {
-            annnotationCrop = null
-        }
-        def attachments = []
-        if (annnotationCrop != null) {
-            attachments << [cid: cid, file: annnotationCrop]
-        }
-
-        //do receivers email list
-        String[] receiversEmail
-        List<User> receivers = []
-
-        if (request.JSON.users) {
-            receivers = JSONUtils.getJSONList(request.JSON.users).collect { userID ->
-                User.read(userID)
-            }
-            receiversEmail = receivers.collect { it.getEmail() }
-        } else if (request.JSON.emails) {
-            receiversEmail = request.JSON.emails.split(",")
-            receiversEmail.each { email ->
-                if (!secUserService.findByEmail(email)) {
-
-                    def guestUser = [username : email, firstname : 'firstname',
-                            lastname : 'lastname', email : email,
-                            password : 'passwordExpired', color : "#FF0000"]
-                    secUserService.add(JSON.parse(JSONUtils.toJSONString(guestUser)))
-                    User user = (User) secUserService.findByUsername(guestUser.username)
-                    SecRole secRole = secRoleService.findByAuthority("ROLE_GUEST")
-                    secUserSecRoleService.add(JSON.parse(JSONUtils.toJSONString([ user : user.id, role : secRole.id])))
-                    secUserService.addUserToProject(user, annotation.getProject(), false)
-
-                    if (user) {
-                        user.passwordExpired = true
-                        user.save()
-                        ForgotPasswordToken forgotPasswordToken = new ForgotPasswordToken(
-                                user : user,
-                                tokenKey: UUID.randomUUID().toString(),
-                                expiryDate: new Date() + 1
-                        ).save()
-                        notificationService.notifyWelcome(sender, user, forgotPasswordToken)
-                    } else {
-                        throw new ObjectNotFoundException("User with username "+guestUser.username+" not found")
-                    }
-
-                }
-            }
-        }
-
-
-        log.info "send mail to " + receiversEmail
-
-        //create shared annotation domain
-        def sharedAnnotation = new SharedAnnotation(
-                sender: sender,
-                receivers: receivers,
-                comment: request.JSON.comment,
-                annotationIdent: annotation.id,
-                annotationClassName: annotation.class.name
-        )
-        if (sharedAnnotation.save()) {
-            notificationService.notifyShareAnnotation(sender, receiversEmail, request, attachments, cid)
-            response([success: true, message: "Annotation shared to " + receiversEmail], 200)
-        } else {
-            response([success: false, message: "Error"], 400)
+        def result = sharedAnnotationService.add(request.JSON, annotation, params)
+        if(result) {
+            responseResult(result)
         }
     }
 
     /**
      * Show a single comment for an annotation
      */
+    //TODO : duplicated code in AlgoAnnotation
     @RestApiMethod(description="Get a specific comment")
     @RestApiParams(params=[
     @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
@@ -242,20 +148,8 @@ class RestUserAnnotationController extends RestController {
     ])
     def listComments() {
         UserAnnotation annotation = userAnnotationService.read(params.long('annotation'))
-        User user = User.read(springSecurityService.currentUser.id)
         if (annotation) {
-            def sharedAnnotations = SharedAnnotation.createCriteria().list {
-                eq("annotationIdent", annotation.id)
-                eq("annotationClassName", annotation.class.name)
-                or {
-                    eq("sender", user)
-                    receivers {
-                        eq("id", user.id)
-                    }
-                }
-                order("created", "desc")
-            }
-            responseSuccess(sharedAnnotations.unique())
+            responseSuccess(sharedAnnotationService.listComments(annotation))
         } else {
             responseNotFound("Annotation", params.id)
         }

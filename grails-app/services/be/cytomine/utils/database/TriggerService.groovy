@@ -538,9 +538,14 @@ class TriggerService {
         String createFunction = """
         CREATE OR REPLACE FUNCTION beforeInsertComment() RETURNS TRIGGER AS \$incImageBefore\$
         DECLARE
-            currentAnnotation user_annotation%ROWTYPE;
+            currentUserAnnotation user_annotation%ROWTYPE;
+            currentAlgoAnnotation algo_annotation%ROWTYPE;
         BEGIN
-            SELECT * INTO currentAnnotation FROM user_annotation where id = NEW.user_annotation_id FOR UPDATE;
+            IF NEW.annotation_class_name = 'be.cytomine.ontology.AlgoAnnotation' THEN
+                SELECT * INTO currentAlgoAnnotation FROM algo_annotation where id = NEW.annotation_ident FOR UPDATE;
+            ELSIF NEW.annotation_class_name = 'be.cytomine.ontology.UserAnnotation' THEN
+                SELECT * INTO currentUserAnnotation FROM user_annotation where id = NEW.annotation_ident FOR UPDATE;
+            END IF;
             RETURN NEW;
         END ;
         \$incImageBefore\$ LANGUAGE plpgsql; """
@@ -557,14 +562,22 @@ class TriggerService {
 
     String getAnnotationCommentAfterInsert() {
         String createFunction = """
-        CREATE OR REPLACE FUNCTION afterInsertComment() RETURNS trigger as '
+        CREATE OR REPLACE FUNCTION afterInsertComment() RETURNS trigger AS \$incSharedAnnAfter\$
         BEGIN
-            UPDATE user_annotation
-            SET count_comments = count_comments + 1
-            WHERE id = NEW.user_annotation_id;
+            IF NEW.annotation_class_name = 'be.cytomine.ontology.AlgoAnnotation' THEN
+                UPDATE algo_annotation
+                SET count_comments = count_comments + 1
+                WHERE id = NEW.annotation_ident;
+            ELSIF NEW.annotation_class_name = 'be.cytomine.ontology.UserAnnotation' THEN
+                UPDATE user_annotation
+                SET count_comments = count_comments + 1
+                WHERE id = NEW.annotation_ident;
+            ELSE
+                RAISE EXCEPTION 'TriggerService : Class not supported %', NEW.annotation_class_name;
+            END IF;
             RETURN NEW;
-        END ;'
-        LANGUAGE plpgsql;"""
+        END ;
+        \$incSharedAnnAfter\$ LANGUAGE plpgsql;"""
 
         String dropTrigger = "DROP TRIGGER IF EXISTS afterInsertCommentTrigger on shared_annotation;"
 

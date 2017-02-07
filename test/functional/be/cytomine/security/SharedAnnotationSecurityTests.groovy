@@ -1,7 +1,5 @@
 package be.cytomine.security
 
-import be.cytomine.AnnotationDomain
-
 /*
 * Copyright (c) 2009-2016. Authors: see NOTICE file.
 *
@@ -19,9 +17,12 @@ import be.cytomine.AnnotationDomain
 */
 
 import be.cytomine.image.ImageInstance
+import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.UserAnnotation
+import be.cytomine.processing.Job
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
+import be.cytomine.test.http.AlgoAnnotationAPI
 import be.cytomine.test.http.AnnotationCommentAPI
 import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.ProjectAPI
@@ -67,9 +68,18 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
         annotation1 = result.data
 
 
-        //Add annotation 2 with project admin
+        /*//Add annotation 2 with project admin
         UserAnnotation annotation2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, user1)
         result = UserAnnotationAPI.create(annotation2.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        annotation2 = result.data*/
+        //Add annotation 2 with a job from project admin
+        Job job = BasicInstanceBuilder.getJobNotExist(project)
+        job = BasicInstanceBuilder.saveDomain(job)
+        UserJob userJob = BasicInstanceBuilder.getUserJobNotExist(job, user1);
+        userJob = BasicInstanceBuilder.saveDomain(userJob)
+        AlgoAnnotation annotation2 = BasicInstanceBuilder.getAlgoAnnotationNotExist(userJob.job, userJob, image)
+        result = AlgoAnnotationAPI.create(annotation2.encodeAsJSON(), userJob.username, "PasswordUserJob")
         assert 200 == result.code
         annotation2 = result.data
 
@@ -87,16 +97,20 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
         def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
         sharedAnnotation.annotationClassName = annotation1.class.name
         sharedAnnotation.annotationIdent = annotation1.id
+        sharedAnnotation.receivers = [getUser1()]
+        sharedAnnotation.sender = getUserAdmin()
+
         def json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
         json.subject = "subject for test mail"
         json.message = "message for test mail"
-        json.users = [getUser1().id]
+
         result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
         if(mode == Project.EditingMode.CLASSIC) {
             expectedResult = 200;
         } else{
             expectedResult = 403;
         }
+        //Cytomine admin cannot create on other annotation on non classical project ???
         assert expectedResult == result.code
         Long idSharedAnnotationUser;
 
@@ -115,10 +129,12 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
         sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
         sharedAnnotation.annotationClassName = annotation1.class.name
         sharedAnnotation.annotationIdent = annotation1.id
+        sharedAnnotation.receivers = [getUser1()]
+        sharedAnnotation.sender = getUser2()
+
         json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
         json.subject = "subject for test mail"
         json.message = "message for test mail"
-        json.users = [getUser1().id]
         result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         if(mode == Project.EditingMode.READ_ONLY) {
             expectedResult = 403;
@@ -141,10 +157,12 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
         sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
         sharedAnnotation.annotationClassName = annotation1.class.name
         sharedAnnotation.annotationIdent = annotation1.id
+        sharedAnnotation.sender = getUser1()
+        sharedAnnotation.receivers = [getUser2()]
+
         json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
         json.subject = "subject for test mail"
         json.message = "message for test mail"
-        json.users = [getUser2().id]
         result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
         idSharedAnnotationUser = result.data.id
@@ -159,10 +177,12 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
         sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
         sharedAnnotation.annotationClassName = annotation2.class.name
         sharedAnnotation.annotationIdent = annotation2.id
+        sharedAnnotation.receivers = [getUserAdmin()]
+        sharedAnnotation.sender = getUser2()
+
         json = JSON.parse((String)sharedAnnotation.encodeAsJSON())
         json.subject = "subject for test mail"
         json.message = "message for test mail"
-        json.users = [getUserAdmin().id]
         result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         //a contributor can create on other annotation only in classical mode
         if(mode == Project.EditingMode.CLASSIC) {
@@ -199,6 +219,7 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
             expectedSize = 1
         }
         assert json.collection.size() == expectedSize
+
         result = AnnotationCommentAPI.list(annotation2.id, annotation2.class.name, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
         assert 200 == result.code
         json = JSON.parse(result.data)
