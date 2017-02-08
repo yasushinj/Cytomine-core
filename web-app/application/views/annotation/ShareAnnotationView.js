@@ -39,7 +39,7 @@ var ShareAnnotationView = Backbone.View.extend({
         var comments = $("#comments" + self.model.id);
         var shareWithOption = $("input[name=shareWithOption]");
 
-        new AnnotationCommentCollection({ annotation: self.model.id}).fetch({
+        new AnnotationCommentCollection({ annotation: self.model.id, annotationClassName:self.model.get('class')}).fetch({
             success: function (collection, response) {
                 var commentTpl = "<p><span class='label label-default'><%= hour %></span> <span class='label label-info'><%= sender %></span></p><blockquote><p><%= comment %></p></blockquote>";
                 var lastDateString = undefined;
@@ -141,9 +141,10 @@ var ShareAnnotationView = Backbone.View.extend({
                 });
             var subject = _.template("Cytomine : <%= from %> shared an annotation with you", { from: window.app.models.projectUser.get(window.app.status.user.id).prettyName()});
             new AnnotationCommentModel({
-                annotation: self.model.id
+                annotation: self.model.id,
+                annotationClassName:self.model.get('class')
             }).save({
-                    users: users,
+                    receivers: users,
                     emails : emails,
                     from: window.app.models.projectUser.get(window.app.status.user.id).prettyName(),
                     to: userName,

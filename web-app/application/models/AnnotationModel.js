@@ -141,9 +141,11 @@ var AnnotationRetrievalCollection = PaginatedCollection.extend({
 var AnnotationCommentModel = Backbone.Model.extend({
     initialize: function (options) {
         this.annotation = options.annotation;
+        this.annotationClassName = options.annotationClassName;
     },
     url: function () {
-        var base = 'api/annotation/' + this.annotation + '/comment';
+        var type = this.annotationClassName.split(".").pop().toLowerCase()
+        var base = 'api/'+type+'/' + this.annotation + '/comment';
         var format = '.json';
         if (this.isNew()) {
             return base + format;
@@ -157,9 +159,11 @@ var AnnotationCommentCollection = PaginatedCollection.extend({
     initialize: function (options) {
         this.initPaginator(options);
         this.annotation = options.annotation;
+        this.annotationClassName = options.annotationClassName;
     },
     url: function () {
-        return'api/annotation/' + this.annotation + '/comment.json';
+        var type = this.annotationClassName.split(".").pop().toLowerCase()
+        return'api/'+type+'/' + this.annotation + '/comment.json';
     }
 });
 

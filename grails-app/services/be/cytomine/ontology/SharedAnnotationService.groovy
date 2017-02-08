@@ -41,7 +41,7 @@ class SharedAnnotationService extends ModelService {
     def springSecurityService
     def secRoleService
     def secUserSecRoleService
-    protected def secUserService
+    def secUserService
     def notificationService
 
 
@@ -80,6 +80,12 @@ class SharedAnnotationService extends ModelService {
         securityACLService.checkUser(sender)
 
 
+        if (!json.sender) {
+            json.sender = springSecurityService.currentUser.id
+        }
+
+        json.annotationIdent = annotation.id
+
         String cid = UUID.randomUUID().toString()
 
         //create annotation crop (will be send with comment)
@@ -110,7 +116,7 @@ class SharedAnnotationService extends ModelService {
 
         //do receivers email list
         String[] receiversEmail
-        List<User> receivers;
+        List<User> receivers = [];
 
         if (json.receivers) {
             receivers = JSONUtils.getJSONList(json.receivers).collect { userID ->
@@ -121,7 +127,6 @@ class SharedAnnotationService extends ModelService {
             receiversEmail = json.emails.split(",")
             receiversEmail.each { email ->
                 if (!secUserService.findByEmail(email)) {
-
                     def guestUser = [username : email, firstname : 'firstname',
                                      lastname : 'lastname', email : email,
                                      password : 'passwordExpired', color : "#FF0000"]
@@ -143,9 +148,11 @@ class SharedAnnotationService extends ModelService {
                     } else {
                         throw new ObjectNotFoundException("User with username "+guestUser.username+" not found")
                     }
-
                 }
+                receivers << secUserService.findByEmail(email)
             }
+
+            json.receivers = receivers.collect{it.id}
         }
 
 
