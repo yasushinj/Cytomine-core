@@ -21,6 +21,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.image.*
 import be.cytomine.image.acquisition.Instrument
 import be.cytomine.image.multidim.ImageGroup
+import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.image.server.*
 import be.cytomine.laboratory.Sample
@@ -44,7 +45,6 @@ import grails.converters.JSON
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.springframework.dao.DataRetrievalFailureException
 
 /**
  * Created by IntelliJ IDEA.
@@ -66,7 +66,7 @@ class BasicInstanceBuilder {
     static def checkDomain(def domain) {
         log.debug "check domain " + domain.id
         boolean validate = domain.validate()
-        if(!validate) {
+        if (!validate) {
             log.debug domain.errors
         }
         assert validate
@@ -78,7 +78,7 @@ class BasicInstanceBuilder {
      * @param domain Domain to check
      */
     static def saveDomain(def domain) {
-        domain.save(flush: true, failOnError:true)
+        domain.save(flush: true, failOnError: true)
         domain
     }
 
@@ -92,15 +92,23 @@ class BasicInstanceBuilder {
         map.each {
             def propertyValue = it.value
             def compareValue = json[it.key]
-            assert propertyValue.toString().equals(compareValue.toString())
+            assert toString(propertyValue).equals(toString(compareValue))
         }
     }
 
-    static boolean checkIfDomainExist(def domain, boolean exist=true) {
+    static String toString(def data) {
+        try {
+            return data.toString()
+        } catch (Exception e) {
+            return data + ""
+        }
+    }
+
+
+    static boolean checkIfDomainExist(def domain, boolean exist = true) {
         try {
             domain.refresh()
-        } catch(DataRetrievalFailureException e){
-            log.debug("refresh impossible. Maybe the resource has been previously deleted")
+        } catch (Exception e) {
         }
         domain = domain.read(domain.id)
         boolean domainExist = domain && !domain.checkDeleted()
@@ -110,13 +118,13 @@ class BasicInstanceBuilder {
 
     static void checkIfDomainsExist(def domains) {
         domains.each {
-            checkIfDomainExist(it,true)
+            checkIfDomainExist(it, true)
         }
     }
 
     static void checkIfDomainsNotExist(def domains) {
         domains.each {
-            checkIfDomainExist(it,false)
+            checkIfDomainExist(it, false)
         }
     }
 
@@ -132,28 +140,27 @@ class BasicInstanceBuilder {
                     enabled: true)
             user.generateKeys()
             saveDomain(user)
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
+            SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_USER"), true)
         }
 
         user
     }
 
 
-
     static User getUser1() {
-       return getUser("user1","password")
+        return getUser("user1", "password")
     }
 
 
     static User getUser2() {
-        return getUser("user2","password")
+        return getUser("user2", "password")
     }
 
     static UserJob getUserJob(Project project) {
         Job job = getJobNotExist()
         job.project = project
         saveDomain(job)
-        getSoftwareProjectNotExist(job.software,job.project,true)
+        getSoftwareProjectNotExist(job.software, job.project, true)
         UserJob userJob = getUserJobNotExist()
         userJob.job = job
         userJob.user = User.findByUsername(Infos.SUPERADMINLOGIN)
@@ -163,11 +170,17 @@ class BasicInstanceBuilder {
     static UserJob getUserJob(String username, String password) {
         UserJob user = UserJob.findByUsername(username)
         if (!user) {
-            user = new UserJob(username: username, user:User.findByUsername(Infos.SUPERADMINLOGIN),password: password,enabled: true,job: getJob())
+            user = new UserJob(username: username, user: User.findByUsername(Infos.SUPERADMINLOGIN), password: password, enabled: true, job: getJob())
             user.generateKeys()
             saveDomain(user)
-            SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
-                SecUserSecRole.create(userJob, secRole)
+            try {
+                SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect {
+                    it.secRole
+                }.each { secRole ->
+                    SecUserSecRole.create(userJob, secRole)
+                }
+            } catch (Exception e) {
+                log.warn(e)
             }
         }
         user
@@ -177,10 +190,12 @@ class BasicInstanceBuilder {
     static UserJob getUserJob() {
         UserJob userJob = UserJob.findByUsername("BasicUserJob")
         if (!userJob) {
-            userJob = new UserJob(username: "BasicUserJob",password: "PasswordUserJob",enabled: true,user : User.findByUsername(Infos.SUPERADMINLOGIN),job: getJob())
+            userJob = new UserJob(username: "BasicUserJob", password: "PasswordUserJob", enabled: true, user: User.findByUsername(Infos.SUPERADMINLOGIN), job: getJob())
             userJob.generateKeys()
             saveDomain(userJob)
-            SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
+            SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect {
+                it.secRole
+            }.each { secRole ->
                 SecUserSecRole.create(userJob, secRole)
             }
         }
@@ -199,42 +214,49 @@ class BasicInstanceBuilder {
     }
 
     static UserJob getUserJobNotExist(boolean save = false) {
-        getUserJobNotExist(User.findByUsername(Infos.SUPERADMINLOGIN), save)
+        getUserJobNotExist(getJobNotExist(true), save)
     }
 
-    static UserJob getUserJobNotExist(User user, boolean save = false) {
-        getUserJobNotExist(getJobNotExist(true), user, save)
-    }
+    static UserJob getUserJobNotExist(Job job, boolean save = false) {
+        def user = User.findByUsername(Infos.SUPERADMINLOGIN)
 
-    static UserJob getUserJobNotExist(Job job, User user, boolean save = false) {
-        UserJob userJob = new UserJob(username:getRandomString(),password: "PasswordUserJob",enabled: true,user : user,job: job)
+        UserJob userJob = new UserJob(username: getRandomString(), password: "PasswordUserJob", enabled: true, user: user, job: job)
         userJob.generateKeys()
 
-        if(save) {
+        if (save) {
             saveDomain(userJob)
             SecUserSecRole.findAllBySecUser(userJob.user).collect { it.secRole }.each { secRole ->
                 SecUserSecRole.create(user, secRole)
             }
-        } else{
+        } else {
             checkDomain(userJob)
         }
         userJob
     }
 
     static User getAdmin(String username, String password) {
-        User user = getUser(username,password)
-        SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_ADMIN"))
+        User user = getUser(username, password)
+        try {
+            SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_ADMIN"))
+        } catch (Exception e) {
+            log.warn(e)
+        }
         user
     }
+
     static User getSuperAdmin(String username, String password) {
-        User user = getUser(username,password)
-        SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_ADMIN"))
-        SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_SUPER_ADMIN"))
+        User user = getUser(username, password)
+        try {
+            SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_ADMIN"))
+            SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_SUPER_ADMIN"))
+        } catch (Exception e) {
+            log.warn(e)
+        }
         user
     }
 
     static ImageInstance getImageInstance() {
-        getImageInstanceNotExist(BasicInstanceBuilder.getProject(),true)
+        getImageInstanceNotExist(BasicInstanceBuilder.getProject(), true)
     }
 
     static ImageInstance getImageInstanceNotExist(Project project = BasicInstanceBuilder.getProject(), boolean save = false) {
@@ -256,7 +278,7 @@ class BasicInstanceBuilder {
                 baseImage: getAbstractImageNotExist(true),
                 parent: imageInstance,
                 x: 10,
-                y:20,
+                y: 20,
                 project: imageInstance.project,
                 //slide: BasicInstanceBuilder.getSlide(),
                 user: imageInstance.user)
@@ -266,9 +288,9 @@ class BasicInstanceBuilder {
     static AlgoAnnotation getAlgoAnnotationNotExist(Project project, boolean save = false) {
         def annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: getImageInstanceNotExist(project,true),
+                image: getImageInstanceNotExist(project, true),
                 user: getUserJob(),
-                project:project
+                project: project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
@@ -278,7 +300,7 @@ class BasicInstanceBuilder {
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
                 user: getUserJob(),
-                project:image.project
+                project: image.project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
@@ -289,28 +311,18 @@ class BasicInstanceBuilder {
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: getImageInstance(),
                 user: getUserJob(),
-                project:getImageInstance().project
+                project: getImageInstance().project
         )
         saveDomain(annotation)
     }
 
 
-    static AlgoAnnotation getAlgoAnnotationNotExist(Job job = getJob(), UserJob user = getUserJob(),boolean save = false) {
+    static AlgoAnnotation getAlgoAnnotationNotExist(Job job = getJob(), UserJob user = getUserJob(), boolean save = false) {
         AlgoAnnotation annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:getImageInstanceNotExist(job.project,true),
+                image: getImageInstanceNotExist(job.project, true),
                 user: user,
-                project:job.project
-        )
-        save ? saveDomain(annotation) : checkDomain(annotation)
-    }
-
-    static AlgoAnnotation getAlgoAnnotationNotExist(Job job, UserJob user, ImageInstance image, boolean save = false) {
-        AlgoAnnotation annotation = new AlgoAnnotation(
-                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
-                user: user,
-                project:job.project
+                project: job.project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
@@ -326,42 +338,40 @@ class BasicInstanceBuilder {
 //        at
 //    }
 
-
-
     //CytomineDomain annotation = (useAlgoAnnotation? saveDomain(getUserAnnotationNotExist()) :  saveDomain(getAlgoAnnotationNotExist()))
 
     static AlgoAnnotationTerm getAlgoAnnotationTerm(Job job = getJob(), AnnotationDomain annotation, UserJob user = getUserJob()) {
         def term = getTermNotExist()
         term.ontology = annotation.project.ontology
         saveDomain(term)
-        def algoannotationTerm = new AlgoAnnotationTerm(term:term,expectedTerm:term,userJob:user,rate:0)
+        def algoannotationTerm = new AlgoAnnotationTerm(term: term, expectedTerm: term, userJob: user, rate: 0)
         algoannotationTerm.setAnnotation(annotation)
         saveDomain(algoannotationTerm)
     }
 
     static AlgoAnnotationTerm getAlgoAnnotationTerm(boolean useAlgoAnnotation) {
-        getAlgoAnnotationTerm(getJob(),getUserJob(),useAlgoAnnotation)
+        getAlgoAnnotationTerm(getJob(), getUserJob(), useAlgoAnnotation)
     }
 
-    static AlgoAnnotationTerm getAlgoAnnotationTerm(Job job = getJob(), UserJob user = getUserJob(),boolean useAlgoAnnotation = false) {
-        def annotation = (useAlgoAnnotation? saveDomain(getAlgoAnnotationNotExist()) :  saveDomain(getUserAnnotationNotExist()))
-        getAlgoAnnotationTerm(job,annotation,user)
+    static AlgoAnnotationTerm getAlgoAnnotationTerm(Job job = getJob(), UserJob user = getUserJob(), boolean useAlgoAnnotation = false) {
+        def annotation = (useAlgoAnnotation ? saveDomain(getAlgoAnnotationNotExist()) : saveDomain(getUserAnnotationNotExist()))
+        getAlgoAnnotationTerm(job, annotation, user)
     }
 
     //getAlgoAnnotationTermForAlgoAnnotation
-    static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(AnnotationDomain annotation, Term term,boolean save = false) {
+    static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(AnnotationDomain annotation, Term term, boolean save = false) {
         UserJob userJob = getUserJob()
-        def algoannotationTerm = new AlgoAnnotationTerm(term:term,userJob:userJob, expectedTerm: term, rate:1d)
+        def algoannotationTerm = new AlgoAnnotationTerm(term: term, userJob: userJob, expectedTerm: term, rate: 1d)
         algoannotationTerm.setAnnotation(annotation)
         save ? saveDomain(algoannotationTerm) : checkDomain(algoannotationTerm)
     }
 
     //getAlgoAnnotationTermForAlgoAnnotation
-    static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(Job job = getJob(),UserJob userJob = getUserJob(),AnnotationDomain annotation = saveDomain(getUserAnnotationNotExist()),boolean save = false) {
+    static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(Job job = getJob(), UserJob userJob = getUserJob(), AnnotationDomain annotation = saveDomain(getUserAnnotationNotExist()), boolean save = false) {
         def term = getTermNotExist()
         term.ontology = annotation.project.ontology
         saveDomain(term)
-        def algoannotationTerm = new AlgoAnnotationTerm(term:term,userJob:userJob, expectedTerm: term, rate:1d)
+        def algoannotationTerm = new AlgoAnnotationTerm(term: term, userJob: userJob, expectedTerm: term, rate: 1d)
         algoannotationTerm.setAnnotation(annotation)
         algoannotationTerm
     }
@@ -370,7 +380,7 @@ class BasicInstanceBuilder {
         def term = saveDomain(getTermNotExist())
         def annotation = saveDomain(getAlgoAnnotationNotExist())
         def user = saveDomain(getUserJobNotExist())
-        def algoannotationTerm = new AlgoAnnotationTerm(term:term,userJob:user, expectedTerm: term, rate:1d)
+        def algoannotationTerm = new AlgoAnnotationTerm(term: term, userJob: user, expectedTerm: term, rate: 1d)
         algoannotationTerm.setAnnotation(annotation)
         algoannotationTerm
     }
@@ -378,14 +388,14 @@ class BasicInstanceBuilder {
     static AlgoAnnotation getAlgoAnnotationNotExist(ImageInstance image, String polygon, UserJob user, Term term) {
         AlgoAnnotation annotation = new AlgoAnnotation(
                 location: new WKTReader().read(polygon),
-                image:image,
+                image: image,
                 user: user,
-                project:project
+                project: project
         )
         annotation = saveDomain(annotation)
 
 
-       def at = getAlgoAnnotationTermNotExist(user.job,user,annotation,true)
+        def at = getAlgoAnnotationTermNotExist(user.job, user, annotation, true)
         at.term = term
         at.userJob = user
         saveDomain(at)
@@ -416,8 +426,8 @@ class BasicInstanceBuilder {
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:image.project,
-                status : 0,
+                project: image.project,
+                status: 0,
                 reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
         )
         annotation.putParentAnnotation(basedAnnotation)
@@ -433,39 +443,39 @@ class BasicInstanceBuilder {
     }
 
     static ReviewedAnnotation getReviewedAnnotation() {
-         def basedAnnotation = saveDomain(getUserAnnotationNotExist())
-         def image = getImageInstance()
-         def annotation = ReviewedAnnotation.findOrCreateWhere(
-                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                 image: image,
-                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                 project:image.project,
-                 status : 0,
-                 reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
-         )
-         annotation.putParentAnnotation(basedAnnotation)
-         saveDomain(annotation)
+        def basedAnnotation = saveDomain(getUserAnnotationNotExist())
+        def image = getImageInstance()
+        def annotation = ReviewedAnnotation.findOrCreateWhere(
+                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
+                image: image,
+                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                project: image.project,
+                status: 0,
+                reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
+        )
+        annotation.putParentAnnotation(basedAnnotation)
+        saveDomain(annotation)
 
-         def term = getTerm()
-         term.ontology = image.project.ontology
-         checkDomain(term)
-         saveDomain(term)
+        def term = getTerm()
+        term.ontology = image.project.ontology
+        checkDomain(term)
+        saveDomain(term)
 
-         annotation.addToTerms(term)
-         checkDomain(annotation)
-         saveDomain(annotation)
-         annotation
-     }
+        annotation.addToTerms(term)
+        checkDomain(annotation)
+        saveDomain(annotation)
+        annotation
+    }
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(Project project, boolean save = false) {
         def basedAnnotation = saveDomain(getUserAnnotationNotExist())
 
         def annotation = new ReviewedAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: getImageInstanceNotExist(project,true),
+                image: getImageInstanceNotExist(project, true),
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:project,
-                status : 0,
+                project: project,
+                status: 0,
                 reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
         )
         annotation.putParentAnnotation(basedAnnotation)
@@ -479,28 +489,28 @@ class BasicInstanceBuilder {
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:image.project,
-                status : 0,
+                project: image.project,
+                status: 0,
                 reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
         )
         annotation.putParentAnnotation(basedAnnotation)
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
 
-     static ReviewedAnnotation getReviewedAnnotationNotExist() {
-         def basedAnnotation = saveDomain(getUserAnnotationNotExist())
+    static ReviewedAnnotation getReviewedAnnotationNotExist() {
+        def basedAnnotation = saveDomain(getUserAnnotationNotExist())
 
-         def annotation = ReviewedAnnotation.findOrCreateWhere(
-                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                 image: getImageInstance(),
-                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                 project:getImageInstance().project,
-                 status : 0,
-                 reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
-         )
-         annotation.putParentAnnotation(basedAnnotation)
-         checkDomain(annotation)
-     }
+        def annotation = ReviewedAnnotation.findOrCreateWhere(
+                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
+                image: getImageInstance(),
+                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                project: getImageInstance().project,
+                status: 0,
+                reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
+        )
+        annotation.putParentAnnotation(basedAnnotation)
+        checkDomain(annotation)
+    }
 
     static AnnotationTerm getAnnotationTerm() {
         def annotation = saveDomain(getUserAnnotationNotExist())
@@ -508,50 +518,45 @@ class BasicInstanceBuilder {
         term.ontology = annotation.project.ontology
         term = saveDomain(term)
         def user = User.findByUsername(Infos.SUPERADMINLOGIN)
-        saveDomain(new AnnotationTerm(userAnnotation: annotation, term: term,user: user))
+        saveDomain(new AnnotationTerm(userAnnotation: annotation, term: term, user: user))
     }
 
-    static AnnotationTerm getAnnotationTermNotExist(UserAnnotation annotation=saveDomain(getUserAnnotationNotExist()),boolean save=false) {
+    static AnnotationTerm getAnnotationTermNotExist(UserAnnotation annotation = saveDomain(getUserAnnotationNotExist()), boolean save = false) {
         def term = getTermNotExist()
         term.ontology = annotation.project.ontology
         saveDomain(term)
         def user = User.findByUsername(Infos.SUPERADMINLOGIN)
-        def annotationTerm = new AnnotationTerm(userAnnotation:annotation,term:term,user:user)
+        def annotationTerm = new AnnotationTerm(userAnnotation: annotation, term: term, user: user)
         save ? saveDomain(annotationTerm) : checkDomain(annotationTerm)
     }
 
-    static AnnotationTerm getAnnotationTermNotExist(UserAnnotation annotation,Term term,boolean save=false) {
+    static AnnotationTerm getAnnotationTermNotExist(UserAnnotation annotation, Term term, boolean save = false) {
         def user = User.findByUsername(Infos.SUPERADMINLOGIN)
-        def annotationTerm = new AnnotationTerm(userAnnotation:annotation,term:term,user:user)
+        def annotationTerm = new AnnotationTerm(userAnnotation: annotation, term: term, user: user)
         save ? saveDomain(annotationTerm) : checkDomain(annotationTerm)
     }
 
     static UserAnnotation getUserAnnotation() {
-        ImageInstance image = getImageInstance()
         def annotation = UserAnnotation.findOrCreateWhere(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: image,
+                image: getImageInstance(),
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:image.project
+                project: getImageInstance().project
         )
         saveDomain(annotation)
     }
 
 
     static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, boolean save = false) {
-        getUserAnnotationNotExist(project,getImageInstance(),save)
+        getUserAnnotationNotExist(project, getImageInstance(), save)
     }
 
-    static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image,boolean save = false) {
-        getUserAnnotationNotExist(project, image, User.findByUsername(Infos.SUPERADMINLOGIN), save)
-    }
-
-    static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image, User user, boolean save = false) {
+    static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image, boolean save = false) {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
-                user: user,
-                project:project
+                image: image,
+                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                project: project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
@@ -561,28 +566,28 @@ class BasicInstanceBuilder {
         def annotation = RoiAnnotation.findOrCreateWhere(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: getImageInstance(),
-                user:User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:getImageInstance().project
+                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                project: getImageInstance().project
         )
         saveDomain(annotation)
     }
 
-    static RoiAnnotation getRoiAnnotationNotExist(ImageInstance image = getImageInstance(),boolean save = false) {
+    static RoiAnnotation getRoiAnnotationNotExist(ImageInstance image = getImageInstance(), boolean save = false) {
         RoiAnnotation annotation = new RoiAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
+                image: image,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                project:image.project
+                project: image.project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
 
-    static RoiAnnotation getRoiAnnotationNotExist(ImageInstance image = getImageInstance(),User user,boolean save = false) {
+    static RoiAnnotation getRoiAnnotationNotExist(ImageInstance image = getImageInstance(), User user, boolean save = false) {
         RoiAnnotation annotation = new RoiAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
+                image: image,
                 user: user,
-                project:image.project
+                project: image.project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
@@ -590,14 +595,14 @@ class BasicInstanceBuilder {
     static UserAnnotation getUserAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read(polygon),
-                image:image,
+                image: image,
                 user: user,
-                project:image.project
+                project: image.project
         )
         annotation = saveDomain(annotation)
 
 
-       def at = getAnnotationTermNotExist(annotation,true)
+        def at = getAnnotationTermNotExist(annotation, true)
         at.term = term
         at.user = user
         saveDomain(at)
@@ -607,33 +612,33 @@ class BasicInstanceBuilder {
     static UserAnnotation getUserAnnotationNotExist(ImageInstance image, User user, Term term) {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
+                image: image,
                 user: user,
-                project:image.project
+                project: image.project
         )
         annotation = saveDomain(annotation)
 
-       if(term) {
-           def at = getAnnotationTermNotExist(annotation,true)
+        if (term) {
+            def at = getAnnotationTermNotExist(annotation, true)
             at.term = term
             at.user = user
             saveDomain(at)
-       }
+        }
 
         annotation
     }
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
-        def annotation = getUserAnnotationNotExist(image,polygon,user,term)
+        def annotation = getUserAnnotationNotExist(image, polygon, user, term)
 
-            def reviewedAnnotation = ReviewedAnnotation.findOrCreateWhere(
-                    location: annotation.location,
-                    image: annotation.image,
-                    user: user,
-                    project:annotation.project,
-                    status : 0,
-                    reviewUser: user
-            )
+        def reviewedAnnotation = ReviewedAnnotation.findOrCreateWhere(
+                location: annotation.location,
+                image: annotation.image,
+                user: user,
+                project: annotation.project,
+                status: 0,
+                reviewUser: user
+        )
         reviewedAnnotation.putParentAnnotation(annotation)
         reviewedAnnotation.addToTerms(term)
         saveDomain(reviewedAnnotation)
@@ -641,37 +646,28 @@ class BasicInstanceBuilder {
 
 
     static SharedAnnotation getSharedAnnotation() {
-        AnnotationDomain annotation = getUserAnnotation()
         def sharedannotation = SharedAnnotation.findOrCreateWhere(
                 sender: User.findByUsername(Infos.SUPERADMINLOGIN),
                 comment: "This is a test",
-                annotationIdent: annotation.id,
-                annotationClassName: annotation.class.name
+                userAnnotation: getUserAnnotation()
         )
-
-        sharedannotation.receivers = new HashSet<User>();
-        sharedannotation.receivers.add(BasicInstanceBuilder.getSuperAdmin( Infos.ADMINLOGIN, Infos.ADMINPASSWORD))
         saveDomain(sharedannotation)
     }
 
     static SharedAnnotation getSharedAnnotationNotExist(boolean save = false) {
-        AnnotationDomain annotation = getUserAnnotation()
         def sharedannotation = new SharedAnnotation(
                 sender: User.findByUsername(Infos.SUPERADMINLOGIN),
                 comment: "This is a test",
-                annotationIdent: annotation.id,
-                annotationClassName: annotation.class.name
+                userAnnotation: getUserAnnotation()
         )
-        sharedannotation.receivers = new HashSet<User>();
-        sharedannotation.receivers.add(BasicInstanceBuilder.getSuperAdmin( Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD))
         save ? saveDomain(sharedannotation) : checkDomain(sharedannotation)
     }
 
     static AttachedFile getAttachedFileNotExist(boolean save = false) {
-        getAttachedFileNotExist("test/functional/be/cytomine/utils/simpleFile.txt",save)
+        getAttachedFileNotExist("test/functional/be/cytomine/utils/simpleFile.txt", save)
     }
 
-    static AttachedFile getAttachedFileNotExist(String file,boolean save = false) {
+    static AttachedFile getAttachedFileNotExist(String file, boolean save = false) {
         def attachedFile = new AttachedFile()
         def project = getProjectNotExist(true)
         attachedFile.domainClassName = project.class.name
@@ -683,23 +679,23 @@ class BasicInstanceBuilder {
     }
 
     static ImageFilter getImageFilter() {
-       def imagefilter = ImageFilter.findByName("imagetest")
-       if(!imagefilter) {
-           imagefilter = new ImageFilter(name:"imagetest",baseUrl:"baseurl",processingServer:getProcessingServer())
-           saveDomain(imagefilter)
-       }
+        def imagefilter = ImageFilter.findByName("imagetest")
+        if (!imagefilter) {
+            imagefilter = new ImageFilter(name: "imagetest", baseUrl: "baseurl", processingServer: getProcessingServer())
+            saveDomain(imagefilter)
+        }
         imagefilter
     }
 
     static ImageFilter getImageFilterNotExist(boolean save = false) {
-       def imagefilter = new ImageFilter(name:"imagetest"+new Date(),baseUrl:"baseurl",processingServer:getProcessingServer())
+        def imagefilter = new ImageFilter(name: "imagetest" + new Date(), baseUrl: "baseurl", processingServer: getProcessingServer())
         save ? saveDomain(imagefilter) : checkDomain(imagefilter)
     }
 
     static ImageFilterProject getImageFilterProject() {
-       def imageFilterProject = ImageFilterProject.find()
-        if(!imageFilterProject) {
-            imageFilterProject = new ImageFilterProject(imageFilter:getImageFilter(),project:getProject())
+        def imageFilterProject = ImageFilterProject.find()
+        if (!imageFilterProject) {
+            imageFilterProject = new ImageFilterProject(imageFilter: getImageFilter(), project: getProject())
             saveDomain(imageFilterProject)
         }
         return imageFilterProject
@@ -719,15 +715,15 @@ class BasicInstanceBuilder {
             image = new AbstractImage(filename: "filename", scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath")
         }
         image = saveDomain(image)
-        saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+        saveDomain(new StorageAbstractImage(storage: getStorage(), abstractImage: image))
         return image
     }
 
     static AbstractImage getAbstractImageNotExist(boolean save = false) {
         def image = new AbstractImage(filename: getRandomString(), scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
-        if(save) {
+        if (save) {
             saveDomain(image)
-            saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            saveDomain(new StorageAbstractImage(storage: getStorage(), abstractImage: image))
             return image
         } else {
             checkDomain(image)
@@ -744,7 +740,7 @@ class BasicInstanceBuilder {
         def abstractImage = getAbstractImage()
         StorageAbstractImage sai = StorageAbstractImage.findByStorageAndAbstractImage(storage, abstractImage)
         if (!sai) {
-            sai = new StorageAbstractImage(storage : storage, abstractImage : abstractImage)
+            sai = new StorageAbstractImage(storage: storage, abstractImage: abstractImage)
             saveDomain(sai)
         }
         sai
@@ -759,9 +755,9 @@ class BasicInstanceBuilder {
         ps
     }
 
-    static ProcessingServer getProcessingServerNotExist (boolean save = false) {
+    static ProcessingServer getProcessingServerNotExist(boolean save = false) {
         ProcessingServer ps = new ProcessingServer(url: getRandomString())
-        if(save) {
+        if (save) {
             saveDomain(ps)
         } else {
             checkDomain(ps)
@@ -788,7 +784,7 @@ class BasicInstanceBuilder {
         if (!uploadedFile) {
             uploadedFile = new UploadedFile(
                     user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                    projects:[getProject().id],
+                    projects: [getProject().id],
                     storages: [getStorage().id],
                     filename: "BASICFILENAME",
                     originalFilename: "originalFilename",
@@ -805,7 +801,7 @@ class BasicInstanceBuilder {
     static UploadedFile getUploadedFileNotExist(boolean save = false) {
         UploadedFile uploadedFile = new UploadedFile(
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                projects:[getProject().id],
+                projects: [getProject().id],
                 storages: [getStorage().id],
                 filename: getRandomString(),
                 originalFilename: "originalFilename",
@@ -818,11 +814,10 @@ class BasicInstanceBuilder {
     }
 
 
-
     static AnnotationFilter getAnnotationFilter() {
         def filter = AnnotationFilter.findByName("BASICFILTER")
         if (!filter) {
-            filter = new AnnotationFilter(name:"BASICFILTER",project:getProject(),user:User.findByUsername(Infos.SUPERADMINLOGIN))
+            filter = new AnnotationFilter(name: "BASICFILTER", project: getProject(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
             saveDomain(filter)
             filter.addToTerms(getTerm())
             filter.addToUsers(User.findByUsername(Infos.SUPERADMINLOGIN))
@@ -832,7 +827,7 @@ class BasicInstanceBuilder {
     }
 
     static AnnotationFilter getAnnotationFilterNotExist() {
-        def annotationFilter = new AnnotationFilter(name:getRandomString(),project:getProject(),user: User.findByUsername(Infos.SUPERADMINLOGIN))
+        def annotationFilter = new AnnotationFilter(name: getRandomString(), project: getProject(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
         annotationFilter.addToTerms(getTerm())
         annotationFilter.addToUsers(User.findByUsername(Infos.SUPERADMINLOGIN))
         checkDomain(annotationFilter)
@@ -853,9 +848,9 @@ class BasicInstanceBuilder {
 
 
     static Job getJob() {
-        def job = Job.findByProjectAndSoftware(getProject(),getSoftware())
-        if(!job) {
-            job = new Job(project:getProject(),software:getSoftware())
+        def job = Job.findByProjectAndSoftware(getProject(), getSoftware())
+        if (!job) {
+            job = new Job(project: getProject(), software: getSoftware())
             saveDomain(job)
         }
         job
@@ -866,39 +861,34 @@ class BasicInstanceBuilder {
     }
 
     static Job getJobNotExist(boolean save = false, Software software) {
-        Job job =  new Job(software:software, project : saveDomain(getProjectNotExist()))
-        save ? saveDomain(job) : checkDomain(job)
-    }
-
-    static Job getJobNotExist(boolean save = false, Project project) {
-        Job job =  new Job(software:saveDomain(getSoftwareNotExist()), project : project)
+        Job job = new Job(software: software, project: saveDomain(getProjectNotExist()))
         save ? saveDomain(job) : checkDomain(job)
     }
 
     static Job getJobNotExist(boolean save = false, Software software, Project project) {
-        Job job =  new Job(software:software, project : project)
+        Job job = new Job(software: software, project: project)
         save ? saveDomain(job) : checkDomain(job)
     }
 
     static JobTemplate getJobTemplate() {
-        def job = JobTemplate.findByProjectAndSoftwareAndName(getProject(),getSoftware(),"jobtemplate")
-        if(!job) {
-            job = new JobTemplate(project:getProject(),software:getSoftware(), name:"jobtemplate")
+        def job = JobTemplate.findByProjectAndSoftwareAndName(getProject(), getSoftware(), "jobtemplate")
+        if (!job) {
+            job = new JobTemplate(project: getProject(), software: getSoftware(), name: "jobtemplate")
             saveDomain(job)
         }
-        SoftwareParameter param = new SoftwareParameter(software:software, name:"annotation",type:"Domain",required: true, index:400)
+        SoftwareParameter param = new SoftwareParameter(software: software, name: "annotation", type: "Domain", required: true, index: 400)
         saveDomain(param)
         job
     }
 
     static JobTemplate getJobTemplateNotExist(boolean save = false) {
-        JobTemplate job =  new JobTemplate(software:saveDomain(getSoftwareNotExist()), project : saveDomain(getProjectNotExist()), name:getRandomString())
+        JobTemplate job = new JobTemplate(software: saveDomain(getSoftwareNotExist()), project: saveDomain(getProjectNotExist()), name: getRandomString())
         save ? saveDomain(job) : checkDomain(job)
     }
 
     static JobTemplateAnnotation getJobTemplateAnnotation() {
-        def job = JobTemplateAnnotation.findByJobTemplateAndAnnotationIdent(getJobTemplate(),getRoiAnnotation().id)
-        if(!job) {
+        def job = JobTemplateAnnotation.findByJobTemplateAndAnnotationIdent(getJobTemplate(), getRoiAnnotation().id)
+        if (!job) {
             job = new JobTemplateAnnotation(jobTemplate: getJobTemplate())
             job.setAnnotation(getRoiAnnotation())
             saveDomain(job)
@@ -907,7 +897,7 @@ class BasicInstanceBuilder {
     }
 
     static JobTemplateAnnotation getJobTemplateAnnotationNotExist(boolean save = false) {
-        JobTemplateAnnotation jobTemplateAnnotation =  new JobTemplateAnnotation(jobTemplate:saveDomain(getJobTemplate()))
+        JobTemplateAnnotation jobTemplateAnnotation = new JobTemplateAnnotation(jobTemplate: saveDomain(getJobTemplate()))
         jobTemplateAnnotation.setAnnotation(getRoiAnnotation())
         save ? saveDomain(jobTemplateAnnotation) : checkDomain(jobTemplateAnnotation)
     }
@@ -917,7 +907,7 @@ class BasicInstanceBuilder {
     }
 
     static JobData getJobDataNotExist(Job job) {
-        JobData jobData =  new JobData(job:job, key : "TESTKEY", filename: "filename.jpg")
+        JobData jobData = new JobData(job: job, key: "TESTKEY", filename: "filename.jpg")
         checkDomain(jobData)
     }
 
@@ -926,22 +916,22 @@ class BasicInstanceBuilder {
     }
 
     static JobParameter getJobParameter() {
-         def job = getJob()
-         def softwareParam = getSoftwareParameter()
-         def jobParameter = JobParameter.findByJobAndSoftwareParameter(job,softwareParam)
-         if (!jobParameter) {
-             jobParameter = new JobParameter(value: "toto", job:job,softwareParameter:softwareParam)
-             saveDomain(jobParameter)
-         }
-         jobParameter
-     }
+        def job = getJob()
+        def softwareParam = getSoftwareParameter()
+        def jobParameter = JobParameter.findByJobAndSoftwareParameter(job, softwareParam)
+        if (!jobParameter) {
+            jobParameter = new JobParameter(value: "toto", job: job, softwareParameter: softwareParam)
+            saveDomain(jobParameter)
+        }
+        jobParameter
+    }
 
-     static JobParameter getJobParameterNotExist() {
-         def job = getJobNotExist(true)
-         def softwareParam = getSoftwareParameterNotExist(true)
-         def jobParameter = new JobParameter(value: "toto", job:job,softwareParameter:softwareParam)
-         checkDomain(jobParameter)
-     }
+    static JobParameter getJobParameterNotExist() {
+        def job = getJobNotExist(true)
+        def softwareParam = getSoftwareParameterNotExist(true)
+        def jobParameter = new JobParameter(value: "toto", job: job, softwareParameter: softwareParam)
+        checkDomain(jobParameter)
+    }
 
     static Ontology getOntology() {
         def ontology = Ontology.findByName("BasicOntology")
@@ -951,7 +941,7 @@ class BasicInstanceBuilder {
             def term = getTermNotExist()
             term.ontology = ontology
             saveDomain(term)
-            Infos.addUserRight(User.findByUsername(Infos.SUPERADMINLOGIN),ontology)
+            Infos.addUserRight(User.findByUsername(Infos.SUPERADMINLOGIN), ontology)
         }
         ontology
     }
@@ -963,7 +953,7 @@ class BasicInstanceBuilder {
             Term term = getTermNotExist(true)
             term.ontology = ontology
             saveDomain(ontology)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,ontology)
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, ontology)
         }
         ontology
     }
@@ -974,24 +964,24 @@ class BasicInstanceBuilder {
         if (!project) {
             project = new Project(name: name, ontology: getOntology(), discipline: getDiscipline())
             saveDomain(project)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,project)
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, project)
         }
         project
     }
 
-    static Project getProjectNotExist(Ontology ontology,boolean save = false) {
-        Project project = new Project(name: getRandomString(), ontology: ontology, discipline: getDiscipline()  )
-        if(save) {
+    static Project getProjectNotExist(Ontology ontology, boolean save = false) {
+        Project project = new Project(name: getRandomString(), ontology: ontology, discipline: getDiscipline())
+        if (save) {
             saveDomain(project)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,project)
-        } else{
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, project)
+        } else {
             checkDomain(project)
         }
         return project
     }
 
     static Project getProjectNotExist(boolean save = false) {
-        getProjectNotExist(getOntologyNotExist(true),save)
+        getProjectNotExist(getOntologyNotExist(true), save)
     }
 
 
@@ -1016,7 +1006,7 @@ class BasicInstanceBuilder {
 
         def relationTerm = RelationTerm.findWhere('relation': relation, 'term1': term1, 'term2': term2)
         if (!relationTerm) {
-            relationTerm = new RelationTerm(relation:relation, term1:term1, term2:term2)
+            relationTerm = new RelationTerm(relation: relation, term1: term1, term2: term2)
             saveDomain(relationTerm)
         }
         relationTerm
@@ -1034,10 +1024,10 @@ class BasicInstanceBuilder {
 
     static Mime getMime() {
         def mime = Mime.findByExtension("tif")
-        if(!mime) {
-            mime = new Mime(extension:"tif",mimeType: "tif")
+        if (!mime) {
+            mime = new Mime(extension: "tif", mimeType: "tif")
             saveDomain(mime)
-            def mis = new MimeImageServer(imageServer: getImageServer(),mime:mime)
+            def mis = new MimeImageServer(imageServer: getImageServer(), mime: mime)
             saveDomain(mis)
         }
         mime.refresh()
@@ -1056,39 +1046,39 @@ class BasicInstanceBuilder {
 
     static Property getAnnotationProperty() {
         def annotation = getUserAnnotation()
-        def annotationProperty = Property.findByDomainIdentAndKey(annotation.id,'MyKeyBasic')
+        def annotationProperty = Property.findByDomainIdentAndKey(annotation.id, 'MyKeyBasic')
         if (!annotationProperty) {
-            annotationProperty = new Property(domain: annotation, key: 'MyKeyBasic', value:"MyValueBasic")
+            annotationProperty = new Property(domain: annotation, key: 'MyKeyBasic', value: "MyValueBasic")
             saveDomain(annotationProperty)
         }
         annotationProperty
     }
 
     static Property getAnnotationPropertyNotExist(UserAnnotation annotation = getUserAnnotation(), boolean save = false) {
-        def annotationProperty = new Property(domain: annotation, key: getRandomString(),value: "MyValueBasic")
-        save? saveDomain(annotationProperty) : checkDomain(annotationProperty)
+        def annotationProperty = new Property(domain: annotation, key: getRandomString(), value: "MyValueBasic")
+        save ? saveDomain(annotationProperty) : checkDomain(annotationProperty)
     }
 
     static Property getProjectProperty() {
         def project = getProject()
-        def projectProperty = Property.findByDomainIdentAndKey(project.id,'MyKeyBasic')
+        def projectProperty = Property.findByDomainIdentAndKey(project.id, 'MyKeyBasic')
         if (!projectProperty) {
-            projectProperty = new Property(domain: project, key: 'MyKeyBasic', value:"MyValueBasic")
+            projectProperty = new Property(domain: project, key: 'MyKeyBasic', value: "MyValueBasic")
             saveDomain(projectProperty)
         }
         projectProperty
     }
 
     static Property getProjectPropertyNotExist(Project project = getProject(), boolean save = false) {
-        def projectProperty = new Property(domain: project, key: getRandomString(),value: "MyValueBasic")
-        save? saveDomain(projectProperty) : checkDomain(projectProperty)
+        def projectProperty = new Property(domain: project, key: getRandomString(), value: "MyValueBasic")
+        save ? saveDomain(projectProperty) : checkDomain(projectProperty)
     }
 
     static Property getImageInstanceProperty() {
         def imageInstance = getImageInstance()
-        def imageInstanceProperty = Property.findByDomainIdentAndKey(imageInstance.id,'MyKeyBasic')
+        def imageInstanceProperty = Property.findByDomainIdentAndKey(imageInstance.id, 'MyKeyBasic')
         if (!imageInstanceProperty) {
-            imageInstanceProperty = new Property(domain: imageInstance, key: 'MyKeyBasic', value:"MyValueBasic")
+            imageInstanceProperty = new Property(domain: imageInstance, key: 'MyKeyBasic', value: "MyValueBasic")
             saveDomain(imageInstanceProperty)
         }
         imageInstanceProperty
@@ -1096,22 +1086,22 @@ class BasicInstanceBuilder {
 
     static Property getAbstractImageProperty() {
         def abstractImage = getAbstractImage()
-        def abstractImageProperty = Property.findByDomainIdentAndKey(abstractImage.id,'MyKeyBasic')
+        def abstractImageProperty = Property.findByDomainIdentAndKey(abstractImage.id, 'MyKeyBasic')
         if (!abstractImageProperty) {
-            abstractImageProperty = new Property(domain: abstractImage, key: 'MyKeyBasic', value:"MyValueBasic")
+            abstractImageProperty = new Property(domain: abstractImage, key: 'MyKeyBasic', value: "MyValueBasic")
             saveDomain(abstractImageProperty)
         }
         abstractImageProperty
     }
 
     static Property getImageInstancePropertyNotExist(ImageInstance imageInstance = getImageInstance(), boolean save = false) {
-        def imageInstanceProperty = new Property(domain: imageInstance, key: getRandomString(),value: "MyValueBasic")
-        save? saveDomain(imageInstanceProperty) : checkDomain(imageInstanceProperty)
+        def imageInstanceProperty = new Property(domain: imageInstance, key: getRandomString(), value: "MyValueBasic")
+        save ? saveDomain(imageInstanceProperty) : checkDomain(imageInstanceProperty)
     }
 
     static Property getAbstractImagePropertyNotExist(AbstractImage abstractImage = getAbstractImage(), boolean save = false) {
-        def abstractImageProperty = new Property(domain: abstractImage, key: getRandomString(),value: "MyValueBasic")
-        save? saveDomain(abstractImageProperty) : checkDomain(abstractImageProperty)
+        def abstractImageProperty = new Property(domain: abstractImage, key: getRandomString(), value: "MyValueBasic")
+        save ? saveDomain(abstractImageProperty) : checkDomain(abstractImageProperty)
     }
 
     static Instrument getScanner() {
@@ -1119,9 +1109,9 @@ class BasicInstanceBuilder {
         saveDomain(scanner)
     }
 
-    static Instrument getNewScannerNotExist(boolean save  = false) {
+    static Instrument getNewScannerNotExist(boolean save = false) {
         def scanner = new Instrument(brand: "newBrand", model: getRandomString())
-        save? saveDomain(scanner) : checkDomain(scanner)
+        save ? saveDomain(scanner) : checkDomain(scanner)
     }
 
     static Sample getSlide() {
@@ -1142,10 +1132,14 @@ class BasicInstanceBuilder {
     static User getUser(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User ($username)",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username, firstname: "Basic", lastname: "User", email: "Basic@User.be", password: password, enabled: true)
             user.generateKeys()
             saveDomain(user)
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
+            try {
+                SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_USER"), true)
+            } catch (Exception e) {
+                log.warn(e)
+            }
         }
         user
     }
@@ -1153,20 +1147,24 @@ class BasicInstanceBuilder {
     static User getGhest(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username, firstname: "Basic", lastname: "User", email: "Basic@User.be", password: password, enabled: true)
             user.generateKeys()
             saveDomain(user)
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_GUEST"),true)
+            try {
+                SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_GUEST"), true)
+            } catch (Exception e) {
+                log.warn(e)
+            }
         }
         user
     }
 
     static User getUserNotExist(boolean save = false) {
-       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true)
+        User user = new User(username: getRandomString(), firstname: "BasicNotExist", lastname: "UserNotExist", email: "BasicNotExist@User.be", password: "password", enabled: true)
         user.generateKeys()
-        if(save) {
+        if (save) {
             saveDomain(user)
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
+            SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_USER"), true)
         } else {
             checkDomain(user)
         }
@@ -1175,11 +1173,11 @@ class BasicInstanceBuilder {
     }
 
     static User getGhestNotExist(boolean save = false) {
-       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true)
+        User user = new User(username: getRandomString(), firstname: "BasicNotExist", lastname: "UserNotExist", email: "BasicNotExist@User.be", password: "password", enabled: true)
         user.generateKeys()
-        if(save) {
+        if (save) {
             saveDomain(user)
-            SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_GUEST"),true)
+            SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_GUEST"), true)
         } else {
             checkDomain(user)
         }
@@ -1203,21 +1201,21 @@ class BasicInstanceBuilder {
     }
 
     static Storage getStorage() {
-        def storage = Storage.findByUser(User.findByUsername(Infos.SUPERADMINLOGIN))
-        if(!storage) {
-            storage = new Storage(name:"bidon",basePath:"storagepath",ip:"192.168.0.0",user: User.findByUsername(Infos.SUPERADMINLOGIN),port: 123)
+        def storage = Storage.findByName("bidon")
+        if (!storage) {
+            storage = new Storage(name: "bidon", basePath: "storagepath", ip: "192.168.0.0", user: User.findByUsername(Infos.SUPERADMINLOGIN), port: 123)
             saveDomain(storage)
-            Infos.addUserRight(User.findByUsername(Infos.SUPERADMINLOGIN),storage)
+            Infos.addUserRight(User.findByUsername(Infos.SUPERADMINLOGIN), storage)
         }
         return storage
     }
 
     static Storage getStorageNotExist(boolean save = false) {
-        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), ip: getRandomString(), port: 22, user: getUser())
+        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), ip: getRandomString(), port: 22, user: User.findByUsername(Infos.SUPERADMINLOGIN))
 
-        if(save) {
+        if (save) {
             saveDomain(storage)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,storage)
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, storage)
         } else {
             checkDomain(storage)
         }
@@ -1246,26 +1244,26 @@ class BasicInstanceBuilder {
         getTermNotExist(saveDomain(getOntologyNotExist()), save)
     }
 
-    static Term getTermNotExist(Ontology ontology,boolean save = false) {
+    static Term getTermNotExist(Ontology ontology, boolean save = false) {
         Term term = new Term(name: getRandomString(), ontology: ontology, color: "0F00F0")
-        save ? saveDomain(term) :  checkDomain(term)
+        save ? saveDomain(term) : checkDomain(term)
     }
 
     static Software getSoftware() {
         def software = Software.findByName("AnotherBasicSoftware")
         if (!software) {
-            software = new Software(name: "AnotherBasicSoftware", serviceName:"helloWorldJobService")
+            software = new Software(name: "AnotherBasicSoftware", serviceName: "helloWorldJobService")
             saveDomain(software)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,software)
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, software)
         }
         software
     }
 
     static Software getSoftwareNotExist(boolean save = false) {
-        def software = new Software(name: getRandomString(),serviceName:"helloWorldJobService")
-        if(save) {
+        def software = new Software(name: getRandomString(), serviceName: "helloWorldJobService")
+        if (save) {
             saveDomain(software)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,software)
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, software)
         } else {
             checkDomain(software)
         }
@@ -1274,10 +1272,10 @@ class BasicInstanceBuilder {
     }
 
     static Software getSoftwareNotExistForRabbit(boolean save = false) {
-        def software = new Software(name: getRandomString(),serviceName:"createRabbitJobService")
-        if(save) {
+        def software = new Software(name: getRandomString(), serviceName: "createRabbitJobService")
+        if (save) {
             saveDomain(software)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,software)
+            Infos.addUserRight(Infos.SUPERADMINLOGIN, software)
         } else {
             checkDomain(software)
         }
@@ -1289,7 +1287,7 @@ class BasicInstanceBuilder {
         Software software = getSoftware()
         def parameter = SoftwareParameter.findBySoftware(software)
         if (!parameter) {
-            parameter = new SoftwareParameter(name:"anotherParameter",software:software,type:"String")
+            parameter = new SoftwareParameter(name: "anotherParameter", software: software, type: "String")
             saveDomain(parameter)
         }
         parameter
@@ -1297,8 +1295,8 @@ class BasicInstanceBuilder {
 
     static SoftwareParameter getSoftwareParameterNotExist(boolean save = false) {
         Software software = getSoftware()
-        def parameter =   new SoftwareParameter(name: getRandomString(),software:software,type:"String")
-        if(save) {
+        def parameter = new SoftwareParameter(name: getRandomString(), software: software, type: "String")
+        if (save) {
             saveDomain(parameter)
         } else {
             checkDomain(parameter)
@@ -1306,7 +1304,7 @@ class BasicInstanceBuilder {
 
     }
 
-    static Description getDescriptionNotExist(CytomineDomain domain,boolean save = false) {
+    static Description getDescriptionNotExist(CytomineDomain domain, boolean save = false) {
         Description description = new Description(domainClassName: domain.class.name, domainIdent: domain.id, data: "A description for this domain!")
         save ? saveDomain(description) : checkDomain(description)
     }
@@ -1315,7 +1313,7 @@ class BasicInstanceBuilder {
 
         def imageServer = ImageServer.findByName("bidon")
         if (!imageServer) {
-            imageServer = new ImageServer(name:"bidon",url:"http://bidon.server.com/",service:"service",className:"sample",available:true)
+            imageServer = new ImageServer(name: "bidon", url: "http://bidon.server.com/", service: "service", className: "sample", available: true)
             saveDomain(imageServer)
         }
 
@@ -1323,52 +1321,52 @@ class BasicInstanceBuilder {
 
         def imageServerStorage = ImageServerStorage.findByImageServerAndStorage(imageServer, storage)
         if (!imageServerStorage) {
-            imageServerStorage = new ImageServerStorage(imageServer: imageServer, storage : storage)
+            imageServerStorage = new ImageServerStorage(imageServer: imageServer, storage: storage)
             saveDomain(imageServerStorage)
         }
         imageServer
     }
 
     static SoftwareProject getSoftwareProject() {
-        SoftwareProject softproj = new SoftwareProject(software:getSoftware(),project:getProject())
+        SoftwareProject softproj = new SoftwareProject(software: getSoftware(), project: getProject())
         saveDomain(softproj)
     }
 
     static SoftwareProject getSoftwareProjectNotExist(Software software = getSoftwareNotExist(true), Project project = getProjectNotExist(true), boolean save = false) {
-        SoftwareProject softproj = new SoftwareProject(software:software,project:project)
+        SoftwareProject softproj = new SoftwareProject(software: software, project: project)
         save ? saveDomain(softproj) : checkDomain(softproj)
     }
 
     static Job createJobWithAlgoAnnotationTerm() {
-         Project project = getProjectNotExist(true)
-         Ontology ontology = project.ontology
+        Project project = getProjectNotExist(true)
+        Ontology ontology = project.ontology
 
-         Term term1 = getTermNotExist(ontology,true)
-         Term term2 = getTermNotExist(ontology,true)
+        Term term1 = getTermNotExist(ontology, true)
+        Term term2 = getTermNotExist(ontology, true)
 
 
-         UserJob userJob = getUserJobNotExist(true)
-         Job job = userJob.job
-         job.project = project
-         saveDomain(job)
-         AlgoAnnotationTerm algoAnnotationGood = getAlgoAnnotationTermNotExist()
-         algoAnnotationGood.term = term1
-         algoAnnotationGood.expectedTerm = term1
-         algoAnnotationGood.userJob = userJob
-         saveDomain(algoAnnotationGood)
+        UserJob userJob = getUserJobNotExist(true)
+        Job job = userJob.job
+        job.project = project
+        saveDomain(job)
+        AlgoAnnotationTerm algoAnnotationGood = getAlgoAnnotationTermNotExist()
+        algoAnnotationGood.term = term1
+        algoAnnotationGood.expectedTerm = term1
+        algoAnnotationGood.userJob = userJob
+        saveDomain(algoAnnotationGood)
 
-         AlgoAnnotationTerm algoAnnotationBad = getAlgoAnnotationTermNotExist()
-         algoAnnotationBad.term = term1
-         algoAnnotationBad.expectedTerm = term2
-         algoAnnotationBad.userJob = userJob
-         saveDomain(algoAnnotationBad)
-         return job
-     }
+        AlgoAnnotationTerm algoAnnotationBad = getAlgoAnnotationTermNotExist()
+        algoAnnotationBad.term = term1
+        algoAnnotationBad.expectedTerm = term2
+        algoAnnotationBad.userJob = userJob
+        saveDomain(algoAnnotationBad)
+        return job
+    }
 
     static ImageSequence getImageSequence() {
         ImageSequence imageSequence = ImageSequence.findByImageGroup(getImageGroup())
-        if(!imageSequence) {
-            imageSequence = new ImageSequence(image:getImageInstanceNotExist(imageGroup.project,true),zStack:0,slice: 0, time:0,channel:0,imageGroup:imageGroup)
+        if (!imageSequence) {
+            imageSequence = new ImageSequence(image: getImageInstanceNotExist(imageGroup.project, true), zStack: 0, slice: 0, time: 0, channel: 0, imageGroup: imageGroup)
             imageSequence = saveDomain(imageSequence)
         }
         imageSequence
@@ -1376,21 +1374,21 @@ class BasicInstanceBuilder {
 
     static ImageSequence getImageSequenceNotExist(boolean save = false) {
         def project = getProjectNotExist(true)
-        def image = getImageInstanceNotExist(project,true)
-        def group =  getImageGroupNotExist(project,true)
-        ImageSequence seq = new ImageSequence(image:image,slice: 0, zStack:0,time:0,channel:2,imageGroup:group)
+        def image = getImageInstanceNotExist(project, true)
+        def group = getImageGroupNotExist(project, true)
+        ImageSequence seq = new ImageSequence(image: image, slice: 0, zStack: 0, time: 0, channel: 2, imageGroup: group)
         save ? saveDomain(seq) : checkDomain(seq)
     }
 
-    static ImageSequence getImageSequence(ImageInstance image,Integer channel, Integer zStack, Integer slice, Integer time,ImageGroup imageGroup,boolean save = false) {
-        ImageSequence seq = new ImageSequence(image:image,zStack:zStack,time:time,channel:channel,slice:slice,imageGroup:imageGroup)
+    static ImageSequence getImageSequence(ImageInstance image, Integer channel, Integer zStack, Integer slice, Integer time, ImageGroup imageGroup, boolean save = false) {
+        ImageSequence seq = new ImageSequence(image: image, zStack: zStack, time: time, channel: channel, slice: slice, imageGroup: imageGroup)
         save ? saveDomain(seq) : checkDomain(seq)
     }
 
     static ImageGroup getImageGroup() {
         ImageGroup imageGroup = ImageGroup.findByName("imagegroupname")
-        if(!imageGroup) {
-            imageGroup = new ImageGroup(project: project, name:"imagegroupname" )
+        if (!imageGroup) {
+            imageGroup = new ImageGroup(project: project, name: "imagegroupname")
             imageGroup = saveDomain(imageGroup)
         }
         imageGroup
@@ -1401,23 +1399,23 @@ class BasicInstanceBuilder {
         save ? saveDomain(imageGroup) : checkDomain(imageGroup)
     }
 
-    static def getMultiDimensionalDataSet(def channel,def zStack,def slice,def time) {
+    static def getMultiDimensionalDataSet(def channel, def zStack, def slice, def time) {
         Project project = getProjectNotExist(true)
-        ImageGroup group = getImageGroupNotExist(project,true)
+        ImageGroup group = getImageGroupNotExist(project, true)
 
         def data = []
 
-        channel.eachWithIndex { c,ci ->
-            zStack.eachWithIndex { z,zi ->
-                slice.eachWithIndex { s,si ->
-                    time.eachWithIndex { t,ti ->
-                        String filename = c+"-"+z+"-"+s+"-"+t+"-"+System.currentTimeMillis()
-                        def abstractImage = getAbstractImageNotExist(filename,true)
-                        def imageInstance = getImageInstanceNotExist(project,true)
+        channel.eachWithIndex { c, ci ->
+            zStack.eachWithIndex { z, zi ->
+                slice.eachWithIndex { s, si ->
+                    time.eachWithIndex { t, ti ->
+                        String filename = c + "-" + z + "-" + s + "-" + t + "-" + System.currentTimeMillis()
+                        def abstractImage = getAbstractImageNotExist(filename, true)
+                        def imageInstance = getImageInstanceNotExist(project, true)
                         imageInstance.baseImage = abstractImage
                         saveDomain(imageInstance)
 
-                        ImageSequence seq = getImageSequence(imageInstance,ci,zi,si,ti,group,true)
+                        ImageSequence seq = getImageSequence(imageInstance, ci, zi, si, ti, group, true)
                         data << seq
                     }
 
@@ -1443,34 +1441,34 @@ class BasicInstanceBuilder {
         User user = getUser("imgUploader", "password")
 
         ImageServer imageServer = ImageServer.findByUrl(urlImageServer)
-        if(!imageServer) {
+        if (!imageServer) {
             imageServer = new ImageServer()
             imageServer.className = "IIPResolver"
             imageServer.name = "IIP-Openslide2"
             imageServer.service = "/image/tile"
-            imageServer.url =  urlImageServer
+            imageServer.url = urlImageServer
             imageServer.available = true
             BasicInstanceBuilder.saveDomain(imageServer)
         }
 
         Mime mime = Mime.findByMimeType("image/pyrtiff")
-        if(!mime) {
+        if (!mime) {
             mime = new Mime()
             mime.mimeType = "image/pyrtiff"
             mime.extension = "tif"
             BasicInstanceBuilder.saveDomain(mime)
         }
 
-        MimeImageServer mimeImageServer = MimeImageServer.findByMimeAndImageServer(mime,imageServer)
-        if(!mimeImageServer) {
+        MimeImageServer mimeImageServer = MimeImageServer.findByMimeAndImageServer(mime, imageServer)
+        if (!mimeImageServer) {
             mimeImageServer = new MimeImageServer()
             mimeImageServer.mime = mime
             mimeImageServer.imageServer = imageServer
             BasicInstanceBuilder.saveDomain(mimeImageServer)
         }
 
-        Storage storage = Storage.findByUser(user)
-        if(!storage) {
+        Storage storage = Storage.findByName("lrollus test storage")
+        if (!storage) {
             storage = new Storage()
             storage.basePath = "/data/test.cytomine.be/1"
             storage.name = "lrollus test storage"
@@ -1478,12 +1476,12 @@ class BasicInstanceBuilder {
             //storage.password = "toto" //unused
             //storage.port = 22 //unused
             //storage.username = "username" //unused
-            storage.user = user
+            storage.user = User.findByUsername(Infos.SUPERADMINLOGIN)
             BasicInstanceBuilder.saveDomain(storage)
         }
 
-        ImageServerStorage imageServerStorage = ImageServerStorage.findByImageServerAndStorage(imageServer,storage)
-        if(!imageServerStorage) {
+        ImageServerStorage imageServerStorage = ImageServerStorage.findByImageServerAndStorage(imageServer, storage)
+        if (!imageServerStorage) {
             imageServerStorage = new ImageServerStorage()
             imageServerStorage.storage = storage
             imageServerStorage.imageServer = imageServer
@@ -1491,7 +1489,7 @@ class BasicInstanceBuilder {
         }
 
         AbstractImage abstractImage = AbstractImage.findByFilename("1383567901006/test.tif")
-        if(!abstractImage) {
+        if (!abstractImage) {
             abstractImage = new AbstractImage()
             abstractImage.filename = "1383567901006/test.tif"
             abstractImage.originalFilename = "test.tif"
@@ -1506,8 +1504,8 @@ class BasicInstanceBuilder {
             BasicInstanceBuilder.saveDomain(abstractImage)
         }
 
-        StorageAbstractImage storageAbstractImage =  StorageAbstractImage.findByStorageAndAbstractImage(storage,abstractImage)
-        if(!storageAbstractImage) {
+        StorageAbstractImage storageAbstractImage = StorageAbstractImage.findByStorageAndAbstractImage(storage, abstractImage)
+        if (!storageAbstractImage) {
             storageAbstractImage = new StorageAbstractImage()
             storageAbstractImage.abstractImage = abstractImage
             storageAbstractImage.storage = storage
@@ -1515,7 +1513,7 @@ class BasicInstanceBuilder {
         }
 
         Project project = Project.findByName("testimage")
-        if(!project) {
+        if (!project) {
             project = BasicInstanceBuilder.getProjectNotExist(true)
             project.name = "testimage"
             BasicInstanceBuilder.saveDomain(project)
@@ -1537,8 +1535,8 @@ class BasicInstanceBuilder {
             BasicInstanceBuilder.saveDomain(uploadedFile)
         }
 
-        ImageInstance imageInstance = ImageInstance.findByBaseImageAndProject(abstractImage,project)
-        if(!imageInstance) {
+        ImageInstance imageInstance = ImageInstance.findByBaseImageAndProject(abstractImage, project)
+        if (!imageInstance) {
             imageInstance = new ImageInstance()
             imageInstance.baseImage = abstractImage
             imageInstance.project = project
@@ -1548,8 +1546,8 @@ class BasicInstanceBuilder {
 
 
         ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.be")
-        if(!processingServer) {
-            processingServer = new  ProcessingServer()
+        if (!processingServer) {
+            processingServer = new ProcessingServer()
             processingServer.url = "http://image.cytomine.be"
             BasicInstanceBuilder.saveDomain(processingServer)
         }
@@ -1559,7 +1557,7 @@ class BasicInstanceBuilder {
         }
         UserAnnotation.findAllByImage(imageInstance).each {
             AnnotationTerm.findAllByUserAnnotation(it).each { at ->
-                at.delete(flush:true)
+                at.delete(flush: true)
             }
             it.delete(flush: true)
         }
@@ -1593,7 +1591,7 @@ class BasicInstanceBuilder {
     }
 
     static SearchEngineFilter getSearchEngineFilterNotExist(boolean save = false) {
-        def json = ([words:["Test", "hello"], domains:["project"], attributes:[], projects:[], order : null, sort : "desc", op : "AND"] as JSON).toString()
+        def json = ([words: ["Test", "hello"], domains: ["project"], attributes: [], projects: [], order: null, sort: "desc", op: "AND"] as JSON).toString()
 
         def filter = new SearchEngineFilter(name: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN), filters: json)
         save ? saveDomain(filter) : checkDomain(filter)
@@ -1656,23 +1654,22 @@ class BasicInstanceBuilder {
 
     static AmqpQueue getAmqpQueue() {
         AmqpQueue amqpQueue = AmqpQueue.findByName("BasicAmqpQueue")
-        if(!amqpQueue) {
-            amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "rabbitmq", exchange: "exchange"+getRandomString())
+        if (!amqpQueue) {
+            amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "rabbitmq", exchange: "exchange" + getRandomString())
             saveDomain(amqpQueue)
         }
         amqpQueue
     }
 
-    static AmqpQueue getAmqpQueueNotExist(boolean save = false)
-    {
-        AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "rabbitmq", exchange: "exchange"+getRandomString())
+    static AmqpQueue getAmqpQueueNotExist(boolean save = false) {
+        AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "rabbitmq", exchange: "exchange" + getRandomString())
         save ? saveDomain(amqpQueue) : checkDomain(amqpQueue)
         amqpQueue
     }
 
     static AmqpQueueConfig getAmqpQueueConfig() {
         AmqpQueueConfig amqpQueueConfig = AmqpQueueConfig.findByName("BasicAmqpQueueConfig")
-        if(!amqpQueueConfig) {
+        if (!amqpQueueConfig) {
             amqpQueueConfig = new AmqpQueueConfig(name: "BasicAmqpQueueConfig", defaultValue: "false", index: 100, isInMap: false, type: "Boolean")
             saveDomain(amqpQueueConfig)
         }
@@ -1688,17 +1685,17 @@ class BasicInstanceBuilder {
     static AmqpQueueConfigInstance getAmqpQueueConfigInstance() {
 
         AmqpQueue amqpQueue = getAmqpQueue()
-        AmqpQueueConfig amqpQueueConfig= getAmqpQueueConfig()
+        AmqpQueueConfig amqpQueueConfig = getAmqpQueueConfig()
 
         AmqpQueueConfigInstance amqpQueueConfigInstance = AmqpQueueConfigInstance.findByQueueAndConfig(amqpQueue, amqpQueueConfig)
-        if(!amqpQueueConfigInstance) {
+        if (!amqpQueueConfigInstance) {
             amqpQueueConfigInstance = new AmqpQueueConfigInstance(queue: amqpQueue, config: amqpQueueConfig, value: "dummyValue")
             saveDomain(amqpQueueConfigInstance)
         }
         amqpQueueConfigInstance
     }
 
-    static AmqpQueueConfigInstance  getAmqpQueueConfigInstanceNotExist(AmqpQueue amqpQueue = getAmqpQueueNotExist(true), AmqpQueueConfig amqpQueueConfig =  getAmqpQueueConfigNotExist(true), boolean save = false) {
+    static AmqpQueueConfigInstance getAmqpQueueConfigInstanceNotExist(AmqpQueue amqpQueue = getAmqpQueueNotExist(true), AmqpQueueConfig amqpQueueConfig = getAmqpQueueConfigNotExist(true), boolean save = false) {
         AmqpQueueConfigInstance amqpQueueConfigInstance = new AmqpQueueConfigInstance(queue: amqpQueue, config: amqpQueueConfig, value: "dummyValueNotExist")
         save ? saveDomain(amqpQueueConfigInstance) : checkDomain(amqpQueueConfigInstance)
         amqpQueueConfigInstance
@@ -1719,12 +1716,40 @@ class BasicInstanceBuilder {
 
     static Config getConfigNotExist(boolean save = false) {
         def config = new Config(key: getRandomString(), value: getRandomString())
-        log.debug "add config "+ config.key
+        log.debug "add config " + config.key
         Config.list().each {
             log.debug it.id + " " + it.version + " " + it.key
         }
 
         save ? saveDomain(config) : checkDomain(config)
     }
+
+    static ImageGroupHDF5 getImageGroupHDF5() {
+        println "Ok basic"
+        def fn = "1.h5"
+        def project = getProject()
+        ImageGroup gp = getImageGroupNotExist(project, true)
+        ImageGroupHDF5 imageGroupHDF5 = ImageGroupHDF5.findByGroup(gp)
+        if (!imageGroupHDF5) {
+            println "Chto"
+            imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
+            imageGroupHDF5 = saveDomain(imageGroupHDF5)
+            println "Chto"
+        }
+        imageGroupHDF5
+    }
+
+    static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false) {
+        println "OK Basic"
+        def fn = "1.h5"
+        def project = getProject()
+        ImageGroup gp = getImageGroupNotExist(project, true)
+        ImageGroupHDF5 imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
+        save ? saveDomain(imageGroupHDF5) : checkDomain(imageGroupHDF5)
+    }
+
+
+
+
 
 }

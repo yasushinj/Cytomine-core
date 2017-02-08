@@ -33,5 +33,16 @@ class ImageGroupUrlMappings {
         "/api/project/$id/imagegroup.$format"(controller: "restImageGroup"){
             action = [GET:"listByProject"]
         }
+
+
+        /* Image group Hdf5 special */
+        "/api/imagegrouph5.$format"(controller: "restImageGroup"){
+            action = [POST:"addh5"]
+        }
+
+        "/api/imagegrouph5/$id.$format"(controller: "restImageGroup"){
+            action = [GET: "geth5"]
+        }
+
     }
 }

@@ -18,6 +18,8 @@ package be.cytomine.api.image.multidim
 
 import be.cytomine.api.RestController
 import be.cytomine.image.multidim.ImageGroup
+import be.cytomine.image.multidim.ImageGroupHDF5
+import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.project.Project
 import grails.converters.JSON
 import org.restapidoc.annotation.RestApi
@@ -35,6 +37,7 @@ import org.restapidoc.pojo.RestApiParamType
 class RestImageGroupController extends RestController {
 
     def imageGroupService
+    def imageGroupHDF5Service
     def projectService
 
     @RestApiMethod(description="Get an image group")
@@ -85,4 +88,26 @@ class RestImageGroupController extends RestController {
     def delete() {
         delete(imageGroupService, JSON.parse("{id : $params.id}"),null)
     }
+
+
+    @RestApiMethod(description="Add a new image group with hdf5 hyperspectral functionalities")
+    def addh5() {
+        println 'found conta'
+
+        add(imageGroupHDF5Service, request.JSON)
+    }
+
+
+    @RestApiMethod(description="Get an image group with hdf5 hyperspectral functionalities")
+    def geth5() {
+        println 'found cont get'
+        println params.id
+        ImageGroupHDF5 image = imageGroupHDF5Service.retrieve(params.id)
+        if (image) {
+            responseSuccess(image)
+        } else {
+            responseNotFound("ImageGroupHDF5", params.id)
+        }
+    }
+
 }

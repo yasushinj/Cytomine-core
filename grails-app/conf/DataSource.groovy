@@ -96,7 +96,7 @@ environments {
         dataSource {
             //loggingSql = true
             dbCreate = "create"
-            url = "jdbc:postgresql://localhost:5432/cytominetest"
+            url = "jdbc:postgresql://localhost:5432/docker"
             username = "docker"
             password = "docker"
             //password = "postgres"
@@ -137,6 +137,7 @@ grails {
         }
     }
 }
+/*
 environments {
     test {
         grails {
@@ -145,4 +146,4 @@ environments {
             }
         }
     }
-}
+} */
