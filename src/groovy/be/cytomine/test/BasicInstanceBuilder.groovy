@@ -1726,9 +1726,9 @@ class BasicInstanceBuilder {
 
     static ImageGroupHDF5 getImageGroupHDF5() {
         println "Ok basic"
-        def fn = "1.h5"
         def project = getProject()
         ImageGroup gp = getImageGroupNotExist(project, true)
+        def fn = gp.name
         ImageGroupHDF5 imageGroupHDF5 = ImageGroupHDF5.findByGroup(gp)
         if (!imageGroupHDF5) {
             println "Chto"
@@ -1739,11 +1739,22 @@ class BasicInstanceBuilder {
         imageGroupHDF5
     }
 
-    static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false) {
+
+//TODO good documentation
+    //files is an array of AbstractImages that relies to file that really exist
+    static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false, def files = []) {
         println "OK Basic"
-        def fn = "1.h5"
         def project = getProject()
         ImageGroup gp = getImageGroupNotExist(project, true)
+        def fn = gp.name
+        files.eachWithIndex{ abstractImage, i ->
+            def imageInstance = getImageInstanceNotExist(project, true)
+            imageInstance.baseImage = abstractImage
+            saveDomain(imageInstance)
+
+            ImageSequence seq = getImageSequence(imageInstance, i, 0, 0, 0, gp, true)
+        }
+
         ImageGroupHDF5 imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
         save ? saveDomain(imageGroupHDF5) : checkDomain(imageGroupHDF5)
     }

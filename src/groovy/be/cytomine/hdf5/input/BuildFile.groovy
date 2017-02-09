@@ -37,11 +37,11 @@ public class BuildFile {
     }
 
 
-    public BuildFile(String filename, int cube_width, int cube_height, int cube_depth, String root, def ex, def brustSize) {
+    public BuildFile(String filename, int cube_width, int cube_height, int cube_depth, String root, def filename_list, def burst_size) {
         this.filename = filename;
         this.cube_width = cube_width;
         this.cube_height = cube_height;
-        def dimension = ex.size()
+        def dimension = filename_list.size()
         def fn
         if(dimension <= cube_depth){
             this.cube_depth = dimension
@@ -51,9 +51,9 @@ public class BuildFile {
             this.cube_depth = cube_depth;
             fn = filename + ".0" + extention
         }
-        this.memory = brustSize //Represent the nr of tile we store into memory before writing
+        this.memory = burst_size //Represent the nr of tile we store into memory before writing
 
-        this.ed = new ExtractDataImageIO(root, ex);
+       this.ed = new ExtractDataImageIO(root, filename_list);
 
         println " " + ed.getImageWidth()  + " "+ ed.getImageHeight()
         max_cube_x = ed.getImageWidth() / this.cube_width
@@ -63,8 +63,8 @@ public class BuildFile {
         this.ft = HDF5IntStorageFeatures.createDeflationUnsigned(HDF5IntStorageFeatures.MAX_DEFLATION_LEVEL);
     }
 
-    public BuildFile(String filename, String root, def ex) {
-        this(filename, 256,256, 256, root, ex, 5);
+    public BuildFile(String filename, String root, def filename_list) {
+        this(filename, 256,256, 256, root, filename_list, 10);
     }
 
 

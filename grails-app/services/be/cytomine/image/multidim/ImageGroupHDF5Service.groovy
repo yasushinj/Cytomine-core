@@ -4,8 +4,11 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.hdf5.input.BuildFile
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.security.User
+import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import net.sf.json.JSONObject
@@ -16,6 +19,10 @@ import static org.springframework.security.acls.domain.BasePermission.READ
 class ImageGroupHDF5Service  extends  ModelService{
 
     def securityACLService
+    def imageGroupService
+    def imageSequenceService
+    def mailService
+
 
 
     def currentDomain() {
@@ -23,7 +30,7 @@ class ImageGroupHDF5Service  extends  ModelService{
     }
 
     def getStringParamsI18n(def domain) {
-         return [domain.group.name, domain.filenames]
+         return [domain.id, domain.group.name]
     }
 
     ImageGroupHDF5 get(def id){
@@ -39,17 +46,53 @@ class ImageGroupHDF5Service  extends  ModelService{
     }
 
     def add(def json){
-        //Add in db
+        //Add in db (maybe this should come last)
         println "JSPN ADD " + json
        // securityACLService.check(json.project,Project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id
+        def email =  User.read(currentUser.id)
+        def resultDB
         synchronized (this.getClass()) {
             Command c = new AddCommand(user: currentUser)
-            executeCommand(c,null,json)
+            resultDB = executeCommand(c,null,json)
         }
 
+        def group = JSONUtils.getJSONAttrInteger(json,'group',null)
+
         //Convert the list in h5
+        //First get all the ImageSequence from the imageGroup
+        ImageGroup imageGroup = imageGroupService.read(group)
+        def imagesSequenceList = []
+        if (imageGroup)  {
+            imagesSequenceList = imageSequenceService.list(imageGroup)
+        }
+        else {
+            println "Not implemented"
+            return ; //Todo throw
+        }
+
+
+        def imagesFilenames = imagesSequenceList.collect{ it.image.baseImage.filename}
+        if(imagesFilenames.size() > 0){
+            def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
+            def root = imagesSequenceList.first().image.baseImage.path
+
+            Thread.start{
+                BuildFile h5builder = new BuildFile(filename, root, imagesFilenames)
+                h5builder.createParr(4)
+                mailService.sendMail{
+                    to email
+                    from "noreply@cytomine.be"
+                    subject "Your conversion into HDF5 is finished"
+                    body "The file has been created with success and can now be used"
+                }
+            }
+
+        }
+
+        resultDB
+
     }
 
     def retrieve(def ids) {
