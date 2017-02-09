@@ -43,6 +43,7 @@ class ImageGroup extends CytomineDomain implements Serializable {
     }
 
     static mapping = {
+        tablePerHierarchy false
         id generator: "assigned"
         sort "id"
     }
@@ -88,6 +89,7 @@ class ImageGroup extends CytomineDomain implements Serializable {
      */
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
+        println "At least"
         returnArray['name'] = domain?.name
         returnArray['project'] = domain?.project?.id
         return returnArray
