@@ -73,9 +73,10 @@ class ImageFilterTests  {
     }
 
     void testDeleteImageFilterWithoutCredentials() {
+        BasicInstanceBuilder.getUser("testUserImageFilter","password")
         def imfToDelete = BasicInstanceBuilder.getImageFilterNotExist(true)
         def id = imfToDelete.id
-        def result = ImageFilterAPI.delete(id, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        def result = ImageFilterAPI.delete(id, "testUserImageFilter", "password")
         assert 403 == result.code
     }
 

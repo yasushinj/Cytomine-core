@@ -137,7 +137,7 @@ class BootStrap {
             bootstrapDataService.initData()
             noSQLCollectionService.cleanActivityDB()
             def usersSamples = [
-                    [username : Infos.ANOTHERLOGIN, firstname : 'Just an', lastname : 'Admin', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]]
+                    [username : Infos.ANOTHERLOGIN, firstname : 'Just another', lastname : 'User', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]]
             ]
             bootstrapUtilsService.createUsers(usersSamples)
 

@@ -202,6 +202,10 @@ class BasicInstanceBuilder {
         getUserJobNotExist(User.findByUsername(Infos.SUPERADMINLOGIN), save)
     }
 
+    static UserJob getUserJobNotExist(Job job, boolean save = false) {
+        getUserJobNotExist(job, User.findByUsername(Infos.SUPERADMINLOGIN), save)
+    }
+
     static UserJob getUserJobNotExist(User user, boolean save = false) {
         getUserJobNotExist(getJobNotExist(true), user, save)
     }

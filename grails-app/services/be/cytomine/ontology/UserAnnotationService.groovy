@@ -410,7 +410,7 @@ class UserAnnotationService extends ModelService {
 //            throw new ConstraintException("There are some comments on this annotation. Cannot delete it!")
 //        }
 
-        SharedAnnotation.findAllByUserAnnotation(ua).each {
+        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
             annotationTermService.removeDomain(it)
         }
 
