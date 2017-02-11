@@ -154,7 +154,7 @@ class ImageInstanceService extends ModelService {
 
         def children = []
         list(project).each { image->
-            children << [ id : image.id, key : image.id, title : image.baseImage.originalFilename, isFolder : false, children : []]
+            children << [ id : image.id, key : image.id, title : image.instanceFilename, isFolder : false, children : []]
         }
         def tree = [:]
         tree.isFolder = true
