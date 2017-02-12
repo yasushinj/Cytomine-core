@@ -69,7 +69,7 @@ var ExplorerController = Backbone.Router.extend({
         }
         var createBrowseImageViewTab = function () {
             var browseImageViewInitOptions = {};
-            if (idAnnotation != "") {
+            if (idAnnotation != "" && idAnnotation !== "0") {
                 browseImageViewInitOptions.goToAnnotation = {value: idAnnotation};
             }
             console.log("addBrowseImageView");

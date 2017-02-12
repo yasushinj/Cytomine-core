@@ -27,7 +27,7 @@ var ImageReviewAction = Backbone.View.extend({
         var self = this;
         var el = $(self.el);
         el.find("#exploreButton" + self.model.id).click(function () {
-            window.location = '#tabs-image-' + self.model.get('project') + '-' + self.model.get('id') + '-';
+            window.location = '#tabs-image-' + self.model.get('project') + '-' + self.model.get('id') + '-0';
         });
         console.log(self.model)
         if (self.isNotReviewed()) {

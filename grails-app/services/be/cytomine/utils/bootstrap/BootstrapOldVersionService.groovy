@@ -211,14 +211,6 @@ class BootstrapOldVersionService {
             }
 
         }
-
-        if(SecUser.findByUsername("vmartin")) {
-            def imageUser = SecUser.findByUsername("vmartin")
-            def superAdmin = SecRole.findByAuthority("ROLE_SUPER_ADMIN")
-            if(!SecUserSecRole.findBySecUserAndSecRole(imageUser,superAdmin)) {
-                new SecUserSecRole(secUser: imageUser,secRole: superAdmin).save(flush:true)
-            }
-        }
     }
 
 
