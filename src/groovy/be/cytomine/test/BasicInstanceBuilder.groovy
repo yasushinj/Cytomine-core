@@ -654,7 +654,7 @@ class BasicInstanceBuilder {
         )
 
         sharedannotation.receivers = new HashSet<User>();
-        sharedannotation.receivers.add(BasicInstanceBuilder.getSuperAdmin( Infos.ADMINLOGIN, Infos.ADMINPASSWORD))
+        sharedannotation.receivers.add(BasicInstanceBuilder.getUser( Infos.ADMINLOGIN, Infos.ADMINPASSWORD))
         saveDomain(sharedannotation)
     }
 
