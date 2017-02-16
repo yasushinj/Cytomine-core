@@ -63,7 +63,8 @@ class BootstrapDataService {
                 [username : 'rabbitmq', firstname : 'rabbitmq', lastname : 'user', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER"]],
                 [username : 'jsnow', firstname : 'John', lastname : 'Snow', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "jsnow", color : "#FF0000", roles : ["ROLE_USER"]],
                 [username : 'estark', firstname : 'Eddard', lastname : 'Stark', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "estark", color : "#FF0000", roles : ["ROLE_USER"]],
-                [username : 'clannister', firstname : 'Cersei', lastname : 'Lannister', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "clannister", color : "#FF0000", roles : ["ROLE_USER"]]
+                [username : 'clannister', firstname : 'Cersei', lastname : 'Lannister', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "clannister", color : "#FF0000", roles : ["ROLE_USER"]],
+                [username : 'monitoring', firstname : 'Monitoring', lastname : 'Monitoring', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER","ROLE_SUPER_ADMIN"]]
 
         ]
 
