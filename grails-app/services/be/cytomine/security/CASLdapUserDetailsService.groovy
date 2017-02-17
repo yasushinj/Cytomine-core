@@ -21,6 +21,7 @@ import grails.plugin.springsecurity.userdetails.GormUserDetailsService
 import grails.plugin.springsecurity.userdetails.GrailsUser
 import org.apache.commons.lang.RandomStringUtils
 import org.springframework.dao.DataAccessException
+import org.springframework.security.authentication.DisabledException
 import org.springframework.security.core.authority.GrantedAuthorityImpl
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -87,6 +88,8 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
             user = getUserByUsername(username)
         }
 
+        if(!user.enabled) throw new DisabledException("Disabled user")
+
         def auth = SecUserSecRole.findAllBySecUser(user).collect{new GrantedAuthorityImpl(it.secRole.authority)}
         //by default, we remove the role_admin for the current session
         authorities.addAll(auth.findAll{it.authority!="ROLE_ADMIN"})
@@ -103,12 +106,15 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
             throws UsernameNotFoundException, DataAccessException {
 
         SecUser user = SecUser.findByUsername(username)
+
+        if(user && !user.enabled) throw new DisabledException("Disabled user");
+
         boolean ldapDisabled = grailsApplication.config.grails.plugin.springsecurity.ldap.active.toString()=="false"
 
 
         if(user==null && ldapDisabled)  {
             log.info "getUserByUsername return null"
-            return null
+            throw new UsernameNotFoundException("User not found")
         }
 
         if (user == null) { //User does not exists in our database
@@ -122,7 +128,7 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
                 inetOrgPerson = null;
             }
 
-            if(inetOrgPerson==null) return null
+            if(inetOrgPerson==null) throw new UsernameNotFoundException("User not found into LDAP")
 
             User.withTransaction {
 
