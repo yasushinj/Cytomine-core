@@ -573,13 +573,4 @@ class ProjectTests  {
         assert !DomainAPI.containsInJSONList(project.id,JSON.parse(result.data))
     }
 
-
-
-
-
-
-
-
-
-
 }

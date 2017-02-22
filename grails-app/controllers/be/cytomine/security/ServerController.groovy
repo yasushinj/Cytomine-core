@@ -31,7 +31,6 @@ class ServerController {
     def grailsApplication
     def dataSource
 
-
     @Secured(['IS_AUTHENTICATED_REMEMBERED'])
     def ping () {
         def jsonContent = request.JSON
@@ -42,6 +41,12 @@ class ServerController {
         data.serverURL = grailsApplication.config.grails.serverURL
         if (data.authenticated)  {
             data.user = springSecurityService.currentUser.id
+
+            if(!springSecurityService.currentUser.enabled){
+                log.info "Disabled user. Invalidation of its sessions"
+                session.invalidate()
+            }
+
             def idProject = null
             def idUser = data.user
             if(!jsonContent.project.toString().equals("null")) {

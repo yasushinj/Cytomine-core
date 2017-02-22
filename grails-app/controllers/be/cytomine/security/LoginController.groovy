@@ -130,7 +130,9 @@ class LoginController extends RestController {
     def authfail () {
         log.info "springSecurityService.isLoggedIn()="+springSecurityService.isLoggedIn()
         def msg = ''
-        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        Throwable exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        if(exception.getCause()) exception = exception.getCause()
+
         if (exception) {
             //:todo put error messages in i18n
             if (exception instanceof AccountExpiredException) {

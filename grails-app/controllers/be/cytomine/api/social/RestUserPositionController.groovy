@@ -89,10 +89,8 @@ class RestUserPositionController extends RestController {
         User user = secUserService.read(params.user)
         Long afterThan = params.long("afterThan")
         if(params.getBoolean("showDetails")){
-            println "LISSTTTT"
             responseSuccess(userPositionService.list(image, user, afterThan))
         } else {
-            println "SUMMARY"
             responseSuccess(userPositionService.summarize(image, user, afterThan))
         }
     }

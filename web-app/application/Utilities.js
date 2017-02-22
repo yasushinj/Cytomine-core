@@ -77,7 +77,7 @@ Status.prototype.start = function () {
         }
         new PingModel({project: project}).save({}, {
                 success: function (model, response) {
-                    self.successcallback();
+                    self.successcallback(model);
                 },
                 error: function (model, response) {
                     self.error();

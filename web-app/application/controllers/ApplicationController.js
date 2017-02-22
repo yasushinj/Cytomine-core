@@ -30,6 +30,19 @@ var ApplicationController = Backbone.Router.extend({
     startup: function () {
         var self = this;
 
+        var pingURL = 'server/ping';
+        var user = self.status.user;
+        self.status = new Status(pingURL, self.serverDownCallback,
+            function (data) {
+                if (!data.get('authenticated')) {
+                    console.log("Deconnexion");
+                    self.status.stop();
+                    window.location = "logout";
+                }
+
+            }, 5000);
+        self.status.user = user;
+
         self.dataTablesBootstrap();
 
         HotKeys.initHotKeys();
@@ -141,7 +154,8 @@ var ApplicationController = Backbone.Router.extend({
         self.controllers.auth = new AuthController();
 
         require(["text!application/templates/ServerDownDialog.tpl.html"], function (serverDownTpl) {
-            var serverDown = function (status) {
+
+            self.serverDownCallback = function (status) {
                 window.app.view.clearIntervals();
                 $("#content").fadeOut('slow').empty();
                 $(".navbar").remove();
@@ -152,8 +166,7 @@ var ApplicationController = Backbone.Router.extend({
                         dialogID: "#server-down"
                     }
                 }).render();
-            }
-
+            };
             var successcallback = function (data) {
                 console.log("Launch app!");
                 console.log(data);
@@ -175,16 +188,8 @@ var ApplicationController = Backbone.Router.extend({
                 } else {
                     self.controllers.auth.login();
                 }
-            }
+            };
 
-            var pingURL = 'server/ping';
-//            $.ajax({
-//                url: pingURL,
-//                type: 'GET',
-//                contentType:'application/json',
-//                data: "{test:hello}",
-//                success : successcallback
-//            });
 
             var project = window.app.status.currentProject
             if (project == undefined) {
@@ -202,9 +207,6 @@ var ApplicationController = Backbone.Router.extend({
             );
 
 
-            self.status = new Status(pingURL, serverDown,
-                function () { //TO DO: HANDLE WHEN USER IS DISCONNECTED BY SERVER
-                }, 20000);
 
         });
 

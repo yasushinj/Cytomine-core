@@ -25,6 +25,10 @@ var AuthController = Backbone.Router.extend({
     login: function () {
         this.loginDialog = new LoginDialogView({});
         this.loginDialog.render();
+        $('#login-confirm').on('hide.bs.modal', function(e) {
+            // override the hide. Users cannot close this modal window
+            e.preventDefault();
+        });
     },
     logout: function () {
         this.logoutDialog = new LogoutDialogView({});
