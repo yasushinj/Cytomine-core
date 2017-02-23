@@ -460,7 +460,6 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         console.log("elementsToWait");
         console.log(elementsToWait);
         if(elementsToWait == 0){
-            console.log("here");
             // I wait than each UserModel are loaded but if there are no UserModel to load, I still need to call this function
             checkNonHideElement();
         }

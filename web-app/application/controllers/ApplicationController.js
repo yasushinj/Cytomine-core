@@ -40,7 +40,7 @@ var ApplicationController = Backbone.Router.extend({
                     window.location = "logout";
                 }
 
-            }, 5000);
+            }, 20000);
         self.status.user = user;
 
         self.dataTablesBootstrap();

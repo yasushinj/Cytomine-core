@@ -80,19 +80,22 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
-    def numberOfProjectConnections = {
+    def numberOfProjectConnections() {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
         Long afterThan = params.long("afterThan");
         String period = params.get("period").toString()
-
-        responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
+        if(period){
+            responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
+        } else {
+            response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
+        }
     }
 
     @RestApiMethod(description="Get the average project connections on Cytomine.")
     @RestApiParams(params=[
-            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.PATH, description = "Average on the project connection where created > the afterThan parameter. Optional, the beforeThan Date -1 year will be considered if none is given."),
-            @RestApiParam(name="beforeThan", type="long", paramType = RestApiParamType.PATH, description = "Average on the project connection where created < the beforeThan parameter. Optional, the current Date will be considered if none is given."),
-            @RestApiParam(name="period", type="string", paramType = RestApiParamType.PATH, description = "The period of connections (hour : by hours, day : by days, week : by weeks) (Mandatory)"),
+            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "Average on the project connection where created > the afterThan parameter. Optional, the beforeThan Date -1 year will be considered if none is given."),
+            @RestApiParam(name="beforeThan", type="long", paramType = RestApiParamType.QUERY, description = "Average on the project connection where created < the beforeThan parameter. Optional, the current Date will be considered if none is given."),
+            @RestApiParam(name="period", type="string", paramType = RestApiParamType.QUERY, description = "The period of connections (hour : by hours, day : by days, week : by weeks) (Mandatory)"),
     ])
     def averageOfProjectConnections() {
         Long afterThan = params.long("afterThan");
@@ -105,10 +108,14 @@ class RestProjectConnectionController extends RestController {
             securityACLService.checkAdmin(cytomineService.getCurrentUser())
         }
 
-        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
+        if(period){
+            responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
+        } else {
+            response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
+        }
     }
 
-    def userProjectConnectionHistory = {
+    def userProjectConnectionHistory() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
         Integer offset = params.offset != null ? params.getInt('offset') : 0

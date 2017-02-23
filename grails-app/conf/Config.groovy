@@ -81,7 +81,7 @@ cytomine.jobdata.filesystemPath = "algo/data/"
 
 // RabbitMQ server
 grails.messageBrokerServerURL = "rabbitmq:5672"
-grails.LTIConsumer = [:]
+grails.LTIConsumer = []
 
 // set per-environment serverURL stem for creating absolute links
 environments {
@@ -193,13 +193,13 @@ log4j = {
     environments {
         production {
             root {
-                info 'appLog',"logfile"
+                info 'errorLog','warnLog', 'infoLog', 'stdout'
                 additivity = true
             }
         }
         development {
             root {
-                info 'appLog',"logfile", 'stdout'
+                info 'errorLog','warnLog', 'infoLog', 'stdout'
                 additivity = true
             }
         }

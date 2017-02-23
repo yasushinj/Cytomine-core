@@ -17,15 +17,18 @@ package be.cytomine.security
 */
 
 import be.cytomine.api.RestController
+import be.cytomine.project.Project
 import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
 import net.oauth.OAuthAccessor
 import net.oauth.OAuthConsumer
+import net.oauth.OAuthException
 import net.oauth.OAuthMessage
 import net.oauth.OAuthValidator
 import net.oauth.SimpleOAuthValidator
 import net.oauth.server.OAuthServlet
+import org.apache.commons.lang.RandomStringUtils
 import org.imsglobal.lti.launch.LtiError
 import org.imsglobal.lti.launch.LtiLaunch
 import org.imsglobal.lti.launch.LtiVerificationResult
@@ -46,6 +49,7 @@ class LoginController extends RestController {
     def secUserSecRoleService
     def currentRoleServiceProxy
     def cytomineService
+    def storageService
 
     static final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
 
@@ -100,7 +104,7 @@ class LoginController extends RestController {
         String view = 'auth'
         String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
         render view: view, model: [postUrl: postUrl,
-                rememberMeParameter: config.rememberMe.parameter]
+                                   rememberMeParameter: config.rememberMe.parameter]
     }
 
     /**
@@ -257,10 +261,15 @@ class LoginController extends RestController {
     // TODO add a custom_parameter to know on which project the user has access.
     def loginWithLTI() {
 
+        log.info "params"
+        log.info params
+        log.info params.keySet()
+
         String consumerName = params.tool_consumer_instance_name
         log.info "loginWithLTI by $consumerName"
 
-        def consumer = grailsApplication.config.grails.LTIConsumer.get(consumerName)
+        def consumer = grailsApplication.config.grails.LTIConsumer.find{it.key == params.oauth_consumer_key}
+        log.info consumer
 
         String privateKey = consumer?.secret
 
@@ -280,7 +289,7 @@ class LoginController extends RestController {
             String oauth_consumer_key;
             try {
                 oauth_consumer_key = oam.getConsumerKey();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 return new LtiVerificationResult(false, LtiError.BAD_REQUEST, "Unable to find consumer key in message");
             }
 
@@ -290,7 +299,7 @@ class LoginController extends RestController {
 
             try {
                 oav.validateMessage(oam, acc);
-            } catch (Exception e) {
+            } catch (OAuthException  | IOException | java.net.URISyntaxException e) {
                 return new LtiVerificationResult(false, LtiError.BAD_REQUEST, "Failed to validate: " + e.getLocalizedMessage());
             }
             return new LtiVerificationResult(true, new LtiLaunch(request));
@@ -302,21 +311,25 @@ class LoginController extends RestController {
             response([success: false, message: "LTI verification failed"], 400)
             return
         }
+
+        String username = params.lis_person_sourcedid
+        String firstname = params.lis_person_name_given ?: username
+        String lastname = params.lis_person_name_family ?: consumer.name
         //if valid, check if all the need value are set
-        if(! (params.lis_person_name_given && params.lis_person_name_family)) {
-            response([success: false, message: "Not enough information for LTI connexion"], 400)
+        if(! (firstname && lastname && username)) {
+            response([success: false, message: "Not enough information for LTI connexion. Parameters are : "+params], 400)
+            return
+        }
+        if(!params.lis_person_contact_email_primary) {
+            response([success: false, message: "Email not found. Parameters are : "+params], 400)
             return
         }
 
         def roles = params.roles?.split(",")
 
-        String firstname = params.lis_person_name_given
-        String lastname = params.lis_person_name_family
         String email = params.lis_person_contact_email_primary
         log.info "loginWithLTI :$firstname $lastname $email  $roles"
 
-        //TODO or get username via custome values ?
-        String username = consumerName+"_"+lastname+"_"+firstname
         User user = User.findByUsername(username) //we are not logged, so we bypass the service
 
         request.getParameterNames().each {
@@ -324,11 +337,12 @@ class LoginController extends RestController {
         }
 
         if(!user){
-            /*if(!email){
+            if(!email){
                 response([success: false, message: "Not enough information to create a LTI profil"], 400)
                 return
             }
 
+            SpringSecurityUtils.reauthenticate "superadmin", null
             log.info "LTI connexion. Create new user "+username
 
             user = new User(
@@ -336,7 +350,8 @@ class LoginController extends RestController {
                     lastname : lastname,
                     email: email,
                     username: username,
-                    password: RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray())
+                    password: RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()),
+                    enabled: true
             ).save(flush : true, failOnError: true)
 
             if(roles?.contains("Instructor")) {
@@ -344,13 +359,13 @@ class LoginController extends RestController {
             }else {
                 SecUserSecRole.create(user, SecRole.findByAuthority("ROLE_GUEST"))
             }
-            storageService.initUserStorage(user)*/
+            storageService.initUserStorage(user)
+
         }
 
-        // TODO : here add access to specified project
+        SpringSecurityUtils.reauthenticate user.username, null
 
-        //SpringSecurityUtils.reauthenticate user.username, null
-        redirect (uri : "/")
+        redirect (url : params.get("custom_redirect"))
     }
 
     def buildToken() {
