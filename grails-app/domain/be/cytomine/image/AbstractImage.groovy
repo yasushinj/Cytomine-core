@@ -20,7 +20,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
-import be.cytomine.image.acquisition.Instrument
+import be.cytomine.image.server.ImageServer
 import be.cytomine.image.server.ImageServerStorage
 import be.cytomine.image.server.MimeImageServer
 import be.cytomine.image.server.StorageAbstractImage
@@ -43,9 +43,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
 
     @RestApiObjectField(description = "The exact image full filename")
     String filename
-
-    @RestApiObjectField(description = "The instrument that digitalize the image", mandatory = false)
-    Instrument scanner
 
     @RestApiObjectField(description = "The source of the image (human, annimal,...)", mandatory = false)
     Sample sample
@@ -89,7 +86,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
     static constraints = {
         originalFilename(nullable: true, blank: false, unique: false)
         filename(blank: false, unique: true)
-        scanner(nullable: true)
         sample(nullable: true)
         path(nullable: false)
         mime(nullable: false)
@@ -141,7 +137,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         domain.width = JSONUtils.getJSONAttrInteger(json,'width',-1)
         domain.created = JSONUtils.getJSONAttrDate(json,'created')
         domain.updated = JSONUtils.getJSONAttrDate(json,'updated')
-        domain.scanner = JSONUtils.getJSONAttrDomain(json,"scanner",new Instrument(),false)
         domain.sample = JSONUtils.getJSONAttrDomain(json,"sample",new Sample(),false)
         domain.mime = JSONUtils.getJSONAttrDomain(json,"mime",new Mime(),'extension','String',true)
         domain.magnification = JSONUtils.getJSONAttrInteger(json,'magnification',null)
@@ -163,7 +158,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         def returnArray = CytomineDomain.getDataFromDomain(image)
         returnArray['filename'] = image?.filename
         returnArray['originalFilename'] = image?.originalFilename
-        returnArray['scanner'] = image?.scanner?.id
         returnArray['sample'] = image?.sample?.id
         returnArray['path'] = image?.path
         returnArray['mime'] = image?.mime?.extension
@@ -180,7 +174,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
 
-    def getImageServersStorage() {
+   def getImageServersStorage() {
         try {
 
             def imageServers = MimeImageServer.findAllByMime(this.getMime())?.collect {it.imageServer}.findAll{it.available}.unique()
@@ -216,12 +210,9 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
     def getRandomImageServerURL() {
-        def imageServerStorages = getImageServersStorage()
-        if (imageServerStorages == null || imageServerStorages.size() == 0) {
-            return null
-        }
-        def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
-        return imageServerStorages[index].imageServer.url
+        def imageServers = ImageServer.list()
+        def index = (Integer) Math.round(Math.random() * (imageServers.size() - 1)) //select an url randomly
+        return imageServers[index].url
     }
 
     /*def getCropURL(def boundaries) {

@@ -150,7 +150,6 @@ class AbstractImageTests {
                     [height:[10000,900000],
                       width:[1000,9000],
                       path:["OLDPATH","NEWPATH"],
-                      scanner:[BasicInstanceBuilder.getScanner(),BasicInstanceBuilder.getNewScannerNotExist(true)],
                       filename: ["OLDNAME","NEWNAME"]]
       )
 

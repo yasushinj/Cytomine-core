@@ -19,7 +19,6 @@ package be.cytomine.test
 import be.cytomine.AnnotationDomain
 import be.cytomine.CytomineDomain
 import be.cytomine.image.*
-import be.cytomine.image.acquisition.Instrument
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.image.server.*
@@ -720,7 +719,7 @@ class BasicInstanceBuilder {
     static AbstractImage getAbstractImage() {
         AbstractImage image = AbstractImage.findByFilename("filename")
         if (!image) {
-            image = new AbstractImage(filename: "filename", scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath")
+            image = new AbstractImage(filename: "filename", sample: null, mime: getMime(), path: "pathpathpath")
         }
         image = saveDomain(image)
         saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
@@ -728,7 +727,7 @@ class BasicInstanceBuilder {
     }
 
     static AbstractImage getAbstractImageNotExist(boolean save = false) {
-        def image = new AbstractImage(filename: getRandomString(), scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
+        def image = new AbstractImage(filename: getRandomString(), sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
@@ -739,7 +738,7 @@ class BasicInstanceBuilder {
     }
 
     static AbstractImage getAbstractImageNotExist(String filename, boolean save = false) {
-        def image = new AbstractImage(filename: filename, scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
+        def image = new AbstractImage(filename: filename, sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
         save ? saveDomain(image) : checkDomain(image)
     }
 
@@ -1116,16 +1115,6 @@ class BasicInstanceBuilder {
     static Property getAbstractImagePropertyNotExist(AbstractImage abstractImage = getAbstractImage(), boolean save = false) {
         def abstractImageProperty = new Property(domain: abstractImage, key: getRandomString(),value: "MyValueBasic")
         save? saveDomain(abstractImageProperty) : checkDomain(abstractImageProperty)
-    }
-
-    static Instrument getScanner() {
-        Instrument scanner = new Instrument(brand: "brand", model: "model")
-        saveDomain(scanner)
-    }
-
-    static Instrument getNewScannerNotExist(boolean save  = false) {
-        def scanner = new Instrument(brand: "newBrand", model: getRandomString())
-        save? saveDomain(scanner) : checkDomain(scanner)
     }
 
     static Sample getSlide() {
