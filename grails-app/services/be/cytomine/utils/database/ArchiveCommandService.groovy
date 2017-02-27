@@ -29,7 +29,6 @@ import groovy.sql.Sql
 class ArchiveCommandService {
     def cytomineService
     def sessionFactory
-    def grailsApplication
     def commandService
     static transactional = false
     def dataSource

@@ -29,7 +29,6 @@ class TableService {
 
     def sessionFactory
     def dataSource
-    def grailsApplication
     public final static String SEQ_NAME = "CYTOMINE_SEQ"
     static transactional = true
 

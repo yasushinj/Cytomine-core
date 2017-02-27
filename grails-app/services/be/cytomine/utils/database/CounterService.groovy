@@ -29,7 +29,6 @@ class CounterService {
 
     def sessionFactory
     def dataSource
-    def grailsApplication
     static transactional = true
 
     /**

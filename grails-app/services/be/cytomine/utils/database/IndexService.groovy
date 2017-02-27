@@ -28,7 +28,6 @@ import groovy.sql.Sql
 class IndexService {
 
     def sessionFactory
-    def grailsApplication
     public final static String SEQ_NAME = "CYTOMINE_SEQ"
     static transactional = true
     def dataSource

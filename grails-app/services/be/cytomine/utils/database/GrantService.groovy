@@ -26,7 +26,6 @@ package be.cytomine.utils.database
 class GrantService {
 
     def sessionFactory
-    def grailsApplication
     static transactional = true
 
     def initGrant() {
