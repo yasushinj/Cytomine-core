@@ -115,6 +115,13 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
+    @RestApiMethod(description="Get the project connections of one user into a project.")
+    @RestApiParams(params=[
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id. Mandatory"),
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id. Mandatory"),
+            @RestApiParam(name="offset", type="integer", paramType = RestApiParamType.QUERY, description = "An offset. Default value = 0"),
+            @RestApiParam(name="limit", type="integer", paramType = RestApiParamType.QUERY, description = "Limit the project connections. Optionnal"),
+    ])
     def userProjectConnectionHistory() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
