@@ -61,6 +61,9 @@ var ApplicationController = Backbone.Router.extend({
         self.models.projects = new ProjectCollection({user: undefined});
         self.models.annotations = new AnnotationCollection({});
 
+        self.models.imagesequence = new ImageSequenceCollection({group: undefined});
+        self.models.imagegroup = new ImageGroupCollection({project: undefined});
+
         //"hashtable" with custom collection (useful in software page)
         self.models.currentCollection = {};
 
@@ -126,6 +129,8 @@ var ApplicationController = Backbone.Router.extend({
         window.app.controllers.phono = new PhonoController();
         window.app.controllers.userdashboard = new UserDashboardController();
         window.app.controllers.admin = new AdminController();
+
+        window.app.controllers.imagegroup = new ImageGroupController();
 
         window.app.view.initPreferences();
         window.app.view.initUserMenu();

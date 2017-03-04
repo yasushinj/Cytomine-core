@@ -108,6 +108,7 @@ class ImageSequenceService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
+        println "BBBBBB " + json.imageGroup
         securityACLService.check(json.imageGroup,ImageGroup,"container",READ)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id

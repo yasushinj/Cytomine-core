@@ -4,12 +4,15 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
+import be.cytomine.command.Transaction
 import be.cytomine.hdf5.input.BuildFile
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
 import grails.transaction.Transactional
 import net.sf.json.JSONObject
 
@@ -42,14 +45,22 @@ class ImageGroupHDF5Service  extends  ModelService{
     }
 
     def list(){
-        ImageGroupHDF5.list()
+        ImageGroupHDF5.list();
+    }
+
+    def getByGroup(ImageGroup group){
+        ImageGroupHDF5.findByGroup(group);
     }
 
     def add(def json){
         //Add in db (maybe this should come last)
-        println "JSPN ADD " + json
+        println "JSON ADD " + json
+
        // securityACLService.check(json.project,Project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
+        String storage_base_path = grailsApplication.config.storage_path
+        String root = storage_base_path   + "/" + currentUser.id;
+        json.filenames = root + "/" + JSONUtils.getJSONAttrStr(json, 'filenames')
         json.user = currentUser.id
         def email =  User.read(currentUser.id)
         def resultDB
@@ -76,12 +87,13 @@ class ImageGroupHDF5Service  extends  ModelService{
         def imagesFilenames = imagesSequenceList.collect{ it.image.baseImage.filename}
         if(imagesFilenames.size() > 0){
             def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
-            def root = imagesSequenceList.first().image.baseImage.path
 
             Thread.start{
-                BuildFile h5builder = new BuildFile(filename, root, imagesFilenames)
+
+                println "Rooot " + root
+                BuildFile h5builder = new BuildFile(root + "" + filename, root, imagesFilenames)
                 h5builder.createParr(4)
-                mailService.sendMail{
+                mailService.sendMail{ //TODO correct
                     to email
                     from "noreply@cytomine.be"
                     subject "Your conversion into HDF5 is finished"
@@ -103,5 +115,13 @@ class ImageGroupHDF5Service  extends  ModelService{
             throw new ObjectNotFoundException("${currentDomain().class} " + id + " not found")
         }
         return domain
+    }
+
+    def delete(ImageGroupHDF5 domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+      //  securityACLService.check(domain.container(),READ)
+        SecUser currentUser = cytomineService.getCurrentUser()
+        println "and here too"
+        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+        return executeCommand(c,domain,null)
     }
 }

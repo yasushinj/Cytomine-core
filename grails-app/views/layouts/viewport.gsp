@@ -171,6 +171,7 @@ body {
 <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
 <script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
 <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
+<script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
 
 <!-- Models -->
@@ -207,6 +208,10 @@ body {
 <script type="text/javascript" src="application/models/AnnotationPropertyModel.js" ></script>
 <script type="text/javascript" src="application/models/ImageInstancePropertyModel.js" ></script>
 <script type="text/javascript" src="application/models/ProjectPropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageGroupModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageGroupHDF5Model.js" ></script>
+
+    <script type="text/javascript" src="application/models/ImageSequenceModel.js" ></script>
 
 
 
@@ -273,11 +278,13 @@ body {
 <script type="text/javascript" src="application/views/processing/JobSearchEngineView.js"></script>
 <script type="text/javascript" src="application/views/processing/JobDeleteAllDataView.js"></script>
 
+    <script type="text/javascript" src="application/views/ImageGroupTmpView.js"></script>
 
 
 
 
-<script type="text/javascript" src="application/views/processing/result/RetrievalAlgoResult.js"></script>
+
+    <script type="text/javascript" src="application/views/processing/result/RetrievalAlgoResult.js"></script>
 <script type="text/javascript" src="application/views/processing/result/EvolutionAlgoResult.js"></script>
 <script type="text/javascript" src="application/views/processing/result/DefaultResult.js"></script>
 <script type="text/javascript" src="application/views/processing/result/DownloadFiles.js"></script>
@@ -308,7 +315,9 @@ body {
 <script type="text/javascript" src="application/views/image/ImageSelectView.js" ></script>
 <script type="text/javascript" src="application/views/image/ImageView.js" ></script>
 <script type="text/javascript" src="application/views/image/ImageTabsView.js" ></script>
-<script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageGroupTabsView.js" ></script>
+
+    <script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
 
 <script type="text/javascript" src="application/views/ontology/OntologyUsersDialog.js" ></script>
 <script type="text/javascript" src="application/views/ontology/OntologyPanelView.js" ></script>
