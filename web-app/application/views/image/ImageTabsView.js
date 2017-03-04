@@ -24,6 +24,7 @@ var ImageTabsView = Backbone.View.extend({
         this.idProject = options.idProject;
         this.project = options.project;
     },
+
     refresh: function () {
         this.afterDeleteImageEvent();
     },
@@ -50,7 +51,8 @@ var ImageTabsView = Backbone.View.extend({
             });
 
         });
-        return this;
+
+                return this;
     },
     update : function() {
         var self = this;
@@ -87,6 +89,10 @@ var ImageTabsView = Backbone.View.extend({
                     }
                 }
                 return names;
+                return o.aData["originalFilename"];
+
+
+
 
             }}
             ,
@@ -155,6 +161,12 @@ var ImageTabsView = Backbone.View.extend({
                 o.aData["project"]  = self.idProject;
                 return _.template(actionMenuTpl, o.aData);
 
+            }},
+            {
+                "mDataProp": "check", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
+                return _.template('<input type="checkbox" name="check-<%= id%>" id="check-<%= id%>" value="<%= id %>">', {
+                    id: o.aData.id
+                });
             }}
         ];
         self.imagesdDataTables = table.dataTable({
@@ -170,6 +182,20 @@ var ImageTabsView = Backbone.View.extend({
                     var model = new ImageInstanceModel(aData);
                     var action = new ImageReviewAction({el:body,model:model, container : self});
                     action.configureAction();
+                    $("#check-"+aData.id).change(function () {
+                        if(this.checked){
+                            window.app.controllers.imagegroup.currentlySelected.push(aData.id);
+                            console.log("added");
+                        }
+                        else {
+                            var index = window.app.controllers.imagegroup.currentlySelected.indexOf(aData.id);
+                            if (index > -1) {
+                                window.app.controllers.imagegroup.currentlySelected.splice(index, 1);
+                            }
+                            console.log("removed");
+                        }
+                    } );
+
                 });
 
                 $(".dropdown-menu").css("left", "-140px");
@@ -182,5 +208,8 @@ var ImageTabsView = Backbone.View.extend({
     });
 //        $('#projectImageListing' + self.idProject).hide();
 //        $('#projectImageTable' + self.idProject).show();
+
     }
+
+
 });

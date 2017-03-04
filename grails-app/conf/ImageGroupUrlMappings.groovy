@@ -45,5 +45,9 @@ class ImageGroupUrlMappings {
             action = [GET: "geth5", DELETE:"deleteh5"]
         }
 
+        "/api/imagegrouph5/$id/$x/$y/pxl.$format"(controller: "restImageGroup"){
+            action = [GET: "pxlh5"]
+        }
+
     }
 }

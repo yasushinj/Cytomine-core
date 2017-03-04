@@ -21,3 +21,19 @@ var ImageGroupHDF5Model = Backbone.Model.extend({
     }
 
 });
+
+var ImageGroupSpectraModel = Backbone.Model.extend({
+   url: function () {
+       var base = 'api/imagegrouph5';
+       var format = '.json';
+       return base + "/" + this.group + "/" + this.x + "/" + this.y + "/pxl" + format;
+   },
+
+    initialize: function(options){
+        this.group = options.group;
+        this.x = Math.round(options.x);
+        this.y = Math.round(options.y);
+    }
+
+
+});

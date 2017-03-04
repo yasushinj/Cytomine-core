@@ -70,5 +70,6 @@ var ImageGroupController = Backbone.Router.extend({
             filenames: "hdf5_"+group
         });
         h5group.save();
+        $("#tabs-images-"+window.app.status.currentProject).find("#con-"+group).html("Conversion is taking place. You will be notified by mail");
     }
 });

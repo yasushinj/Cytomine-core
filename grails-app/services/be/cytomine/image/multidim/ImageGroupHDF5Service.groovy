@@ -91,7 +91,7 @@ class ImageGroupHDF5Service  extends  ModelService{
             Thread.start{
 
                 println "Rooot " + root
-                BuildFile h5builder = new BuildFile(root + "" + filename, root, imagesFilenames)
+                BuildFile h5builder = new BuildFile(filename, root, imagesFilenames)
                 h5builder.createParr(4)
                 mailService.sendMail{ //TODO correct
                     to email

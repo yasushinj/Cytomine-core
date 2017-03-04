@@ -17,16 +17,22 @@ package be.cytomine.api.image.multidim
 */
 
 import be.cytomine.api.RestController
+import be.cytomine.image.AbstractImage
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.project.Project
+import be.cytomine.utils.AttachedFile
 import grails.converters.JSON
+import groovy.json.JsonSlurper
 import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
+
+import javax.imageio.ImageIO
+import java.awt.image.BufferedImage
 
 /**
  * Created by IntelliJ IDEA.
@@ -135,4 +141,27 @@ class RestImageGroupController extends RestController {
         }
     }
 
+    def pxlh5(){
+        ImageGroup image = imageGroupService.read(params.long('id'))
+        if (image) {
+            ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
+            if(imageh5){
+                String fn = imageh5.filenames
+                String url = "/multidim/pixel.json?fif=$fn&x=$params.x&y=$params.y"
+
+                String imageServerURL =  grailsApplication.config.grails.imageServerURL[0]
+                log.info "$imageServerURL"+url
+                String resp = new URL("$imageServerURL"+url).getText()
+
+                def jsonSlurper = new JsonSlurper()
+                def or = jsonSlurper.parseText(resp)
+                responseSuccess(or)
+
+            }
+            else
+                responseNotFound("ImageGroupHDF5", params.id)
+        } else {
+            responseNotFound("ImageGroup", params.id)
+        }
+    }
 }
