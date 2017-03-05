@@ -661,7 +661,15 @@ BrowseImageView = Backbone.View.extend({
                                 spec.fetch({
                                     success: function (ddd, response) {
                                         var spectra = ddd.get("spectra");
-                                    }
+                                        var graph = {
+                                            y: spectra,
+                                            mode: 'lines'
+                                        };
+                                        var layout = {
+                                            title:'Spectral distribution'
+                                        };
+
+                                        Plotly.newPlot('#spectra', [graph], layout);                                    }
 
                                 });
                             }

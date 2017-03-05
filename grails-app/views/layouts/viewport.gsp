@@ -68,8 +68,10 @@ body {
 
 <script type="text/javascript" src="lib/bowser/bowser.min.js"></script>
 
+    <script type="text/javascript" src="lib/plotly/plotly.min.js"></script>
 
-%{--<link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" /> <!-- bug with svg style in nb.d3.min.css -->--}%
+
+    %{--<link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" /> <!-- bug with svg style in nb.d3.min.css -->--}%
 
 %{--<script type="text/javascript" src="lib/OpenLayers-2.12/Openlayers-cytomine.js"></script>--}%
 <script type="text/javascript" src="lib/OpenLayers-2.13.1/OpenLayers.js"></script>
