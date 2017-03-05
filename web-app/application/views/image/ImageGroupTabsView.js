@@ -46,45 +46,28 @@ var ImageGroupTabsView = Backbone.View.extend({
             { sClass: 'center', "mData": "id", "bSearchable": false},
 
             { "mDataProp": "name", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {
+                self.groups.push(o.aData);
                 return o.aData["name"];
             }}
             ,
             { "mDataProp": "channel", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                var imageGroupModel = new ImageGroupModel({});
-                imageGroupModel.set(o.aData);
-                imageGroupModel.feed();
-                return imageGroupModel.channel;
-
+                return'<div id="channel-'+o.aData.id+'"></div>';
             }},
             { "mDataProp": "zstack", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-
-           /*     var imageGroupModel = new ImageGroupModel({});
-                imageGroupModel.set(o.aData);
-                imageGroupModel.feed();*/
-             //   return imageGroupModel.zstack;
+                return'<div id="zstack-'+o.aData.id + '"></div>';
             } },
             { "mDataProp": "slice", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-
-/*                var imageGroupModel = new ImageGroupModel({});
-                imageGroupModel.set(o.aData);
-                imageGroupModel.feed();*/
-          //      return imageGroupModel.slice;
-
+                return'<div id="slice-'+o.aData.id + '"></div>';
             }},
             { "mDataProp": "time", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-
-/*                var imageGroupModel = new ImageGroupModel({});
-                imageGroupModel.set(o.aData);
-                imageGroupModel.feed();*/
-              //  return imageGroupModel.time;
-
+                return'<div id="time-'+o.aData.id + '"></div>';
             }},
             { "mDataProp": "hdf5", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
                 var grouphdf5 = new ImageGroupHDF5Model({group: o.aData.id, id: 666});
                 var toRet = '<div id="con-'+o.aData.id + '"></div>';
                 grouphdf5.fetch({
                     success: function (data) {
-                        toRet =  "" + data.filenames;
+                        toRet =  "" + data.get("filenames");
                         $("#tabs-images-"+self.idProject).find("#con-"+o.aData.id).append(toRet);
 
                     },
@@ -108,12 +91,21 @@ var ImageGroupTabsView = Backbone.View.extend({
                 aoData.push( { "name": "datatables", "value": "true" } );
             },
             "fnDrawCallback": function(oSettings, json) {
-                /*$("#tabs-images-1016").find("#con-1718").append("tg");
 
                 _.each(self.groups, function(aData) {
                     console.log("AU p");
-                    $("#tabs-images-1016").find("#con-1718").append(aData);
-                });*/
+                    var imageGroup = new ImageGroupModel({});
+                    imageGroup.set(aData);
+                    var cb = function (){
+                        $(self.el).find("#channel-"+aData.id).append(imageGroup.channel.toString());
+                        $(self.el).find("#zstack-"+aData.id).append(imageGroup.zstack.toString());
+                        $(self.el).find("#slice-"+aData.id).append(imageGroup.slice.toString());
+                        $(self.el).find("#time-"+aData.id).append(imageGroup.time.toString());
+                    };
+
+                    imageGroup.feed(cb);
+
+                });
                 self.groups = [];
             },
             "aoColumns" : columns,
