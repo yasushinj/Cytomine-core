@@ -69,6 +69,11 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
+    void init20170301(){
+        new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image DROP COLUMN IF EXISTS scanner_id;")
+        new Sql(dataSource).executeUpdate("DROP TABLE IF EXISTS instrument;")
+    }
+
     void init20170201(){
         new Sql(dataSource).executeUpdate("ALTER TABLE shared_annotation DROP COLUMN IF EXISTS user_annotation_id;")
     }
