@@ -50,7 +50,7 @@ class RestUrlTests {
             //[clazz:ImageProperty, filters : []],
             //[clazz:ImageServer, filters : []],
             //[clazz:ImageServerStorage, filters : []],
-            //[clazz:MimeImageServer, filters : []],
+            //[clazz:MimeImageServer, filters : []], now it is IMS that route on IIP by mimeType. So does it still have sense ?
             //[clazz:RetrievalServer, filters : []],
             [clazz:Storage, filters : []],
             //[clazz:StorageAbstractImage, filters : []],
