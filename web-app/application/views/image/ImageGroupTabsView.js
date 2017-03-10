@@ -32,7 +32,9 @@ var ImageGroupTabsView = Backbone.View.extend({
     render : function() {
         var self = this;
         this.doLayout();
-
+        $("#groupAdd"+self.idProject).click(function() {
+            new AddImageGroupToProjectDialog({el: "#dialogs", model: self.project}).render();
+        });
         return this;
     },
 
@@ -81,6 +83,10 @@ var ImageGroupTabsView = Backbone.View.extend({
 
 
                 return toRet;
+            }},
+            { "mDataProp": "delete", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
+                var html =    ' <button class="btn btn-info btn-xs" id="delete-button-<%=  id  %>">Delete</button>';
+                return _.template(html, o.aData);
             }}
         ];
         self.imagesdDataTables = table.dataTable({
@@ -96,6 +102,9 @@ var ImageGroupTabsView = Backbone.View.extend({
                     console.log("AU p");
                     var imageGroup = new ImageGroupModel({});
                     imageGroup.set(aData);
+                    $(self.el).find("#delete-button-"+aData.id).click(function () {
+                        window.app.controllers.imagegroup.deleteGroup(aData.id);
+                    });
                     var cb = function (){
                         $(self.el).find("#channel-"+aData.id).append(imageGroup.channel.toString());
                         $(self.el).find("#zstack-"+aData.id).append(imageGroup.zstack.toString());

@@ -250,7 +250,9 @@ body {
 
 
 <script type="text/javascript" src="application/views/dashboard/AddImageToProjectDialog.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/AnnotationThumbView.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/AddImageGroupToProjectDialog.js" ></script>
+
+    <script type="text/javascript" src="application/views/dashboard/AnnotationThumbView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/AnnotationView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardStats.js" ></script>
@@ -260,8 +262,10 @@ body {
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardConfig.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardGroup.js" ></script>
 
-<script type="text/javascript" src="application/views/graph/GraphView.js" ></script>
+
+    <script type="text/javascript" src="application/views/graph/GraphView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>

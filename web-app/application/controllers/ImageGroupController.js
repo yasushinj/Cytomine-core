@@ -9,16 +9,19 @@ var ImageGroupController = Backbone.Router.extend({
 
     routes: {
         "imagegroup/addall": "addall", // #user/list => list()
-        "imagegroup/addsome": "addsome",
+        "imagegroup/delete-:group": "deleteGroup",
         "imagegroup/convert-:group": "convert",
     },
 
     addall: function () {
 
-     /*  var ig2 = new ImageGroupModel({name: "stfu", project: window.app.status.currentProject})
-        ig2.save(); */
 
-        var ig = new ImageGroupModel({id:1718});
+    /*    var ig2 = new ImageGroupModel({name: "stfu", project: window.app.status.currentProject});
+        ig2.save();
+        */
+
+
+        var ig = new ImageGroupModel({id:24390});
         var tmp;
         ig.fetch({
             success: function (igm, response) {
@@ -52,19 +55,13 @@ var ImageGroupController = Backbone.Router.extend({
         });
     },
 
-    addsome: function () {
-
-        /*  var ig2 = new ImageGroupModel({name: "stfu", project: window.app.status.currentProject})
-         ig2.save(); */
-
-        var ig = new ImageGroupModel({id:1718});
-        var tmp;
-
-        console.log("hookkkk");
+    deleteGroup: function (group) {
+        console.log("good hook " + group);
+        //TODO destroy also HDF5?
+        new ImageGroupModel({id: group}).destroy();
     },
 
     convert: function(group){
-        console.log("good hook " + group);
         var h5group = new ImageGroupHDF5Model({
             group: group,
             filenames: "hdf5_"+group

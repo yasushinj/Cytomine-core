@@ -126,15 +126,31 @@ var AnnotationsPanel = Backbone.View.extend({
 
         var annotationsPanelBig = $(".annotations-panel-big");
         var annotationsPanelMini = $(".annotations-panel-mini");
+        var spectraPanelBig = $(".spectra-panel-big");
+        var spectraPanelMini = $(".spectra-panel-mini");
         $(".show-annotations-panel-big").on("click", function() {
             annotationsPanelMini.css("bottom", -20);
             annotationsPanelMini.hide();
             annotationsPanelBig.css("bottom", 0);
             annotationsPanelBig.show();
         });
+        $(".show-spectra-panel-big").on("click", function () {
+            console.log("still ok");
+            spectraPanelMini.css("bottom", -20);
+            spectraPanelMini.hide();
+            spectraPanelBig.css("bottom", 0);
+            spectraPanelBig.show();
+        });
+        $(".hide-spectra-panel-big").on("click", function() {
+            spectraPanelBig.css("bottom", -300);
+            spectraPanelBig.hide();
+            spectraPanelMini.css("bottom", 0);
+            spectraPanelMini.show();
+        });
+
         $(".hide-annotations-panel-big").on("click", function() {
             annotationsPanelBig.css("bottom", -300);
-            annotationsPanelBig.show();
+            annotationsPanelBig.hide();
             annotationsPanelMini.css("bottom", 0);
             annotationsPanelMini.show();
         });
