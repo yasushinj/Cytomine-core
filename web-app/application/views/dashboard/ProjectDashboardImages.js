@@ -17,18 +17,16 @@
 var ProjectDashboardImages = Backbone.View.extend({
     imagesView: null,
     imagesTabsView: null,
-    imagesGroupTabsView: null,
     render: function () {
 
         var self = this;
-        require(["text!application/templates/dashboard/ImageTable.tpl.html"
-            , "text!application/templates/dashboard/ImageGroupTable.tpl.html"],
+        require(["text!application/templates/dashboard/ImageTable.tpl.html"],
             function (imageTableTemplate, imageGroupTableTemplate) {
                 self.doLayout(imageTableTemplate, imageGroupTableTemplate);
             });
         return this;
     },
-    doLayout: function (imageTableTemplate, imageGroupTableTemplate) {
+    doLayout: function (imageTableTemplate) {
         var self = this;
         if (this.imagesTabsView == null) {
             this.imagesTabsView = new ImageTabsView({
@@ -38,16 +36,6 @@ var ProjectDashboardImages = Backbone.View.extend({
                 project: this.model
             }).render();
             $(this.el).append(this.imagesTabsView.el);
-        }
-        if (this.imagesGroupTabsView == null) {
-            console.log("ost");
-            this.imagesGroupTabsView = new ImageGroupTabsView({
-                model: new ImageGroupCollection({project: self.model.get('id')}),
-                el: _.template(imageGroupTableTemplate, {id : self.model.get('id')}),
-                idProject: this.model.id,
-                project: this.model
-            }).render();
-            $(this.el).append(this.imagesGroupTabsView.el);
         }
     },
 

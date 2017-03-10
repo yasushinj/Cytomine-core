@@ -70,13 +70,13 @@ var ImageGroupTabsView = Backbone.View.extend({
                 grouphdf5.fetch({
                     success: function (data) {
                         toRet =  "" + data.get("filenames");
-                        $("#tabs-images-"+self.idProject).find("#con-"+o.aData.id).append(toRet);
+                        $(self.el).find("#con-"+o.aData.id).append(toRet);
 
                     },
                     error: function () {
                         var tt =  '<a href="#imagegroup/convert-<%= id %>">Convert</a> ';
                         toRet = _.template(tt, o.aData);
-                        $("#tabs-images-"+self.idProject).find("#con-"+o.aData.id).append(toRet);
+                        $(self.el).find("#con-"+o.aData.id).append(toRet);
 
                     }
                 });
