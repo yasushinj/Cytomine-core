@@ -182,7 +182,7 @@ var ImageTabsView = Backbone.View.extend({
                     var model = new ImageInstanceModel(aData);
                     var action = new ImageReviewAction({el:body,model:model, container : self});
                     action.configureAction();
-                    $("#check-"+aData.id).change(function () {
+                    $("#check-"+aData.id).change(function () { //TODO remove or rework
                         if(this.checked){
                             window.app.controllers.imagegroup.currentlySelected.push(aData.id);
                             console.log("added");

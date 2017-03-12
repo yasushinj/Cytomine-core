@@ -251,6 +251,7 @@ body {
 
 <script type="text/javascript" src="application/views/dashboard/AddImageToProjectDialog.js" ></script>
     <script type="text/javascript" src="application/views/dashboard/AddImageGroupToProjectDialog.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/AddImageSequenceDialog.js" ></script>
 
     <script type="text/javascript" src="application/views/dashboard/AnnotationThumbView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/AnnotationView.js" ></script>

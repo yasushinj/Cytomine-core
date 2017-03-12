@@ -78,7 +78,7 @@ class ImageGroup extends CytomineDomain implements Serializable {
         domain.created = JSONUtils.getJSONAttrDate(json, "created")
         domain.updated = JSONUtils.getJSONAttrDate(json, "updated")
         domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
-        domain.name = domain.id
+        domain.name = JSONUtils.getJSONAttrStr(json, "name");
         return domain;
     }
 

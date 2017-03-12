@@ -55,10 +55,14 @@ var ImageGroupController = Backbone.Router.extend({
         });
     },
 
-    deleteGroup: function (group) {
+    deleteGroup: function (group, callback) {
         console.log("good hook " + group);
         //TODO destroy also HDF5?
-        new ImageGroupModel({id: group}).destroy();
+        new ImageGroupModel({id: group}).destroy({
+            success: function(response){
+                callback();
+            }
+        });
     },
 
     convert: function(group){

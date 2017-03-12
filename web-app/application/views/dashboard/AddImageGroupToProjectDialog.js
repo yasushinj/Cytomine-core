@@ -5,8 +5,12 @@
 
 
 var AddImageGroupToProjectDialog = Backbone.View.extend({
+
+    backView: null,
+
     initialize: function (options) {
         _.bindAll(this, 'render');
+        this.backView = options.backView;
     },
     render: function () {
         var self = this;
@@ -92,6 +96,9 @@ var AddImageGroupToProjectDialog = Backbone.View.extend({
                                 slice += incSlice;
                                 time += incTime;
                             });
+                            self.backView.refresh();
+
+                            this.close();
 
                         },
                         error: function (collection, response) {

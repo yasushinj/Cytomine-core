@@ -20,7 +20,7 @@
 
 var ImageGroupTabsView = Backbone.View.extend({
     tagName: "div",
-    groups: null, //array of images that are printed
+    groups: null,
     idProject: null,
     project : null,
     initialize: function (options) {
@@ -28,13 +28,22 @@ var ImageGroupTabsView = Backbone.View.extend({
         this.project = options.project;
     },
 
+    refresh: function () {
+        var table = $(this.el).find("#imageGroupProjectTable" + this.idProject);
+        if(table && table.dataTable()) {
+            table.dataTable().fnDestroy();
+        }
+        this.doLayout();
+        return this;
+    },
 
     render : function() {
         var self = this;
         this.doLayout();
         $("#groupAdd"+self.idProject).click(function() {
-            new AddImageGroupToProjectDialog({el: "#dialogs", model: self.project}).render();
+            new AddImageGroupToProjectDialog({el: "#dialogs", model: self.project, backView: self}).render();
         });
+
         return this;
     },
 
@@ -84,6 +93,10 @@ var ImageGroupTabsView = Backbone.View.extend({
 
                 return toRet;
             }},
+            { "mDataProp": "add", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
+                var html =    ' <button class="btn btn-info btn-xs" id="add-button-<%=  id  %>">Add Images</button>';
+                return _.template(html, o.aData);
+            }},
             { "mDataProp": "delete", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
                 var html =    ' <button class="btn btn-info btn-xs" id="delete-button-<%=  id  %>">Delete</button>';
                 return _.template(html, o.aData);
@@ -99,11 +112,13 @@ var ImageGroupTabsView = Backbone.View.extend({
             "fnDrawCallback": function(oSettings, json) {
 
                 _.each(self.groups, function(aData) {
-                    console.log("AU p");
                     var imageGroup = new ImageGroupModel({});
                     imageGroup.set(aData);
                     $(self.el).find("#delete-button-"+aData.id).click(function () {
-                        window.app.controllers.imagegroup.deleteGroup(aData.id);
+                        window.app.controllers.imagegroup.deleteGroup(aData.id, self.refresh);
+                    });
+                    $(self.el).find("#add-button-"+aData.id).click(function () {
+                        new AddImageSequenceDialog({el: "#dialogs", model: imageGroup, backView: self}).render();
                     });
                     var cb = function (){
                         $(self.el).find("#channel-"+aData.id).append(imageGroup.channel.toString());
