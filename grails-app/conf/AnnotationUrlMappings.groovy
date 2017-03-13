@@ -192,6 +192,9 @@ class AnnotationUrlMappings {
         "/api/project/$id/algoannotation/download"(controller: "restAlgoAnnotation"){
             action = [GET:"downloadDocumentByProject"]
         }
+        "/api/project/$id/reviewedannotation/download"(controller: "restReviewedAnnotation"){
+            action = [GET:"downloadDocumentByProject"]
+        }
         "/api/project/$id/annotation/download"(controller: "restAnnotationDomain"){
             action = [GET:"downloadDocumentByProject"]
         }

@@ -716,6 +716,10 @@ class ReviewedAnnotationListing extends AnnotationListing {
         return from + "\n" + where
     }
 
+    @Override
+    def getUsersForTermConst() {
+        return ""
+    }
 
     def buildExtraRequest() {
 
