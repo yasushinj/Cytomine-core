@@ -19,6 +19,11 @@ var ImageGroupModel = Backbone.Model.extend({
         return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + this.id + format;
     },
 
+    forcefeed: function(){
+        this.feeded = false;
+        this.feed();
+    },
+
     feed: function (callback) {
         var self = this;
         var coll = new ImageSequenceCollection({group: this.id});
@@ -36,7 +41,8 @@ var ImageGroupModel = Backbone.Model.extend({
                     self.slice=data.slice;
                     self.time=data.time;
                 }
-                callback();
+                if(callback != undefined)
+                    callback();
             });
             self.feeded=true;
         },

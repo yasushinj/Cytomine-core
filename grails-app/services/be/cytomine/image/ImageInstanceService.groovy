@@ -22,6 +22,8 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
+import be.cytomine.image.multidim.ImageGroup
+import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.UserAnnotation
@@ -454,4 +456,32 @@ class ImageInstanceService extends ModelService {
 //            it.delete(flush: true)
 //        }
 //    }
+    def listWithoutGroup(Project project, ImageGroup imageGroup, String sortColumn, String sortDirection, String search) {
+        def listout = [];
+        ImageSequence.findAllByImageGroup(imageGroup).each{
+            listout << it.image.id
+        }
+
+        if(listout.size() == 0)
+            return list(project, sortColumn, sortDirection, search);
+
+
+        String abstractImageAlias = "ai"
+        String _sortColumn = ImageInstance.hasProperty(sortColumn) ? sortColumn : "created"
+        _sortColumn = AbstractImage.hasProperty(sortColumn) ? abstractImageAlias + "." + sortColumn : "created"
+        String _search = (search != null && search != "") ? "%"+search+"%" : "%"
+
+        return ImageInstance.createCriteria().list() {
+            createAlias("baseImage", abstractImageAlias)
+            eq("project", project)
+            isNull("parent")
+            isNull("deleted")
+            fetchMode 'baseImage', FetchMode.JOIN
+            not {'in'("id", listout)}
+            ilike(abstractImageAlias + ".originalFilename", _search)
+            order(_sortColumn, sortDirection)
+        }
+
+       // return ImageInstance.findAllByProjectAndIdNotInList(project, listout);
+    }
 }

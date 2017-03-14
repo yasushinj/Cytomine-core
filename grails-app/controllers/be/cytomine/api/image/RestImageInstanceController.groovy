@@ -20,6 +20,7 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
@@ -66,6 +67,7 @@ class RestImageInstanceController extends RestController {
     def descriptionService
     def propertyService
     def securityACLService
+    def imageGroupService
 
     final static int MAX_SIZE_WINDOW_REQUEST = 5000 * 5000 //5k by 5k pixels
 
@@ -123,6 +125,31 @@ class RestImageInstanceController extends RestController {
         else {
             responseNotFound("ImageInstance", "Project", params.id)
         }
+    }
+
+
+    @RestApiMethod(description="Get all image instance for a specific project that are not in a specific group", listing = true)
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="group", type="long", paramType = RestApiParamType.PATH, description = "The excluded group"),
+            @RestApiParam(name="sortColumn", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Column sort (created by default)"),
+            @RestApiParam(name="sortDirection", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Sort direction (desc by default)"),
+            @RestApiParam(name="sSearch", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Original filename sreach filter (all by default)")
+
+    ])
+    def listByProjectWithoutGroup(){
+        Project project = projectService.read(params.long('id'))
+        ImageGroup group = imageGroupService.read(params.long('group'))
+        if(project && group){
+            String sortColumn = params.sortColumn ? params.sortColumn : "created"
+            String sortDirection = params.sortDirection ? params.sortDirection : "desc"
+            String search = params.sSearch
+            responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
+        }
+        else
+            responseNotFound("ImageInstance", "Project", params.id)
+
+
     }
 
     @RestApiMethod(description="Get the next project image (first image created before)", listing = true)

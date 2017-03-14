@@ -24,8 +24,7 @@ class ImageGroupHDF5Service  extends  ModelService{
     def securityACLService
     def imageGroupService
     def imageSequenceService
-    def mailService
-
+    def cytomineMailService
 
 
     def currentDomain() {
@@ -93,12 +92,12 @@ class ImageGroupHDF5Service  extends  ModelService{
                 println "Rooot " + root
                 BuildFile h5builder = new BuildFile(filename, root, imagesFilenames)
                 h5builder.createParr(4)
-                mailService.sendMail{ //TODO correct
-                    to email
-                    from "noreply@cytomine.be"
-                    subject "Your conversion into HDF5 is finished"
-                    body "The file has been created with success and can now be used"
-                }
+                cytomineMailService.send(
+                        cytomineMailService.NO_REPLY_EMAIL,
+                        email.getEmail(),
+                        "",
+                        "Your conversion into HDF5 is finished",
+                        "The file has been created with success and can now be used")
             }
 
         }

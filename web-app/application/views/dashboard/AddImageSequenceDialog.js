@@ -52,17 +52,20 @@ var AddImageSequenceDialog = Backbone.View.extend({
         self.imagesdDataTables = table.dataTable({
             "bProcessing": true,
             "bServerSide": true,
-            "sAjaxSource": new ImageInstanceCollection({project: self.model.get("project")}).url(),
+            "sAjaxSource": new ImageInstanceCollection({project: self.model.get("project"), imagegroup: self.model.id}).url(),
             "fnServerParams": function ( aoData ) {
                 aoData.push( { "name": "datatables", "value": "true" } );
             },
             "fnDrawCallback": function(oSettings, json) {
 
-                _.each(self.images, function(aData) {
-
-                    $("#add-button-"+aData.id).click(function() {
-                        self.model.feed();
-                        var nextchan = self.model.channel[self.model.channel.length - 1] + 1;
+                $("#imageAddSeqResearch" + self.model.id).click(function () {
+                    console.log("a");
+                    self.model.feed();
+                    var nextchan = 0;
+                    if(self.model.channel != undefined)
+                        nextchan = self.model.channel[self.model.channel.length - 1] + 1;
+                    _.each(self.images, function (aData) {
+                        console.log("b");
                         var imgSeq = new ImageSequenceModel({
                             image: aData.id,
                             channel: nextchan,
@@ -70,14 +73,44 @@ var AddImageSequenceDialog = Backbone.View.extend({
                             slice: 0,
                             time: 0,
                             imageGroup: self.model.id});
-                        imgSeq.save();
+                        imgSeq.save({}, {
+                            success: function () {
+                                $("#add-button-" + aData.id).replaceWith('<label id="labelAddToGroup' + aData.id + '">Added</label>');
+                            }
+                        });
+                        nextchan++;
+                    });
+                    self.model.forcefeed();
+                });
+
+                _.each(self.images, function(aData) {
+
+                    $("#add-button-"+aData.id).click(function() {
+                        self.model.feed();
+                        var nextchan = 0;
+                        if(self.model.channel != undefined)
+                            nextchan = self.model.channel[self.model.channel.length - 1] + 1;
+                        var imgSeq = new ImageSequenceModel({
+                            image: aData.id,
+                            channel: nextchan,
+                            zStack: 0,
+                            slice: 0,
+                            time: 0,
+                            imageGroup: self.model.id});
+                        imgSeq.save({}, {
+                            success: function () {
+
+                                $("#add-button-" + aData.id).replaceWith('<label id="labelAddToGroup' + aData.id + '">Added</label>');
+                                self.model.forcefeed();
+                            }
+                        });
 
                     });
 
 
 
                 });
-                self.images = [];
+                //self.images = [];
             },
             "aoColumns" : columns
         });
