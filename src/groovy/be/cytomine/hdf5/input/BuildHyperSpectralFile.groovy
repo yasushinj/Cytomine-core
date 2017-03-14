@@ -15,7 +15,7 @@ import java.util.concurrent.Future
 
 
 
-public class BuildFile {
+public class BuildHyperSpectralFile {
     private String filename; //Without extention
     private final String extention = ".h5"
     private int cube_width, cube_height, cube_depth, memory;
@@ -37,7 +37,7 @@ public class BuildFile {
     }
 
 
-    public BuildFile(String filename, int cube_width, int cube_height, int cube_depth, String root, def filename_list, def burst_size) {
+    public BuildHyperSpectralFile(String filename, int cube_width, int cube_height, int cube_depth, String root, def filename_list, def burst_size) {
         this.filename = filename;
         this.cube_width = cube_width;
         this.cube_height = cube_height;
@@ -63,7 +63,7 @@ public class BuildFile {
         this.ft = HDF5IntStorageFeatures.createDeflationUnsigned(HDF5IntStorageFeatures.MAX_DEFLATION_LEVEL);
     }
 
-    public BuildFile(String filename, String root, def filename_list) {
+    public BuildHyperSpectralFile(String filename, String root, def filename_list) {
         this(filename, 256,256, 256, root, filename_list, 10);
     }
 
@@ -82,11 +82,11 @@ public class BuildFile {
 
 
 
-    public void createParr(int coco){
-        def cores = coco  - 1
-        def threadPool = Executors.newFixedThreadPool(coco * 2)
+    public void createFile(int cores){
+        def threadPool = Executors.newFixedThreadPool(cores)
         def names = new ArrayList<ArrayList<String>>()
         def vals = new ArrayList<ArrayList<MDShortArray>>()
+        cores-- //by doing that we "book" one core to do the writing, starting from below core represent only the number of reading cores
         (1..cores).each {
             names << new ArrayList<String>()
             vals << new ArrayList<MDShortArray>()
@@ -116,7 +116,7 @@ public class BuildFile {
                 def arrRet = new ArrayList<Future>()
 
 
-                def res = extractBurstParr(cores, x, y, startDim, names, vals, arrRet, threadPool)
+                def res = extractBurst(cores, x, y, startDim, names, vals, arrRet, threadPool)
                 def time2 = benchmark {
                     writeFuture.get()
                 }
@@ -147,7 +147,8 @@ public class BuildFile {
         threadPool.shutdown()
     }
 
-    public int[] extractBurstParr(int cores, int cubeX, int cubeY, int startDim,  ArrayList<ArrayList<String>> names, ArrayList<ArrayList<MDShortArray>> vals, ArrayList<Future> arrRet, def tp){
+    //This method extract a burst of "memory" cubes
+    public int[] extractBurst(int cores, int cubeX, int cubeY, int startDim, ArrayList<ArrayList<String>> names, ArrayList<ArrayList<MDShortArray>> vals, ArrayList<Future> arrRet, def tp){
         int[] nextXy
         def limit = startDim + cube_depth
         if(limit > ed.getImageDepth())
@@ -191,6 +192,7 @@ public class BuildFile {
         return [retX, retY]
     }
 
+    //This method extract a burst of memory 2D array on a single image and store them in MDArray
     public int[] extract2DBurst(int startX_cube , int startY_cube, int startD, int k, ArrayList<String> names, ArrayList<MDShortArray> arrs){
         int d = (int) (startD / cube_depth)
 

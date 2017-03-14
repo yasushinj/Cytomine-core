@@ -6,17 +6,13 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
-import be.cytomine.hdf5.input.BuildFile
-import be.cytomine.project.Project
+import be.cytomine.hdf5.input.BuildHyperSpectralFile
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.transaction.Transactional
-import net.sf.json.JSONObject
-
-import static org.springframework.security.acls.domain.BasePermission.READ
 
 @Transactional
 class ImageGroupHDF5Service  extends  ModelService{
@@ -90,8 +86,8 @@ class ImageGroupHDF5Service  extends  ModelService{
             Thread.start{
 
                 println "Rooot " + root
-                BuildFile h5builder = new BuildFile(filename, root, imagesFilenames)
-                h5builder.createParr(4)
+                BuildHyperSpectralFile h5builder = new BuildHyperSpectralFile(filename, root, imagesFilenames)
+                h5builder.createFile(4)
                 cytomineMailService.send(
                         cytomineMailService.NO_REPLY_EMAIL,
                         email.getEmail(),
