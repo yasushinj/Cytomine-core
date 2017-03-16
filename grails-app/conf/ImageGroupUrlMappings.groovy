@@ -34,6 +34,9 @@ class ImageGroupUrlMappings {
             action = [GET:"listByProject"]
         }
 
+        "/api/imagegroup/$id/characteristics.$format"(controller: "restImageGroup"){
+            action = [GET:"characteristics"]
+        }
 
         /* Image group Hdf5 special */
         "/api/imagegrouph5.$format"(controller: "restImageGroup"){

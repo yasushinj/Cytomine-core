@@ -42,29 +42,21 @@ var ImageGroupModel = Backbone.Model.extend({
 
     feed: function (callback) {
         var self = this;
-        var coll = new ImageSequenceCollection({group: this.id});
         if(self.feeded)
             return;
-        coll.fetch({success: function (collection, response) {
-            if(collection.length == 0)
-                return;
-            var iS = collection.at(0);
 
-            $.get("/api/imageinstance/"+iS.attributes.image+"/imagesequence/possibilities.json", function(data) {
+        $.get("/api/imagegroup/"+this.id+"/characteristics.json", function(data) {
 
-                if(data.channel!=null && data.channel!=undefined) {
-                    self.channel=data.channel;
-                    self.slice=data.slice;
-                    self.time=data.time;
-                }
-                if(callback != undefined)
-                    callback();
-            });
-            self.feeded=true;
-        },
-        error: function (collection, response) {
-            console.log(response);
-        }});
+            if(data.channel!=null && data.channel!=undefined) {
+                self.channel=data.channel;
+                self.slice=data.slice;
+                self.time=data.time;
+            }
+            if(callback != undefined)
+                callback();
+        });
+        self.feeded=true;
+
 
     },
 

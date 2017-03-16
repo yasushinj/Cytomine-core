@@ -18,9 +18,11 @@ package be.cytomine.api.image.multidim
 
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
+import be.cytomine.image.ImageInstance
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.image.multidim.ImageGroupHDF5Service
+import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.project.Project
 import be.cytomine.utils.AttachedFile
 import grails.converters.JSON
@@ -95,6 +97,19 @@ class RestImageGroupController extends RestController {
         delete(imageGroupService, JSON.parse("{id : $params.id}"),null)
     }
 
+    @RestApiMethod(description="Get the different Characteristics for ImageGroup")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group")
+    ])
+    def characteristics() {
+        ImageGroup imageGroup = imageGroupService.read(params.long('id'))
+        if (imageGroup)  {
+            responseSuccess(imageGroupService.characteristics(imageGroup))
+        }
+        else {
+            responseNotFound("ImageGroup", "ImageGroup", params.id)
+        }
+    }
 
     @RestApiMethod(description="Add a new image group with hdf5 hyperspectral functionalities")
     def addh5() {
