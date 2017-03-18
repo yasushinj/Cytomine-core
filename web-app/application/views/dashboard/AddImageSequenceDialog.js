@@ -51,16 +51,17 @@ var AddImageSequenceDialog = Backbone.View.extend({
             { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
                 return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-'><img src='<%= thumb %>?maxSize=128' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
                     {
-                        project : self.model.id,
+                        project : self.model.get("project"),
                         id : o.aData.id,
                         thumb : o.aData["macroURL"]
                     });
             }},
             { "mDataProp": "originalFilename", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {
-                return o.aData["originalFilename"];
+                return o.aData.originalFilename;
             }} ,
             { "mDataProp": "add", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 self.images.push(o.aData);
+                console.log(self.model);
                 var html =    ' <button class="btn btn-info btn-xs" id="add-button-<%=  id  %>">Add</button>';
                 return _.template(html, o.aData);
             }}
@@ -75,28 +76,8 @@ var AddImageSequenceDialog = Backbone.View.extend({
             "fnDrawCallback": function(oSettings, json) {
 
                 $("#imageAddSeqResearch" + self.model.id).click(function () {
-                    console.log("a");
-                    self.model.feed();
-                    var nextchan = 0;
-                    if(self.model.channel != undefined)
-                        nextchan = self.model.channel[self.model.channel.length - 1] + 1;
-                    _.each(self.images, function (aData) {
-                        console.log("b");
-                        var imgSeq = new ImageSequenceModel({
-                            image: aData.id,
-                            channel: nextchan,
-                            zStack: 0,
-                            slice: 0,
-                            time: 0,
-                            imageGroup: self.model.id});
-                        imgSeq.save({}, {
-                            success: function () {
-                                $("#add-button-" + aData.id).replaceWith('<label id="labelAddToGroup' + aData.id + '">Added</label>');
-                            }
-                        });
-                        nextchan++;
-                    });
-                    self.model.forcefeed();
+                    console.log(self.images);
+
                 });
 
                 _.each(self.images, function(aData) {
@@ -108,7 +89,6 @@ var AddImageSequenceDialog = Backbone.View.extend({
                             nextchan = self.model.channel[self.model.channel.length - 1] + 1;
                         var imgSeq = new ImageSequenceModel({
                             image: aData.id,
-                            channel: nextchan,
                             zStack: 0,
                             slice: 0,
                             time: 0,

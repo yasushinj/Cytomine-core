@@ -23,6 +23,9 @@ import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 import static org.springframework.security.acls.domain.BasePermission.READ
 
 class ImageSequenceService extends ModelService {
@@ -36,6 +39,7 @@ class ImageSequenceService extends ModelService {
     def dataSource
     def reviewedAnnotationService
     def securityACLService
+    def imageInstanceService
 
     def currentDomain() {
         return ImageSequence
@@ -108,7 +112,34 @@ class ImageSequenceService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
-        println "BBBBBB " + json.imageGroup
+        //If the information about multidim hasn't been set, set it automatically according to filename
+        if(!(json.channel && json.time && json.zstack)){
+            ImageInstance imageInstance = imageInstanceService.read(json.image)
+            if (imageInstance)  {
+                def filename = imageInstance.baseImage.originalFilename
+                println filename
+
+                Pattern patternZstack = Pattern.compile("-z[0-9]*");
+                Pattern patternChannel = Pattern.compile("-c[0-9]*");
+                Pattern patternTime = Pattern.compile("-t[0-9]*");
+
+                Matcher matcher = patternZstack.matcher(filename);
+                if (matcher.find()) {
+                    json.zstack = matcher.group(0).substring(2)
+                }
+                matcher = patternTime.matcher(filename);
+                if (matcher.find()) {
+                    json.time = matcher.group(0).substring(2)
+                }
+                matcher = patternChannel.matcher(filename);
+                if (matcher.find()) {
+                    json.channel = matcher.group(0).substring(2)
+                }
+            }
+            else {
+                return;
+            }
+        }
         securityACLService.check(json.imageGroup,ImageGroup,"container",READ)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id

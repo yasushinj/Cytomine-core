@@ -95,6 +95,7 @@ class ImageGroupHDF5Service  extends  ModelService{
         }
 
 
+        imagesSequenceList.sort{a,b -> a.channel <=> b.channel}
         def imagesFilenames = imagesSequenceList.collect{ it.image.baseImage.filename}
         if(imagesFilenames.size() > 0){
             def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
