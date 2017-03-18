@@ -89,9 +89,7 @@ var AddImageSequenceDialog = Backbone.View.extend({
                             nextchan = self.model.channel[self.model.channel.length - 1] + 1;
                         var imgSeq = new ImageSequenceModel({
                             image: aData.id,
-                            zStack: 0,
-                            slice: 0,
-                            time: 0,
+                            slice:0,
                             imageGroup: self.model.id});
                         imgSeq.save({}, {
                             success: function () {
