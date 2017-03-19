@@ -25,6 +25,8 @@ var AddImageSequenceDialog = Backbone.View.extend({
     },
     render: function () {
         var self = this;
+        console.log("render");
+
         require([
                 "text!application/templates/dashboard/AddImageSequenceDialog.tpl.html"
             ],
@@ -35,14 +37,17 @@ var AddImageSequenceDialog = Backbone.View.extend({
     },
 
     doLayout: function (tpl) {
+        console.log("dola");
+
         var self = this;
-        console.log(self);
         var htmlCode = _.template(tpl, self.model.toJSON());
         $(this.el).html(htmlCode);
         $("#addImageSequence").modal('show');
         self.createArray();
     },
     createArray: function () {
+        console.log("ca");
+
         var self = this;
         self.images = [];
         var table = $("#addImageSequenceTable" + self.model.id);
@@ -61,7 +66,6 @@ var AddImageSequenceDialog = Backbone.View.extend({
             }} ,
             { "mDataProp": "add", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 self.images.push(o.aData);
-                console.log(self.model);
                 var html =    ' <button class="btn btn-info btn-xs" id="add-button-<%=  id  %>">Add</button>';
                 return _.template(html, o.aData);
             }}
@@ -73,20 +77,36 @@ var AddImageSequenceDialog = Backbone.View.extend({
             "fnServerParams": function ( aoData ) {
                 aoData.push( { "name": "datatables", "value": "true" } );
             },
+            "fnCreatedRow": function ( row, data, index ) {
+               // console.log(data);
+            },
             "fnDrawCallback": function(oSettings, json) {
 
-                $("#imageAddSeqResearch" + self.model.id).click(function () {
-                    console.log(self.images);
-
-                });
+                $("#imageAddSeqResearch" + self.model.id).unbind();
 
                 _.each(self.images, function(aData) {
 
+                    //Tricky part we register a  function call for each printed element
+                    $("#imageAddSeqResearch" + self.model.id).click(function () {
+                        //This is a copy paste :'(
+                        self.model.feed();
+                        var imgSeq = new ImageSequenceModel({
+                            image: aData.id,
+                            slice:0,
+                            imageGroup: self.model.id});
+                        imgSeq.save({}, {
+                            success: function () {
+
+                                $("#add-button-" + aData.id).replaceWith('<label id="labelAddToGroup' + aData.id + '">Added</label>');
+                                self.model.forcefeed();
+                            }
+                        });
+
+                    });
+
+
                     $("#add-button-"+aData.id).click(function() {
                         self.model.feed();
-                        var nextchan = 0;
-                        if(self.model.channel != undefined)
-                            nextchan = self.model.channel[self.model.channel.length - 1] + 1;
                         var imgSeq = new ImageSequenceModel({
                             image: aData.id,
                             slice:0,
@@ -104,7 +124,7 @@ var AddImageSequenceDialog = Backbone.View.extend({
 
 
                 });
-                //self.images = [];
+                self.images = [];
             },
             "aoColumns" : columns
         });
