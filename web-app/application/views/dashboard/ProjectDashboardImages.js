@@ -21,8 +21,8 @@ var ProjectDashboardImages = Backbone.View.extend({
 
         var self = this;
         require(["text!application/templates/dashboard/ImageTable.tpl.html"],
-            function (imageTableTemplate, imageGroupTableTemplate) {
-                self.doLayout(imageTableTemplate, imageGroupTableTemplate);
+            function (imageTableTemplate) {
+                self.doLayout(imageTableTemplate);
             });
         return this;
     },

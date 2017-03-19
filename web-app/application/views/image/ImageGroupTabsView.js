@@ -43,6 +43,9 @@ var ImageGroupTabsView = Backbone.View.extend({
         $("#groupAdd"+self.idProject).click(function() {
             new AddImageGroupToProjectDialog({el: "#dialogs", model: self.project, backView: self}).render();
         });
+        $("#groupRefresh"+self.idProject).click(function() {
+            self.refresh();
+        });
 
         return this;
     },

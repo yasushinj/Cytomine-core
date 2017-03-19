@@ -45,12 +45,13 @@ var AddImageGroupToProjectDialog = Backbone.View.extend({
         $(this.el).html(htmlCode);
         $("#addImageGroupToProjectProject").modal('show');
         $("#add-image-group-sub").click(function (event) {
-            event.preventDefault();
             $("#add-image-group").submit();
             return false;
         });
         $("#add-image-group").submit(function () {
             self.createImageGroup();
+            $("#addImageGroupToProjectProject").modal('hide');
+
             return false;
         });
     },
