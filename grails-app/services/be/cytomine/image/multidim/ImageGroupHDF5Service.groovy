@@ -29,6 +29,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.transaction.Transactional
+import groovy.json.JsonSlurper
 
 @Transactional
 class ImageGroupHDF5Service  extends  ModelService{
@@ -132,7 +133,6 @@ class ImageGroupHDF5Service  extends  ModelService{
     def delete(ImageGroupHDF5 domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
       //  securityACLService.check(domain.container(),READ)
         SecUser currentUser = cytomineService.getCurrentUser()
-        println "and here too"
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
     }

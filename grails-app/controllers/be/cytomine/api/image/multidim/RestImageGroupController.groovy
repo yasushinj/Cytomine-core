@@ -121,12 +121,37 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Get an image group with hdf5 hyperspectral functionalities")
     @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group that is link to the iHdf5")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The id")
     ])
     def geth5() {
+        ImageGroupHDF5 imageh5 = imageGroupService.read(params.long('id'))
+        if(imageh5)
+            responseSuccess(imageh5)
+        else
+            responseNotFound("ImageGroupHDF5", params.id)
+    }
+
+    @RestApiMethod(description="Delete an HDF5 image group")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The id")
+    ])
+    def deleteh5() {
+        ImageGroupHDF5 imageh5 = imageGroupHDF5Service.read(params.long('id'))
+        if(imageh5)
+            delete(imageGroupHDF5Service, JSON.parse("{id : $imageh5.id}"), null)
+        else
+            responseNotFound("ImageGroupHDF5", params.id)
+    }
+
+
+    @RestApiMethod(description="Get an image group with hdf5 hyperspectral functionalities")
+    @RestApiParams(params=[
+            @RestApiParam(name="group", type="long", paramType = RestApiParamType.PATH,description = "The image group that is link to the iHdf5")
+    ])
+    def geth5FromImageGroup() {
         println 'found cont get'
         println params.id
-        ImageGroup image = imageGroupService.read(params.long('id'))
+        ImageGroup image = imageGroupService.read(params.long('group'))
         if (image) {
             ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
             if(imageh5)
@@ -140,11 +165,11 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Delete an HDF5 image group")
     @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group that is link to the iHdf5")
+            @RestApiParam(name="group", type="long", paramType = RestApiParamType.PATH,description = "The image group that is link to the iHdf5")
     ])
-    def deleteh5() {
+    def deleteh5FromImageGroup() {
         println "Were there"
-        ImageGroup image = imageGroupService.read(params.long('id'))
+        ImageGroup image = imageGroupService.read(params.long('group'))
         if (image) {
             ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
             if(imageh5)

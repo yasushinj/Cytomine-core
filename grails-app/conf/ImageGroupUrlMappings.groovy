@@ -43,9 +43,12 @@ class ImageGroupUrlMappings {
             action = [POST:"addh5"]
         }
 
-        //Nb id = id of the image group associated
         "/api/imagegrouph5/$id.$format"(controller: "restImageGroup"){
             action = [GET: "geth5", DELETE:"deleteh5"]
+        }
+
+        "/api/imagegroup/$group/imagegrouph5.$format"(controller: "restImageGroup"){
+            action = [GET: "geth5FromImageGroup", DELETE:"deleteh5FromImageGroup"]
         }
 
         "/api/imagegrouph5/$id/$x/$y/pxl.$format"(controller: "restImageGroup"){

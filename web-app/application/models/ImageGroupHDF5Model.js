@@ -24,10 +24,13 @@
 var ImageGroupHDF5Model = Backbone.Model.extend({
 
     url: function () {
-        var base = 'api/imagegrouph5';
+        var base = 'api';
         var format = '.json';
-        if (this.isNew()) return base + format;
-        return base + "/" + this.group + "" + format;
+        if (this.isNew()) return base + "/imagegrouph5" + format;
+        if(this.group == undefined)
+            return base + "/imagegrouph5/" + this.id + "" + format;
+        else
+            return base + "/imagegroup/" + this.group + "/imagegrouph5" + format;
     },
 
     initialize: function (options) {

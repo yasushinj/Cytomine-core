@@ -651,6 +651,7 @@ BrowseImageView = Backbone.View.extend({
                         var lat = lonLat.lat;
                         console.log(lonLat);
                         var imgId = self.model.id;
+
                         $.get("/api/imageinstance/"+imgId+"/imagesequence/possibilities.json", function(data) {
                             if(data.imageGroup != null && data.imageGroup != undefined) {
                                 var spec = new ImageGroupSpectraModel({
