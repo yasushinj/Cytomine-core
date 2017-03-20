@@ -117,7 +117,6 @@ class ImageSequenceService extends ModelService {
             ImageInstance imageInstance = imageInstanceService.read(json.image)
             if (imageInstance)  {
                 def filename = imageInstance.baseImage.originalFilename
-                println filename
 
                 Pattern patternZstack = Pattern.compile("-z[0-9]*");
                 Pattern patternChannel = Pattern.compile("-c[0-9]*");
@@ -135,6 +134,7 @@ class ImageSequenceService extends ModelService {
                 if (matcher.find()) {
                     json.channel = matcher.group(0).substring(2)
                 }
+
             }
             else {
                 return;

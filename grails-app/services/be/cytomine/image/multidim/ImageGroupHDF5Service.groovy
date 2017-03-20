@@ -66,8 +66,6 @@ class ImageGroupHDF5Service  extends  ModelService{
 
     def add(def json){
         //Add in db (maybe this should come last)
-        println "JSON ADD " + json
-
        // securityACLService.check(json.project,Project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
         String storage_base_path = grailsApplication.config.storage_path
@@ -102,13 +100,12 @@ class ImageGroupHDF5Service  extends  ModelService{
             def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
 
             Thread.start{
-
-                println "Rooot " + root
                 BuildHyperSpectralFile h5builder = new BuildHyperSpectralFile(filename, root, imagesFilenames)
                 h5builder.createFile(4)
+                println email.getEmail()
                 cytomineMailService.send(
                         cytomineMailService.NO_REPLY_EMAIL,
-                        email.getEmail(),
+                        [email.getEmail()] as String[],
                         "",
                         "Your conversion into HDF5 is finished",
                         "The file has been created with success and can now be used")
