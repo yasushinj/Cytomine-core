@@ -645,13 +645,11 @@ BrowseImageView = Backbone.View.extend({
 
                     },
                     "click": function(e){
-                        console.log("One shot one kill");
                         var lonLat = self.map.getLonLatFromPixel(this.events.getMousePosition(e));
                         var lon = lonLat.lon;
                         var lat = lonLat.lat;
-                        console.log(lonLat);
                         var imgId = self.model.id;
-
+                        $(self.el).find("#spectra").html("<img src='images/loading.gif'>");
                         $.get("/api/imageinstance/"+imgId+"/imagesequence/possibilities.json", function(data) {
                             if(data.imageGroup != null && data.imageGroup != undefined) {
                                 var spec = new ImageGroupSpectraModel({
@@ -663,14 +661,16 @@ BrowseImageView = Backbone.View.extend({
                                     success: function (ddd, response) {
                                         var spectra = ddd.get("spectra");
                                         var graph = {
+                                            x: data.channel, //trick comment to cheat
                                             y: spectra,
                                             mode: 'lines'
                                         };
                                         var layout = {
                                             title:'Spectral distribution'
                                         };
+                                        $(self.el).find("#spectra").html("<div id='#plotplot'></div>");
 
-                                        Plotly.newPlot('#spectra', [graph], layout);                                    }
+                                        Plotly.newPlot('#plotplot', [graph], layout);                                    }
 
                                 });
                             }
