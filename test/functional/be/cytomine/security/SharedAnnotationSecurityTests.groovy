@@ -1,7 +1,7 @@
 package be.cytomine.security
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -111,6 +111,7 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
             expectedResult = 403;
         }
         //Cytomine admin cannot create on other annotation on non classical project ???
+        //in classical oui ?
         assert expectedResult == result.code
         Long idSharedAnnotationUser;
 
