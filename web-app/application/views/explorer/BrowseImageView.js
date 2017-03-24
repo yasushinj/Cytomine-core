@@ -661,7 +661,7 @@ BrowseImageView = Backbone.View.extend({
                                     success: function (ddd, response) {
                                         var spectra = ddd.get("spectra");
                                         var graph = {
-                                            x: data.channel, //trick comment to cheat
+                                            //x: data.channel, //trick comment to cheat
                                             y: spectra,
                                             mode: 'lines'
                                         };

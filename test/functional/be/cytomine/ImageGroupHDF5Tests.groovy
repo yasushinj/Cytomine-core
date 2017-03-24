@@ -22,6 +22,7 @@ import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
+import be.cytomine.test.http.ImageGroupAPI
 import be.cytomine.test.http.ImageGroupHDF5API
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -30,7 +31,23 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  * Created by laurent on 07.02.17.
  */
 class ImageGroupHDF5Tests {
-    void testAddImageGroudHDF5() {
+
+    void testShowPixelSpectra(){
+        ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5NotExist(false)
+        imageGroupHDF5.filenames = "/data/28/hdf5_35398"
+        assert imageGroupHDF5.save(flush: true) != null
+
+        def result = ImageGroupHDF5API.pixel(imageGroupHDF5.id, 0,0, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+        assert 200 == result.code
+    }
+
+    void testDeleteImageGroupHDF5(){
+        ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
+        def result = ImageGroupHDF5API.delete(imageGroupHDF5.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
+
+    void testAddImageGroupHDF5() {
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5NotExist(false)
         println imageGroupHDF5.class
         println imageGroupHDF5
@@ -46,6 +63,7 @@ class ImageGroupHDF5Tests {
 
 
     //This test launch a background task that could take a long time, so it is not really achievable if the test server is closed before
+  //TODO mock
     void testAddAndConvertImageGroupHDF5(){
         def imgs = []
         imgs << new AbstractImage(filename: "1.jpg", scanner: BasicInstanceBuilder.getScanner(), sample: null, mime: BasicInstanceBuilder.getMime(), path: "/home/laurent/sample/1-6/", width: 15653, height: 11296)
@@ -61,7 +79,7 @@ class ImageGroupHDF5Tests {
 
     }
 
-    void testShowImageGroup() {
+    void testShowImageGroupFromId() {
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
         println imageGroupHDF5
         def result = ImageGroupHDF5API.show(imageGroupHDF5.id, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
@@ -69,4 +87,17 @@ class ImageGroupHDF5Tests {
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
     }
+
+    void testShowImageGroupFromImageGroupId(){
+        ImageGroup imageGroup = BasicInstanceBuilder.getImageGroup()
+        ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5NotExist(false)
+        imageGroupHDF5.group = imageGroup.id
+        assert imageGroupHDF5.save(flush: true) != null
+
+        def result = ImageGroupHDF5API.getFromImageGroup(imageGroup.id ,Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+        assert 200 == result.code
+
+    }
+
+
 }
