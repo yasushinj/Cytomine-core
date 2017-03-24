@@ -31,7 +31,7 @@ var ApplicationController = Backbone.Router.extend({
         var self = this;
 
         var pingURL = 'server/ping';
-        var user = self.status.user;
+        var oldStatus = self.status;
         self.status = new Status(pingURL, self.serverDownCallback,
             function (data) {
                 if (!data.get('authenticated')) {
@@ -41,7 +41,9 @@ var ApplicationController = Backbone.Router.extend({
                 }
 
             }, 20000);
-        self.status.user = user;
+        for (var key in oldStatus) {
+            self.status[key] = oldStatus[key];
+        }
 
         self.dataTablesBootstrap();
 
@@ -172,6 +174,7 @@ var ApplicationController = Backbone.Router.extend({
                 console.log(data);
                 self.status.version = data.get('version');
                 self.status.serverURL = data.get('serverURL');
+                self.status.serverID = data.get('serverID');
                 if (data.get('authenticated')) {
                     new UserModel({id: "current"}).fetch({
                         success: function (model, response) {

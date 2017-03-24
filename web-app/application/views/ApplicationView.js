@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
+Storage.prototype.OriginalSetItem = Storage.prototype.setItem;
+Storage.prototype.OriginalGetItem = Storage.prototype.getItem;
+
+Storage.prototype.setItem = function (key, value) {
+    this.OriginalSetItem(window.app.status.serverID+"-"+key, value);
+};
+
+Storage.prototype.getItem = function (key) {
+    return this.OriginalGetItem(window.app.status.serverID+"-"+key);
+};
+
 Storage.prototype.setObject = function (key, value) {
     this.setItem(key, JSON.stringify(value));
 };
