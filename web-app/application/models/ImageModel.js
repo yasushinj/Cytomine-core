@@ -180,7 +180,7 @@ var ImageInstanceCollection = PaginatedCollection.extend({
             return "api/project/" + this.project + "/imageinstance.json?tree=true";
         } else {
             if(this.imagegroup != undefined && this.imagegroup)
-                return "api/project/" + this.project + "/group/" + this.imagegroup + "/imageinstance.json";
+                return "api/project/" + this.project + "/imageinstance.json?excludeimagegroup=" + this.imagegroup;
             else
                 return "api/project/" + this.project + "/imageinstance.json";
         }

@@ -108,7 +108,18 @@ class RestImageInstanceController extends RestController {
     ])
     def listByProject() {
         Project project = projectService.read(params.long('id'))
-        if (params.datatables) {
+        if(params.excludeimagegroup){
+            ImageGroup group = imageGroupService.read(params.long('excludeimagegroup'))
+            if(project && group){
+                String sortColumn = params.sortColumn ? params.sortColumn : "created"
+                String sortDirection = params.sortDirection ? params.sortDirection : "desc"
+                String search = params.sSearch
+                responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
+            }
+            else
+                responseNotFound("ImageInstance", "Project", params.id)
+        }
+        else if (params.datatables) {
             def where = "project_id = ${project.id}"
             def fieldFormat = []
             responseSuccess(dataTablesService.process(params, ImageInstance, where, fieldFormat,project))
@@ -128,29 +139,7 @@ class RestImageInstanceController extends RestController {
     }
 
 
-    @RestApiMethod(description="Get all image instance for a specific project that are not in a specific group", listing = true)
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
-            @RestApiParam(name="group", type="long", paramType = RestApiParamType.PATH, description = "The excluded group"),
-            @RestApiParam(name="sortColumn", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Column sort (created by default)"),
-            @RestApiParam(name="sortDirection", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Sort direction (desc by default)"),
-            @RestApiParam(name="sSearch", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Original filename sreach filter (all by default)")
 
-    ])
-    def listByProjectWithoutGroup(){
-        Project project = projectService.read(params.long('id'))
-        ImageGroup group = imageGroupService.read(params.long('group'))
-        if(project && group){
-            String sortColumn = params.sortColumn ? params.sortColumn : "created"
-            String sortDirection = params.sortDirection ? params.sortDirection : "desc"
-            String search = params.sSearch
-            responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
-        }
-        else
-            responseNotFound("ImageInstance", "Project", params.id)
-
-
-    }
 
     @RestApiMethod(description="Get the next project image (first image created before)", listing = true)
     @RestApiParams(params=[
