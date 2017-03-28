@@ -41,7 +41,6 @@ var ImageGroupController = Backbone.Router.extend({
         var tmp;
         ig.fetch({
             success: function (igm, response) {
-                console.log("LLLL"  + igm.project);
                 tmp = igm;
             }
         });
@@ -72,7 +71,6 @@ var ImageGroupController = Backbone.Router.extend({
     },
 
     deleteGroup: function (group, callback) {
-        console.log("good hook " + group);
         //TODO destroy also HDF5?
         new ImageGroupModel({id: group}).destroy({
             success: function(response){

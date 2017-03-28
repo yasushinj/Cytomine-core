@@ -22,6 +22,8 @@ import ch.systemsx.cisd.base.mdarray.MDShortArray
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 import java.awt.image.Raster
+import groovy.util.logging.Log
+
 
 /**
  * Created by laurent on 17.12.16.
@@ -53,7 +55,7 @@ public class ExtractDataImageIO extends ExtractData{
             BufferedImage bf = ImageIO.read(new File(filename));
             ras = bf.getData();
         } catch (IOException e) {
-            System.out.println(filenames[0] + " Not found");
+            log.info filenames[0] + " Not found"
         }
     }
 
@@ -78,7 +80,7 @@ public class ExtractDataImageIO extends ExtractData{
             ras = bf.getData();
 
         } catch (IOException e) {
-            println filenames[i] + " not found"
+            log.info filenames[i] + " not found"
         }
 
     }

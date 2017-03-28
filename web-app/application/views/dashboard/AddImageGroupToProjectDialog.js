@@ -67,10 +67,7 @@ var AddImageGroupToProjectDialog = Backbone.View.extend({
         var ig = new ImageGroupModel({name: gname, project: window.app.status.currentProject});
         ig.save({}, {
             success: function (model, response) {
-                console.log(model);
-                console.log(response);
                 var igId = model.get("imagegroup").id;
-                console.log(igId);
                 if(addall){
                     var imageCol = new ImageInstanceCollection({project: window.app.status.currentProject});
                     imageCol.fetch({

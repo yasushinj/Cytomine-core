@@ -1740,7 +1740,6 @@ class BasicInstanceBuilder {
 //TODO good documentation
     //files is an array of AbstractImages that relies to file that really exist
     static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false, def files = []) {
-        println "OK Basic"
         def project = getProject()
         ImageGroup gp = getImageGroupNotExist(project, true)
         def fn = gp.name

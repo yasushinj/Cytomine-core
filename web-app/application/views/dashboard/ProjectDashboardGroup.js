@@ -29,7 +29,6 @@ var ProjectDashboardGroup = Backbone.View.extend({
     doLayout: function (imageGroupTableTemplate) {
         var self = this;
         if (this.imagesGroupTabsView == null) {
-            console.log("ost");
             this.imagesGroupTabsView = new ImageGroupTabsView({
                 model: new ImageGroupCollection({project: self.model.get('id')}),
                 el: _.template(imageGroupTableTemplate, {id : self.model.get('id')}),
@@ -41,7 +40,6 @@ var ProjectDashboardGroup = Backbone.View.extend({
     },
     refresh: function(){
         var self = this;
-        console.log("refresh IG");
         if (this.imagesGroupTabsView == null) {
             self.render();
         } else {

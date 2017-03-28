@@ -24,6 +24,7 @@ import ch.systemsx.cisd.hdf5.IHDF5Writer
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import groovy.util.logging.Log
 
 /**
  * Created by laurent on 18.12.16.
@@ -71,10 +72,8 @@ public class BuildHyperSpectralFile {
 
        this.ed = new ExtractDataImageIO(root, filename_list);
 
-        println " " + ed.getImageWidth()  + " "+ ed.getImageHeight()
         max_cube_x = ed.getImageWidth() / this.cube_width
         max_cube_y = ed.getImageHeight() / this. cube_height
-        println "M " + max_cube_x + "  " + max_cube_y
         this.writer = HDF5Factory.open(fn);
         this.ft = HDF5IntStorageFeatures.createDeflationUnsigned(HDF5IntStorageFeatures.MAX_DEFLATION_LEVEL);
     }
@@ -93,7 +92,6 @@ public class BuildHyperSpectralFile {
         })
         to_write_names = new ArrayList<String>()
         to_write_array = new ArrayList<MDShortArray>()
-        println "Done"
     }
 
 
@@ -120,7 +118,7 @@ public class BuildHyperSpectralFile {
 
         int x, y,i, d
         for(d = 0; d < nrF; ++d){
-            println "File " + d
+            log.info "Starting to write HDF5 file number : " + d
             String meta_group = "/meta";
             int[] meta_info = [cube_width, cube_height, cube_depth];
             writer.int32().writeArray(meta_group, meta_info, ft);
@@ -148,8 +146,7 @@ public class BuildHyperSpectralFile {
 
                 def time = res[2] / 1000
                 time2 /= 1000
-                println("("+i+"/"+nrB+") : reading : " + time  + "(s) + writing late : " + time2 + " (s) " )
-                println "Limits = "  + res
+                log.info "Step HDF5 writing :("+i+"/"+nrB+") : reading : " + time  + "(s) + writing late : " + time2 + " (s) "
                 x = res[0]
                 y = res[1]
             }
@@ -185,7 +182,6 @@ public class BuildHyperSpectralFile {
         }
 
         nextXy = advanceCube(cubeX, cubeY, memory * cores)
-        println "Next XY = "  + nextXy
         return [nextXy[0], nextXy[1], time]
     }
 

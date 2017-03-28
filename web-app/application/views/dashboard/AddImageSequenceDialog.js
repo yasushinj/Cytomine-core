@@ -25,7 +25,6 @@ var AddImageSequenceDialog = Backbone.View.extend({
     },
     render: function () {
         var self = this;
-        console.log("render");
 
         require([
                 "text!application/templates/dashboard/AddImageSequenceDialog.tpl.html"
@@ -37,7 +36,6 @@ var AddImageSequenceDialog = Backbone.View.extend({
     },
 
     doLayout: function (tpl) {
-        console.log("dola");
 
         var self = this;
         var htmlCode = _.template(tpl, self.model.toJSON());
@@ -46,7 +44,6 @@ var AddImageSequenceDialog = Backbone.View.extend({
         self.createArray();
     },
     createArray: function () {
-        console.log("ca");
 
         var self = this;
         self.images = [];

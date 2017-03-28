@@ -89,7 +89,6 @@ class ImageGroupHDF5Service  extends  ModelService{
             imagesSequenceList = imageSequenceService.list(imageGroup)
         }
         else {
-            println "Not implemented"
             return ; //Todo throw
         }
 
@@ -102,7 +101,6 @@ class ImageGroupHDF5Service  extends  ModelService{
             Thread.start{
                 BuildHyperSpectralFile h5builder = new BuildHyperSpectralFile(filename, root, imagesFilenames)
                 h5builder.createFile(4)
-                println email.getEmail()
                 cytomineMailService.send(
                         cytomineMailService.NO_REPLY_EMAIL,
                         [email.getEmail()] as String[],
@@ -118,7 +116,6 @@ class ImageGroupHDF5Service  extends  ModelService{
     }
 
     def retrieve(def ids) {
-        println 'found ret'
         def id = Integer.parseInt(ids + "")
         CytomineDomain domain = currentDomain().get(id)
         if (!domain) {

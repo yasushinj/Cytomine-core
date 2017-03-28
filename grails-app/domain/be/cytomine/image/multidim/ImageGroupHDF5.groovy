@@ -39,7 +39,6 @@ class ImageGroupHDF5  extends CytomineDomain implements  Serializable {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['group'] = domain?.group?.id
-        println "hey dude we're there"
         returnArray['filenames'] = domain?.filenames
         return returnArray
     }
@@ -59,14 +58,12 @@ class ImageGroupHDF5  extends CytomineDomain implements  Serializable {
      * Check if this domain will cause unique constraint fail if saving on database
      */
     void checkAlreadyExist() {
-        println "We are in check"
         ImageGroupHDF5.withNewSession {
             ImageGroupHDF5 imageAlreadyExist = ImageGroupHDF5.findByGroup(group)
             if (imageAlreadyExist != null && (imageAlreadyExist.id != id)) {
                 throw new AlreadyExistException("I")
             }
         }
-        println "Ok ckeck"
     }
 
     /**
@@ -76,8 +73,6 @@ class ImageGroupHDF5  extends CytomineDomain implements  Serializable {
      * @return Domain with json data filled
      */
     static ImageGroupHDF5 insertDataIntoDomain(def json, def domain = new ImageGroupHDF5()) {
-        println "Found Insert"
-        println "JSON INSERT " + json
         domain.group = JSONUtils.getJSONAttrDomain(json, "group", new ImageGroup(), true)
         domain.filenames = JSONUtils.getJSONAttrStr(json, "filenames")
 

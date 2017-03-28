@@ -113,8 +113,6 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Add a new image group with hdf5 hyperspectral functionalities")
     def addh5() {
-        println 'found conta'
-
         add(imageGroupHDF5Service, request.JSON)
     }
 
@@ -149,8 +147,6 @@ class RestImageGroupController extends RestController {
             @RestApiParam(name="group", type="long", paramType = RestApiParamType.PATH,description = "The image group that is link to the iHdf5")
     ])
     def geth5FromImageGroup() {
-        println 'found cont get'
-        println params.id
         ImageGroup image = imageGroupService.read(params.long('group'))
         if (image) {
             ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
@@ -168,7 +164,6 @@ class RestImageGroupController extends RestController {
             @RestApiParam(name="group", type="long", paramType = RestApiParamType.PATH,description = "The image group that is link to the iHdf5")
     ])
     def deleteh5FromImageGroup() {
-        println "Were there"
         ImageGroup image = imageGroupService.read(params.long('group'))
         if (image) {
             ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
