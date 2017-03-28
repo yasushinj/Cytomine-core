@@ -285,9 +285,6 @@ body {
 <script type="text/javascript" src="application/views/processing/JobSearchEngineView.js"></script>
 <script type="text/javascript" src="application/views/processing/JobDeleteAllDataView.js"></script>
 
-    <script type="text/javascript" src="application/views/ImageGroupTmpView.js"></script>
-
-
 
 
 
