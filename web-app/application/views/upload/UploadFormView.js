@@ -19,7 +19,7 @@ var UploadFormView = Backbone.View.extend({
     statusLabels: {
         uploadedLabel: '<span class="label label-default">UPLOADED</span>',
         errorFormatLabel: '<span class="label label-important">ERROR FORMAT</span>',
-        convertedLabel: '<span class="label label-info">TO DEPLOY</span>',
+        convertedLabel: '<span class="label label-info">CONVERTED</span>',
         deployedLabel: '<span class="label label-success">DEPLOYED</span>',
         errorConvertLabel: '<span class="label label-important">ERROR CONVERT</span>',
         uncompressed : '<span class="label label-success">UNCOMPRESSED</span>',
