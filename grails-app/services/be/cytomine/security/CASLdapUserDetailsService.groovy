@@ -31,6 +31,7 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsService
 class CASLdapUserDetailsService extends GormUserDetailsService {
 
     def dataSource
+    def storageService
 
     /**
      * Some Spring Security classes (e.g. RoleHierarchyVoter) expect at least
@@ -169,6 +170,7 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
                         log.warn it
                     }
                 }
+                storageService.initUserStorage(user)
             }
         }
 
