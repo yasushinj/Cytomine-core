@@ -96,29 +96,23 @@ class RestAttachedFileController extends RestController {
         responseSuccess(result)
     }
 
-    @RestApiMethod(description="Upload a file for a domain. Decode params filled by CKEditor")
+    @RestApiMethod(description="Upload a file for a domain. Decode params filled by RTEditor")
     @RestApiParams(params=[
     @RestApiParam(name="domainIdent", type="long", paramType = RestApiParamType.PATH, description = "The domain id"),
     @RestApiParam(name="domainClassName", type="string", paramType = RestApiParamType.PATH, description = "The domain class")
     ])
-    def uploadFromCKEditor() {
+    def uploadFromRTEditor() {
         log.info "Upload attached file"
         Long domainIdent = params.long("domainIdent")
         String domainClassName = params.get("domainClassName")
-        def upload = params.upload
+        def upload = params.image
         String filename = upload.getOriginalFilename()
         log.info "Upload $filename for domain $domainClassName $domainIdent"
 
         def result = attachedFileService.add(filename,upload.getBytes(),domainIdent,domainClassName)
 
-        //tricky :-) difficult to interact with ckeeditor
-       // String resp = '<div><script>$("span:contains(\'Send it to the Server\')").hide();</script>' +
-         //       '<div style="width:400px;height:400px">Image was saved correctly. Copy this url: api/attachedfile/'+result.id+'/download, click on "image info" tabs and copy the content in the URL field.</div></div>'
-         //: api/attachedfile/'+result.domain.id+'/download" />'
+        responseSuccess(result)
 
-        String resp = "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction(${params.CKEditorFuncNum}, 'api/attachedfile/${result.id}/download', '');</script>"
-
-        render(resp)
     }
 }
 

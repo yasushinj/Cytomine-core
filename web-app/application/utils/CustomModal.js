@@ -161,30 +161,61 @@ var DescriptionModal = {
             body: message + '<div id="description' + domainIdent + '"><textarea style="width: ' + (width - 100) + 'px;height: ' + (height - 100) + 'px;" id="descriptionArea' + domainIdent + '" placeholder="Enter text ...">' + text + '</textarea></div>',
             wide: true,
             callBack: function () {
-                //$("#descriptionArea" + domainIdent).wysihtml5({});
 
-//                <textarea name="editor1" id="editor1" rows="10" cols="80">
-//                This is my textarea to be replaced with CKEditor.
-//                </textarea>
+                var rte = $('#descriptionArea' + domainIdent);
 
+                var uploadOptions = {
+                    serverPath: '/api/attachedfileRTEditor.json?domainClassName=' + domainClassName + "&domainIdent=" + domainIdent,
+                    fileFieldName: 'image',
+                    urlPropertyName: 'url',
+                    statusPropertyName:'id' // hack. in the success callback, the plugin looks for a field only present in case of success ...
+                };
+
+                rte.trumbowyg({
+                    btnsGrps: {
+                        semantic2: ['strong', 'em', 'underline', 'del'] // Custom nammed group
+                    },
+                    btnsDef: {
+                        // Customizables dropdowns
+                        align: {
+                            dropdown: ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                            ico: 'justifyLeft'
+                        },
+                        image: {
+                            dropdown: ['insertImage', 'upload'],
+                            ico: 'insertImage'
+                        }
+                    },
+                    btns: [
+                        ['formatting'],
+                        'btnGrp-semantic2',
+                        ['link'],
+                        ['align'],
+                        'btnGrp-lists',
+                        ['image'],
+                        ['noembed'],
+                        ['foreColor', 'backColor'],
+                        ['specialChars'],
+                        ['horizontalRule'],
+                        ['removeformat'],
+                        ['viewHTML']
+                    ],
+                    plugins: {
+                        upload: uploadOptions
+                    }
+                });
 
                 if (editable) {
-                    CKEDITOR.replace("descriptionArea" + domainIdent,
-                        {    filebrowserBrowseUrl: '/test/browse.php',
-                            filebrowserImageBrowseUrl: '/browser/browse.php?type=Images',
-                            filebrowserUploadUrl: '/api/attachedfileCKEditor.json?domainClassName=' + domainClassName + "&domainIdent=" + domainIdent,
-                            filebrowserImageUploadUrl: '/api/attachedfileCKEditor.json?domainClassName=' + domainClassName + "&domainIdent=" + domainIdent});
-
-
+                    rte.trumbowyg('enable');
                 } else {
-                    $("#description" + domainIdent).html(text);
+                    rte.trumbowyg('disable');
                 }
 
 
                 $("#saveDescription" + idDescription).click(function (e) {
                     // remove the host url for images
 
-                    text = CKEDITOR.instances["descriptionArea" + domainIdent].getData().split(window.location.protocol + "//" + window.location.host + '/api/attachedfile').join('/api/attachedfile');
+                    text = rte.trumbowyg('html').split(window.location.protocol + "//" + window.location.host + '/api/attachedfile').join('/api/attachedfile');
                     new DescriptionModel({id: idDescription, domainIdent: domainIdent, domainClassName: domainClassName}).save({
                         domainIdent: domainIdent,
                         domainClassName: domainClassName,

@@ -28,6 +28,9 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
 <link rel='stylesheet' href='lib/OpenLayers-2.13.1/theme/default/style.css' type='text/css'/>
 <link rel="stylesheet" href="lib/bootstrap-3.0.3/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="lib/Trumbowyg/ui/trumbowyg.min.css"/>
+<link rel="stylesheet" href="lib/Trumbowyg/plugins/colors/ui/trumbowyg.colors.min.css"/>
+<link rel="stylesheet" href="lib/Trumbowyg/plugins/specialchars/ui/trumbowyg.specialchars.min.css"/>
 
 
 <style type="text/css">
@@ -103,7 +106,11 @@ body {
 <script type="text/javascript" src="lib/typeahead.js/typeahead.js"></script>
 
 
-<script src="lib/ckeditor/ckeditor.js"></script>
+<script src="lib/Trumbowyg/trumbowyg.min.js"></script>
+<script src="lib/Trumbowyg/plugins/colors/trumbowyg.colors.min.js"></script>
+<script src="lib/Trumbowyg/plugins/noembed/trumbowyg.noembed.min.js"></script>
+<script src="lib/Trumbowyg/plugins/upload/trumbowyg.upload.min.js"></script>
+<script src="lib/Trumbowyg/plugins/specialchars/trumbowyg.specialchars.min.js"></script>
 
 <link href="lib/magicsuggest2//magicsuggest-min.css" rel="stylesheet"/>
 <script type="text/javascript" src="lib/magicsuggest2/magicsuggest-min.js"></script>
