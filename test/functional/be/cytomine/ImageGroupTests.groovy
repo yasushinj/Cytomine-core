@@ -39,7 +39,14 @@ class ImageGroupTests {
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
-    }    
+    }
+
+    void testGetInfosImageGroup(){
+        def dataSet = BasicInstanceBuilder.getMultiDimensionalDataSet(["R","G","B"],["1"],["A"],["10","20"])
+        def imagroup = dataSet.last().imagegroup
+        def result = ImageGroupAPI.getInfos(imagroup.id, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+        assert 200 == result.code
+    }
 
     void testListImageGroupByProject() {
         BasicInstanceBuilder.getImageGroup()

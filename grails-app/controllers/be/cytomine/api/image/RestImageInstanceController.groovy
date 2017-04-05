@@ -20,6 +20,7 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
@@ -66,6 +67,7 @@ class RestImageInstanceController extends RestController {
     def descriptionService
     def propertyService
     def securityACLService
+    def imageGroupService
 
     final static int MAX_SIZE_WINDOW_REQUEST = 5000 * 5000 //5k by 5k pixels
 
@@ -106,7 +108,18 @@ class RestImageInstanceController extends RestController {
     ])
     def listByProject() {
         Project project = projectService.read(params.long('id'))
-        if (params.datatables) {
+        if(params.excludeimagegroup){
+            ImageGroup group = imageGroupService.read(params.long('excludeimagegroup'))
+            if(project && group){
+                String sortColumn = params.sortColumn ? params.sortColumn : "created"
+                String sortDirection = params.sortDirection ? params.sortDirection : "desc"
+                String search = params.sSearch
+                responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
+            }
+            else
+                responseNotFound("ImageInstance", "Project", params.id)
+        }
+        else if (params.datatables) {
             def where = "project_id = ${project.id}"
             def fieldFormat = []
             responseSuccess(dataTablesService.process(params, ImageInstance, where, fieldFormat,project))
@@ -124,6 +137,9 @@ class RestImageInstanceController extends RestController {
             responseNotFound("ImageInstance", "Project", params.id)
         }
     }
+
+
+
 
     @RestApiMethod(description="Get the next project image (first image created before)", listing = true)
     @RestApiParams(params=[

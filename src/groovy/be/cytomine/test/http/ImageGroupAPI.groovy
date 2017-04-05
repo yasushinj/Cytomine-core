@@ -54,4 +54,9 @@ class ImageGroupAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/imagegroup/" + id + ".json"
         return doDELETE(URL,username,password)
     }
+
+    static def getInfos(def id, String username, String password){
+        String URL = Infos.CYTOMINEURL + "/api/imagegroup/$id/characteristics.json"
+        return doGET(URL, username, password)
+    }
 }

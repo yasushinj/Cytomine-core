@@ -71,8 +71,10 @@ body {
 
 <script type="text/javascript" src="lib/bowser/bowser.min.js"></script>
 
+    <script type="text/javascript" src="lib/plotly/plotly.min.js"></script>
 
-%{--<link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" /> <!-- bug with svg style in nb.d3.min.css -->--}%
+
+    %{--<link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" /> <!-- bug with svg style in nb.d3.min.css -->--}%
 
 %{--<script type="text/javascript" src="lib/OpenLayers-2.12/Openlayers-cytomine.js"></script>--}%
 <script type="text/javascript" src="lib/OpenLayers-2.13.1/OpenLayers.js"></script>
@@ -178,6 +180,7 @@ body {
 <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
 <script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
 <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
+<script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
 
 <!-- Models -->
@@ -214,6 +217,10 @@ body {
 <script type="text/javascript" src="application/models/AnnotationPropertyModel.js" ></script>
 <script type="text/javascript" src="application/models/ImageInstancePropertyModel.js" ></script>
 <script type="text/javascript" src="application/models/ProjectPropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageGroupModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageGroupHDF5Model.js" ></script>
+
+    <script type="text/javascript" src="application/models/ImageSequenceModel.js" ></script>
 
 
 
@@ -250,7 +257,10 @@ body {
 
 
 <script type="text/javascript" src="application/views/dashboard/AddImageToProjectDialog.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/AnnotationThumbView.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/AddImageGroupToProjectDialog.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/AddImageSequenceDialog.js" ></script>
+
+    <script type="text/javascript" src="application/views/dashboard/AnnotationThumbView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/AnnotationView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardView.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardStats.js" ></script>
@@ -260,8 +270,10 @@ body {
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardConfig.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
 <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardGroup.js" ></script>
 
-<script type="text/javascript" src="application/views/graph/GraphView.js" ></script>
+
+    <script type="text/javascript" src="application/views/graph/GraphView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
 <script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
@@ -283,8 +295,7 @@ body {
 
 
 
-
-<script type="text/javascript" src="application/views/processing/result/RetrievalAlgoResult.js"></script>
+    <script type="text/javascript" src="application/views/processing/result/RetrievalAlgoResult.js"></script>
 <script type="text/javascript" src="application/views/processing/result/EvolutionAlgoResult.js"></script>
 <script type="text/javascript" src="application/views/processing/result/DefaultResult.js"></script>
 <script type="text/javascript" src="application/views/processing/result/DownloadFiles.js"></script>
@@ -315,7 +326,9 @@ body {
 <script type="text/javascript" src="application/views/image/ImageSelectView.js" ></script>
 <script type="text/javascript" src="application/views/image/ImageView.js" ></script>
 <script type="text/javascript" src="application/views/image/ImageTabsView.js" ></script>
-<script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageGroupTabsView.js" ></script>
+
+    <script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
 
 <script type="text/javascript" src="application/views/ontology/OntologyUsersDialog.js" ></script>
 <script type="text/javascript" src="application/views/ontology/OntologyPanelView.js" ></script>

@@ -21,6 +21,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.image.*
 import be.cytomine.image.acquisition.Instrument
 import be.cytomine.image.multidim.ImageGroup
+import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.image.server.*
 import be.cytomine.laboratory.Sample
@@ -219,7 +220,7 @@ class BasicInstanceBuilder {
             SecUserSecRole.findAllBySecUser(userJob.user).collect { it.secRole }.each { secRole ->
                 SecUserSecRole.create(user, secRole)
             }
-        } else{
+        } else {
             checkDomain(userJob)
         }
         userJob
@@ -260,7 +261,7 @@ class BasicInstanceBuilder {
                 baseImage: getAbstractImageNotExist(true),
                 parent: imageInstance,
                 x: 10,
-                y:20,
+                y: 20,
                 project: imageInstance.project,
                 //slide: BasicInstanceBuilder.getSlide(),
                 user: imageInstance.user)
@@ -329,8 +330,6 @@ class BasicInstanceBuilder {
 //        saveDomain(at)
 //        at
 //    }
-
-
 
     //CytomineDomain annotation = (useAlgoAnnotation? saveDomain(getUserAnnotationNotExist()) :  saveDomain(getAlgoAnnotationNotExist()))
 
@@ -437,28 +436,28 @@ class BasicInstanceBuilder {
     }
 
     static ReviewedAnnotation getReviewedAnnotation() {
-         def basedAnnotation = saveDomain(getUserAnnotationNotExist())
-         def image = getImageInstance()
-         def annotation = ReviewedAnnotation.findOrCreateWhere(
-                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                 image: image,
-                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
-                 project:image.project,
-                 status : 0,
-                 reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
-         )
-         annotation.putParentAnnotation(basedAnnotation)
-         saveDomain(annotation)
+        def basedAnnotation = saveDomain(getUserAnnotationNotExist())
+        def image = getImageInstance()
+        def annotation = ReviewedAnnotation.findOrCreateWhere(
+                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
+                image: image,
+                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                project:image.project,
+                status : 0,
+                reviewUser: User.findByUsername(Infos.SUPERADMINLOGIN)
+        )
+        annotation.putParentAnnotation(basedAnnotation)
+        saveDomain(annotation)
 
-         def term = getTerm()
-         term.ontology = image.project.ontology
-         checkDomain(term)
-         saveDomain(term)
+        def term = getTerm()
+        term.ontology = image.project.ontology
+        checkDomain(term)
+        saveDomain(term)
 
-         annotation.addToTerms(term)
-         checkDomain(annotation)
-         saveDomain(annotation)
-         annotation
+        annotation.addToTerms(term)
+        checkDomain(annotation)
+        saveDomain(annotation)
+        annotation
      }
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(Project project, boolean save = false) {
@@ -630,14 +629,14 @@ class BasicInstanceBuilder {
     static ReviewedAnnotation getReviewedAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
         def annotation = getUserAnnotationNotExist(image,polygon,user,term)
 
-            def reviewedAnnotation = ReviewedAnnotation.findOrCreateWhere(
-                    location: annotation.location,
-                    image: annotation.image,
-                    user: user,
-                    project:annotation.project,
-                    status : 0,
-                    reviewUser: user
-            )
+        def reviewedAnnotation = ReviewedAnnotation.findOrCreateWhere(
+                location: annotation.location,
+                image: annotation.image,
+                user: user,
+                project:annotation.project,
+                status : 0,
+                reviewUser: user
+        )
         reviewedAnnotation.putParentAnnotation(annotation)
         reviewedAnnotation.addToTerms(term)
         saveDomain(reviewedAnnotation)
@@ -1209,7 +1208,7 @@ class BasicInstanceBuilder {
     static Storage getStorage() {
         def storage = Storage.findByUser(User.findByUsername(Infos.SUPERADMINLOGIN))
         if(!storage) {
-            storage = new Storage(name:"bidon",basePath:"storagepath",ip:"192.168.0.0",user: User.findByUsername(Infos.SUPERADMINLOGIN),port: 123)
+            storage = new Storage(name:"bidon",basePath:"storagepath",user: User.findByUsername(Infos.SUPERADMINLOGIN))
             saveDomain(storage)
             Infos.addUserRight(User.findByUsername(Infos.SUPERADMINLOGIN),storage)
         }
@@ -1217,7 +1216,7 @@ class BasicInstanceBuilder {
     }
 
     static Storage getStorageNotExist(boolean save = false) {
-        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), ip: getRandomString(), port: 22, user: getUser())
+        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
 
         if(save) {
             saveDomain(storage)
@@ -1344,30 +1343,30 @@ class BasicInstanceBuilder {
     }
 
     static Job createJobWithAlgoAnnotationTerm() {
-         Project project = getProjectNotExist(true)
-         Ontology ontology = project.ontology
+        Project project = getProjectNotExist(true)
+        Ontology ontology = project.ontology
 
-         Term term1 = getTermNotExist(ontology,true)
-         Term term2 = getTermNotExist(ontology,true)
+        Term term1 = getTermNotExist(ontology,true)
+        Term term2 = getTermNotExist(ontology,true)
 
 
-         UserJob userJob = getUserJobNotExist(true)
-         Job job = userJob.job
-         job.project = project
-         saveDomain(job)
-         AlgoAnnotationTerm algoAnnotationGood = getAlgoAnnotationTermNotExist()
-         algoAnnotationGood.term = term1
-         algoAnnotationGood.expectedTerm = term1
-         algoAnnotationGood.userJob = userJob
-         saveDomain(algoAnnotationGood)
+        UserJob userJob = getUserJobNotExist(true)
+        Job job = userJob.job
+        job.project = project
+        saveDomain(job)
+        AlgoAnnotationTerm algoAnnotationGood = getAlgoAnnotationTermNotExist()
+        algoAnnotationGood.term = term1
+        algoAnnotationGood.expectedTerm = term1
+        algoAnnotationGood.userJob = userJob
+        saveDomain(algoAnnotationGood)
 
-         AlgoAnnotationTerm algoAnnotationBad = getAlgoAnnotationTermNotExist()
-         algoAnnotationBad.term = term1
-         algoAnnotationBad.expectedTerm = term2
-         algoAnnotationBad.userJob = userJob
-         saveDomain(algoAnnotationBad)
-         return job
-     }
+        AlgoAnnotationTerm algoAnnotationBad = getAlgoAnnotationTermNotExist()
+        algoAnnotationBad.term = term1
+        algoAnnotationBad.expectedTerm = term2
+        algoAnnotationBad.userJob = userJob
+        saveDomain(algoAnnotationBad)
+        return job
+    }
 
     static ImageSequence getImageSequence() {
         ImageSequence imageSequence = ImageSequence.findByImageGroup(getImageGroup())
@@ -1478,10 +1477,6 @@ class BasicInstanceBuilder {
             storage = new Storage()
             storage.basePath = "/data/test.cytomine.be/1"
             storage.name = "lrollus test storage"
-            //storage.ip = "10.3.1.136" // still used? no, //unused
-            //storage.password = "toto" //unused
-            //storage.port = 22 //unused
-            //storage.username = "username" //unused
             storage.user = user
             BasicInstanceBuilder.saveDomain(storage)
         }
@@ -1552,8 +1547,8 @@ class BasicInstanceBuilder {
 
 
         ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.be")
-        if(!processingServer) {
-            processingServer = new  ProcessingServer()
+        if (!processingServer) {
+            processingServer = new ProcessingServer()
             processingServer.url = "http://image.cytomine.be"
             BasicInstanceBuilder.saveDomain(processingServer)
         }
@@ -1667,8 +1662,7 @@ class BasicInstanceBuilder {
         amqpQueue
     }
 
-    static AmqpQueue getAmqpQueueNotExist(boolean save = false)
-    {
+    static AmqpQueue getAmqpQueueNotExist(boolean save = false){
         AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "rabbitmq", exchange: "exchange"+getRandomString())
         save ? saveDomain(amqpQueue) : checkDomain(amqpQueue)
         amqpQueue
@@ -1731,4 +1725,34 @@ class BasicInstanceBuilder {
         save ? saveDomain(config) : checkDomain(config)
     }
 
+    static ImageGroupHDF5 getImageGroupHDF5() {
+        def project = getProject()
+        ImageGroup gp = getImageGroupNotExist(project, true)
+        def fn = gp.name
+        ImageGroupHDF5 imageGroupHDF5 = ImageGroupHDF5.findByGroup(gp)
+        if (!imageGroupHDF5) {
+            imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
+            imageGroupHDF5 = saveDomain(imageGroupHDF5)
+        }
+        imageGroupHDF5
+    }
+
+
+//TODO good documentation
+    //files is an array of AbstractImages that relies to file that really exist
+    static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false, def files = []) {
+        def project = getProject()
+        ImageGroup gp = getImageGroupNotExist(project, true)
+        def fn = gp.name
+        files.eachWithIndex{ abstractImage, i ->
+            def imageInstance = getImageInstanceNotExist(project, true)
+            imageInstance.baseImage = abstractImage
+            saveDomain(imageInstance)
+
+            ImageSequence seq = getImageSequence(imageInstance, i, 0, 0, 0, gp, true)
+        }
+
+        ImageGroupHDF5 imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
+        save ? saveDomain(imageGroupHDF5) : checkDomain(imageGroupHDF5)
+    }
 }

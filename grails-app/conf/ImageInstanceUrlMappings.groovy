@@ -60,6 +60,7 @@ class ImageInstanceUrlMappings {
         "/api/project/$id/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByProject"]
         }
+
         "/api/imageinstance/$id/cropgeometry.$format"(controller :"restImageInstance") {
             action = [GET:"cropGeometry"]
         }

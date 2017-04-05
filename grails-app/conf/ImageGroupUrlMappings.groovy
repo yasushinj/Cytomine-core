@@ -33,5 +33,27 @@ class ImageGroupUrlMappings {
         "/api/project/$id/imagegroup.$format"(controller: "restImageGroup"){
             action = [GET:"listByProject"]
         }
+
+        "/api/imagegroup/$id/characteristics.$format"(controller: "restImageGroup"){
+            action = [GET:"characteristics"]
+        }
+
+        /* Image group Hdf5 special */
+        "/api/imagegrouph5.$format"(controller: "restImageGroup"){
+            action = [POST:"addh5"]
+        }
+
+        "/api/imagegrouph5/$id.$format"(controller: "restImageGroup"){
+            action = [GET: "geth5", DELETE:"deleteh5"]
+        }
+
+        "/api/imagegroup/$group/imagegrouph5.$format"(controller: "restImageGroup"){
+            action = [GET: "geth5FromImageGroup", DELETE:"deleteh5FromImageGroup"]
+        }
+
+        "/api/imagegrouph5/$id/$x/$y/pxl.$format"(controller: "restImageGroup"){
+            action = [GET: "pxlh5"]
+        }
+
     }
 }
