@@ -55,7 +55,6 @@ class UpdateData {
         }
 
         println domain.encodeAsJSON()
-        println domain.encodeAsJSON()
 
         println "mapOld="+mapOld
         println "mapNew="+mapNew

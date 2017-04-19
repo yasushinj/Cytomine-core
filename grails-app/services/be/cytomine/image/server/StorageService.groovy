@@ -99,18 +99,28 @@ class StorageService extends ModelService {
             log.info("force to put it in list")
             permissionService.addPermission(domain, cytomineService.currentUser.username, BasePermission.ADMINISTRATION)
         }
+        for (imageServer in ImageServer.findAll()) {
+            imageServer.save(failOnError: true)
+            ImageServerStorage imageServerStorage = new ImageServerStorage(imageServer : imageServer, storage : domain)
+            imageServerStorage.save(flush : true)
+        }
     }
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.name]
     }
 
+    def imageServerStorageService
     void deleteDependentImageServerStorage(Storage storage, Transaction transaction, Task task = null){
-        //throw new CytomineMethodNotYetImplementedException("cannot yet delete imageServerStorage, implement service first!")
+        ImageServerStorage.findAllByStorage(storage).each {
+            imageServerStorageService.delete(it,transaction,task)
+        }
     }
+    def storageAbstractImageService
     void  deleteDependentStorageAbstractImage(Storage storage, Transaction transaction, Task task = null) {
-        //throw new CytomineMethodNotYetImplementedException("cannot yet delete StorageAbstractImage, implement service first!")
-
+        StorageAbstractImage.findAllByStorage(storage).each {
+            storageAbstractImageService.delete(it, transaction, task)
+        }
     }
 
 

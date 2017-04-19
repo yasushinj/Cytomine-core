@@ -1,5 +1,7 @@
 package be.cytomine.image.server
 
+import be.cytomine.CytomineDomain
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -40,5 +42,13 @@ class ImageServerStorage {
         returnArray['imageServer'] = is?.imageServer
         returnArray['storage'] = is?.storage
         returnArray
+    }
+
+    /**
+     * Get the container domain for this domain (usefull for security)
+     * @return Container of this domain
+     */
+    public CytomineDomain container() {
+        return storage.container();
     }
 }

@@ -18,6 +18,7 @@ package be.cytomine.image
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ServerException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.image.acquisition.Instrument
@@ -218,7 +219,8 @@ class AbstractImage extends CytomineDomain implements Serializable {
     def getRandomImageServerURL() {
         def imageServerStorages = getImageServersStorage()
         if (imageServerStorages == null || imageServerStorages.size() == 0) {
-            return null
+            throw new ServerException("no IMS found")
+            //return null
         }
         def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
         return imageServerStorages[index].imageServer.url
