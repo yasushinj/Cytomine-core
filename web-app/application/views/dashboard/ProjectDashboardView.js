@@ -186,6 +186,7 @@ var ProjectDashboardView = Backbone.View.extend({
                 if (self.projectStats == null) {
                     self.projectStats = new ProjectDashboardStats({model: self.model});
                 }
+                CustomUI.hideOrShowComponents();
 
             }
         });
@@ -195,9 +196,7 @@ var ProjectDashboardView = Backbone.View.extend({
 
         require(["text!application/templates/dashboard/ProjectInfoContent.tpl.html"], function (tpl) {
 
-            var json = self.model.toJSON()
-            json.hideAnnotationsData = CustomUI.mustBeShow("project-annotations-tab")?  "" : 'display:none;';
-            json.hideImagesData = CustomUI.mustBeShow("project-images-tab")? "" : 'display:none;';
+            var json = self.model.toJSON();
 
             $("#projectInfoPanel").html(_.template(tpl, json));
 
@@ -233,7 +232,9 @@ var ProjectDashboardView = Backbone.View.extend({
 
             $("#projectInfoPanel").find(".description");
 
-            DescriptionModal.initDescriptionView(self.model.id, self.model.get('class'), false, $("#projectInfoPanel").find(".description"), 800,
+            DescriptionModal.initDescriptionView(self.model.id, self.model.get('class'),
+                window.app.status.currentProjectModel.isAdmin(window.app.models.projectAdmin),
+                $("#projectInfoPanel").find(".description"), 800,
                     function() {
                         var text = $("#projectInfoPanel").find(".description").html();
                         $("#projectInfoPanel").find(".description").empty().append(text.replace(new RegExp("<h.>", "g"),'<br>').replace(new RegExp("</h.>", "g"),'<br>'));
@@ -422,7 +423,7 @@ var ProjectDashboardView = Backbone.View.extend({
     },
     showImagesTable: function () {
         $("#tabs-projectImageThumb" + this.model.id).hide();
-        $("#tabs-projectImageListing" + this.model.id).show()
+        $("#tabs-projectImageListing" + this.model.id).show();
         $("#tabs-projectImageGroupListing" + this.model.id).show();
 
         $('#imageThumbs' + this.model.id).removeAttr("disabled");
