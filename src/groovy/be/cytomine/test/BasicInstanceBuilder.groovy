@@ -1427,14 +1427,6 @@ class BasicInstanceBuilder {
                 }
             }
         }
-//        assert data.first().slice==0
-//        assert data.first().zStack==0
-//        assert data.first().time==0
-//        assert data.first().channel==0
-//        assert data.last().zStack==2
-//        assert data.last().slice==2
-//        assert data.last().time==2
-//        assert data.last().channel==2
         return data
     }
 

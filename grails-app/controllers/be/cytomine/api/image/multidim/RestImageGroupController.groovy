@@ -122,7 +122,7 @@ class RestImageGroupController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The id")
     ])
     def geth5() {
-        ImageGroupHDF5 imageh5 = imageGroupService.read(params.long('id'))
+        ImageGroupHDF5 imageh5 = imageGroupHDF5Service.read(params.long('id'))
         if(imageh5)
             responseSuccess(imageh5)
         else

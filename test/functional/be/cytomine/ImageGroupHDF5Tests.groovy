@@ -32,14 +32,14 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  */
 class ImageGroupHDF5Tests {
 
-    void testShowPixelSpectra(){
+    /*void testShowPixelSpectra(){
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5NotExist(false)
         imageGroupHDF5.filenames = "/data/28/hdf5_35398"
-        assert imageGroupHDF5.save(flush: true) != null
+        imageGroupHDF5 = BasicInstanceBuilder.saveDomain(imageGroupHDF5)
 
-        def result = ImageGroupHDF5API.pixel(imageGroupHDF5.id, 0,0, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+        def result = ImageGroupHDF5API.pixel(imageGroupHDF5.group.id, 0,0, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code
-    }
+    }*/
 
     void testDeleteImageGroupHDF5(){
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
@@ -91,8 +91,8 @@ class ImageGroupHDF5Tests {
     void testShowImageGroupFromImageGroupId(){
         ImageGroup imageGroup = BasicInstanceBuilder.getImageGroup()
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5NotExist(false)
-        imageGroupHDF5.group = imageGroup.id
-        assert imageGroupHDF5.save(flush: true) != null
+        imageGroupHDF5.group = imageGroup
+        BasicInstanceBuilder.saveDomain(imageGroupHDF5)
 
         def result = ImageGroupHDF5API.getFromImageGroup(imageGroup.id ,Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code

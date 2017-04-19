@@ -36,14 +36,6 @@ class ImageGroupHDF5  extends CytomineDomain implements  Serializable {
     @RestApiObjectField(description = "The HDF5 filenames for the whole multidim  image")
     String filenames
 
-    static def getDataFromDomain(def domain) {
-        def returnArray = CytomineDomain.getDataFromDomain(domain)
-        returnArray['group'] = domain?.group?.id
-        returnArray['filenames'] = domain?.filenames
-        return returnArray
-    }
-
-
     static mapping = {
         id generator: "assigned"
         sort "id"
@@ -80,6 +72,17 @@ class ImageGroupHDF5  extends CytomineDomain implements  Serializable {
         return domain;
     }
 
+    /**
+     * Define fields available for JSON response
+     * @param domain Domain source for json value
+     * @return Map with fields (keys) and their values
+     */
+    static def getDataFromDomain(def domain) {
+        def returnArray = CytomineDomain.getDataFromDomain(domain)
+        returnArray['group'] = domain?.group?.id
+        returnArray['filenames'] = domain?.filenames
+        return returnArray
+    }
 
 
     public CytomineDomain container() {

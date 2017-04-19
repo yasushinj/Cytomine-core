@@ -43,7 +43,7 @@ class ImageGroupTests {
 
     void testGetInfosImageGroup(){
         def dataSet = BasicInstanceBuilder.getMultiDimensionalDataSet(["R","G","B"],["1"],["A"],["10","20"])
-        def imagroup = dataSet.last().imagegroup
+        def imagroup = dataSet.last().imageGroup
         def result = ImageGroupAPI.getInfos(imagroup.id, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code
     }
