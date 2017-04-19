@@ -22,7 +22,6 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
-import be.cytomine.hdf5.input.BuildHyperSpectralFile
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
@@ -30,6 +29,9 @@ import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
+import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.Method
+import static groovyx.net.http.ContentType.*
 
 @Transactional
 class ImageGroupHDF5Service  extends  ModelService{
@@ -67,10 +69,10 @@ class ImageGroupHDF5Service  extends  ModelService{
     def add(def json){
         //Add in db (maybe this should come last)
        // securityACLService.check(json.project,Project,READ)
+        // TODO check if current user can be use when we're not using gui
         SecUser currentUser = cytomineService.getCurrentUser()
         String storage_base_path = grailsApplication.config.storage_path
-        String root = storage_base_path   + "/" + currentUser.id;
-        json.filenames = root + "/" + JSONUtils.getJSONAttrStr(json, 'filenames')
+        json.filenames = storage_base_path   + "/" + currentUser.id + "/" + JSONUtils.getJSONAttrStr(json, 'filenames')
         json.user = currentUser.id
         def email =  User.read(currentUser.id)
         def resultDB
@@ -94,22 +96,27 @@ class ImageGroupHDF5Service  extends  ModelService{
 
 
         imagesSequenceList.sort{a,b -> a.channel <=> b.channel}
-        def imagesFilenames = imagesSequenceList.collect{ it.image.baseImage.filename}
-        if(imagesFilenames.size() > 0){
-            def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
+        def imagesFilenames = imagesSequenceList.collect{ storage_base_path + "/" + it.image.baseImage.user.id + "/" + it.image.baseImage.filename}
+        def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
 
-            Thread.start{
-                BuildHyperSpectralFile h5builder = new BuildHyperSpectralFile(filename, root, imagesFilenames)
-                h5builder.createFile(4)
-                cytomineMailService.send(
-                        cytomineMailService.NO_REPLY_EMAIL,
-                        [email.getEmail()] as String[],
-                        "",
-                        "Your conversion into HDF5 is finished",
-                        "The file has been created with success and can now be used")
+        if(imagesFilenames.size() > 0) {
+            String imageServerURL = grailsApplication.config.grails.imageServerURL[0]
+            String url = "/multidim/convert.json"
+            log.info "$imageServerURL" + url
+            def http = new HTTPBuilder(imageServerURL)
+            http.request(Method.POST) {
+                uri.path = url
+                requestContentType = URLENC
+                body = [user: currentUser.id, files: imagesFilenames, dest: filename]
+
+                response.success = { resp ->
+                    log.info  "Imagegroup convert launch success ${resp.statusLine}"
+                }
             }
-
         }
+
+
+
 
         resultDB
 
