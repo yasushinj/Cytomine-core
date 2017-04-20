@@ -69,7 +69,6 @@ class ImageGroupHDF5Service  extends  ModelService{
     def add(def json){
         //Add in db (maybe this should come last)
        // securityACLService.check(json.project,Project,READ)
-        // TODO check if current user can be use when we're not using gui
         SecUser currentUser = cytomineService.getCurrentUser()
         String storage_base_path = grailsApplication.config.storage_path
         json.filenames = storage_base_path   + "/" + currentUser.id + "/" + JSONUtils.getJSONAttrStr(json, 'filenames')
