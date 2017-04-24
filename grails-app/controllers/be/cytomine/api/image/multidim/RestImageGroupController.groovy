@@ -94,6 +94,12 @@ class RestImageGroupController extends RestController {
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group")
     ])
     def delete() {
+        ImageGroup image = imageGroupService.read(params.long('id'))
+        if (image) {
+            ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
+            if (imageh5)
+                delete(imageGroupHDF5Service, JSON.parse("{id : $imageh5.id}"), null)
+        }
         delete(imageGroupService, JSON.parse("{id : $params.id}"),null)
     }
 
@@ -122,7 +128,8 @@ class RestImageGroupController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The id")
     ])
     def geth5() {
-        ImageGroupHDF5 imageh5 = imageGroupHDF5Service.read(params.long('id'))
+        params.group = params.id
+        ImageGroupHDF5 imageh5 = imageGroupService.read(params.long('group'))
         if(imageh5)
             responseSuccess(imageh5)
         else
@@ -155,7 +162,7 @@ class RestImageGroupController extends RestController {
             else
                 responseNotFound("ImageGroupHDF5", params.id)
         } else {
-            responseNotFound("ImageGroup", params.id)
+            responseNotFound("ImageGroup", params.group)
         }
     }
 
@@ -172,7 +179,7 @@ class RestImageGroupController extends RestController {
             else
                 responseNotFound("ImageGroupHDF5", params.id)
         } else {
-            responseNotFound("ImageGroup", params.id)
+            responseNotFound("ImageGroup", params.group)
         }
     }
 
