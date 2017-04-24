@@ -22,6 +22,7 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
+import be.cytomine.image.AbstractImage
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
@@ -40,6 +41,7 @@ class ImageGroupHDF5Service  extends  ModelService{
     def imageGroupService
     def imageSequenceService
     def cytomineMailService
+    def abstractImageService
 
 
     def currentDomain() {
@@ -95,10 +97,12 @@ class ImageGroupHDF5Service  extends  ModelService{
 
 
         imagesSequenceList.sort{a,b -> a.channel <=> b.channel}
-        def imagesFilenames = imagesSequenceList.collect{ storage_base_path + "/" + it.image.baseImage.user.id + "/" + it.image.baseImage.filename}
+        def imagesFilenames = imagesSequenceList.collect{
+            storage_base_path + "/" + it.image.user.id + "/" + it.image.baseImage.filename
+        }
         def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
 
-        if(imagesFilenames.size() > 0) {
+     if(imagesFilenames.size() > 0) {
             String imageServerURL = grailsApplication.config.grails.imageServerURL[0]
             String url = "/multidim/convert.json"
             log.info "$imageServerURL" + url
