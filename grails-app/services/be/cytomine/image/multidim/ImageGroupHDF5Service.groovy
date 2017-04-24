@@ -98,6 +98,7 @@ class ImageGroupHDF5Service  extends  ModelService{
 
         imagesSequenceList.sort{a,b -> a.channel <=> b.channel}
         def imagesFilenames = imagesSequenceList.collect{
+            //Should be it.image.baseImage.user.id but this user field is null ?
             storage_base_path + "/" + it.image.user.id + "/" + it.image.baseImage.filename
         }
         def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
