@@ -32,6 +32,8 @@ import grails.transaction.Transactional
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
+import liquibase.util.file.FilenameUtils
+
 import static groovyx.net.http.ContentType.*
 
 @Transactional
@@ -98,8 +100,10 @@ class ImageGroupHDF5Service  extends  ModelService{
 
         imagesSequenceList.sort{a,b -> a.channel <=> b.channel}
         def imagesFilenames = imagesSequenceList.collect{
-            //Should be it.image.baseImage.user.id but this user field is null ?
-            storage_base_path + "/" + it.image.user.id + "/" + it.image.baseImage.filename
+            def absoluteTiffPath =  it.image.baseImage.getAbsolutePath()
+            def tiffPath = it.image.baseImage.path
+            def basePath = absoluteTiffPath - tiffPath
+            basePath + it.image.baseImage.filename
         }
         def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
 
