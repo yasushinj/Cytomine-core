@@ -16,6 +16,8 @@
 
 var ImageReviewAction = Backbone.View.extend({
     tagName: "div",
+    disableEvent : false,
+    descriptionLoaded : false,
     initialize: function (options) {
         this.el = options.el;
         this.model = options.model;
@@ -40,7 +42,7 @@ var ImageReviewAction = Backbone.View.extend({
             el.find("#validateimage" + self.model.id).hide();
             el.find("#unvalidateimage" + self.model.id).hide();
             el.find("#moreinfo" + self.model.id).show();
-            el.find("#description" + self.model.id).show();
+            el.find("#descriptionImage" + self.model.id).show();
         } else if (self.isInReviewing()) {
             el.find("#explore" + self.model.id).show();
             el.find("#review" + self.model.id).show();
@@ -56,7 +58,7 @@ var ImageReviewAction = Backbone.View.extend({
             el.find("#validateimage" + self.model.id).show();
             el.find("#unvalidateimage" + self.model.id).hide();
             el.find("#moreinfo" + self.model.id).show();
-            el.find("#description" + self.model.id).show();
+            el.find("#descriptionImage" + self.model.id).show();
         } else {
             el.find("#explore" + self.model.id).show();
             el.find("#review" + self.model.id).show();
@@ -67,7 +69,7 @@ var ImageReviewAction = Backbone.View.extend({
             el.find("#validateimage" + self.model.id).hide();
             el.find("#unvalidateimage" + self.model.id).show();
             el.find("#moreinfo" + self.model.id).show();
-            el.find("#description" + self.model.id).show();
+            el.find("#descriptionImage" + self.model.id).show();
         }
 
         el.find("#startreview" + self.model.id).on("click", function () {
@@ -130,24 +132,38 @@ var ImageReviewAction = Backbone.View.extend({
         });
 
         var openDescription = function () {
-                    if(!self.disableEvent) {
-                        new DescriptionModel({domainIdent: self.model.id, domainClassName: self.model.get('class')}).fetch(
-                               {success: function (description, response) {
-                                   self.disableEvent = true;
-                                   DescriptionModal.initDescriptionModal(el.find(".action"+self.model.id),description.id,self.model.id,self.model.get('class'),description.get('data'),function() { });
-                                   el.find(".action"+self.model.id).find('a.description').click();
-                               }, error: function (model, response) {
-                                   self.disableEvent = true;
-                                   DescriptionModal.initDescriptionModal(el.find(".action"+self.model.id),null,self.model.id,self.model.get('class'),"",function() { });
-                                   el.find(".action"+self.model.id).find('a.description').click();
+            var editable = !window.app.status.currentProjectModel.isReadOnly(window.app.models.projectAdmin);
+            var modalButton;
+            modalButton = el.find(".action"+self.model.id).find(editable ? 'a.descriptionEdition' : 'a.descriptionPreview');
 
-                               }});
-                    } else {
-                        self.disableEvent = false;
-                    }
-                    return false;
-                }
-        $(self.el).find("a.description" + self.model.id).unbind('click',openDescription).bind('click',openDescription);
+            if(!self.disableEvent && !self.descriptionLoaded) {
+
+                new DescriptionModel({domainIdent: self.model.id, domainClassName: self.model.get('class')}).fetch(
+                    {success: function (description, response) {
+                        self.descriptionLoaded = true;
+
+                        DescriptionModal.initDescriptionModal(null,description.id,self.model.id,self.model.get('class'),description.get('data'),editable,modalButton);
+                        modalButton.click();
+
+                    }, error: function (model, response) {
+                        self.descriptionLoaded = true;
+                        DescriptionModal.initDescriptionModal(null,null,self.model.id,self.model.get('class'),"",editable,modalButton);
+                        modalButton.click();
+
+                    }});
+            } else if(!self.disableEvent) {
+                modalButton.click();
+            } else {
+                self.disableEvent = false;
+            }
+            return false;
+        };
+
+
+        el.find("#descriptionImage" + self.model.id).on("click", function () {
+            openDescription();
+            return false;
+        });
 
 
         var openImportImage = function () {
@@ -175,7 +191,6 @@ var ImageReviewAction = Backbone.View.extend({
 
 
     },
-    disableEvent : false,
     startReviewing: function () {
         var self = this;
         console.log("startReviewing");

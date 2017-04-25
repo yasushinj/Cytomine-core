@@ -222,7 +222,9 @@ var DescriptionModal = {
                         data: text
                     }, {success: function (termModel, response) {
 
-                        callback();
+                        if (callback) {
+                            callback();
+                        }
                     }, error: function (model, response) {
                         var json = $.parseJSON(response.responseText);
                         window.app.view.message("Auth error", "error:" + json.errors, "");
