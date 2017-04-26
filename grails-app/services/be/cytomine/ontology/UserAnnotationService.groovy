@@ -61,6 +61,7 @@ class UserAnnotationService extends ModelService {
     def annotationListingService
     def securityACLService
     def currentRoleServiceProxy
+    def sharedAnnotationService
     //def imageRetrievalService
 
     def currentDomain() {
@@ -411,7 +412,7 @@ class UserAnnotationService extends ModelService {
 //        }
 
         SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
-            annotationTermService.removeDomain(it)
+            sharedAnnotationService.delete(it,transaction,null,false)
         }
 
     }

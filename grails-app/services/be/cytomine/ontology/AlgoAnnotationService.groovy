@@ -46,6 +46,7 @@ class AlgoAnnotationService extends ModelService {
     def kmeansGeometryService
     def annotationListingService
     def securityACLService
+    def sharedAnnotationService
 
     def currentDomain() {
         return AlgoAnnotation
@@ -203,5 +204,11 @@ class AlgoAnnotationService extends ModelService {
 
     }
 
+    def deleteDependentSharedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
+        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
+            sharedAnnotationService.delete(it,transaction,null,false)
+        }
+
+    }
 
 }

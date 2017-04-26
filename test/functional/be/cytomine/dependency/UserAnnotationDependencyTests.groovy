@@ -18,6 +18,7 @@ package be.cytomine.dependency
 
 import be.cytomine.ontology.AlgoAnnotationTerm
 import be.cytomine.ontology.AnnotationTerm
+import be.cytomine.ontology.SharedAnnotation
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
@@ -80,6 +81,12 @@ class UserAnnotationDependencyTests  {
         algoAnnotationTerm1.term.ontology = annotation.project.ontology
         BasicInstanceBuilder.saveDomain(algoAnnotationTerm1.term)
         BasicInstanceBuilder.saveDomain(algoAnnotationTerm1)
+
+        SharedAnnotation sa = BasicInstanceBuilder.getSharedAnnotationNotExist(true)
+        sa.annotationClassName = annotation.class.name
+        sa.annotationIdent = annotation.id
+        BasicInstanceBuilder.saveDomain(sa)
+
 //
 //        ReviewedAnnotation ra = BasicInstanceBuilder.getReviewedAnnotationNotExist()
 //        ra.project = project
@@ -92,7 +99,7 @@ class UserAnnotationDependencyTests  {
 //        ra.putParentAnnotation(annotation)
 //        BasicInstanceBuilder.saveDomain(ra)
 
-        return [annotation,at,algoAnnotationTerm1]
+        return [annotation,at,algoAnnotationTerm1,sa]
     }
 
 
