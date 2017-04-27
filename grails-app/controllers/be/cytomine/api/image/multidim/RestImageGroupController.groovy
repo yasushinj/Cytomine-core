@@ -46,6 +46,7 @@ class RestImageGroupController extends RestController {
 
     def imageGroupService
     def imageGroupHDF5Service
+    def imageSequenceService
     def projectService
 
     @RestApiMethod(description="Get an image group")
@@ -188,8 +189,11 @@ class RestImageGroupController extends RestController {
         if (image) {
             ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
             if(imageh5){
+                ImageSequence is = imageSequenceService.get(image,0,0,0,0)
+                def y = is.image.baseImage.height - Integer.parseInt(params.y)
+
                 String fn = imageh5.filenames
-                String url = "/multidim/pixel.json?fif=$fn&x=$params.x&y=$params.y"
+                String url = "/multidim/pixel.json?fif=$fn&x=$params.x&y=$y"
 
                 String imageServerURL =  grailsApplication.config.grails.imageServerURL[0]
                 log.info "$imageServerURL"+url
