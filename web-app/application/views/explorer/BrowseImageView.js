@@ -180,14 +180,14 @@ BrowseImageView = Backbone.View.extend({
         layer.events.register("tileloaded", layer, function (evt) {
             return; //disabled but works
             /*var ctx = evt.tile.getCanvasContext();
-            if (ctx) {
-                var imgd = ctx.getImageData(0, 0, evt.tile.size.w, evt.tile.size.h);
+             if (ctx) {
+             var imgd = ctx.getImageData(0, 0, evt.tile.size.w, evt.tile.size.h);
 
-                ctx.putImageData(imgd, 0, 0);
-                evt.tile.imgDiv.removeAttribute("crossorigin");
-                evt.tile.imgDiv.src = ctx.canvas.toDataURL();
+             ctx.putImageData(imgd, 0, 0);
+             evt.tile.imgDiv.removeAttribute("crossorigin");
+             evt.tile.imgDiv.src = ctx.canvas.toDataURL();
 
-            }*/
+             }*/
         });
 
         layer.events.register("loadend", layer, function () {
@@ -644,8 +644,39 @@ BrowseImageView = Backbone.View.extend({
                     },
                     "mousemove": function (e) {
 
-                    }
+                    },
+                    "click": function(e){
+                        var lonLat = self.map.getLonLatFromPixel(this.events.getMousePosition(e));
+                        var lon = lonLat.lon;
+                        var lat = lonLat.lat;
+                        var imgId = self.model.id;
+                        $(self.el).find("#spectra").html("<img src='images/loading.gif'>");
+                        $.get("/api/imageinstance/"+imgId+"/imagesequence/possibilities.json", function(data) {
+                            if(data.imageGroup != null && data.imageGroup != undefined) {
+                                var spec = new ImageGroupSpectraModel({
+                                    group : data.imageGroup,
+                                    x: lon,
+                                    y: lat
+                                });
+                                spec.fetch({
+                                    success: function (ddd, response) {
+                                        var spectra = ddd.get("spectra");
+                                        var graph = {
+                                            //x: data.channel, //trick comment to cheat
+                                            y: spectra,
+                                            mode: 'lines'
+                                        };
+                                        var layout = {
+                                            title:'Spectral distribution'
+                                        };
+                                        $(self.el).find("#spectra").html("<div id='#plotplot'></div>");
 
+                                        Plotly.newPlot('#plotplot', [graph], layout);
+                                    }
+                                });
+                            }
+                        });
+                    }
                 }
             };
 
@@ -1060,8 +1091,8 @@ BrowseImageView = Backbone.View.extend({
                 console.log("drawImage..."+tile.position.x + "-"+tile.position.y);
                 newContext.drawImage(
                     img,
-                    viewPositionLeft + tile.position.x,
-                    viewPositionTop + tile.position.y);
+                        viewPositionLeft + tile.position.x,
+                        viewPositionTop + tile.position.y);
 
                 if(countTile==tileProgress) {
                     //all tiles has been loaded, run maggicwand!

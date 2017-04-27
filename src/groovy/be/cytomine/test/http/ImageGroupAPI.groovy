@@ -45,13 +45,18 @@ class ImageGroupAPI extends DomainAPI {
         return [data: ImageGroup.get(idDiscipline), code: result.code]
     }
 
-    static def update(def id, def jsonImageGroup, String username, String password) {
+    static def update(Long id, def jsonImageGroup, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/imagegroup/" + id + ".json"
         return doPUT(URL,jsonImageGroup,username,password)
     }
 
-    static def delete(def id, String username, String password) {
+    static def delete(Long id, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/imagegroup/" + id + ".json"
         return doDELETE(URL,username,password)
+    }
+
+    static def getInfos(Long id, String username, String password){
+        String URL = Infos.CYTOMINEURL + "/api/imagegroup/$id/characteristics.json"
+        return doGET(URL, username, password)
     }
 }

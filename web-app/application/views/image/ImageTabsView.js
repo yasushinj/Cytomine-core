@@ -24,6 +24,7 @@ var ImageTabsView = Backbone.View.extend({
         this.idProject = options.idProject;
         this.project = options.project;
     },
+
     refresh: function () {
         this.afterDeleteImageEvent();
     },
@@ -50,7 +51,8 @@ var ImageTabsView = Backbone.View.extend({
             });
 
         });
-        return this;
+
+                return this;
     },
     update : function() {
         var self = this;
@@ -87,6 +89,10 @@ var ImageTabsView = Backbone.View.extend({
                     }
                 }
                 return names;
+                return o.aData["originalFilename"];
+
+
+
 
             }}
             ,
@@ -170,6 +176,7 @@ var ImageTabsView = Backbone.View.extend({
                     var model = new ImageInstanceModel(aData);
                     var action = new ImageReviewAction({el:body,model:model, container : self});
                     action.configureAction();
+
                 });
 
                 $(".dropdown-menu").css("left", "-140px");
@@ -182,5 +189,8 @@ var ImageTabsView = Backbone.View.extend({
     });
 //        $('#projectImageListing' + self.idProject).hide();
 //        $('#projectImageTable' + self.idProject).show();
+
     }
+
+
 });

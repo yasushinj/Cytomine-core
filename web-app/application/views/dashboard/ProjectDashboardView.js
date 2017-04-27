@@ -30,6 +30,7 @@ var ProjectDashboardView = Backbone.View.extend({
     projectDashboardImages: null,
     projectDashboardConfig: null,
     projectDashboardUsersConfig: null,
+    projectDashboardGroup: null,
     rendered: false,
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -71,6 +72,16 @@ var ProjectDashboardView = Backbone.View.extend({
         }, 60000);
 
     },
+
+    refreshGroupView: function(){
+        if(this.projectDashboardGroup == null){
+            this.projectDashboardGroup = new ProjectDashboardGroup({model: this.model,
+                el: $("#tabs-groups-"+this.model.id)
+            });
+        }
+        this.projectDashboardGroup.refresh();
+    },
+
     refreshImagesThumbsView: function () {
         if (this.projectDashboardImages == null) {
             this.projectDashboardImages = new ProjectDashboardImages({ model: this.model});
@@ -413,6 +424,8 @@ var ProjectDashboardView = Backbone.View.extend({
     showImagesTable: function () {
         $("#tabs-projectImageThumb" + this.model.id).hide();
         $("#tabs-projectImageListing" + this.model.id).show();
+        $("#tabs-projectImageGroupListing" + this.model.id).show();
+
         $('#imageThumbs' + this.model.id).removeAttr("disabled");
         $('#imageArray' + this.model.id).attr("disabled", "disabled");
     },

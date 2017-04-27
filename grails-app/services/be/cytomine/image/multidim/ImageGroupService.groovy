@@ -109,4 +109,26 @@ class ImageGroupService extends ModelService {
             imageSequenceService.delete(it,transaction,null,false)
         }
     }
+
+    def characteristics(ImageGroup imageGroup){
+        def poss = ImageSequence.findAllByImageGroup(imageGroup)
+        def z = []
+        def t = []
+        def c = []
+        def s = []
+
+        poss.each {
+            z << it.zStack
+            t << it.time
+            c << it.channel
+            s << it.slice
+        }
+
+        z = z.unique().sort()
+        t = t.unique().sort()
+        c = c.unique().sort()
+        s = s.unique().sort()
+        return [slice:s,zStack:z,time:t,channel:c, imageGroup:imageGroup.id]
+
+    }
 }

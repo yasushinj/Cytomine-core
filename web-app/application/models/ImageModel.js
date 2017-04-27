@@ -179,13 +179,18 @@ var ImageInstanceCollection = PaginatedCollection.extend({
         if (this.tree) {
             return "api/project/" + this.project + "/imageinstance.json?tree=true";
         } else {
-            return "api/project/" + this.project + "/imageinstance.json";
+            if(this.imagegroup != undefined && this.imagegroup)
+                return "api/project/" + this.project + "/imageinstance.json?excludeimagegroup=" + this.imagegroup;
+            else
+                return "api/project/" + this.project + "/imageinstance.json";
         }
     },
     initialize: function (options) {
         this.initPaginator(options);
         this.project = options.project;
         this.tree = options.tree != undefined && options.tree == true;
+        this.imagegroup = options.imagegroup;
+
     }
 });
 

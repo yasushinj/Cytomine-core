@@ -81,6 +81,7 @@
 <fileset dir="${src.dir}" includes="application/controllers/AccountController.js"/>
 <fileset dir="${src.dir}" includes="application/controllers/PhonoController.js"/>
 <fileset dir="${src.dir}" includes="application/controllers/UserDashboardController.js"/>
+<fileset dir="${src.dir}" includes="application/controllers/ImageGroupController.js"/>
 <fileset dir="${src.dir}" includes="application/models/PaginatorModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/DescriptionModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/DisciplineModel.js"/>
@@ -110,6 +111,8 @@
 <fileset dir="${src.dir}" includes="application/models/AnnotationPropertyModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/ImageInstancePropertyModel.js"/>
 <fileset dir="${src.dir}" includes="application/models/ProjectPropertyModel.js"/>
+<fileset dir="${src.dir}" includes="application/models/ImageGroupModel.js"/>
+<fileset dir="${src.dir}" includes="application/models/ImageSequenceModel.js"/>
 <fileset dir="${src.dir}" includes="application/views/admin/AdminView.js"/>
 <fileset dir="${src.dir}" includes="application/views/admin/AdminDashboard.js"/>
 <fileset dir="${src.dir}" includes="application/views/admin/AdminUsersView.js"/>
@@ -159,6 +162,7 @@
 <fileset dir="${src.dir}" includes="application/views/processing/JobTableView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobSearchEngineView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/JobDeleteAllDataView.js"/>
+<fileset dir="${src.dir}" includes="application/views/ImageGroupTmpView.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/result/RetrievalAlgoResult.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/result/EvolutionAlgoResult.js"/>
 <fileset dir="${src.dir}" includes="application/views/processing/result/DefaultResult.js"/>

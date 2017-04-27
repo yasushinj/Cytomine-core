@@ -35,9 +35,10 @@ var DashboardController = Backbone.Router.extend({
         "tabs-algos-:project-:software-": "algos",
         "tabs-algos-:project": "algos",
         "tabs-useralgo-:userjob": "useralgos",
-        "tabs-reviewdash-:project-:image-:user-:term": "review"
+        "tabs-reviewdash-:project-:image-:user-:term": "review",
 //        "tabs-review-:project-:user-:term": "review",
 //        "tabs-review-:project": "review"
+        "tabs-groups-:project": "group"
 
     },
 
@@ -137,6 +138,16 @@ var DashboardController = Backbone.Router.extend({
             self.view.showImagesTable();
             var tabs = $("#explorer > .browser").find(".nav-tabs");
             tabs.find('a[href=#tabs-images-' + window.app.status.currentProject + ']').tab('show');
+        };
+        this.init(project, func);
+    },
+    group: function(project){
+        var self = this;
+        console.log("imagesgroup");
+        var func = function () {
+            self.view.refreshGroupView();
+            var tabs = $("#explorer > .browser").find(".nav-tabs");
+            tabs.find('a[href=#tabs-groups-' + window.app.status.currentProject + ']').tab('show');
         };
         this.init(project, func);
     },

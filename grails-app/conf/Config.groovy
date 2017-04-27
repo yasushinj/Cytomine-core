@@ -44,7 +44,7 @@ grails.mime.types = [
         multipartForm: 'multipart/form-data'
 ]
 cytomine.maxRequestSize = 10485760
-storage_path="/Users/stevben/cytomine_storage" //default path for image locations
+storage_path="/data" //default path for image locations
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "none" // none, html, base64
@@ -104,32 +104,38 @@ environments {
     }
     development {
         grails.serverURL = "http://localhost:8080"
-        //if test with VM windows 7
-        //grails.serverURL = "http://10.0.2.2:8080"
-        grails.uploadURL = "http://upload.cytomine.be"
-        grails.imageServerURL = ["http://image.cytomine.be"]
-        grails.retrievalServerURL = ["http://retrieval.cytomine.be"]
+        grails.uploadURL = "http://localhost-upload"
+        grails.imageServerURL = ["http://localhost:9080"]
+        grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey="70f35a45-c317-405a-8056-353db3d2bf56"
-        grails.ImageServerPublicKey="4a5c7004-b6f8-4705-a118-c15d5c90dcdb"
+        grails.ImageServerPrivateKey=""
+        grails.ImageServerPublicKey=""
+        grails.adminPrivateKey="XXX"
+        grails.adminPublicKey="XXX"
+        grails.superAdminPrivateKey="X"
+        grails.superAdminPublicKey="X"
     }
     test {
         grails.serverURL = "http://localhost:8090"
-        grails.imageServerURL = ["http://image.cytomine.be"]
-        grails.uploadURL = "http://upload.cytomine.be"
-        grails.retrievalServerURL = ["http://localhost:9096"]
+        grails.imageServerURL = ["http://localhost:9080"]
+        grails.uploadURL = "http://localhost-upload"
+        grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.plugin.springsecurity.useBasicAuth = true
         grails.plugin.springsecurity.basic.realmName = "Cytomine log"
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
 
         grails.adminPassword = "password"
-        grails.ImageServerPrivateKey = "pubkey"
-        grails.ImageServerPublicKey = "privkey"
+        grails.ImageServerPrivateKey=""
+        grails.ImageServerPublicKey=""
+        grails.adminPrivateKey="XXX"
+        grails.adminPublicKey="XXX"
+        grails.superAdminPrivateKey="X"
+        grails.superAdminPublicKey="X"
     }
     testrun {
         grails.serverURL = "http://localhost:8090"
@@ -380,6 +386,8 @@ cytomine.customUI.global = [
 
 cytomine.customUI.project = [
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
