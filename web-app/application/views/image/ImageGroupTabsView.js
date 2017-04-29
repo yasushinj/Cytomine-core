@@ -86,7 +86,7 @@ var ImageGroupTabsView = Backbone.View.extend({
 
                     },
                     error: function () {
-                        var tt =  '<a href="#imagegroup/convert-<%= id %>">Convert</a> ';
+                       var tt =  '<div id="convert-allow-<%= id %>"></div>';
                         toRet = _.template(tt, o.aData);
                         $(self.el).find("#con-"+o.aData.id).append(toRet);
 
@@ -128,6 +128,14 @@ var ImageGroupTabsView = Backbone.View.extend({
                         $(self.el).find("#zstack-"+aData.id).append(imageGroup.zstack.toString());
                         $(self.el).find("#slice-"+aData.id).append(imageGroup.slice.toString());
                         $(self.el).find("#time-"+aData.id).append(imageGroup.time.toString());
+
+                        console.log(imageGroup.channel)
+                        if(imageGroup.channel.length != 0){
+                            var link = ' <a href="#imagegroup/convert-<%= id %>">Convert</a>';
+                            link = _.template(link, aData);
+                            $(self.el).find("#convert-allow-"+aData.id).append(link)
+                        }
+
                     };
 
                     imageGroup.feed(cb);
