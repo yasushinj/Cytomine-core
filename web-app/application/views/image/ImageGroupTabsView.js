@@ -129,7 +129,6 @@ var ImageGroupTabsView = Backbone.View.extend({
                         $(self.el).find("#slice-"+aData.id).append(imageGroup.slice.toString());
                         $(self.el).find("#time-"+aData.id).append(imageGroup.time.toString());
 
-                        console.log(imageGroup.channel)
                         if(imageGroup.channel.length != 0){
                             var link = ' <a href="#imagegroup/convert-<%= id %>">Convert</a>';
                             link = _.template(link, aData);

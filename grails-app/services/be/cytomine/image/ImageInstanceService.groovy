@@ -484,4 +484,34 @@ class ImageInstanceService extends ModelService {
 
        // return ImageInstance.findAllByProjectAndIdNotInList(project, listout);
     }
+
+    def listWithoutAnyGroup(Project project,String sortColumn, String sortDirection, String search ){
+        def listImageOut = [];
+        ImageGroup.findAllByProject(project).each { group ->
+            ImageSequence.findAllByImageGroup(group).each{ imageSequence ->
+                listImageOut << imageSequence.image.id
+            }
+        }
+
+        if(listImageOut.size() == 0)
+            return list(project, sortColumn, sortDirection, search);
+
+
+        String abstractImageAlias = "ai"
+        String _sortColumn = ImageInstance.hasProperty(sortColumn) ? sortColumn : "created"
+        _sortColumn = AbstractImage.hasProperty(sortColumn) ? abstractImageAlias + "." + sortColumn : "created"
+        String _search = (search != null && search != "") ? "%"+search+"%" : "%"
+
+        return ImageInstance.createCriteria().list() {
+            createAlias("baseImage", abstractImageAlias)
+            eq("project", project)
+            isNull("parent")
+            isNull("deleted")
+            fetchMode 'baseImage', FetchMode.JOIN
+            not {'in'("id", listImageOut)}
+            ilike(abstractImageAlias + ".originalFilename", _search)
+            order(_sortColumn, sortDirection)
+        }
+
+    }
 }
