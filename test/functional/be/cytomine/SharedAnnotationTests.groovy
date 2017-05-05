@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import be.cytomine.test.http.AlgoAnnotationAPI
 import be.cytomine.test.http.AnnotationCommentAPI
 import be.cytomine.test.http.AnnotationDomainAPI
 import be.cytomine.test.http.ImageInstanceAPI
+import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAnnotationAPI
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -94,10 +95,18 @@ class SharedAnnotationTests  {
         assert json.collection.size() == 2
 
         result = AnnotationCommentAPI.list(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        // admin is not in the project. ==> cannot read annot
+        assert 403 == result.code
+
+        //Add contributor to project
+        ProjectAPI.addUserProject(BasicInstanceBuilder.getProject().id, BasicInstanceBuilder.getUser(Infos.ADMINLOGIN, Infos.ADMINPASSWORD).id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = AnnotationCommentAPI.list(sharedAnnotation.annotationIdent, sharedAnnotation.annotationClassName, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.collection.size() == 2
+
 
         //algoAnnotation
         sharedAnnotation = BasicInstanceBuilder.getSharedAnnotation()

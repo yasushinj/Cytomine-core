@@ -1,7 +1,7 @@
 package be.cytomine.security
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -87,16 +87,26 @@ class CurrentRoleSecurityTests extends SecurityTestsAbstract {
 
     void testGetSessionInfoForSuperAdmin() {
         //admin should be true
-
+        def result = UserRoleAPI.infoAdminSession(Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD) //client)
+        assert 200 == result.code
+        assert JSON.parse(result.data).admin
+        assert JSON.parse(result.data).adminByNow
     }
 
     void testAdminHasNotAdminRight() {
         //an admin has no admin right by default
-
+        def result = UserRoleAPI.infoAdminSession(Infos.ADMINLOGIN,Infos.ADMINPASSWORD) //client)
+        assert 200 == result.code
+        assert JSON.parse(result.data).admin
+        assert !JSON.parse(result.data).adminByNow
     }
 
     void testUserHasNotAdminRight() {
-
+        def user = BasicInstanceBuilder.getUser("testUserHasNotAdminRight","password")
+        def result = UserRoleAPI.infoAdminSession("testUserHasNotAdminRight","password") //client)
+        assert 200 == result.code
+        assert !JSON.parse(result.data).admin
+        assert !JSON.parse(result.data).adminByNow
     }
 
     void testGuestHasNotAdminRight() {

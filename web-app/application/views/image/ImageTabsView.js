@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ var ImageTabsView = Backbone.View.extend({
         var columns = [
             { sClass: 'center', "mData": "id", "bSearchable": false},
             { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
-                return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-'><img src='<%= thumb %>' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
+                return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-0'><img src='<%= thumb %>' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
                     {
                         project : self.idProject,
                         id : o.aData.id,

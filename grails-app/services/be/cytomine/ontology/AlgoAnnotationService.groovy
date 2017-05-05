@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ class AlgoAnnotationService extends ModelService {
     def kmeansGeometryService
     def annotationListingService
     def securityACLService
+    def sharedAnnotationService
 
     def currentDomain() {
         return AlgoAnnotation
@@ -203,5 +204,11 @@ class AlgoAnnotationService extends ModelService {
 
     }
 
+    def deleteDependentSharedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
+        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
+            sharedAnnotationService.delete(it,transaction,null,false)
+        }
+
+    }
 
 }

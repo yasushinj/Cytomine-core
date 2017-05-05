@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -400,6 +400,7 @@ var ExplorerTabs = Backbone.View.extend({
         var tabs = $('#explorer-tab');
         tabs.append(_.template("<li class='custom-ui-project-dashboard-tab' id='project-dashboard-tab'><a id='dashboardLink-<%= idProject %>' href='#tabs-dashboard-<%= idProject %>' data-toggle='tab'><i class='icon-road' /> <%= name %></a></li>", { idProject: window.app.status.currentProject, name: projectName}));
         tabs.append(_.template("<li class='custom-ui-project-images-tab' id='project-images-tab'><a href='#tabs-images-<%= idProject %>' data-toggle='tab'><i class='icon-picture' /> Images</a></li>", { idProject: window.app.status.currentProject}));
+        tabs.append(_.template("<li class='custom-ui-project-imagegroups-tab' id='project-imagesgroup-tab'><a href='#tabs-groups-<%= idProject %>' data-toggle='tab'><i class='icon-picture' /> ImageGroups</a></li>", { idProject: window.app.status.currentProject}));
         tabs.append(_.template("<li class='custom-ui-project-annotations-tab' id='project-annotations-tab' style='display:none;'><a href='#tabs-annotations-<%= idProject %>' data-toggle='tab'><i class='icon-pencil' /> Annotations</a></li>", { idProject: window.app.status.currentProject}));
 	    tabs.append(_.template("<li class='custom-ui-project-properties-tab' id='project-properties-tab' style='display:none;'><a class='annotationTabLink' href='#tabs-properties-<%= idProject %>' data-toggle='tab'><i class='icon-list' /> Properties</a></li>", { idProject: window.app.status.currentProject}));
         tabs.append(_.template("<li class='custom-ui-project-jobs-tab' id='project-jobs-tab' style='display:none;'><a href='#tabs-algos-<%= idProject %>' data-toggle='tab'><i class='icon-tasks' /> Jobs</a></li>", { idProject: window.app.status.currentProject}));

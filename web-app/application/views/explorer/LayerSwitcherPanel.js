@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * Created by IntelliJ IDEA.
- * User: stevben
- * Date: 12/06/11
- * Time: 12:32
- * To change this template use File | Settings | File Templates.
- */
 
 var LayerSwitcherPanel = SideBarPanel.extend({
     tagName: "div",
@@ -460,7 +453,6 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         console.log("elementsToWait");
         console.log(elementsToWait);
         if(elementsToWait == 0){
-            console.log("here");
             // I wait than each UserModel are loaded but if there are no UserModel to load, I still need to call this function
             checkNonHideElement();
         }

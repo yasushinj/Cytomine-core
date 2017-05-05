@@ -3,7 +3,7 @@ package be.cytomine.api.social
 import be.cytomine.Exception.CytomineException
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -89,10 +89,8 @@ class RestUserPositionController extends RestController {
         User user = secUserService.read(params.user)
         Long afterThan = params.long("afterThan")
         if(params.getBoolean("showDetails")){
-            println "LISSTTTT"
             responseSuccess(userPositionService.list(image, user, afterThan))
         } else {
-            println "SUMMARY"
             responseSuccess(userPositionService.summarize(image, user, afterThan))
         }
     }

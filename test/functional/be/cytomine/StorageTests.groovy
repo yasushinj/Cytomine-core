@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package be.cytomine
 */
 
 import be.cytomine.image.server.Storage
+import be.cytomine.image.server.ImageServerStorage
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.StorageAPI
@@ -54,6 +55,7 @@ public class StorageTests {
 
     void testAddStorageCorrect() {
         def storageToAdd = BasicInstanceBuilder.getStorageNotExist()
+        storageToAdd.name = "testAddStorageCorrect"
         def json = storageToAdd.encodeAsJSON()
 
         def result = StorageAPI.create(json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -64,7 +66,7 @@ public class StorageTests {
         result = StorageAPI.show(idStorage, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        result = StorageAPI.undo()
+        /*result = StorageAPI.undo()
         assert 200 == result.code
 
         result = StorageAPI.show(idStorage, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -74,7 +76,7 @@ public class StorageTests {
         assert 200 == result.code
 
         result = StorageAPI.show(idStorage, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
+        assert 200 == result.code*/
     }
 
     void testUpdateStorageCorrect() {
@@ -105,8 +107,8 @@ public class StorageTests {
 
     void testUpdateStorageNotExist() {
         Storage storageWithOldName = BasicInstanceBuilder.getStorage()
-        Storage storageWithNewName = BasicInstanceBuilder.getStorageNotExist()
-        storageWithNewName.save(flush: true)
+        Storage storageWithNewName = BasicInstanceBuilder.getStorageNotExist(true)
+
         Storage storageToEdit = Storage.get(storageWithNewName.id)
         def jsonStorage = storageToEdit.encodeAsJSON()
         def jsonUpdate = JSON.parse(jsonStorage)
@@ -132,11 +134,11 @@ public class StorageTests {
         result = StorageAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        result = StorageAPI.redo()
+        /*result = StorageAPI.redo()
         assert 200 == result.code
 
         result = StorageAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 404 == result.code
+        assert 404 == result.code*/
     }
 
     void testStorageNotExist() {

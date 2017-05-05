@@ -2,7 +2,7 @@ package be.cytomine.api.social
 
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -80,19 +80,22 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
-    def numberOfProjectConnections = {
+    def numberOfProjectConnections() {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
         Long afterThan = params.long("afterThan");
         String period = params.get("period").toString()
-
-        responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
+        if(period){
+            responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
+        } else {
+            response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
+        }
     }
 
     @RestApiMethod(description="Get the average project connections on Cytomine.")
     @RestApiParams(params=[
-            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.PATH, description = "Average on the project connection where created > the afterThan parameter. Optional, the beforeThan Date -1 year will be considered if none is given."),
-            @RestApiParam(name="beforeThan", type="long", paramType = RestApiParamType.PATH, description = "Average on the project connection where created < the beforeThan parameter. Optional, the current Date will be considered if none is given."),
-            @RestApiParam(name="period", type="string", paramType = RestApiParamType.PATH, description = "The period of connections (hour : by hours, day : by days, week : by weeks) (Mandatory)"),
+            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "Average on the project connection where created > the afterThan parameter. Optional, the beforeThan Date -1 year will be considered if none is given."),
+            @RestApiParam(name="beforeThan", type="long", paramType = RestApiParamType.QUERY, description = "Average on the project connection where created < the beforeThan parameter. Optional, the current Date will be considered if none is given."),
+            @RestApiParam(name="period", type="string", paramType = RestApiParamType.QUERY, description = "The period of connections (hour : by hours, day : by days, week : by weeks) (Mandatory)"),
     ])
     def averageOfProjectConnections() {
         Long afterThan = params.long("afterThan");
@@ -105,10 +108,21 @@ class RestProjectConnectionController extends RestController {
             securityACLService.checkAdmin(cytomineService.getCurrentUser())
         }
 
-        responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
+        if(period){
+            responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
+        } else {
+            response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
+        }
     }
 
-    def userProjectConnectionHistory = {
+    @RestApiMethod(description="Get the project connections of one user into a project.")
+    @RestApiParams(params=[
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id. Mandatory"),
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id. Mandatory"),
+            @RestApiParam(name="offset", type="integer", paramType = RestApiParamType.QUERY, description = "An offset. Default value = 0"),
+            @RestApiParam(name="limit", type="integer", paramType = RestApiParamType.QUERY, description = "Limit the project connections. Optionnal"),
+    ])
+    def userProjectConnectionHistory() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
         Integer offset = params.offset != null ? params.getInt('offset') : 0

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ var UploadFormView = Backbone.View.extend({
     statusLabels: {
         uploadedLabel: '<span class="label label-default">UPLOADED</span>',
         errorFormatLabel: '<span class="label label-important">ERROR FORMAT</span>',
-        convertedLabel: '<span class="label label-info">TO DEPLOY</span>',
+        convertedLabel: '<span class="label label-info">CONVERTED</span>',
         deployedLabel: '<span class="label label-success">DEPLOYED</span>',
         errorConvertLabel: '<span class="label label-important">ERROR CONVERT</span>',
         uncompressed : '<span class="label label-success">UNCOMPRESSED</span>',

@@ -1,7 +1,7 @@
 package be.cytomine.security
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ class ServerController {
     def grailsApplication
     def dataSource
 
-
     @Secured(['IS_AUTHENTICATED_REMEMBERED'])
     def ping () {
         def jsonContent = request.JSON
@@ -40,8 +39,15 @@ class ServerController {
         data.authenticated = springSecurityService.isLoggedIn()
         data.version = grailsApplication.metadata['app.version']
         data.serverURL = grailsApplication.config.grails.serverURL
+        data.serverID = grailsApplication.config.grails.serverID
         if (data.authenticated)  {
             data.user = springSecurityService.currentUser.id
+
+            if(!springSecurityService.currentUser.enabled){
+                log.info "Disabled user. Invalidation of its sessions"
+                session.invalidate()
+            }
+
             def idProject = null
             def idUser = data.user
             if(!jsonContent.project.toString().equals("null")) {

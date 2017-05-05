@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,16 +116,21 @@ var AdminUsersView = Backbone.View.extend({
                 }
             }},
             { "mDataProp": "email", "bSearchable": true,"bSortable": true },
-            { "mData": "created", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
-                return window.app.convertLongToPrettyDate(o.aData["created"]);
-            }},
+            { "mData": "displayingCreatedDate", sDefaultContent: "", "bSearchable": false,"bSortable": true,
+                "fnRender" : function (o) {
+                    return window.app.convertLongToPrettyDate(o.aData["created"]);
+                },
+                //sort on hidden column
+                "iDataSort":9
+            },
             { "mData": "updated", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
                 if(o.aData["updated"]) return window.app.convertLongToPrettyDate(o.aData["updated"]);
             }},
             { "mDataProp": "action", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
                 return "<button class='btn btn-xs btn-primary UserDetailsButton' data-id="+o.aData["id"]+" >Info</button>"
                     +" <button class='btn btn-xs btn-primary UserEditButton' data-id="+o.aData["id"]+" >Edit</button>";
-            }}
+            }},
+            { "mData": "created", "bVisible":false}
         ];
 
         table.dataTable({

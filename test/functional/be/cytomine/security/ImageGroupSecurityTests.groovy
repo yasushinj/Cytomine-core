@@ -36,9 +36,6 @@ class ImageGroupSecurityTests extends SecurityTestsAbstract{
         User user2 = getUser2()
         User user3 = getUser3()
 
-        //Get admin user
-        User admin = getUserAdmin()
-
         //Create new project (user1)
         def result = ProjectAPI.create(BasicInstanceBuilder.getProjectNotExist().encodeAsJSON(),SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
@@ -50,27 +47,25 @@ class ImageGroupSecurityTests extends SecurityTestsAbstract{
         Infos.printRight(project)
         assert 200 == resAddUser.code
 
-        //Add image instance to project
-        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
-        image.project = project
-
         //Init image group
         ImageGroup imageGroup = BasicInstanceBuilder.getImageGroupNotExist(project, false);
 
 
         //check if user 2 can access/delete ImageGroup
-        result = ImageGroupAPI.create(imageGroup, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        def json = imageGroup.encodeAsJSON()
+        result = ImageGroupAPI.create(json, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
-        imageGroup = result.data
-        assert (200 == ImageGroupAPI.show(image.id,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
+        Long idImageGroup = result.data.id
+        assert (200 == ImageGroupAPI.show(idImageGroup,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
 
-        project.mode = Project.EditingMode.CLASSIC
+        project.mode = Project.EditingMode.READ_ONLY
         BasicInstanceBuilder.saveDomain(project)
-        assert (200 == ImageGroupAPI.delete(image,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
+        assert (200 == ImageGroupAPI.delete(idImageGroup,SecurityTestsAbstract.USERNAME3,SecurityTestsAbstract.PASSWORD3).code)
 
-        project.mode = Project.EditingMode.RESTRICTED
-        BasicInstanceBuilder.saveDomain(project)
-        assert (403 == ImageGroupAPI.delete(image,SecurityTestsAbstract.USERNAME3,SecurityTestsAbstract.PASSWORD3).code)
+        //project.mode = Project.EditingMode.CLASSIC
+        //BasicInstanceBuilder.saveDomain(project)
+        //assert (200 == ImageGroupAPI.delete(idImageGroup,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
+
     }
 
 

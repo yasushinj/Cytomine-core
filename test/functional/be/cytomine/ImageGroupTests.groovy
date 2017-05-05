@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class ImageGroupTests {
 
     void testGetInfosImageGroup(){
         def dataSet = BasicInstanceBuilder.getMultiDimensionalDataSet(["R","G","B"],["1"],["A"],["10","20"])
-        def imagroup = dataSet.last().imagegroup
+        def imagroup = dataSet.last().imageGroup
         def result = ImageGroupAPI.getInfos(imagroup.id, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code
     }

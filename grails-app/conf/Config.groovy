@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ cytomine.jobdata.filesystemPath = "algo/data/"
 
 // RabbitMQ server
 grails.messageBrokerServerURL = "rabbitmq:5672"
+grails.LTIConsumer = []
 
 // set per-environment serverURL stem for creating absolute links
 environments {
@@ -103,7 +104,6 @@ environments {
     }
     development {
         grails.serverURL = "http://localhost:8080"
-
         grails.uploadURL = "http://localhost-upload"
         grails.imageServerURL = ["http://localhost:9080"]
         grails.retrievalServerURL = ["http://localhost-retrieval"]
@@ -112,8 +112,8 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey="cb2955c6-631b-4039-8ebf-889aefe8ea0c"
-        grails.ImageServerPublicKey="cc161593-37fe-4487-baec-f6d46e62959f"
+        grails.ImageServerPrivateKey=""
+        grails.ImageServerPublicKey=""
         grails.adminPrivateKey="XXX"
         grails.adminPublicKey="XXX"
         grails.superAdminPrivateKey="X"
@@ -129,9 +129,9 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
 
-        grails.adminPassword = "admin"
-        grails.ImageServerPrivateKey="cb2955c6-631b-4039-8ebf-889aefe8ea0c"
-        grails.ImageServerPublicKey="cc161593-37fe-4487-baec-f6d46e62959f"
+        grails.adminPassword = "password"
+        grails.ImageServerPrivateKey=""
+        grails.ImageServerPublicKey=""
         grails.adminPrivateKey="XXX"
         grails.adminPublicKey="XXX"
         grails.superAdminPrivateKey="X"
@@ -199,13 +199,13 @@ log4j = {
     environments {
         production {
             root {
-                info 'appLog',"logfile"
+                info 'errorLog','warnLog', 'infoLog', 'stdout'
                 additivity = true
             }
         }
         development {
             root {
-                info 'appLog',"logfile", 'stdout'
+                info 'errorLog','warnLog', 'infoLog', 'stdout'
                 additivity = true
             }
         }
@@ -313,7 +313,7 @@ grails.plugin.springsecurity.ldap.context.managerPassword = 'R5fH3qcY65nUdR3'
 grails.plugin.springsecurity.ldap.context.server = 'ldap://ldap.ulg.ac.be:389'
 grails.plugin.springsecurity.ldap.authorities.groupSearchBase = 'uid=x000126,ou=specialusers,dc=ulg,dc=ac,dc=be'
 grails.plugin.springsecurity.ldap.mapper.userDetailsClass= 'inetOrgPerson'// 'org.springframework.security.ldap.userdetails.InetOrgPerson'
-grails.plugin.springsecurity.ldap.mapper.usePassword= false
+grails.plugin.springsecurity.ldap.mapper.usePassword= true
 grails.plugin.springsecurity.ldap.authorities.ignorePartialResultException = true
 grails.plugin.springsecurity.ldap.authorities.retrieveDatabaseRoles = true
 
@@ -386,6 +386,8 @@ cytomine.customUI.global = [
 
 cytomine.customUI.project = [
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],

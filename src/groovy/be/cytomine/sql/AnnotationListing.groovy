@@ -1,7 +1,7 @@
 package be.cytomine.sql
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -716,6 +716,10 @@ class ReviewedAnnotationListing extends AnnotationListing {
         return from + "\n" + where
     }
 
+    @Override
+    def getUsersForTermConst() {
+        return ""
+    }
 
     def buildExtraRequest() {
 

@@ -1,2 +1,3 @@
 *.class
 target/*
+scripts/yui-compressor-ant-task/*

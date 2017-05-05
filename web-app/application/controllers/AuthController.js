@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ var AuthController = Backbone.Router.extend({
     login: function () {
         this.loginDialog = new LoginDialogView({});
         this.loginDialog.render();
+        $('#login-confirm').on('hide.bs.modal', function(e) {
+            // override the hide. Users cannot close this modal window
+            e.preventDefault();
+        });
     },
     logout: function () {
         this.logoutDialog = new LogoutDialogView({});

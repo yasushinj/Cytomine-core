@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ var CustomUI = {
         //  {componentId: "project-images-tab", componentName: "Image tab"},
         {componentId: "project-annotations-tab", componentName: "Annotation tab"},
         {componentId: "project-images-tab", componentName: "Images tab"}, //TODO: if you need to add a new panel
+        {componentId: "project-imagegroups-tab", componentName: "ImageGroups tab"},
         {componentId: "project-properties-tab", componentName: "Properties tab"},
         {componentId: "project-jobs-tab", componentName: "Jobs tab"},
         {componentId: "project-usersconfiguration-tab", componentName: "Config Users tab"},

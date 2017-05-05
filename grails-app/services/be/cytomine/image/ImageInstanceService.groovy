@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -156,7 +156,7 @@ class ImageInstanceService extends ModelService {
 
         def children = []
         list(project).each { image->
-            children << [ id : image.id, key : image.id, title : image.baseImage.originalFilename, isFolder : false, children : []]
+            children << [ id : image.id, key : image.id, title : image.instanceFilename, isFolder : false, children : []]
         }
         def tree = [:]
         tree.isFolder = true

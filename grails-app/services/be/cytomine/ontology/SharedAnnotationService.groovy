@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -22,9 +22,11 @@ import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
 import be.cytomine.security.ForgotPasswordToken
 import be.cytomine.security.SecRole
+import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
 import grails.converters.JSON
 
 import javax.imageio.ImageIO
@@ -35,15 +37,27 @@ import static org.springframework.security.acls.domain.BasePermission.*
 class SharedAnnotationService extends ModelService {
 
     static transactional = true
-    def abstractImageService
     def imageProcessingService
     def securityACLService
     def springSecurityService
     def secRoleService
     def secUserSecRoleService
-    def secUserService
-    def notificationService
 
+
+    // Avoid loading loop because secUserService -> userAnnotationService -> shareAnnotationService
+    //def secUserService
+    private getSecUserService(){
+        grailsApplication.mainContext.secUserService
+    }
+    // notificationService -> secUserService
+    //def notificationService
+    private getNotificationService(){
+        grailsApplication.mainContext.notificationService
+    }
+    // abstractImageService -> imageInstanceService -> userAnnotationService
+    private getAbstractImageService(){
+        grailsApplication.mainContext.abstractImageService
+    }
 
     def currentDomain() {
         return SharedAnnotation
@@ -181,6 +195,12 @@ class SharedAnnotationService extends ModelService {
         return sharedAnnotations.unique()
     }
 
+    def delete(SharedAnnotation domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+        SecUser currentUser = cytomineService.getCurrentUser()
+        securityACLService.checkIsSameUserOrAdminContainer(domain,domain.sender, currentUser)
+        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+        return executeCommand(c,domain,null)
+    }
 
     def getStringParamsI18n(def domain) {
         return [domain.sender.id, domain.annotationIdent, domain.annotationClassName]

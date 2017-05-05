@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ class AttachedFileUrlMappings {
 
 
         // FOR JS
-        "/api/attachedfileCKEditor.$format"(controller: "restAttachedFile") {
-            action = [POST:"uploadFromCKEditor"]
+        "/api/attachedfileRTEditor.$format"(controller: "restAttachedFile") {
+            action = [POST:"uploadFromRTEditor"]
         }
     }
 }

@@ -1,7 +1,9 @@
 package be.cytomine.image.server
 
+import be.cytomine.CytomineDomain
+
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -40,5 +42,13 @@ class ImageServerStorage {
         returnArray['imageServer'] = is?.imageServer
         returnArray['storage'] = is?.storage
         returnArray
+    }
+
+    /**
+     * Get the container domain for this domain (usefull for security)
+     * @return Container of this domain
+     */
+    public CytomineDomain container() {
+        return storage.container();
     }
 }

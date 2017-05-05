@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,35 @@ var AdminConfigView = Backbone.View.extend({
 
         $(self.el).find("#adminWelcomeMessageEditor").html(self.allConfigs["WELCOME"]);
 
-        CKEDITOR.replace("adminWelcomeMessageEditor");
+        $("#adminWelcomeMessageEditor").trumbowyg({
+            btnsGrps: {
+                semantic2: ['strong', 'em', 'underline', 'del'] // Custom nammed group
+            },
+            btnsDef: {
+                // Customizables dropdowns
+                align: {
+                    dropdown: ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                    ico: 'justifyLeft'
+                }
+            },
+            btns: [
+                ['formatting'],
+                'btnGrp-semantic2',
+                ['link'],
+                ['align'],
+                'btnGrp-lists',
+                ['insertImage'],
+                ['noembed'],
+                ['foreColor', 'backColor'],
+                ['specialChars'],
+                ['horizontalRule'],
+                ['removeformat'],
+                ['viewHTML']
+            ]
+        });
 
         $(self.el).find("#saveWelcomeMessageButton").on("click", function(){
-            var text = CKEDITOR.instances["adminWelcomeMessageEditor"].getData();
+            var text = $("#adminWelcomeMessageEditor").trumbowyg('html');
 
             var data = {key: "WELCOME", value: text};
 
@@ -71,7 +96,7 @@ var AdminConfigView = Backbone.View.extend({
                     contentType:"application/json; charset=utf-8",
                     success : function(){
                         self.allConfigs["WELCOME"] = "";
-                        CKEDITOR.instances["adminWelcomeMessageEditor"].setData("");
+                        $("#adminWelcomeMessageEditor").trumbowyg('html','');
                         window.app.view.message("Success", "Welcome message has been cleared", "success");
                     }, error: function (response) {
                         var json = $.parseJSON(response.responseText);

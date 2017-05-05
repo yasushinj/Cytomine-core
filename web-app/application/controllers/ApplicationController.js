@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016. Authors: see NOTICE file.
+ * Copyright (c) 2009-2017. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,21 @@ var ApplicationController = Backbone.Router.extend({
 
     startup: function () {
         var self = this;
+
+        var pingURL = 'server/ping';
+        var oldStatus = self.status;
+        self.status = new Status(pingURL, self.serverDownCallback,
+            function (data) {
+                if (!data.get('authenticated')) {
+                    console.log("Deconnexion");
+                    self.status.stop();
+                    window.location = "logout";
+                }
+
+            }, 20000);
+        for (var key in oldStatus) {
+            self.status[key] = oldStatus[key];
+        }
 
         self.dataTablesBootstrap();
 
@@ -146,7 +161,8 @@ var ApplicationController = Backbone.Router.extend({
         self.controllers.auth = new AuthController();
 
         require(["text!application/templates/ServerDownDialog.tpl.html"], function (serverDownTpl) {
-            var serverDown = function (status) {
+
+            self.serverDownCallback = function (status) {
                 window.app.view.clearIntervals();
                 $("#content").fadeOut('slow').empty();
                 $(".navbar").remove();
@@ -157,13 +173,13 @@ var ApplicationController = Backbone.Router.extend({
                         dialogID: "#server-down"
                     }
                 }).render();
-            }
-
+            };
             var successcallback = function (data) {
                 console.log("Launch app!");
                 console.log(data);
                 self.status.version = data.get('version');
                 self.status.serverURL = data.get('serverURL');
+                self.status.serverID = data.get('serverID');
                 if (data.get('authenticated')) {
                     new UserModel({id: "current"}).fetch({
                         success: function (model, response) {
@@ -180,16 +196,8 @@ var ApplicationController = Backbone.Router.extend({
                 } else {
                     self.controllers.auth.login();
                 }
-            }
+            };
 
-            var pingURL = 'server/ping';
-//            $.ajax({
-//                url: pingURL,
-//                type: 'GET',
-//                contentType:'application/json',
-//                data: "{test:hello}",
-//                success : successcallback
-//            });
 
             var project = window.app.status.currentProject
             if (project == undefined) {
@@ -207,9 +215,6 @@ var ApplicationController = Backbone.Router.extend({
             );
 
 
-            self.status = new Status(pingURL, serverDown,
-                function () { //TO DO: HANDLE WHEN USER IS DISCONNECTED BY SERVER
-                }, 20000);
 
         });
 

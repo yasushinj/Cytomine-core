@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 import be.cytomine.image.ImageProcessingService
 import be.cytomine.integration.NotifyAuroraUploadJob
+import be.cytomine.processing.ImageRetrievalService
 import be.cytomine.security.SecUser
 import be.cytomine.test.Infos
 import be.cytomine.utils.Version
@@ -137,7 +138,7 @@ class BootStrap {
             bootstrapDataService.initData()
             noSQLCollectionService.cleanActivityDB()
             def usersSamples = [
-                    [username : Infos.ANOTHERLOGIN, firstname : 'Just an', lastname : 'Admin', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]]
+                    [username : Infos.ANOTHERLOGIN, firstname : 'Just another', lastname : 'User', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]]
             ]
             bootstrapUtilsService.createUsers(usersSamples)
 
@@ -146,6 +147,12 @@ class BootStrap {
                 String url -> println "\n\n mocked getImageFromURL \n\n";
                     return javax.imageio.ImageIO.read(new File("test/functional/be/cytomine/utils/images/thumb256.png"))
             }
+            //mock services which use Retrieval
+            ImageRetrievalService.metaClass.doRetrievalIndex = {
+                String url, String username, String password, def image,String id, String storage, Map<String,String> properties -> println "\n\n mocked doRetrievalIndex \n\n";
+                    return [code:200,response:"test"]
+            }
+
 
         }  else if (SecUser.count() == 0) {
             //if database is empty, put minimal data

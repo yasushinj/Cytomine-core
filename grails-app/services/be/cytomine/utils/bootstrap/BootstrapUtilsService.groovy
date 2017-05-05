@@ -1,7 +1,7 @@
 package be.cytomine.utils.bootstrap
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -256,26 +256,30 @@ class BootstrapUtilsService {
             }
 
         }
-        grailsApplication.config.grails.retrievalServerURL.eachWithIndex { it, index ->
 
-            if(!RetrievalServer.findByUrl(it)) {
-                RetrievalServer server =
-                        new RetrievalServer(
-                                description:"retrieval $index",
-                                url:"${it}",
-                                path:'/retrieval-web/api/resource.json',
-                                username: grailsApplication.config.grails.retrievalUsername,
-                                password: grailsApplication.config.grails.retrievalPassword
-                        )
-                if (server.validate()) {
-                    server.save()
-                } else {
-                    server.errors?.each {
-                        log.info it
+        if (Environment.getCurrent() != Environment.TEST) {
+
+            grailsApplication.config.grails.retrievalServerURL.eachWithIndex { it, index ->
+
+                if (!RetrievalServer.findByUrl(it)) {
+                    RetrievalServer server =
+                            new RetrievalServer(
+                                    description: "retrieval $index",
+                                    url: "${it}",
+                                    path: '/retrieval-web/api/resource.json',
+                                    username: grailsApplication.config.grails.retrievalUsername,
+                                    password: grailsApplication.config.grails.retrievalPassword
+                            )
+                    if (server.validate()) {
+                        server.save()
+                    } else {
+                        server.errors?.each {
+                            log.info it
+                        }
                     }
                 }
-            }
 
+            }
         }
     }
 

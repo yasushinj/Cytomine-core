@@ -1,7 +1,7 @@
 package cytomine.web
 
 /*
-* Copyright (c) 2009-2016. Authors: see NOTICE file.
+* Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import javax.servlet.FilterChain
 import javax.servlet.FilterConfig
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
+import javax.servlet.http.HttpServletResponse
 
 class APIAuthentificationFilters implements javax.servlet.Filter {
 
@@ -52,13 +53,13 @@ class APIAuthentificationFilters implements javax.servlet.Filter {
      * http://code.google.com/apis/storage/docs/reference/v1/developer-guidev1.html#authentication
      */
     private boolean tryAPIAuthentification(def request, def response) {
-        String authorization = request.getHeader("authorization")
         if (request.getHeader("date") == null) {
             return false
         }
         if (request.getHeader("host") == null) {
             return false
         }
+        String authorization = request.getHeader("authorization")
         if (authorization == null) {
             return false
         }
@@ -78,8 +79,9 @@ class APIAuthentificationFilters implements javax.servlet.Filter {
 
             String accessKey = authorization.substring(authorization.indexOf(" ") + 1, authorization.indexOf(":"))
             String authorizationSign = authorization.substring(authorization.indexOf(":") + 1)
-            SecUser user = SecUser.findByPublicKey(accessKey)
+            SecUser user = SecUser.findByPublicKeyAndEnabled(accessKey,true)
             if (!user) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 return false
             }
 
