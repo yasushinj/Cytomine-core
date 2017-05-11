@@ -256,8 +256,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
             area = Math.round(this.location.getArea())
             perimeter = Math.round(this.location.getLength())
         } else {
-            area = Math.round(this.location.getArea() * image.resolution * image.resolution)
-            perimeter = Math.round(this.location.getLength() * image.resolution / 1000)
+            area = this.location.getArea() * image.resolution * image.resolution
+            perimeter = this.location.getLength() * image.resolution / 1000
         }
     }
 

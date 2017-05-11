@@ -120,6 +120,9 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         }
         annotation.set({"smallCropURL": annotation.get("smallCropURL")+"&time="+Date.now()});
 
+        annotation.set('area', Math.round(annotation.get('area')));
+        annotation.set('perimeter', Math.round(annotation.get('perimeter')));
+
         var content = _.template(tpl, annotation.toJSON());
         var elem = $("#" + self.browseImageView.divId).find("#annotationDetailPanel" + self.browseImageView.model.id);
         elem.html(content);
