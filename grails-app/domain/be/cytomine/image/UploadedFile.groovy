@@ -21,7 +21,7 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.UrlApi
 import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.security.SecUser
-import be.cytomine.security.User
+import be.cytomine.security.UserJob
 import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
@@ -141,7 +141,13 @@ class UploadedFile extends CytomineDomain implements Serializable{
         domain.created = JSONUtils.getJSONAttrDate(json,'created')
         domain.updated = JSONUtils.getJSONAttrDate(json,'updated')
 
-        domain.user = JSONUtils.getJSONAttrDomain(json, "user", new User(), true)
+        def user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
+        if(user instanceof UserJob){
+            domain.user = ((UserJob) user).user
+        } else {
+            domain.user = user
+        }
+
         domain.projects = JSONUtils.getJSONAttrListLong(json,'projects')
         domain.storages = JSONUtils.getJSONAttrListLong(json,'storages')
 
