@@ -112,8 +112,8 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey="cb2955c6-631b-4039-8ebf-889aefe8ea0c"
-        grails.ImageServerPublicKey="cc161593-37fe-4487-baec-f6d46e62959f"
+        grails.ImageServerPrivateKey=""
+        grails.ImageServerPublicKey=""
         grails.adminPrivateKey="XXX"
         grails.adminPublicKey="XXX"
         grails.superAdminPrivateKey="X"
@@ -387,7 +387,7 @@ cytomine.customUI.global = [
 cytomine.customUI.project = [
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
-        "project-imagegroups-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
