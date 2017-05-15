@@ -172,7 +172,6 @@ class SecUser extends CytomineDomain implements Serializable {
     protected void encodePassword() {
         log.info "encodePassword for user="+username
         if(password.size()<4) throw new WrongArgumentException("Your password must have at least 4 characters!")
-        if (password == "") password = ".+7dWl_=]@8%,<&"
         password = springSecurityService.encodePassword(password)
     }
 

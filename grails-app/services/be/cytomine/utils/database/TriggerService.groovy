@@ -77,12 +77,6 @@ class TriggerService {
             statement.execute(getAnnotationReviewBeforeDelete())
             statement.execute(getAnnotationReviewAfterDelete())
 
-            statement.execute(getAnnotationReviewBeforeInsert())
-            statement.execute(getAnnotationReviewAfterInsert())
-            statement.execute(getAnnotationReviewBeforeDelete())
-            statement.execute(getAnnotationReviewAfterDelete())
-
-
         } catch (org.postgresql.util.PSQLException e) {
             log.debug e
         }
