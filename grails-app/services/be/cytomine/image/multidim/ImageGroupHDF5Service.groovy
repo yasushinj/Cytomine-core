@@ -29,6 +29,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.transaction.Transactional
+import grails.converters.JSON
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
@@ -79,11 +80,6 @@ class ImageGroupHDF5Service  extends  ModelService{
         json.user = currentUser.id
         def email =  User.read(currentUser.id)
         def resultDB
-        synchronized (this.getClass()) {
-            Command c = new AddCommand(user: currentUser)
-            resultDB = executeCommand(c,null,json)
-        }
-
         def group = JSONUtils.getJSONAttrInteger(json,'group',null)
 
         //Convert the list in h5
@@ -107,7 +103,11 @@ class ImageGroupHDF5Service  extends  ModelService{
         }
         def filename = JSONUtils.getJSONAttrStr(json, 'filenames')
 
-     if(imagesFilenames.size() > 0) {
+        if(imagesFilenames.size() > 0) {
+            synchronized (this.getClass()) { //We add the group in db only if we have image to convert
+                Command c = new AddCommand(user: currentUser)
+                resultDB = executeCommand(c,null,json)
+            }
             String imageServerURL = grailsApplication.config.grails.imageServerURL[0]
             String url = "/multidim/convert.json"
             log.info "$imageServerURL" + url
@@ -116,11 +116,14 @@ class ImageGroupHDF5Service  extends  ModelService{
                 uri.path = url
                 requestContentType = URLENC
                 body = [user: currentUser.id, files: imagesFilenames, dest: filename]
-
-                response.success = { resp ->
-                    log.info  "Imagegroup convert launch success ${resp.statusLine}"
-                }
+                response.success = { resp ->  log.info  "Imagegroup convert launch success ${resp.statusLine}" }
             }
+        }
+        else {
+            def resp = new HashMap();
+            resp.put("code", 400)
+            resp.put("error", "You need to have at least one Image Sequence in your Image Group to convert it")
+            resultDB = render resp AS JSON
         }
 
 

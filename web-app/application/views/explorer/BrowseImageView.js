@@ -40,6 +40,7 @@ BrowseImageView = Backbone.View.extend({
         this.broadcastPositionInterval = null;
         this.watchOnlineUsersInterval = null;
         this.annotationsPanel = null;
+        this.spectraPanel = null;
         this.ontologyPanel = null;
         this.reviewPanel = null;
         this.annotationProperties = null;
@@ -113,11 +114,13 @@ BrowseImageView = Backbone.View.extend({
                     self.userJobForImage = collection;
                     self.initMap();
                     self.initAnnotationsTabs();
+                    self.initSpectraTabs();
                 }
             });
         } else {
             this.initMap();
             this.initAnnotationsTabs();
+            this.initSpectraTabs();
         }
         return this;
     },
@@ -231,6 +234,10 @@ BrowseImageView = Backbone.View.extend({
 
     refreshAnnotationTabs: function (idTerm) {
         this.annotationsPanel.refreshAnnotationTabs(idTerm);
+    },
+
+    refreshSpectraTabs: function (idTerm){
+        this.spectraPanel.refreshSpectraTabs(idTerm);
     },
 
     setAllLayersVisibility: function (visibility) {
@@ -1592,6 +1599,17 @@ BrowseImageView = Backbone.View.extend({
         }).render();
 
     },
+    initSpectraTabs: function () {
+        console.log("InitST");
+        this.spectraPanel = new SpectraPanel({
+            el: this.el,
+            model: this.model,
+            browseImageView: this,
+            review : this.review
+        }).render();
+
+    },
+
     clickSelect: function () {
         var self = this;
         $("#" + self.divId).find('#toolbar' + self.model.get('id')).find('a#select' + self.model.get('id')).click();

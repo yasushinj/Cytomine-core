@@ -109,15 +109,26 @@ class RestImageInstanceController extends RestController {
     def listByProject() {
         Project project = projectService.read(params.long('id'))
         if(params.excludeimagegroup){
-            ImageGroup group = imageGroupService.read(params.long('excludeimagegroup'))
-            if(project && group){
-                String sortColumn = params.sortColumn ? params.sortColumn : "created"
-                String sortDirection = params.sortDirection ? params.sortDirection : "desc"
-                String search = params.sSearch
-                responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
+            String sortColumn = params.sortColumn ? params.sortColumn : "created"
+            String sortDirection = params.sortDirection ? params.sortDirection : "desc"
+            String search = params.sSearch
+            if(params.excludeimagegroup == "any"){
+                if(project){
+                    responseSuccess(imageInstanceService.listWithoutAnyGroup(project, sortColumn, sortDirection, search))
+                }
+                else{
+                    responseNotFound("ImageInstance", "Project", params.id)
+                }
             }
-            else
-                responseNotFound("ImageInstance", "Project", params.id)
+            else{
+                ImageGroup group = imageGroupService.read(params.long('excludeimagegroup'))
+                if(project && group){
+                    responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
+                }
+                else{
+                    responseNotFound("ImageInstance", "Project", params.id)
+                }
+            }
         }
         else if (params.datatables) {
             def where = "project_id = ${project.id}"

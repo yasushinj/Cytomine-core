@@ -37,7 +37,7 @@ var ImageSequenceCollection = PaginatedCollection.extend({
 
     url: function() {
         var format = '.json';
-        return "api/imagegroup/" + this.group + "/imagesequence" + format; //cette url renvoie la list de tous les utilisateurs
+        return "api/imagegroup/" + this.group + "/imagesequence" + format;
     },
 
     initialize: function (options) {

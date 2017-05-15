@@ -70,7 +70,7 @@ var AddImageSequenceDialog = Backbone.View.extend({
         self.imagesdDataTables = table.dataTable({
             "bProcessing": true,
             "bServerSide": true,
-            "sAjaxSource": new ImageInstanceCollection({project: self.model.get("project"), imagegroup: self.model.id}).url(),
+            "sAjaxSource": new ImageInstanceCollection({project: self.model.get("project"), imagegroup: "any"}).url(),
             "fnServerParams": function ( aoData ) {
                 aoData.push( { "name": "datatables", "value": "true" } );
             },
