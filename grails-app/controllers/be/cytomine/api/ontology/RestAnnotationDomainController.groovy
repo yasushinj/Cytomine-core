@@ -640,6 +640,10 @@ class RestAnnotationDomainController extends RestController {
                 forward(controller: "restAlgoAnnotation", action: "delete")
             }else  if(annotation instanceof RoiAnnotation) {
                 forward(controller: "restRoiAnnotation", action: "delete")
+            }else  if(annotation instanceof ReviewedAnnotation) {
+                forward(controller: "restReviewedAnnotation", action: "delete")
+            } else {
+                response([success: false, errors: "Cannot delete "+annotation.getClass()], 400)
             }
         } catch (CytomineException e) {
             log.error(e)
