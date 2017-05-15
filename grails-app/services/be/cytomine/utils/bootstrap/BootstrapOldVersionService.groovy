@@ -59,7 +59,7 @@ class BootstrapOldVersionService {
                 Long methodDate = Long.parseLong(method.replace("init",""))
                 if(methodDate>version.number) {
                     log.info "Run code for version > $methodDate"
-                  //  this."init$methodDate"()
+                    this."init$methodDate"()
                 } else {
                     log.info "Skip code for $methodDate"
                 }
