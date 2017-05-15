@@ -307,6 +307,7 @@ body {
 <script type="text/javascript" src="application/views/explorer/LeafletView.js" ></script>
 <script type="text/javascript" src="application/views/explorer/ExplorerTabs.js" ></script>
 <script type="text/javascript" src="application/views/explorer/AnnotationsPanel.js" ></script>
+<script type="text/javascript" src="application/views/explorer/SpectraPanel.js" ></script>
 <script type="text/javascript" src="application/views/explorer/LayerSwitcherPanel.js" ></script>
 <script type="text/javascript" src="application/views/explorer/ImageFiltersPanel.js" ></script>
 <script type="text/javascript" src="application/views/explorer/OverviewMapPanel.js" ></script>
