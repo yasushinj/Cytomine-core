@@ -159,31 +159,9 @@ class LoginController extends RestController {
         if (springSecurityService.isAjax(request)) {
             response.status = 403
             render([success: false, message: msg] as JSON)
+        } else {
+            redirect (uri : "/")
         }
-
-        log.info "CAS="+grailsApplication.config.grails?.plugins?.springsecurity?.cas?.active
-        if(grailsApplication.config.grails?.plugins?.springsecurity?.cas?.active) {
-            //if cas, first page loaded after subscription redirect here, a refresh will redirect on cytomine web page
-            def string = """
-            <html>
-            <head></head>
-            <body>
-                Redirection...
-                <script>
-
-                      window.setTimeout(function(){
-                        window.location = '/';
-                      }, 1500);
-
-                </script>
-            </body>
-            </html>
-            """
-            response.status = 200
-            render string
-
-        }
-
     }
 
     /**

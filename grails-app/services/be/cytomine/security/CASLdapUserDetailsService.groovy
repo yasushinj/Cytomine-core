@@ -110,10 +110,11 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
 
         if(user && !user.enabled) throw new DisabledException("Disabled user");
 
+        boolean casDisabled = grailsApplication.config.grails.plugin.springsecurity.cas.active.toString()=="false"
         boolean ldapDisabled = grailsApplication.config.grails.plugin.springsecurity.ldap.active.toString()=="false"
 
 
-        if(user==null && ldapDisabled)  {
+        if(user==null && (casDisabled || ldapDisabled))  {
             log.info "getUserByUsername return null"
             throw new UsernameNotFoundException("User not found")
         }
@@ -170,7 +171,9 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
                         log.warn it
                     }
                 }
-                storageService.initUserStorage(user)
+                SpringSecurityUtils.doWithAuth("admin", {
+                    storageService.initUserStorage(user)
+                });
             }
         }
 

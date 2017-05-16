@@ -15,8 +15,7 @@
 */
 
 
-
-import be.cytomine.ldap.LdapUlgMemberPersonContextMapper
+import be.cytomine.ldap.CustomUserContextMapper
 import be.cytomine.security.CASLdapUserDetailsService
 import be.cytomine.web.CytomineMultipartHttpServletRequest
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -37,7 +36,6 @@ beans = {
 
 
     }
-    userDetailsService(be.cytomine.security.CASLdapUserDetailsService)
     springConfig.addAlias "springSecurityService", "springSecurityCoreSpringSecurityService"
     
     //CAS + LDAP STUFF
@@ -69,7 +67,7 @@ beans = {
         ignorePartialResultException = config.ldap.authorities.ignorePartialResultException
     }
 
-    ldapUserDetailsMapper(LdapUlgMemberPersonContextMapper)
+    ldapUserDetailsMapper(CustomUserContextMapper)
 
     ldapUserDetailsService(org.springframework.security.ldap.userdetails.LdapUserDetailsService,
             ldapUserSearch,

@@ -57,8 +57,8 @@ grails.converters.json.default.deep = false
  */
 grails.doc.title="Cytomine"
 grails.doc.subtitle="Documentation"
-grails.doc.authors="Hoyoux Renaud, Marée Raphaël, Loïc Rollus, Benjamin Stévens"
-grails.doc.license="Commercial"
+grails.doc.authors="Hoyoux Renaud, Marée Raphaël, Rollus Loïc, Stévens Benjamin"
+grails.doc.license="Apache2"
 grails.doc.copyright="University of liège"
 grails.doc.footer="www.cytomine.be"
 
@@ -275,7 +275,7 @@ if(cas) {
     grails.plugin.springsecurity.cas.useSingleSignout = true
     grails.plugin.springsecurity.cas.active = true
     grails.plugin.springsecurity.ldap.active = true
-    grails.plugin.springsecurity.logout.afterLogoutUrl ='https://www.intranet.ulg.ac.be/logout?url=http://shareview.ecampus.ulg.ac.be'
+    grails.plugin.springsecurity.logout.afterLogoutUrl =''
 
 } else {
     println("disable CAS")
@@ -285,37 +285,25 @@ if(cas) {
     grails.plugin.springsecurity.interceptUrlMap.remove('/*')
 }
 grails.plugin.springsecurity.cas.loginUri = '/login'
-grails.plugin.springsecurity.cas.serverUrlPrefix = 'https://www.intranet.ulg.ac.be/cas'
+grails.plugin.springsecurity.cas.serverUrlPrefix = ''
 
 //allow an admin to connect as a other user
 grails.plugin.springsecurity.useSwitchUserFilter = true
 
-environments {
-    development {
-        grails.plugin.springsecurity.cas.serviceUrl = 'http://shareview.ecampus.ulg.ac.be/j_spring_cas_security_check'
-    }
-    test {
-        grails.plugin.springsecurity.cas.serviceUrl = 'http://localhost:8080/j_spring_cas_security_check'
-    }
-    testrun {
-        grails.plugin.springsecurity.cas.serviceUrl = 'http://localhost:8090/j_spring_cas_security_check'
-    }
-    production {
-        grails.plugin.springsecurity.cas.serviceUrl = 'http://shareview.ecampus.ulg.ac.be/j_spring_cas_security_check'
-    }
-}
+grails.plugin.springsecurity.cas.serviceUrl = 'http://localhost:8080/j_spring_cas_security_check'
 
 // LDAP Config
 grails.plugin.springsecurity.auth.loginFormUrl = '/'
-grails.plugin.springsecurity.ldap.search.base = 'dc=ulg,dc=ac,dc=be'
-grails.plugin.springsecurity.ldap.context.managerDn = 'uid=x000126,ou=specialusers,dc=ulg,dc=ac,dc=be'
-grails.plugin.springsecurity.ldap.context.managerPassword = 'R5fH3qcY65nUdR3'
-grails.plugin.springsecurity.ldap.context.server = 'ldap://ldap.ulg.ac.be:389'
-grails.plugin.springsecurity.ldap.authorities.groupSearchBase = 'uid=x000126,ou=specialusers,dc=ulg,dc=ac,dc=be'
+grails.plugin.springsecurity.ldap.search.base = ''
+grails.plugin.springsecurity.ldap.context.managerDn = ''
+grails.plugin.springsecurity.ldap.context.managerPassword = ''
+grails.plugin.springsecurity.ldap.context.server = ''
+grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
 grails.plugin.springsecurity.ldap.mapper.userDetailsClass= 'inetOrgPerson'// 'org.springframework.security.ldap.userdetails.InetOrgPerson'
 grails.plugin.springsecurity.ldap.mapper.usePassword= true
 grails.plugin.springsecurity.ldap.authorities.ignorePartialResultException = true
 grails.plugin.springsecurity.ldap.authorities.retrieveDatabaseRoles = true
+grails.plugin.springsecurity.ldap.context.anonymousReadOnly = true
 
 
 // Added by the Spring Security Core plugin:
