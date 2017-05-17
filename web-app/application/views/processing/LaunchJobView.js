@@ -705,7 +705,7 @@ var InputListDomainView = Backbone.View.extend({
             displayField : self.printAttribut,
             width : 750,
             renderer: function(v){
-                var item
+                var item;
                 //image/annotation model
                 if (v.thumb) {
                     item =  _.template('<div><div style="float:left; width : 128px;"><img src="<%= thumb %>" style="max-width : 64px; max-height : 64px;" /></div><div style="padding-left: 20px;"><%= name %></div></div><div style="clear:both;"></div>', { thumb : v.thumb, name : v[self.printAttribut]});

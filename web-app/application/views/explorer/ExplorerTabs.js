@@ -113,9 +113,11 @@ var ExplorerTabs = Backbone.View.extend({
             }
 
             self.showTab(idImage, "image");
-            view.map.updateSize();
-            view.map.zoomToMaxExtent();
-        }
+            if(view.map !== null){
+                view.map.updateSize();
+                view.map.zoomToMaxExtent();
+            }
+        };
 
         var imageNew = window.app.popNewImage();
         if(imageNew && imageNew.image && imageNew.image.id==idImage) {

@@ -659,7 +659,7 @@ BrowseImageView = Backbone.View.extend({
                         var imgId = self.model.id;
                         $(self.el).find("#spectra").html("<img src='images/loading.gif'>");
                         $.get("/api/imageinstance/"+imgId+"/imagesequence/possibilities.json", function(data) {
-                            if(data.imageGroup != null && data.imageGroup != undefined) {
+                            if(!window.app.isUndefined(data.imageGroup)) {
                                 var spec = new ImageGroupSpectraModel({
                                     group : data.imageGroup,
                                     x: lon,
