@@ -189,7 +189,8 @@ class RestImageGroupController extends RestController {
         if (image) {
             ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
             if(imageh5){
-                ImageSequence is = imageSequenceService.get(image,0,0,0,0)
+                ImageSequence is = ImageSequence.findByImageGroup(image)
+                //ImageSequence is = imageSequenceService.get(image,(Integer) imageGroupService.characteristics(image).channel[0],0,0,0)
                 def y = is.image.baseImage.height - Integer.parseInt(params.y)
 
                 String fn = imageh5.filenames
