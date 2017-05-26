@@ -53,7 +53,9 @@ var ImageGroupModel = Backbone.Model.extend({
                 self.slice=data.slice;
                 self.time=data.time;
 
-                var ini = data.channel[0];
+                var ini = ""
+                if(data.channel.length)
+                    ini = data.channel[0];
                 self.channelPretty = "[" + ini;
                 var count = 0;
                 for(var x = 1; x < data.channel.length; ++x){
@@ -76,6 +78,7 @@ var ImageGroupModel = Backbone.Model.extend({
                 else
                     self.channelPretty += "]";
             }
+
             if(callback != undefined)
                 callback();
         });
