@@ -124,7 +124,7 @@ var ImageGroupTabsView = Backbone.View.extend({
                         new AddImageSequenceDialog({el: "#dialogs", model: imageGroup, backView: self}).render();
                     });
                     var cb = function (){
-                        $(self.el).find("#channel-"+aData.id).append(imageGroup.channel.toString());
+                        $(self.el).find("#channel-"+aData.id).append(imageGroup.channelPretty.toString());
                         $(self.el).find("#zstack-"+aData.id).append(imageGroup.zstack.toString());
                         $(self.el).find("#slice-"+aData.id).append(imageGroup.slice.toString());
                         $(self.el).find("#time-"+aData.id).append(imageGroup.time.toString());
