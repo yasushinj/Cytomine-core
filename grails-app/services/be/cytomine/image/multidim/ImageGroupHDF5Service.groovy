@@ -17,6 +17,7 @@
 package be.cytomine.image.multidim
 
 import be.cytomine.CytomineDomain
+import be.cytomine.Exception.ConstraintException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
@@ -120,10 +121,7 @@ class ImageGroupHDF5Service  extends  ModelService{
             }
         }
         else {
-            def resp = new HashMap();
-            resp.put("code", 400)
-            resp.put("error", "You need to have at least one Image Sequence in your Image Group to convert it")
-            resultDB = render resp AS JSON
+            throw new ConstraintException("You need to have at least one Image Sequence in your Image Group to convert it")
         }
 
 

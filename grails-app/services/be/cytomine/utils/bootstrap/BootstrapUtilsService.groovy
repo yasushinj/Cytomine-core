@@ -111,24 +111,6 @@ class BootstrapUtilsService {
         return usersCreated
     }
 
-    public def createGroups(groupsSamples) {
-        groupsSamples.each { item ->
-            if (Group.findByName(item.name)) return
-            def group = new Group(name: item.name)
-            if (group.validate()) {
-                log.info("Creating group ${group.name}...")
-                group.save(flush: true)
-                log.info("Creating group ${group.name}... OK")
-            }
-            else {
-                log.info("\n\n\n Errors in group boostrap for ${item.name}!\n\n\n")
-                group.errors.each {
-                    err -> log.info err
-                }
-            }
-        }
-    }
-
     public def createRelation() {
         def relationSamples = [
                 [name: RelationTerm.names.PARENT],
@@ -153,28 +135,6 @@ class BootstrapUtilsService {
 
             }
         }
-    }
-
-    public def createImageServers(def imageServersSamples) {
-        imageServersSamples.each {
-            ImageServer imageServer = new ImageServer(
-                    className: it.className,
-                    name: it.name,
-                    service : it.service,
-                    url : it.url,
-                    available : it.available
-            )
-
-            if (imageServer.validate()) {
-                imageServer.save()
-            } else {
-                imageServer.errors?.each {
-                    log.info it
-                }
-            }
-
-        }
-
     }
 
     public def createMimes(def mimeSamples) {

@@ -203,9 +203,8 @@ class AlgoAnnotationService extends ModelService {
         }
 
     }
-
-    def deleteDependentSharedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
-        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
+    def deleteDependentSharedAnnotation(AlgoAnnotation aa, Transaction transaction, Task task = null) {
+        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(aa.class.name, aa.id).each {
             sharedAnnotationService.delete(it,transaction,null,false)
         }
 
