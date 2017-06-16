@@ -30,9 +30,6 @@ var ImageTabsView = Backbone.View.extend({
     },
     afterDeleteImageEvent: function () {
         var table = $(this.el).find("#imageProjectTable" + this.idProject);
-        if(table && table.dataTable()) {
-            table.dataTable().fnDestroy();
-        }
         this.update()
     },
     render : function() {
@@ -68,18 +65,18 @@ var ImageTabsView = Backbone.View.extend({
         var table = $(this.el).find("#imageProjectTable" + self.idProject);
         var body = $(this.el).find("#imageProjectArray" + self.idProject);
         var columns = [
-            { sClass: 'center', "mData": "id", "bSearchable": false},
-            { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
+            { className: "center", data: "id", targets: [0]},
+            { data: "macroURL", defaultContent: "", orderable: false, render: function ( data, type, row ) {
                 return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-0'><img src='<%= thumb %>' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
                     {
                         project : self.idProject,
-                        id : o.aData.id,
-                        thumb : o.aData["macroURL"]+"?maxWidth=128"
+                        id : row["id"],
+                        thumb : row["macroURL"]+"?maxWidth=128"
                     });
-            }},
-            { "mDataProp": "originalFilename", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {
+            }, targets: [1]},
+            { data: "originalFilename", searchable: true, defaultContent: "", render : function ( data, type, row ) {
                 var imageInstanceModel = new ImageInstanceModel({});
-                imageInstanceModel.set(o.aData);
+                imageInstanceModel.set(row);
                 var names = imageInstanceModel.getVisibleName(window.app.status.currentProjectModel.get('blindMode'),isAdmin);
                 if(isAdmin) {
                     if(window.app.status.currentProjectModel.get('blindMode')) {
@@ -89,46 +86,38 @@ var ImageTabsView = Backbone.View.extend({
                     }
                 }
                 return names;
-                return o.aData["originalFilename"];
-
-
-
-
-            }}
-            ,
-            { "mDataProp": "width", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return o.aData["width"];
-            }},
-            { "mDataProp": "height", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return o.aData["height"];
-            } },
-            { "mDataProp": "magnification", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                var magnification = o.aData["magnification"];
-                if (magnification) {
-                    try {
-                        return o.aData["magnification"] + " X";
-                    }catch(e) {return "";}
-                } else {
-                    return '<span class="label label-default">Undefined</span>'
+            }, targets: [2]},
+            { data: "width", defaultContent: "", targets: [3] },
+            { data: "height", defaultContent: "", targets: [4] },
+            { data: "magnification", defaultContent: "", render : function( data, type ) {
+                if(type === "display"){
+                    if (data) {
+                        return data + " X";
+                    } else {
+                        return '<span class="label label-default">Undefined</span>'
+                    }
+                } else if(type === "sort"){
+                    return window.app.isUndefined(data) ? 0 : data;
                 }
-
-            }},
-            { "mDataProp": "resolution", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                var resolution = o.aData["resolution"];
-                if (resolution) {
-                    try {
-                        return resolution.toFixed(3);
-                    }catch(e) {return "";}
-                } else {
-                    return '<span class="label label-default">Undefined</span>'
+            }, targets: [5]},
+            { data: "resolution", defaultContent: "", render : function( data, type ) {
+                if(type === "display"){
+                    if (data) {
+                        try {
+                            return data.toFixed(3);
+                        }catch(e) {return "";}
+                    } else {
+                        return '<span class="label label-default">Undefined</span>'
+                    }
+                } else if(type === "sort"){
+                    return window.app.isUndefined(data) ? 0 : data;
                 }
-
-            }},
-            { "mDataProp": "numberOfAnnotations", "bSearchable": false,"bSortable": true },
-            { "mDataProp": "numberOfJobAnnotations", "bSearchable": false,"bSortable": true },
-            { "mDataProp": "numberOfReviewedAnnotations", "bSearchable": false,"bSortable": true },
-            { "mDataProp": "mimeType", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                var mimeType = o.aData["mime"];
+            }, targets: [6]},
+            { data: "numberOfAnnotations", targets: [7] },
+            { data: "numberOfJobAnnotations", targets: [8] },
+            { data: "numberOfReviewedAnnotations", targets: [9] },
+            { data: "mime", defaultContent: "", orderable: false, render : function( data, type, row ) {
+                var mimeType = row["mime"];
                 if (mimeType == "openslide/ndpi" || mimeType == "openslide/vms") {
                     return '<img src="images/brands/hamamatsu.jpg" alt="hamamatsu photonics" style="max-width : 100px;max-height : 40px;" >';
                 } else if (mimeType == "openslide/mrxs") {
@@ -143,54 +132,53 @@ var ImageTabsView = Backbone.View.extend({
                     return '<img src="images/brands/philips.jpg" alt="philips" style="max-width : 100px;max-height : 40px;" >';
                 }
                 else return '<span class="label label-default">Undefined</span>';
-            } },
-            { "mDataProp": "created", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o, created) {
-                return window.app.convertLongToDate(created);
-            }} ,
-            { "mDataProp": "reviewStatus", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
-                if (o.aData.reviewStart && o.aData.reviewStop) {
+            }, targets: [10] },
+            { data: "created", defaultContent: "", render : function ( data, type ) {
+                if(type === "display"){
+                    return window.app.convertLongToDate(data);
+                }
+                return data;
+            }, targets: [11]} ,
+            { orderable: false, render : function ( data, type, row ) {
+                if (row["reviewStart"] && row["reviewStop"]) {
                     return '<span class="label label-success">Reviewed</span>';
-                } else if (o.aData.reviewStart) {
+                } else if (row["reviewStart"]) {
                     return '<span class="label label-warning">In review</span>';
                 } else {
                     return '<span class="label label-info">None</span>';
                 }
-            }},
-            { "mDataProp": "updated", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                self.images.push(o.aData);
-                o.aData["project"]  = self.idProject;
-                return _.template(actionMenuTpl, o.aData);
+            }, targets: [12]},
+            { orderable: false, render : function( data, type, row ) {
+                self.images.push(row);
+                row["project"]  = self.idProject;
+                return _.template(actionMenuTpl, row);
 
-            }}
+            }, targets: [13]},
+            { searchable: false, targets: "_all" }
         ];
-        self.imagesdDataTables = table.dataTable({
-            "bProcessing": true,
-            "bServerSide": true,
-            "sAjaxSource": new ImageInstanceCollection({project: this.idProject}).url(),
-            "fnServerParams": function ( aoData ) {
-                aoData.push( { "name": "datatables", "value": "true" } );
+        self.imagesdDataTables = table.DataTable({
+            destroy: true,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: new ImageInstanceCollection({project: this.idProject}).url(),
+                data: {
+                    "datatables": "true"
+                }
             },
-            "fnDrawCallback": function(oSettings, json) {
-
+            drawCallback: function() {
                 _.each(self.images, function(aData) {
                     var model = new ImageInstanceModel(aData);
                     var action = new ImageReviewAction({el:body,model:model, container : self});
                     action.configureAction();
-
                 });
 
                 $(".dropdown-menu").css("left", "-140px");
 
                 self.images = [];
             },
-            "aoColumns" : columns,
-            "aaSorting": [[ 0, "desc" ]]
-
-    });
-//        $('#projectImageListing' + self.idProject).hide();
-//        $('#projectImageTable' + self.idProject).show();
-
+            columnDefs : columns,
+            order: [[ 0, "desc" ]]
+        });
     }
-
-
 });

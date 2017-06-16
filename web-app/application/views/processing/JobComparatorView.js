@@ -264,22 +264,23 @@ var JobComparatorView = Backbone.View.extend({
         //print data from project image table
         var tbody = elemParent.find('#runParamsTable').find("tbody");
 
+        var data = []
         _.each(job.get('jobParameters'), function (param) {
-            tbody.append('<tr><td>' + param.name + '</td><td>' + self.getJobParamValue(param) + '</td><td>' + param.type + '</td></tr>');
+            data.push([param.name, self.getJobParamValue(param), param.type])
         });
-        elemParent.find('#runParamsTable').dataTable({
-            //"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
-            "sPaginationType": "bootstrap",
-            "oLanguage": {
-                "sLengthMenu": "_MENU_ records per page"
+        elemParent.find('#runParamsTable').DataTable({
+            //"sPaginationType": "bootstrap",
+            data: data,
+            language: {
+                lengthMenu: "_MENU_ records per page"
             },
-            "iDisplayLength": 10,
-            "bLengthChange": false,
-            bDestroy: true,
-            "aoColumnDefs": [
-                { "sWidth": "40%", "aTargets": [ 0 ] },
-                { "sWidth": "40%", "aTargets": [ 1 ] },
-                { "sWidth": "20%", "aTargets": [ 2 ] }
+            displayLength: 10,
+            lengthChange: false,
+            destroy: true,
+            columnDefs: [
+                { width: "40%", targets: [ 0 ] },
+                { width: "40%", targets: [ 1 ] },
+                { width: "20%", targets: [ 2 ] }
             ]
         });
     },

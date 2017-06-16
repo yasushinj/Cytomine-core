@@ -54,7 +54,6 @@ var AnnotationListView = Backbone.View.extend({
             //$("#tableImage").append("<tr><th>"+ name +"</th><th>" + area + "</th></tr>");
 
         });
-        // $('#tableImage').dataTable();
 
         var grid;
         var i = 0;

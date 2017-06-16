@@ -68,7 +68,5 @@ var ImagePropertiesView = Backbone.View.extend({
                 }
             });
         });
-
     }
-
 });

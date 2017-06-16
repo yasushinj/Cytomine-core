@@ -18,10 +18,10 @@ var UploadFormView = Backbone.View.extend({
 
     statusLabels: {
         uploadedLabel: '<span class="label label-default">UPLOADED</span>',
-        errorFormatLabel: '<span class="label label-important">ERROR FORMAT</span>',
+        errorFormatLabel: '<span class="label label-danger">ERROR FORMAT</span>',
         convertedLabel: '<span class="label label-info">CONVERTED</span>',
         deployedLabel: '<span class="label label-success">DEPLOYED</span>',
-        errorConvertLabel: '<span class="label label-important">ERROR CONVERT</span>',
+        errorConvertLabel: '<span class="label label-danger">ERROR CONVERT</span>',
         uncompressed : '<span class="label label-success">UNCOMPRESSED</span>',
         to_deploy : '<span class="label label-info">TO DEPLOY</span>'
     },
@@ -663,47 +663,6 @@ var UploadFormView = Backbone.View.extend({
         model.set({status: this.getStatusLabel(model)});
         target.append(_.template(rowTpl, model.toJSON()));
     },
-    injectFnReloadAjax: function () {
-        $.fn.dataTableExt.oApi.fnReloadAjax = function (oSettings, sNewSource, fnCallback, bStandingRedraw) {
-            if (typeof sNewSource != 'undefined' && sNewSource != null) {
-                oSettings.sAjaxSource = sNewSource;
-            }
-            this.oApi._fnProcessingDisplay(oSettings, true);
-            var that = this;
-            var iStart = oSettings._iDisplayStart;
-            var aData = [];
-
-            this.oApi._fnServerParams(oSettings, aData);
-
-            oSettings.fnServerData(oSettings.sAjaxSource, aData, function (json) {
-                /* Clear the old information from the table */
-                that.oApi._fnClearTable(oSettings);
-
-                /* Got the data - add it to the table */
-                var aData = (oSettings.sAjaxDataProp !== "") ?
-                    that.oApi._fnGetObjectDataFn(oSettings.sAjaxDataProp)(json) : json;
-
-                for (var i = 0; i < aData.length; i++) {
-                    that.oApi._fnAddData(oSettings, aData[i]);
-                }
-
-                oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-                that.fnDraw();
-
-                if (typeof bStandingRedraw != 'undefined' && bStandingRedraw === true) {
-                    oSettings._iDisplayStart = iStart;
-                    that.fnDraw(false);
-                }
-
-                that.oApi._fnProcessingDisplay(oSettings, false);
-
-                /* Callback user function - for event handlers etc */
-                if (typeof fnCallback == 'function' && fnCallback != null) {
-                    fnCallback(oSettings);
-                }
-            }, oSettings);
-        }
-    },
     renderUploadedFiles: function () {
         var self = this;
         var uploadTable = $('#uploaded_files');
@@ -711,90 +670,56 @@ var UploadFormView = Backbone.View.extend({
         var uploadedFileCollectionUrl = new UploadedFileCollection({ dataTables: true}).url();
         uploadTable.hide();
         loadingDiv.show();
-        this.injectFnReloadAjax();
-        self.uploadDataTables = uploadTable.dataTable({
-            "sDom": "<'row'<'col-md-5'l><'col-md-5'f>r>t<'row'<'col-md-5'i><'col-md-5'p>>",
-            "sPaginationType": "bootstrap",
-            "oLanguage": {
-                "sLengthMenu": "_MENU_ records per page"
-            },
-            "iDisplayLength": 25,
-            "bDestroy": true,
-            "bProcessing": true,
-            /*"aoColumnDefs": [
-             { "sWidth": "20%", "aTargets": [ 0 ] },
-             { "sWidth": "20%", "aTargets": [ 1 ] },
-             { "sWidth": "20%", "aTargets": [ 2 ] },
-             { "sWidth": "20%", "aTargets": [ 3 ] },
-             { "sWidth": "20%", "aTargets": [ 4 ] }
-             ],*/
-            "aoColumnDefs": [
-                {
-                    "mData": "thumbURL","bSearchable": false,"bSortable": false,
-                    fnRender : function (o, thumb) {
-                        if (o.aData.image == null) {
-                            return 'No preview available';
+        self.uploadDataTables = uploadTable.DataTable({
+            displayLength: 25,
+            destroy: true,
+            processing: true,
+
+            columnDefs: [
+                {defaultContent: "No preview available", render : function (data, type, row) {
+                    if(window.app.isUndefined(row["thumbURL"]) || window.app.isUndefined(row["id"])) return null;
+                    return '<img class="thumbcommand" id="thumbcommand'+data+'" '+
+                        'src="'+row["thumbURL"] +'?maxWidth=128" style="max-width: 128px;max-height: 45px;"/>';
+                },targets: [ 0 ]},
+                {data: "originalFilename", searchable: true,orderable: true, targets: [1]},
+                {data: "created", orderable: true,render : function (data) {
+                    return window.app.convertLongToDate(data);
+                },targets: [ 2 ]},
+                {data: "size", orderable: true, render : function (data) {
+                    var mbSize = (data / (1024 * 1024)).toFixed(2);
+                    return mbSize + "Mo";
+                },targets: [ 3 ]},
+                {data: "contentType", targets: [ 4 ]},
+                {orderable: true, render: function (data, type, row) {
+                    return self.getStatusLabel(row);
+                }, targets: [ 5 ] },
+                {render: function ( data, type, row ) {
+                    var result = "";
+                    // we allow deletion of non deployed image after a security gap of 24h.
+                    if(row["to_deploy"] || row["error_format"] || row["error_convert"]){
+                        if(($.now() - row["updated"])/3600000 > 24) {
+                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+">Delete</button>";
+                        } else {
+                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+" disabled>Delete</button>";
                         }
-                        return '<img class="thumbcommand" id="thumbcommand'+o.aData.image+'" '+
-                            'src="'+thumb +'?maxWidth=128" style="max-width: 128px;max-height: 45px;"/>';
-                    },
-                    "aTargets": [ 0 ]
-                },
-                {
-                    "mData": "originalFilename",
-                    "aTargets": [ 1 ]
-                },
-                {
-                    "mData": "created",
-                    fnRender : function (o, created) {
-                        return window.app.convertLongToDate(created);
-                    },
-                    "aTargets": [ 2 ]
-                },
-                {
-                    "mData": "size","bSearchable": false,"bSortable": false,
-                    fnRender : function (o, size) {
-                        var mbSize = (size / (1024 * 1024)).toFixed(2);
-                        return mbSize + "Mo";
-                    },
-                    "aTargets": [ 3 ]
-                },
-                {
-                    "mData": "contentType",
-                    "aTargets": [ 4 ]
-                },
-                {
-                    "mData": "uploaded",
-                    "fnRender": function (o, val) {
-                        return self.getStatusLabel(o.aData);
-                    },
-                    "aTargets": [ 5 ]
-                },
-                {
-                    "mData": "image","bSearchable": false,"bSortable": false,
-                    fnRender: function (o, image) {
-                        var result = "";
-                        // we allow deletion of non deployed image after a security gap of 24h.
-                        if(o.aData.to_deploy || o.aData.error_format || o.aData.error_convert){
-                            if(($.now() - o.aData.updated)/3600000 > 24) {
-                                result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.image+"' data-ufid="+o.aData.id+" data-aiid="+o.aData.image+">Delete</button>";
-                            } else {
-                                result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.image+"' data-ufid="+o.aData.id+" data-aiid="+o.aData.image+" disabled>Delete</button>";
-                            }
-                        }else {
-                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+o.aData.image+"' data-ufid="+o.aData.id+" data-aiid="+o.aData.image+" disabled>Delete</button> ";
-                            if(o.aData.image !== null && window.app.status.user.model.get("adminByNow")){
-                                result+="<a class='btn btn-info btn-xs' href='api/abstractimage/"+o.aData.image+"/download'> Download</a>";
-                            }
+                    }else {
+                        result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+" disabled>Delete</button> ";
+                        if(row["image"] !== null && window.app.status.user.model.get("adminByNow")){
+                            result+="<a class='btn btn-info btn-xs' href='api/abstractimage/"+row["image"]+"/download'> Download</a>";
                         }
-                        return result;
-                    },
-                    "aTargets": [ 6 ]
-                }
+                    }
+                    return result;
+                },targets: [ 6 ]},
+                { searchable: false, orderable: false, targets: "_all" }
             ],
-            "aaSorting": [[ 1, "desc" ]],
-            "sAjaxSource": uploadedFileCollectionUrl,
-            "fnDrawCallback": function(oSettings, json) {
+            order: [[ 1, "desc" ]],
+            ajax: {
+                url: uploadedFileCollectionUrl/*,
+                data: {
+                    "datatables": "true"
+                }*/
+            },
+            drawCallback: function() {
                 new UploadedFileCollection().fetch({
                     success: function(model,response) {
 
@@ -812,7 +737,7 @@ var UploadFormView = Backbone.View.extend({
 
         $(document).on('click', "#refreshUploadedFiles", function (e) {
             e.preventDefault();
-            self.uploadDataTables.fnReloadAjax();
+            self.uploadDataTables.ajax.reload();
         });
         $(document).on('click', ".deleteimage", function (e) {
             var idUpload = $(e.currentTarget).data("ufid");
@@ -823,7 +748,7 @@ var UploadFormView = Backbone.View.extend({
                      new UploadedFileModel({id: idUpload}).destroy({
                          success: function (model, response) {
                              window.app.view.message("Uploaded file", "deleted", "success");
-                             self.uploadDataTables.fnReloadAjax();
+                             self.uploadDataTables.ajax.reload();
                          },
                          error: function (model, response) {
                              var json = $.parseJSON(response.responseText);

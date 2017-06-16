@@ -92,7 +92,9 @@ body {
 
 
 <!-- Datatables -->
-<script src="lib/DataTables-1.9.4/media/js/jquery.dataTables.min.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="lib/DataTables/datatables.min.css"/>
+<script type="text/javascript" src="lib/DataTables/datatables.min.js"></script>
+
 
 <script type="text/javascript" src="lib/pick-a-color-master/build/1.2.2/js/pick-a-color-1.2.2.min.js"></script>
 <script type="text/javascript" src="lib/TinyColor-master/dist/tinycolor-min.js"></script>
@@ -119,104 +121,104 @@ body {
 
 <g:if test="${Environment.getCurrent() == Environment.DEVELOPMENT || Environment.getCurrent() == Environment.CUSTOM}">
 
-<!-- Core Libs -->
-<script type="text/javascript" src="lib/underscore.js"></script>
-<script type="text/javascript" src="lib/backbone.js"></script>
-<script type="text/javascript" src="lib/backbone.paginator.js"></script>
+    <!-- Core Libs -->
+    <script type="text/javascript" src="lib/underscore.js"></script>
+    <script type="text/javascript" src="lib/backbone.js"></script>
+    <script type="text/javascript" src="lib/backbone.paginator.js"></script>
 
-<!-- wysihtml5 -->
+    <!-- wysihtml5 -->
 
-<script src="lib/bootstrap-wysihtml5-0.0.2/libs/js/wysihtml5-0.3.0_rc2.min.js"></script>
-<script src="lib/bootstrap-wysihtml5-0.0.2/bootstrap-wysihtml5-0.0.2.min.js"></script>
+    <script src="lib/bootstrap-wysihtml5-0.0.2/libs/js/wysihtml5-0.3.0_rc2.min.js"></script>
+    <script src="lib/bootstrap-wysihtml5-0.0.2/bootstrap-wysihtml5-0.0.2.min.js"></script>
 
 <!-- wysihtml5 parser rules -->
 %{--<script src="lib/wysiwyg/parser_rules/advanced.js"></script>--}%
 %{--<!-- Library -->--}%
 %{--<script src="lib/wysiwyg/dist/wysihtml5-0.3.0.min.js"></script>--}%
 
-<script type="text/javascript" src="lib/json2.js"></script>
+    <script type="text/javascript" src="lib/json2.js"></script>
 
 
-<script src="lib/strftime-min.js" type="text/javascript"></script>
+    <script src="lib/strftime-min.js" type="text/javascript"></script>
 
-<script src="lib/dynatree/jquery.dynatree.js" type="text/javascript"></script>
+    <script src="lib/dynatree/jquery.dynatree.js" type="text/javascript"></script>
 
-<script src="lib/ui.panel/ui.panel.min.js" type="text/javascript"></script>
-
-
-
+    <script src="lib/ui.panel/ui.panel.min.js" type="text/javascript"></script>
 
 
 
 
 
-<script type="text/javascript" src="lib/multiselect-next/js/jquery.uix.multiselect.js"></script>
-
-<script type="text/javascript" src="lib/multiselectResolveConflict.js"></script>
-
-<script type="text/javascript" src="lib/multiselect/src/jquery.multiselect.js"></script>
-<script type="text/javascript" src="lib/multiselect/src/jquery.multiselect.filter.js"></script>
-
-<script type="text/javascript" src="lib/stepy/js/jquery.stepy.min.js"></script>
 
 
-<!-- Application -->
-<script type="text/javascript" src="application/Utilities.js" ></script>
-<!-- controllers -->
-<script type="text/javascript" src="application/controllers/ApplicationController.js" ></script>
-<script type="text/javascript" src="application/controllers/UploadController.js" ></script>
-<script type="text/javascript" src="application/controllers/AuthController.js" ></script>
-<script type="text/javascript" src="application/controllers/ProjectController.js" ></script>
-<script type="text/javascript" src="application/controllers/DashboardController.js" ></script>
-<script type="text/javascript" src="application/controllers/ImageController.js" ></script>
-<script type="text/javascript" src="application/controllers/ExplorerController.js" ></script>
-<script type="text/javascript" src="application/controllers/TermController.js" ></script>
-<script type="text/javascript" src="application/controllers/OntologyController.js" ></script>
-<script type="text/javascript" src="application/controllers/CommandController.js" ></script>
-<script type="text/javascript" src="application/controllers/AnnotationController.js" ></script>
-<script type="text/javascript" src="application/controllers/AdminController.js" ></script>
-<script type="text/javascript" src="application/controllers/ActivityController.js" ></script>
-<script type="text/javascript" src="application/controllers/SearchController.js" ></script>
-<script type="text/javascript" src="application/controllers/AccountController.js" ></script>
-<script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
-<script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
-<script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
+
+    <script type="text/javascript" src="lib/multiselect-next/js/jquery.uix.multiselect.js"></script>
+
+    <script type="text/javascript" src="lib/multiselectResolveConflict.js"></script>
+
+    <script type="text/javascript" src="lib/multiselect/src/jquery.multiselect.js"></script>
+    <script type="text/javascript" src="lib/multiselect/src/jquery.multiselect.filter.js"></script>
+
+    <script type="text/javascript" src="lib/stepy/js/jquery.stepy.min.js"></script>
+
+
+    <!-- Application -->
+    <script type="text/javascript" src="application/Utilities.js" ></script>
+    <!-- controllers -->
+    <script type="text/javascript" src="application/controllers/ApplicationController.js" ></script>
+    <script type="text/javascript" src="application/controllers/UploadController.js" ></script>
+    <script type="text/javascript" src="application/controllers/AuthController.js" ></script>
+    <script type="text/javascript" src="application/controllers/ProjectController.js" ></script>
+    <script type="text/javascript" src="application/controllers/DashboardController.js" ></script>
+    <script type="text/javascript" src="application/controllers/ImageController.js" ></script>
+    <script type="text/javascript" src="application/controllers/ExplorerController.js" ></script>
+    <script type="text/javascript" src="application/controllers/TermController.js" ></script>
+    <script type="text/javascript" src="application/controllers/OntologyController.js" ></script>
+    <script type="text/javascript" src="application/controllers/CommandController.js" ></script>
+    <script type="text/javascript" src="application/controllers/AnnotationController.js" ></script>
+    <script type="text/javascript" src="application/controllers/AdminController.js" ></script>
+    <script type="text/javascript" src="application/controllers/ActivityController.js" ></script>
+    <script type="text/javascript" src="application/controllers/SearchController.js" ></script>
+    <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
+    <script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
+    <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
+    <script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
 
 <!-- Models -->
 
-<script type="text/javascript" src="application/models/PaginatorModel.js" ></script>
+    <script type="text/javascript" src="application/models/PaginatorModel.js" ></script>
 
-<script type="text/javascript" src="application/models/DescriptionModel.js" ></script>
-<script type="text/javascript" src="application/models/DisciplineModel.js" ></script>
+    <script type="text/javascript" src="application/models/DescriptionModel.js" ></script>
+    <script type="text/javascript" src="application/models/DisciplineModel.js" ></script>
 
-<script type="text/javascript" src="application/models/UploadedFileModel.js" ></script>
-<script type="text/javascript" src="application/models/AnnotationsFilterModel.js" ></script>
-<script type="text/javascript" src="application/models/ImageModel.js" ></script>
-<script type="text/javascript" src="application/models/TermModel.js" ></script>
-<script type="text/javascript" src="application/models/ImageFilter.js" ></script>
-<script type="text/javascript" src="application/models/OntologyModel.js" ></script>
+    <script type="text/javascript" src="application/models/UploadedFileModel.js" ></script>
+    <script type="text/javascript" src="application/models/AnnotationsFilterModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageModel.js" ></script>
+    <script type="text/javascript" src="application/models/TermModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageFilter.js" ></script>
+    <script type="text/javascript" src="application/models/OntologyModel.js" ></script>
 
-<script type="text/javascript" src="application/models/UserModel.js" ></script>
-<script type="text/javascript" src="application/models/GroupModel.js" ></script>
-<script type="text/javascript" src="application/models/ProjectModel.js" ></script>
-<script type="text/javascript" src="application/models/AnnotationModel.js" ></script>
-<script type="text/javascript" src="application/models/SlideModel.js" ></script>
-<script type="text/javascript" src="application/models/StatsModel.js" ></script>
-<script type="text/javascript" src="application/models/CommandModel.js" ></script>
-<script type="text/javascript" src="application/models/RelationModel.js" ></script>
-<script type="text/javascript" src="application/models/SearchModel.js" ></script>
-<script type="text/javascript" src="application/models/SecRoleModel.js" ></script>
-<script type="text/javascript" src="application/models/SuggestedAnnotationTermModel.js" ></script>
-<script type="text/javascript" src="application/models/JobModel.js" ></script>
-<script type="text/javascript" src="application/models/JobDataModel.js" ></script>
-<script type="text/javascript" src="application/models/SoftwareModel.js" ></script>
-<script type="text/javascript" src="application/models/PingModel.js" ></script>
-<script type="text/javascript" src="application/models/TaskModel.js" ></script>
-<script type="text/javascript" src="application/models/StorageModel.js" ></script>
-<script type="text/javascript" src="application/models/AnnotationPropertyModel.js" ></script>
-<script type="text/javascript" src="application/models/ImageInstancePropertyModel.js" ></script>
-<script type="text/javascript" src="application/models/ProjectPropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/UserModel.js" ></script>
+    <script type="text/javascript" src="application/models/GroupModel.js" ></script>
+    <script type="text/javascript" src="application/models/ProjectModel.js" ></script>
+    <script type="text/javascript" src="application/models/AnnotationModel.js" ></script>
+    <script type="text/javascript" src="application/models/SlideModel.js" ></script>
+    <script type="text/javascript" src="application/models/StatsModel.js" ></script>
+    <script type="text/javascript" src="application/models/CommandModel.js" ></script>
+    <script type="text/javascript" src="application/models/RelationModel.js" ></script>
+    <script type="text/javascript" src="application/models/SearchModel.js" ></script>
+    <script type="text/javascript" src="application/models/SecRoleModel.js" ></script>
+    <script type="text/javascript" src="application/models/SuggestedAnnotationTermModel.js" ></script>
+    <script type="text/javascript" src="application/models/JobModel.js" ></script>
+    <script type="text/javascript" src="application/models/JobDataModel.js" ></script>
+    <script type="text/javascript" src="application/models/SoftwareModel.js" ></script>
+    <script type="text/javascript" src="application/models/PingModel.js" ></script>
+    <script type="text/javascript" src="application/models/TaskModel.js" ></script>
+    <script type="text/javascript" src="application/models/StorageModel.js" ></script>
+    <script type="text/javascript" src="application/models/AnnotationPropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/ImageInstancePropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/ProjectPropertyModel.js" ></script>
     <script type="text/javascript" src="application/models/ImageGroupModel.js" ></script>
     <script type="text/javascript" src="application/models/ImageGroupHDF5Model.js" ></script>
 
@@ -226,156 +228,156 @@ body {
 
 
 <!-- View -->
-<script type="text/javascript" src="application/views/admin/AdminView.js"></script>
-<script type="text/javascript" src="application/views/admin/AdminDashboard.js"></script>
-<script type="text/javascript" src="application/views/admin/AdminUsersView.js"></script>
-<script type="text/javascript" src="application/views/admin/AdminUserDialog.js"></script>
-<script type="text/javascript" src="application/views/admin/AdminGroupsView.js"></script>
-<script type="text/javascript" src="application/views/admin/AdminPermissionsView.js"></script>
-<script type="text/javascript" src="application/views/admin/AdminConfigView.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminView.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminDashboard.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminUsersView.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminUserDialog.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminGroupsView.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminPermissionsView.js"></script>
+    <script type="text/javascript" src="application/views/admin/AdminConfigView.js"></script>
 
 
-<script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
-<script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
-<script type="text/javascript" src="application/views/user/DetailedUserInfoDialog.js"></script>
-<script type="text/javascript" src="application/views/user/DetailedUserProjectInfoDialog.js"></script>
+    <script type="text/javascript" src="application/views/user/AddUserToProjectDialog.js" ></script>
+    <script type="text/javascript" src="application/views/user/UserDashboardView.js"></script>
+    <script type="text/javascript" src="application/views/user/DetailedUserInfoDialog.js"></script>
+    <script type="text/javascript" src="application/views/user/DetailedUserProjectInfoDialog.js"></script>
 
 
-<script type="text/javascript" src="application/views/activity/ActivityView.js" ></script>
-<script type="text/javascript" src="application/views/search/SearchEngineFilterView.js" ></script>
-<script type="text/javascript" src="application/views/search/SearchView.js" ></script>
-<script type="text/javascript" src="application/views/search/SearchResultView.js" ></script>
+    <script type="text/javascript" src="application/views/activity/ActivityView.js" ></script>
+    <script type="text/javascript" src="application/views/search/SearchEngineFilterView.js" ></script>
+    <script type="text/javascript" src="application/views/search/SearchView.js" ></script>
+    <script type="text/javascript" src="application/views/search/SearchResultView.js" ></script>
 
-<script type="text/javascript" src="application/views/phono/PhonoMenu.js" ></script>
-<script type="text/javascript" src="application/views/account/AccountDetails.js" ></script>
+    <script type="text/javascript" src="application/views/phono/PhonoMenu.js" ></script>
+    <script type="text/javascript" src="application/views/account/AccountDetails.js" ></script>
 
-<script type="text/javascript" src="application/views/auth/LoginDialogView.js" ></script>
-<script type="text/javascript" src="application/views/auth/LoadingDialogView.js" ></script>
-<script type="text/javascript" src="application/views/auth/LogoutDialogView.js" ></script>
+    <script type="text/javascript" src="application/views/auth/LoginDialogView.js" ></script>
+    <script type="text/javascript" src="application/views/auth/LoadingDialogView.js" ></script>
+    <script type="text/javascript" src="application/views/auth/LogoutDialogView.js" ></script>
 
-<script type="text/javascript" src="application/views/utils/MultiSelectView.js" ></script>
+    <script type="text/javascript" src="application/views/utils/MultiSelectView.js" ></script>
 
 
-<script type="text/javascript" src="application/views/dashboard/AddImageToProjectDialog.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/AddImageToProjectDialog.js" ></script>
     <script type="text/javascript" src="application/views/dashboard/AddImageGroupToProjectDialog.js" ></script>
     <script type="text/javascript" src="application/views/dashboard/AddImageSequenceDialog.js" ></script>
 
     <script type="text/javascript" src="application/views/dashboard/AnnotationThumbView.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/AnnotationView.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardView.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardStats.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardImages.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardAnnotations.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardAlgos.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardConfig.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
-<script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/AnnotationView.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardView.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardStats.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardImages.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardAnnotations.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardAlgos.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardConfig.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardUsersConfig.js" ></script>
+    <script type="text/javascript" src="application/views/dashboard/ProjectDashboardProperties.js" ></script>
     <script type="text/javascript" src="application/views/dashboard/ProjectDashboardGroup.js" ></script>
 
 
     <script type="text/javascript" src="application/views/graph/GraphView.js" ></script>
-<script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
-<script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
-<script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
-<script type="text/javascript" src="application/views/graph/HistogramActivitiesChart.js" ></script>
-<script type="text/javascript" src="application/views/graph/AverageConnexionsGraphsView.js" ></script>
-<script type="text/javascript" src="application/views/graph/LastConnexionsGraphsView.js" ></script>
+    <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesView.js" ></script>
+    <script type="text/javascript" src="application/views/graph/ProjectUsersTotalActivitiesGraph.js" ></script>
+    <script type="text/javascript" src="application/views/graph/ProjectUsersHeatmapView.js" ></script>
+    <script type="text/javascript" src="application/views/graph/HistogramActivitiesChart.js" ></script>
+    <script type="text/javascript" src="application/views/graph/AverageConnexionsGraphsView.js" ></script>
+    <script type="text/javascript" src="application/views/graph/LastConnexionsGraphsView.js" ></script>
 
-<script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>
-<script type="text/javascript" src="application/views/processing/JobComparatorView.js" ></script>
-<script type="text/javascript" src="application/views/processing/JobSelectionView.js" ></script>
-<script type="text/javascript" src="application/views/processing/LaunchJobView.js" ></script>
-<script type="text/javascript" src="application/views/processing/JobResultView.js" ></script>
-<script type="text/javascript" src="application/views/processing/SoftwareDetailsView.js"></script>
-<script type="text/javascript" src="application/views/processing/JobSearchView.js"></script>
-<script type="text/javascript" src="application/views/processing/JobTableView.js"></script>
-<script type="text/javascript" src="application/views/processing/JobSearchEngineView.js"></script>
-<script type="text/javascript" src="application/views/processing/JobDeleteAllDataView.js"></script>
+    <script type="text/javascript" src="application/views/processing/JobListingView.js" ></script>
+    <script type="text/javascript" src="application/views/processing/JobComparatorView.js" ></script>
+    <script type="text/javascript" src="application/views/processing/JobSelectionView.js" ></script>
+    <script type="text/javascript" src="application/views/processing/LaunchJobView.js" ></script>
+    <script type="text/javascript" src="application/views/processing/JobResultView.js" ></script>
+    <script type="text/javascript" src="application/views/processing/SoftwareDetailsView.js"></script>
+    <script type="text/javascript" src="application/views/processing/JobSearchView.js"></script>
+    <script type="text/javascript" src="application/views/processing/JobTableView.js"></script>
+    <script type="text/javascript" src="application/views/processing/JobSearchEngineView.js"></script>
+    <script type="text/javascript" src="application/views/processing/JobDeleteAllDataView.js"></script>
 
 
 
 
     <script type="text/javascript" src="application/views/processing/result/RetrievalAlgoResult.js"></script>
-<script type="text/javascript" src="application/views/processing/result/EvolutionAlgoResult.js"></script>
-<script type="text/javascript" src="application/views/processing/result/DefaultResult.js"></script>
-<script type="text/javascript" src="application/views/processing/result/DownloadFiles.js"></script>
+    <script type="text/javascript" src="application/views/processing/result/EvolutionAlgoResult.js"></script>
+    <script type="text/javascript" src="application/views/processing/result/DefaultResult.js"></script>
+    <script type="text/javascript" src="application/views/processing/result/DownloadFiles.js"></script>
 
-<script type="text/javascript" src="application/views/explorer/SideBarPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/AnnotationLayer.js" ></script>
-<script type="text/javascript" src="application/views/explorer/AnnotationPropertyLayer.js" ></script>
-<script type="text/javascript" src="application/views/explorer/BrowseImageView.js" ></script>
-<script type="text/javascript" src="application/views/explorer/LeafletView.js" ></script>
-<script type="text/javascript" src="application/views/explorer/ExplorerTabs.js" ></script>
-<script type="text/javascript" src="application/views/explorer/AnnotationsPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/SpectraPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/LayerSwitcherPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/ImageFiltersPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/OverviewMapPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/OntologyPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/ReviewPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/MultiDimensionPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/InformationsPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/JobTemplatePanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/AnnotationPropertyPanel.js" ></script>
-<script type="text/javascript" src="application/views/explorer/AnnotationPopupPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/SideBarPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/AnnotationLayer.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/AnnotationPropertyLayer.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/BrowseImageView.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/LeafletView.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/ExplorerTabs.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/AnnotationsPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/SpectraPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/LayerSwitcherPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/ImageFiltersPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/OverviewMapPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/OntologyPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/ReviewPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/MultiDimensionPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/InformationsPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/JobTemplatePanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/AnnotationPropertyPanel.js" ></script>
+    <script type="text/javascript" src="application/views/explorer/AnnotationPopupPanel.js" ></script>
 
 
-<script type="text/javascript" src="application/views/upload/UploadFormView.js" ></script>
+    <script type="text/javascript" src="application/views/upload/UploadFormView.js" ></script>
 
-<script type="text/javascript" src="application/views/image/ImageReviewAction.js" ></script>
-<script type="text/javascript" src="application/views/image/ImageThumbView.js" ></script>
-<script type="text/javascript" src="application/views/image/ImageSelectView.js" ></script>
-<script type="text/javascript" src="application/views/image/ImageView.js" ></script>
-<script type="text/javascript" src="application/views/image/ImageTabsView.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageReviewAction.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageThumbView.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageSelectView.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageView.js" ></script>
+    <script type="text/javascript" src="application/views/image/ImageTabsView.js" ></script>
     <script type="text/javascript" src="application/views/image/ImageGroupTabsView.js" ></script>
 
     <script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
 
-<script type="text/javascript" src="application/views/ontology/OntologyUsersDialog.js" ></script>
-<script type="text/javascript" src="application/views/ontology/OntologyPanelView.js" ></script>
-<script type="text/javascript" src="application/views/ontology/OntologyView.js" ></script>
-<script type="text/javascript" src="application/views/ontology/OntologyAddOrEditTermView.js" ></script>
-<script type="text/javascript" src="application/views/ontology/OntologyTreeView.js" ></script>
-<script type="text/javascript" src="application/views/ontology/OntologyEditDialog.js" ></script>
-<script type="text/javascript" src="application/views/ontology/OntologyAddDialog.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyUsersDialog.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyPanelView.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyView.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyAddOrEditTermView.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyTreeView.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyEditDialog.js" ></script>
+    <script type="text/javascript" src="application/views/ontology/OntologyAddDialog.js" ></script>
 
-<script type="text/javascript" src="application/views/project/ProjectUsersDialog.js" ></script>
-<script type="text/javascript" src="application/views/project/ProjectView.js" ></script>
-<script type="text/javascript" src="application/views/project/ProjectPanelView.js" ></script>
-<script type="text/javascript" src="application/views/project/ProjectAddDialog.js" ></script>
-<script type="text/javascript" src="application/views/project/ProjectCommandView.js" ></script>
-<script type="text/javascript" src="application/views/project/ProjectSearchPanel.js" ></script>
-<script type="text/javascript" src="application/views/project/ProjectDescriptionDialog.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectUsersDialog.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectView.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectPanelView.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectAddDialog.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectCommandView.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectSearchPanel.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectDescriptionDialog.js" ></script>
 
-<script type="text/javascript" src="application/views/project/ProjectInfoDialog.js" ></script>
+    <script type="text/javascript" src="application/views/project/ProjectInfoDialog.js" ></script>
 
 
-<script type="text/javascript" src="application/views/annotation/AnnotationListView.js" ></script>
-<script type="text/javascript" src="application/views/annotation/AnnotationRetrievalView.js" ></script>
-<script type="text/javascript" src="application/views/annotation/AnnotationQuestionableView.js" ></script>
-<script type="text/javascript" src="application/views/annotation/ShareAnnotationView.js" ></script>
+    <script type="text/javascript" src="application/views/annotation/AnnotationListView.js" ></script>
+    <script type="text/javascript" src="application/views/annotation/AnnotationRetrievalView.js" ></script>
+    <script type="text/javascript" src="application/views/annotation/AnnotationQuestionableView.js" ></script>
+    <script type="text/javascript" src="application/views/annotation/ShareAnnotationView.js" ></script>
 
-<script type="text/javascript" src="application/views/review/ReviewStatsListing.js" ></script>
-<script type="text/javascript" src="application/views/review/ReviewLastReviewListing.js" ></script>
-<script type="text/javascript" src="application/views/review/ReviewTermListing.js" ></script>
-<script type="text/javascript" src="application/views/review/ReviewAnnotationListing.js" ></script>
-<script type="text/javascript" src="application/views/review/DashboardReviewPanel.js" ></script>
+    <script type="text/javascript" src="application/views/review/ReviewStatsListing.js" ></script>
+    <script type="text/javascript" src="application/views/review/ReviewLastReviewListing.js" ></script>
+    <script type="text/javascript" src="application/views/review/ReviewTermListing.js" ></script>
+    <script type="text/javascript" src="application/views/review/ReviewAnnotationListing.js" ></script>
+    <script type="text/javascript" src="application/views/review/DashboardReviewPanel.js" ></script>
 
-<script type="text/javascript" src="application/views/utils/CrudGridView.js" ></script>
-<script type="text/javascript" src="application/views/Component.js" ></script>
-<script type="text/javascript" src="application/views/ApplicationView.js" ></script>
-<script type="text/javascript" src="application/views/ConfirmDialogView.js" ></script>
+    <script type="text/javascript" src="application/views/utils/CrudGridView.js" ></script>
+    <script type="text/javascript" src="application/views/Component.js" ></script>
+    <script type="text/javascript" src="application/views/ApplicationView.js" ></script>
+    <script type="text/javascript" src="application/views/ConfirmDialogView.js" ></script>
 
-<script type="text/javascript" src="application/utils/CustomUI.js" ></script>
-<script type="text/javascript" src="application/utils/CustomModal.js" ></script>
-<script type="text/javascript" src="application/utils/BrowserSupport.js" ></script>
-<script type="text/javascript" src="application/utils/HotKeys.js" ></script>
-<script type="text/javascript" src="application/utils/processing/image/Utils.js" ></script>
-<script type="text/javascript" src="application/utils/processing/image/Invert.js" ></script>
-<script type="text/javascript" src="application/utils/processing/image/MagicWand.js" ></script>
-<script type="text/javascript" src="application/utils/processing/image/Outline.js" ></script>
-<script type="text/javascript" src="application/utils/processing/image/Threshold.js" ></script>
-<script type="text/javascript" src="application/utils/processing/image/ColorChannel.js" ></script>
+    <script type="text/javascript" src="application/utils/CustomUI.js" ></script>
+    <script type="text/javascript" src="application/utils/CustomModal.js" ></script>
+    <script type="text/javascript" src="application/utils/BrowserSupport.js" ></script>
+    <script type="text/javascript" src="application/utils/HotKeys.js" ></script>
+    <script type="text/javascript" src="application/utils/processing/image/Utils.js" ></script>
+    <script type="text/javascript" src="application/utils/processing/image/Invert.js" ></script>
+    <script type="text/javascript" src="application/utils/processing/image/MagicWand.js" ></script>
+    <script type="text/javascript" src="application/utils/processing/image/Outline.js" ></script>
+    <script type="text/javascript" src="application/utils/processing/image/Threshold.js" ></script>
+    <script type="text/javascript" src="application/utils/processing/image/ColorChannel.js" ></script>
 </g:if>
 
 

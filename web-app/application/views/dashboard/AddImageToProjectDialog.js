@@ -41,46 +41,41 @@ var AddImageToProjectDialog = Backbone.View.extend({
         self.images = [];
         var table = $("#addImageToProjectTable" + self.model.id);
         var columns = [
-            { sClass: 'center', "mData": "id", "bSearchable": false,"bSortable": true},
-            { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
+            { className: 'center', data: "id", targets: [0]},
+            { defaultContent: "No preview available", orderable: false, render : function ( data, type, row ) {
                 return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-'><img src='<%= thumb %>?maxSize=128' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
                     {
                         project : self.model.id,
-                        id : o.aData.id,
-                        thumb : o.aData["macroURL"]
+                        id : row["id"],
+                        thumb : row["macroURL"]
                     });
-            }},
-            { "mDataProp": "originalFilename", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {
-                return o.aData["originalFilename"];
-            }} ,
-            { "mDataProp": "created", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o, created) {
-                return window.app.convertLongToDate(created);
-            }},
-            { "mDataProp": "updated", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                self.images.push(o.aData);
-//                new ImageInstanceModel({ id : o.aData.id}).fetch({
-//                    success : function (model, response) {
-//                        var model = new ImageInstanceModel(o.aData);
-//                        var action = new ImageReviewAction({el:body,model:model, container : self});
-//                        action.configureAction();
-//                    }
-//                });
-                o.aData["project"]  = self.idProject;
-                if(o.aData["inProject"]) {
-                    return '<label id="labelAddToProject'+o.aData["id"]+'">Already in project</label>';
+            }, targets: [1]},
+            { data: "originalFilename", defaultContent: "", searchable: true, targets: [2]},
+            { data: "created", render : function ( data ) {
+                return window.app.convertLongToDate(data);
+            }, targets: [3]},
+            { orderable: false, render : function( data, type, row ) {
+                self.images.push(row);
+                if(row["inProject"]) {
+                    return '<label id="labelAddToProject'+row["id"]+'">Already in project</label>';
                 } else {
-                    return '<button id="btnAddToProject'+o.aData["id"]+'" type="button" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-plus"></span> Add</button>';
+                    return '<button id="btnAddToProject'+row["id"]+'" type="button" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-plus"></span> Add</button>';
                 }
-            }}
+            }, targets: [4]},
+            { searchable: false, targets: "_all" }
         ];
-        self.imagesdDataTables = table.dataTable({
-            "bProcessing": true,
-            "bServerSide": true,
-            "sAjaxSource": new ImageCollection({project: self.model.id}).url(),
-            "fnServerParams": function ( aoData ) {
-                aoData.push( { "name": "datatables", "value": "true" } );
+        $('#addImageToProjectTable' + self.idProject).show();
+        self.imagesdDataTables = table.DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: new ImageCollection({project: self.model.id}).url(),
+                data: {
+                    "datatables": "true"
+                }
             },
-            "fnDrawCallback": function(oSettings, json) {
+            autoWidth: false,
+            drawCallback: function() {
 
                 _.each(self.images, function(aData) {
                     var idProject = self.model.id;
@@ -98,14 +93,10 @@ var AddImageToProjectDialog = Backbone.View.extend({
                             }
                         });
                     });
-
-
-
                 });
                 self.images = [];
             },
-            "aoColumns" : columns
+            columnDefs : columns
         });
-        $('#addImageToProjectTable' + self.idProject).show();
     }
 });
