@@ -97,9 +97,13 @@ class JobParameter extends CytomineDomain implements Comparable {
      */
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
-        returnArray['value'] = domain?.value
-        returnArray['job'] = domain?.job?.id
         SoftwareParameter softwareParameter = domain?.softwareParameter
+        if(softwareParameter?.name.equals("privateKey") || softwareParameter?.name.equals("publicKey")){
+            returnArray['value'] = "*****************"
+        } else {
+            returnArray['value'] = domain?.value
+        }
+        returnArray['job'] = domain?.job?.id
         returnArray['softwareParameter'] = softwareParameter?.id
         returnArray['name'] = softwareParameter?.name
         returnArray['type'] = softwareParameter?.type

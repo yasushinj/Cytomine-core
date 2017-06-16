@@ -391,19 +391,11 @@ var DashboardController = Backbone.Router.extend({
                     cell.html(self.createJobParameterDomainValue(ids, collection, param, maxSize));
                 }
             } else {
-                var computeValue = param.value;
-                if (param.name.toLowerCase() == "privatekey" || param.name.toLowerCase() == "publickey") {
-                    computeValue = "************************************";
-                }
-                cell.html(computeValue);
+                cell.html(param.value);
             }
         }
         else {
-            var computeValue = param.value;
-            if (param.name.toLowerCase() == "privatekey" || param.name.toLowerCase() == "publickey") {
-                computeValue = "************************************";
-            }
-            cell.html(computeValue);
+            cell.html(param.value);
         }
     },
     createJobParameterDomainValue: function (ids, collection, param, maxSize) {

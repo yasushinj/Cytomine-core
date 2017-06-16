@@ -31,7 +31,7 @@ var ImageReviewAction = Backbone.View.extend({
         el.find("#exploreButton" + self.model.id).click(function () {
             window.location = '#tabs-image-' + self.model.get('project') + '-' + self.model.get('id') + '-0';
         });
-        console.log(self.model)
+
         if (self.isNotReviewed()) {
             el.find("#explore" + self.model.id).show();
             el.find("#review" + self.model.id).hide();
@@ -113,12 +113,12 @@ var ImageReviewAction = Backbone.View.extend({
             self.validateImage();
             return false;
         });
-        el.find("#unv" +
-                "alidateimage" + self.model.id).on("click", function () {
+        el.find("#unvalidateimage" + self.model.id).on("click", function () {
             self.cancelReviewing();
             return false;
         });
         //el.find("#image-properties-" + self.model.id).html(_.template(tplProperties, self.model.toJSON()));
+        $(self.el).off('click',"a#moreinfo" + self.model.id);
         $(self.el).on('click',"a#moreinfo" + self.model.id,function () {
             $("#image-properties").remove();
             var isAdmin = window.app.status.currentProjectModel.isAdmin(window.app.models.projectAdmin);

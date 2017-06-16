@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+//TODO
+//called by JobTableView that is not used anymore
 var JobSearchEngineView = Backbone.View.extend({
     width: null,
     software: null,
