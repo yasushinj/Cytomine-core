@@ -47,7 +47,7 @@ class UserAgentIdentService extends WebTierService {
     def getUserAgentInfo()
     {
 
-        def userAgent = getUserAgentTag()
+        String userAgent = getUserAgentTag()
 
         def agentInfo = getRequest().getSession().getAttribute("myapp.service.UserAgentIdentService.agentInfo")
         if (agentInfo != null && agentInfo.agentString == userAgent) {
@@ -134,32 +134,28 @@ class UserAgentIdentService extends WebTierService {
 
         println "userAgent=$userAgent"
         println "browserVersion=$browserVersion"
-//
-//        if (userAgent.indexOf("(") > 0) {
-//            String osInfo = userAgent.substring(userAgent.indexOf("(") + 1);
-//            osInfo = osInfo.substring(0, osInfo.indexOf(")"));
-//            println "osInfo=$osInfo"
-//            String[] infoParts = osInfo.split("; ");
-//            platform = infoParts[0];
-//            operatingSystem = infoParts[2];
-//
-//            if (browserType != UserAgentIdentService.CLIENT_MSIE) {
-//                if (infoParts[1].equals("U"))
-//                    security = "strong";
-//                if (infoParts[1].equals("I"))
-//                    security = "weak";
-//                if (infoParts[1].equals("N"))
-//                    security = "none";
-//
-//                language = infoParts[3];
-//
-//            }
-//
-//        } else {
-//            if (browserType == UserAgentIdentService.CLIENT_BLACKBERRY) {
-//                operatingSystem = "BlackBerry " + browserVersion;
-//            }
-//        }
+
+        if(userAgent.contains("Linux")){
+            if(userAgent.contains("Ubuntu")) {
+                operatingSystem = "Ubuntu"
+            } else {
+                operatingSystem = "Linux"
+            }
+        } else if(userAgent.contains("Windows")) {
+            if(userAgent.contains("Windows NT 6.2")) {
+                operatingSystem = "Windows 8"
+            } else if(userAgent.contains("Windows NT 10.0")) {
+                operatingSystem = "Windows 10"
+            } else if(userAgent.contains("Windows ME")) {
+                operatingSystem = "Windows ME"
+            } else {
+                operatingSystem = "Windows"
+            }
+        } else if(userAgent.contains("OpenBSD")) {
+            operatingSystem = "BSD"
+        } else if(userAgent.contains("Mac")) {
+            operatingSystem = "Mac"
+        }
 
         agentInfo.browserVersion = browserVersion
         agentInfo.browserType = browserType
