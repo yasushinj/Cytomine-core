@@ -122,29 +122,7 @@ class RestController {
      * @return response
      */
     public Object addMultiple(def service, def json) {
-        def result = [:]
-        result.data = []
-        int i = 0
-        json.each {
-            def resp = addOne(service, it)
-            result.data << resp
-            //sometimes, call clean cache (improve very well perf for big set)
-            if (i % 100 == 0) cleanUpGorm()
-            i++
-        }
-        cleanUpGorm()
-        result.status = 200
-        result
-    }
-
-    /**
-     * Clean GORM cache
-     */
-    public void cleanUpGorm() {
-        def session = sessionFactory.currentSession
-        session.flush()
-        session.clear()
-        propertyInstanceMap.get().clear()
+        return service.addMultiple(json)
     }
 
     /**

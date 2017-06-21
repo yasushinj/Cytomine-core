@@ -70,7 +70,7 @@ class  RestAlgoAnnotationController extends RestController {
      */
     @RestApiMethod(description="Get an algo annotation")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The annotation id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The annotation id")
     ])
     def show() {
         AlgoAnnotation annotation = algoAnnotationService.read(params.long('id'))
@@ -90,38 +90,19 @@ class  RestAlgoAnnotationController extends RestController {
     @RestApiMethod(description="Add an algo annotation")
     def add(){
         def json = request.JSON
-        try {
-            if (json instanceof JSONArray) {
-                responseResult(addMultiple(algoAnnotationService, json))
-            } else {
-                responseResult(addOne(algoAnnotationService, json))
-            }
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
+        if (json instanceof JSONArray) {
+            responseResult(addMultiple(algoAnnotationService, json))
+        } else {
+            responseResult(addOne(algoAnnotationService, json))
         }
     }
 
     @Override
     public Object addOne(def service, def json) {
-        if ((!json.project || json.isNull('project'))) {
-            //fill project id thanks to image info
-            ImageInstance image = ImageInstance.read(json.image)
-            if (image) {
-                json.project = image.project.id
-            }
-        }
-        if (json.isNull('project')) {
-            throw new WrongArgumentException("Annotation must have a valid project:" + json.project)
-        }
-        if (json.isNull('location')) {
-            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
-        }
-        def minPoint = params.getLong('minPoint')
-        def maxPoint = params.getLong('maxPoint')
+        json.minPoint = params.getLong('minPoint')
+        json.maxPoint = params.getLong('maxPoint')
 
-        def result = algoAnnotationService.add(json,minPoint,maxPoint)
-        return result
+        return algoAnnotationService.add(json)
     }
 
     /**
@@ -129,7 +110,7 @@ class  RestAlgoAnnotationController extends RestController {
      */
     @RestApiMethod(description="Update an algo annotation")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
     ])
     def update() {
         def json = request.JSON
@@ -150,7 +131,7 @@ class  RestAlgoAnnotationController extends RestController {
      */
     @RestApiMethod(description="Delete an algo annotation")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
     ])
     def delete() {
         def json = JSON.parse("{id : $params.id}")
@@ -160,11 +141,11 @@ class  RestAlgoAnnotationController extends RestController {
     @RestApiMethod(description="Download a report (pdf, xls,...) with software annotation data from a specific project")
     @RestApiResponseObject(objectIdentifier =  "file")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
-        @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
-        @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users)"),
-        @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
-        @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
+            @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
+            @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users)"),
+            @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
+            @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
     ])
     def downloadDocumentByProject() {
         reportService.createAnnotationDocuments(params.long('id'),params.terms,params.users,params.images,params.format,response,"ALGOANNOTATION")
@@ -178,10 +159,10 @@ class  RestAlgoAnnotationController extends RestController {
     @RestApiMethod(description="Get annotation algo crop (image area that frame annotation)")
     @RestApiResponseObject(objectIdentifier =  "file")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
-        @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.PATH,description = "Maximum size of the crop image (w and h)"),
-        @RestApiParam(name="zoom", type="int", paramType = RestApiParamType.PATH,description = "Zoom level"),
-        @RestApiParam(name="draw", type="boolean", paramType = RestApiParamType.PATH,description = "Draw annotation form border on the image"),
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
+            @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.PATH,description = "Maximum size of the crop image (w and h)"),
+            @RestApiParam(name="zoom", type="int", paramType = RestApiParamType.PATH,description = "Zoom level"),
+            @RestApiParam(name="draw", type="boolean", paramType = RestApiParamType.PATH,description = "Draw annotation form border on the image"),
     ])
     def crop() {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))

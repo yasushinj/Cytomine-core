@@ -29,6 +29,7 @@ import be.cytomine.security.SecUser
 import be.cytomine.security.UserJob
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import grails.converters.JSON
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -89,6 +90,12 @@ class AlgoAnnotationTermService extends ModelService {
         Command command = new AddCommand(user: currentUser)
         return executeCommand(command,null,json)
     }
+
+    def addAlgoAnnotationTerm(Long annotationID, Long idTerm, Long idUser, SecUser currentUser, Transaction transaction){
+        def json = JSON.parse("{annotationIdent: $annotationID, term: $idTerm,user: $idUser}")
+        return executeCommand(new AddCommand(user: currentUser, transaction: transaction), null,json)
+    }
+
     /**
      * Delete this domain
      * @param domain Domain to delete

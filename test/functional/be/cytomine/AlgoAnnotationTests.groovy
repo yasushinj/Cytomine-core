@@ -19,6 +19,7 @@ package be.cytomine
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.AlgoAnnotationTerm
+import be.cytomine.ontology.Term
 import be.cytomine.security.UserJob
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
@@ -46,7 +47,7 @@ class AlgoAnnotationTests  {
         assert json instanceof JSONObject
     }
 
-    
+
     void testDownloadAlgoAnnotationDocument() {
         AlgoAnnotationTerm annotationTerm = BasicInstanceBuilder.getAlgoAnnotationTerm(true)
         def result = AlgoAnnotationAPI.downloadDocumentByProject(annotationTerm.retrieveAnnotationDomain().project.id,annotationTerm.retrieveAnnotationDomain().user.id,annotationTerm.term.id, annotationTerm.retrieveAnnotationDomain().image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -82,14 +83,49 @@ class AlgoAnnotationTests  {
         def annotationToAdd2 = BasicInstanceBuilder.getAlgoAnnotation()
         annotationToAdd2.image =  annotationToAdd1.image
         annotationToAdd2.project =  annotationToAdd1.project
-        annotationToAdd2.save(flush: true)
+
+        Long idTerm1 = BasicInstanceBuilder.getTerm().id
+        Long idTerm2 = BasicInstanceBuilder.getAnotherBasicTerm().id
+        def annotationWithTerm = JSON.parse((String)annotationToAdd1.encodeAsJSON())
+        annotationWithTerm.term = [idTerm1, idTerm2]
+
+        UserJob user1 = annotationToAdd1.user
+        def annotations = []
+        annotations << JSON.parse(JSONUtils.toJSONString(annotationWithTerm))
+        annotations << JSON.parse(annotationToAdd2.encodeAsJSON())
+        def result = AlgoAnnotationAPI.create(JSONUtils.toJSONString(annotations), user1.username, 'PasswordUserJob')
+        assert 200 == result.code
+    }
+
+    void testAddMultipleIncorrectAlgoAnnotations() {
+        def annotationToAdd1 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        def annotationToAdd2 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        annotationToAdd2.image =  annotationToAdd1.image
+        annotationToAdd2.project =  annotationToAdd1.project
+        annotationToAdd1.location = new WKTReader().read("POLYGON ((1983 2168, 2083 2268, 2183 2368, 1983 2168))")
+        annotationToAdd2.location = new WKTReader().read("POLYGON ((1983 2168, 2083 2268, 2183 2368, 1983 2168))")
 
         UserJob user1 = annotationToAdd1.user
         def annotations = []
         annotations << JSON.parse(annotationToAdd1.encodeAsJSON())
         annotations << JSON.parse(annotationToAdd2.encodeAsJSON())
         def result = AlgoAnnotationAPI.create(JSONUtils.toJSONString(annotations), user1.username, 'PasswordUserJob')
-        assert 200 == result.code
+        assert 400 == result.code
+    }
+
+    void testAddMultipleAlgoAnnotationMsWithIncorrectValues() {
+        def annotationToAdd1 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        def annotationToAdd2 = BasicInstanceBuilder.getAlgoAnnotation()
+        annotationToAdd2.image =  annotationToAdd1.image
+        annotationToAdd2.project =  annotationToAdd1.project
+        annotationToAdd1.location = new WKTReader().read("POLYGON ((1983 2168, 2083 2268, 2183 2368, 1983 2168))")
+
+        UserJob user1 = annotationToAdd1.user
+        def annotations = []
+        annotations << JSON.parse(annotationToAdd1.encodeAsJSON())
+        annotations << JSON.parse(annotationToAdd2.encodeAsJSON())
+        def result = AlgoAnnotationAPI.create(JSONUtils.toJSONString(annotations), user1.username, 'PasswordUserJob')
+        assert 206 == result.code
     }
 
     void testAddAlgoAnnotationCorrectWithoutProject() {
@@ -104,14 +140,18 @@ class AlgoAnnotationTests  {
 
     void testAddAlgoAnnotationCorrectWithTerm() {
         def annotationToAdd = BasicInstanceBuilder.getAlgoAnnotation()
+        Term term1 = BasicInstanceBuilder.getTerm()
+        Term term2 = BasicInstanceBuilder.getAnotherBasicTerm()
+        term2.ontology = term1.ontology
+        annotationToAdd.project.ontology = term1.ontology
+        BasicInstanceBuilder.saveDomain(annotationToAdd.project)
+        BasicInstanceBuilder.saveDomain(term2)
+
         UserJob user = annotationToAdd.user
 
 
-        Long idTerm1 = BasicInstanceBuilder.getTerm().id
-        Long idTerm2 = BasicInstanceBuilder.getAnotherBasicTerm().id
-
         def annotationWithTerm = JSON.parse((String)annotationToAdd.encodeAsJSON())
-        annotationWithTerm.term = [idTerm1, idTerm2]
+        annotationWithTerm.term = [term1.id, term2.id]
 
         def result = AlgoAnnotationAPI.create(JSONUtils.toJSONString(annotationWithTerm), user.username, 'PasswordUserJob')
         assert 200 == result.code
@@ -119,6 +159,9 @@ class AlgoAnnotationTests  {
 
         result = AlgoAnnotationAPI.show(idAnnotation, user.username, 'PasswordUserJob')
         assert 200 == result.code
+
+        def json = JSON.parse(result.data)
+        assert json.term.size() == 2
 
         result = AlgoAnnotationAPI.undo(user.username, 'PasswordUserJob')
         assert 200 == result.code
@@ -355,78 +398,78 @@ class AlgoAnnotationTests  {
 
 
     void testUnionAlgoAnnotationKeepGoodValue() {
-         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
-         image.save(flush: true)
-         assert AlgoAnnotation.findAllByImage(image).size()==0
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
+        image.save(flush: true)
+        assert AlgoAnnotation.findAllByImage(image).size()==0
 
-         def a1 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        def a1 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
 
-         a1.location = new WKTReader().read("POLYGON ((0 0, 0 5100, 10000 5100, 10000 0, 0 0))")
-         a1.image = image
-         a1.project = image.project
-         assert a1.save(flush: true)  != null
+        a1.location = new WKTReader().read("POLYGON ((0 0, 0 5100, 10000 5100, 10000 0, 0 0))")
+        a1.image = image
+        a1.project = image.project
+        assert a1.save(flush: true)  != null
 
-         def a2 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
-         a2.location = new WKTReader().read("POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))")
-         a2.image = image
-         a2.project = image.project
-         assert a2.save(flush: true)  != null
+        def a2 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        a2.location = new WKTReader().read("POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))")
+        a2.image = image
+        a2.project = image.project
+        assert a2.save(flush: true)  != null
 
-         def at1 = BasicInstanceBuilder.getAlgoAnnotationTerm(a1.user.job,a1,a1.user)
-         def at2 = BasicInstanceBuilder.getAlgoAnnotationTerm(a2.user.job,a2,a2.user)
-         at2.term = at1.term
-         at2.save(flush:true)
+        def at1 = BasicInstanceBuilder.getAlgoAnnotationTerm(a1.user.job,a1,a1.user)
+        def at2 = BasicInstanceBuilder.getAlgoAnnotationTerm(a2.user.job,a2,a2.user)
+        at2.term = at1.term
+        at2.save(flush:true)
 
-         assert AlgoAnnotation.findAllByImage(a1.image).size()==2
+        assert AlgoAnnotation.findAllByImage(a1.image).size()==2
 
-         def result = AlgoAnnotationAPI.union(a1.image.id,a1.user.id,a1.terms().first().id,10,100, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-         assert 200 == result.code
+        def result = AlgoAnnotationAPI.union(a1.image.id,a1.user.id,a1.terms().first().id,10,100, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
 
-         assert AlgoAnnotation.findAllByImage(a1.image).size()==1
+        assert AlgoAnnotation.findAllByImage(a1.image).size()==1
 
-         println  AlgoAnnotation.findAllByImage(a1.image).first().location
+        println  AlgoAnnotation.findAllByImage(a1.image).first().location
 
-     }
+    }
 
 
 
 
     void testUnionAlgoAnnotationVeryBigAnnotationMustBeSimplified() {
-         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
-         image.save(flush: true)
-         assert AlgoAnnotation.findAllByImage(image).size()==0
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
+        image.save(flush: true)
+        assert AlgoAnnotation.findAllByImage(image).size()==0
 
-         def a1 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        def a1 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
 
-         a1.location = new WKTReader().read("POLYGON ((14761 7489, 14765 7489, 14765 7495, 14761 7495, 14761 7489))")
-         a1.image = image
-         a1.project = image.project
-         assert a1.save(flush: true)  != null
+        a1.location = new WKTReader().read("POLYGON ((14761 7489, 14765 7489, 14765 7495, 14761 7495, 14761 7489))")
+        a1.image = image
+        a1.project = image.project
+        assert a1.save(flush: true)  != null
 
-         def a2 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
-         a2.location = new WKTReader().read(new File('test/functional/be/cytomine/utils/very_big_annotation.txt').text)
-         a2.image = image
-         a2.project = image.project
-         assert a2.save(flush: true)  != null
+        def a2 = BasicInstanceBuilder.getAlgoAnnotationNotExist()
+        a2.location = new WKTReader().read(new File('test/functional/be/cytomine/utils/very_big_annotation.txt').text)
+        a2.image = image
+        a2.project = image.project
+        assert a2.save(flush: true)  != null
 
-         def at1 = BasicInstanceBuilder.getAlgoAnnotationTerm(a1.user.job,a1,a1.user)
-         def at2 = BasicInstanceBuilder.getAlgoAnnotationTerm(a2.user.job,a2,a2.user)
-         at2.term = at1.term
-         at2.save(flush:true)
+        def at1 = BasicInstanceBuilder.getAlgoAnnotationTerm(a1.user.job,a1,a1.user)
+        def at2 = BasicInstanceBuilder.getAlgoAnnotationTerm(a2.user.job,a2,a2.user)
+        at2.term = at1.term
+        at2.save(flush:true)
 
-         assert AlgoAnnotation.findAllByImage(a1.image).size()==2
+        assert AlgoAnnotation.findAllByImage(a1.image).size()==2
 
-         def result = AlgoAnnotationAPI.union(a1.image.id,a1.user.id,a1.terms().first().id,10,100, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-         assert 200 == result.code
+        def result = AlgoAnnotationAPI.union(a1.image.id,a1.user.id,a1.terms().first().id,10,100, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
 
-         assert AlgoAnnotation.findAllByImage(a1.image).size()==1
-         def annotationAlone = AlgoAnnotation.findAllByImage(a1.image).first()
-         println  "NB POINTS END=" +annotationAlone.id + "=" + annotationAlone.location.getNumPoints()
-         annotationAlone.refresh()
-         println  "NB POINTS END=" +annotationAlone.id + "=" + annotationAlone.location.getNumPoints()
+        assert AlgoAnnotation.findAllByImage(a1.image).size()==1
+        def annotationAlone = AlgoAnnotation.findAllByImage(a1.image).first()
+        println  "NB POINTS END=" +annotationAlone.id + "=" + annotationAlone.location.getNumPoints()
+        annotationAlone.refresh()
+        println  "NB POINTS END=" +annotationAlone.id + "=" + annotationAlone.location.getNumPoints()
 
         println annotationAlone.location.toText()
 
-     }
+    }
 
 }

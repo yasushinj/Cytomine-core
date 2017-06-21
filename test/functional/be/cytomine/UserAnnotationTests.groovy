@@ -25,7 +25,6 @@ import be.cytomine.test.Infos
 import be.cytomine.test.http.AlgoAnnotationAPI
 import be.cytomine.test.http.UserAnnotationAPI
 import be.cytomine.utils.JSONUtils
-import be.cytomine.utils.UpdateData
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -65,7 +64,7 @@ class UserAnnotationTests  {
         assert json.total >= 0
     }
 
-    
+
     void testDownloadUserAnnotationDocument() {
         AnnotationTerm annotationTerm = BasicInstanceBuilder.getAnnotationTerm()
         def result = UserAnnotationAPI.downloadDocumentByProject(annotationTerm.userAnnotation.project.id,annotationTerm.userAnnotation.user.id,annotationTerm.term.id, annotationTerm.userAnnotation.image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -133,6 +132,10 @@ class UserAnnotationTests  {
 
         result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+
+        def json = JSON.parse(result.data)
+        assert json.term.size() == 2
+
 
         result = UserAnnotationAPI.undo()
         assert 200 == result.code

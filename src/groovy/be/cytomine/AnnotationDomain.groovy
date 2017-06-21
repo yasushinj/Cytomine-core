@@ -126,8 +126,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     static belongsTo = [ImageInstance, Project]
 
     @RestApiObjectFields(params=[
-        @RestApiObjectField(apiFieldName = "centroid", description = "X,Y coord of the annotation centroid",allowedType = "map(x,y)",useForCreation = false),
-        @RestApiObjectField(apiFieldName = "term", description = "List of term id mapped with this annotation",allowedType = "list",useForCreation = true, mandatory=false),
+            @RestApiObjectField(apiFieldName = "centroid", description = "X,Y coord of the annotation centroid",allowedType = "map(x,y)",useForCreation = false),
+            @RestApiObjectField(apiFieldName = "term", description = "List of term id mapped with this annotation",allowedType = "list",useForCreation = true, mandatory=false),
     ])
     static transients = ["boundaries", "similarity","rate", "idTerm", "idExpectedTerm"]
 
@@ -221,8 +221,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     String toString() {return "Annotation " + id}
 
     def getFilename() {
-          return this.image?.baseImage?.getFilename()
-      }
+        return this.image?.baseImage?.getFilename()
+    }
 
     def retrieveAreaUnit() {
         GisUtils.retrieveUnit(areaUnit)
@@ -271,25 +271,25 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         return response
     }
 
-   def getBoundaries() {
-       //get num points
-       int imageWidth = image.baseImage.getWidth()
-       int imageHeight = image.baseImage.getHeight()
-       if (location.getNumPoints()>3) {
-         Envelope env = location.getEnvelopeInternal();
-         Integer maxY = env.getMaxY();
-         Integer minX = env.getMinX();
-         Integer width = env.getWidth();
-         Integer height = env.getHeight();
-         return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
-       } else if (location.getNumPoints() == 1) {
-           Envelope env = location.getEnvelopeInternal();
-           Integer maxY = env.getMaxY()+50;
-           Integer minX = env.getMinX()-50;
-           Integer width = 100;
-           Integer height = 100;
-           return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
-       }
+    def getBoundaries() {
+        //get num points
+        int imageWidth = image.baseImage.getWidth()
+        int imageHeight = image.baseImage.getHeight()
+        if (location.getNumPoints()>3) {
+            Envelope env = location.getEnvelopeInternal();
+            Integer maxY = env.getMaxY();
+            Integer minX = env.getMinX();
+            Integer width = env.getWidth();
+            Integer height = env.getHeight();
+            return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
+        } else if (location.getNumPoints() == 1) {
+            Envelope env = location.getEnvelopeInternal();
+            Integer maxY = env.getMaxY()+50;
+            Integer minX = env.getMinX()-50;
+            Integer width = 100;
+            Integer height = 100;
+            return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
+        }
     }
 
     def toCropURL(params=[:]) {

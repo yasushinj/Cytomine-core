@@ -23,7 +23,11 @@ import be.cytomine.Exception.ServerException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
+import be.cytomine.ontology.AlgoAnnotation
+import be.cytomine.ontology.UserAnnotation
 import grails.util.GrailsNameUtils
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
@@ -265,7 +269,67 @@ abstract class ModelService {
     }
 
 
+    @Transactional(propagation=Propagation.REQUIRES_NEW)
+    def addOne(def json){
+        return add(json)
+    }
 
+    def addMultiple(def json) {
+        def result = []
+        def errors = []
+        for(int i=0;i<json.size();i++){
+            def resp;
+            try{
+                resp = addOne(json[i])
+
+                String objectName;
+                if(currentDomain() == AlgoAnnotation || currentDomain() == UserAnnotation){
+                    objectName = "annotation"
+                } else {
+                    objectName = currentDomain().toString().toLowerCase().split("\\.").last()
+                }
+                resp = [domain:resp.data.get(objectName).id, status : resp.status]
+            } catch(WrongArgumentException e){
+                errors << [json:json[i], message : e.msg]
+                resp = [message : e.msg, status : e.code]
+            }
+
+            result << resp
+            //sometimes, call clean cache (improve very well perf for big set)
+            if (i % 100 == 0) cleanUpGorm()
+        }
+
+        def response = [:]
+
+        def succeeded = result.findAll{it.status >= 200 && it.status < 300}
+
+        if(succeeded == result) {
+            response.data = [message: currentDomain().toString().toLowerCase().split("\\.").last()+"s "+succeeded.collect{it.domain}.join(",")+" added"]
+            response.status = 200
+        } else if(succeeded.size() == 0) {
+            response.data = [message: "No entry saved", error: errors]
+            response.status = 400
+        } else {
+            response.data = [message: "Only part of the entries ("+currentDomain().toString().toLowerCase().split("\\.").last()+"s "+succeeded.collect{it.domain}.join(",")+") added.", error: errors]
+            response.status = 206
+        }
+
+        cleanUpGorm()
+        response
+    }
+
+
+    def sessionFactory
+    def propertyInstanceMap = org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin.PROPERTY_INSTANCE_MAP
+    /**
+     * Clean GORM cache
+     */
+    protected void cleanUpGorm() {
+        propertyInstanceMap.get().clear()
+        def session = sessionFactory.currentSession
+        session.flush()
+        session.clear()
+    }
 
 
     /**

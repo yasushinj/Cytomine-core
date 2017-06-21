@@ -17,6 +17,7 @@ package be.cytomine.ontology
 */
 
 import be.cytomine.AnnotationDomain
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
 import be.cytomine.processing.Job
@@ -25,6 +26,7 @@ import be.cytomine.security.SecUser
 import be.cytomine.security.UserJob
 import be.cytomine.sql.AlgoAnnotationListing
 import be.cytomine.sql.AnnotationListing
+import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import com.vividsolutions.jts.io.WKTWriter
@@ -38,7 +40,6 @@ class AlgoAnnotationService extends ModelService {
 
     def cytomineService
     def transactionService
-    def annotationTermService
     def algoAnnotationTermService
     def simplifyGeometryService
     def dataSource
@@ -100,9 +101,24 @@ class AlgoAnnotationService extends ModelService {
      * @param json New domain data
      * @return Response structure (created domain data,..)
      */
-    def add(def json, def minPoint = null, def maxPoint = null) {
+    def add(def json) {
+        if (json.isNull('location')) {
+            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
+        }
+        if ((!json.project || json.isNull('project'))) {
+            //fill project id thanks to image info
+            ImageInstance image = ImageInstance.read(json.image)
+            if (image) {
+                json.project = image.project.id
+            } else {
+                throw new WrongArgumentException("Annotation must have a valid project:" + json.project)
+            }
+        }
         securityACLService.check(json.project, Project, READ)
         SecUser currentUser = cytomineService.getCurrentUser()
+
+        def minPoint = json.minPoint
+        def maxPoint = json.maxPoint
 
         //simplify annotation
         try {
@@ -112,7 +128,6 @@ class AlgoAnnotationService extends ModelService {
         } catch (Exception e) {
             log.error("Cannot simplify:" + e)
         }
-
         //Start transaction
         Transaction transaction = transactionService.start()
 
@@ -122,6 +137,18 @@ class AlgoAnnotationService extends ModelService {
         log.debug this.toString()
         Command command = new AddCommand(user: currentUser, transaction: transaction)
         def result = executeCommand(command,null,json)
+
+        def annotationID = result?.data?.annotation?.id
+        log.info "algoAnnotation=" + annotationID + " json.term=" + json.term
+        //Add annotation-term if term
+        if (annotationID) {
+            def term = JSONUtils.getJSONList(json.term);
+            if (term) {
+                term.each { idTerm ->
+                    algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
+                }
+            }
+        }
 
         return result
     }

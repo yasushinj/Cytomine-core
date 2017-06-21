@@ -550,4 +550,15 @@ class RestReviewedAnnotationController extends RestController {
         }
 
     }
+
+    /**
+     * Clean GORM cache
+     */
+    private void cleanUpGorm() {
+        def session = sessionFactory.currentSession
+        session.flush()
+        session.clear()
+        propertyInstanceMap.get().clear()
+    }
+
 }
