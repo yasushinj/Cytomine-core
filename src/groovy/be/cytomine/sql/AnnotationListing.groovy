@@ -61,6 +61,8 @@ abstract class AnnotationListing {
     def reviewUsers
     def terms = null
     def images = null
+    def afterThan
+    def beforeThan
 
     def suggestedTerms = null
 
@@ -197,6 +199,8 @@ abstract class AnnotationListing {
                         getIntersectConst() +
                         getIntersectAnnotationConst() +
                         getMaxDistanceAnnotationConst() +
+                        getBeforeThan() +
+                        getAfterThan() +
                         createOrderBy()
 
         return getSelect(sqlColumns) + getFrom() + whereRequest
@@ -394,6 +398,21 @@ abstract class AnnotationListing {
     }
 
     abstract def createOrderBy()
+
+    def getBeforeThan() {
+        if (beforeThan) {
+            return "AND a.created < '${beforeThan}'\n"
+        } else {
+            return ""
+        }
+    }
+    def getAfterThan() {
+        if (afterThan) {
+            return "AND a.created > '${afterThan}'\n"
+        } else {
+            return ""
+        }
+    }
 
 }
 

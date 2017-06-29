@@ -66,100 +66,100 @@ class AnnotationListingService extends ModelService {
     /**
      * Execute request and format result into a list of map
      */
-      def selectGenericAnnotation(AnnotationListing al) {
+    def selectGenericAnnotation(AnnotationListing al) {
 
-          def data = []
-          long lastAnnotationId = -1
-          long lastTermId = -1
-          boolean first = true;
+        def data = []
+        long lastAnnotationId = -1
+        long lastTermId = -1
+        boolean first = true;
 
-          def realColumn = []
-         def request = al.getAnnotationsRequest()
-          boolean termAsked = false
-           def sql = new Sql(dataSource)
-          log.info request
-          sql.eachRow(request) {
+        def realColumn = []
+        def request = al.getAnnotationsRequest()
+        boolean termAsked = false
+        def sql = new Sql(dataSource)
+        log.info request
+        sql.eachRow(request) {
 
-              /**
-               * If an annotation has n multiple term, it will be on "n" lines.
-               * For the first line for this annotation (it.id!=lastAnnotationId), add the annotation data,
-               * For the other lines, we add term data t o the last annotation
-               */
-              if (it.id != lastAnnotationId) {
-                  if(first) {
-                      al.getAllPropertiesName().each { columnName ->
-                            if(columnExist(it,columnName)) {
-                                realColumn << columnName
-                            }
-                      }
-                      first = false
-                  }
-
-
-                  def item = [:]
-                  item['class'] = al.getDomainClass()
-
-                  realColumn.each { columnName ->
-                      item[columnName]=it[columnName]
-                  }
+            /**
+             * If an annotation has n multiple term, it will be on "n" lines.
+             * For the first line for this annotation (it.id!=lastAnnotationId), add the annotation data,
+             * For the other lines, we add term data t o the last annotation
+             */
+            if (it.id != lastAnnotationId) {
+                if(first) {
+                    al.getAllPropertiesName().each { columnName ->
+                        if(columnExist(it,columnName)) {
+                            realColumn << columnName
+                        }
+                    }
+                    first = false
+                }
 
 
+                def item = [:]
+                item['class'] = al.getDomainClass()
 
-                  if(al.columnToPrint.contains('term')) {
-                      termAsked = true
-                      item['term'] = (it.term ? [it.term] : [])
-                      item['userByTerm'] = (it.term ? [[id: it.annotationTerms, term: it.term, user: [it.userTerm]]] : [])
-                  }
+                realColumn.each { columnName ->
+                    item[columnName]=it[columnName]
+                }
 
-                  if(al.columnToPrint.contains('image')) {
-                      item['originalfilename'] = (it.originalfilename ? it.originalfilename : null)
-                  }
 
-                  if(al.columnToPrint.contains('gis')) {
-                      item['perimeterUnit'] = (it.perimeterUnit ? GisUtils.retrieveUnit(it.perimeterUnit) : null)
-                      item['areaUnit'] = (it.areaUnit ? GisUtils.retrieveUnit(it.areaUnit) : null)
-                  }
 
-                  if(al.columnToPrint.contains('meta')) {
-                      if(al.getClass().name.contains("UserAnnotation")) {
-                         item['cropURL'] = UrlApi.getUserAnnotationCropWithAnnotationId(it.id)
-                         item['smallCropURL'] = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
-                         item['url'] = UrlApi.getUserAnnotationCropWithAnnotationId(it.id)
-                         item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
-                      } else if(al.getClass().name.contains("AlgoAnnotation")) {
-                          item['cropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(it.id)
-                          item['smallCropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
-                          item['url'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(it.id)
-                          item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
-                      }else if(al.getClass().name.contains("ReviewedAnnotation")) {
-                            item['cropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(it.id)
-                            item['smallCropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
-                            item['url'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(it.id)
-                            item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
-                      }
-                  }
-                  data << item
-              } else {
-                  if (it.term) {
-                      data.last().term.add(it.term)
-                      data.last().term.unique()
-                      if (it.term == lastTermId) {
-                          data.last().userByTerm.last().user.add(it.userTerm)
-                          data.last().userByTerm.last().user.unique()
-                      } else {
-                          data.last().userByTerm.add([id: it.annotationTerms, term: it.term, user: [it.userTerm]])
-                      }
-                  }
-              }
-              if (termAsked) {
-                  lastTermId = it.term
-                 lastAnnotationId = it.id
-              }
+                if(al.columnToPrint.contains('term')) {
+                    termAsked = true
+                    item['term'] = (it.term ? [it.term] : [])
+                    item['userByTerm'] = (it.term ? [[id: it.annotationTerms, term: it.term, user: [it.userTerm]]] : [])
+                }
 
-          }
-          sql.close()
-          data
-      }
+                if(al.columnToPrint.contains('image')) {
+                    item['originalfilename'] = (it.originalfilename ? it.originalfilename : null)
+                }
+
+                if(al.columnToPrint.contains('gis')) {
+                    item['perimeterUnit'] = (it.perimeterUnit ? GisUtils.retrieveUnit(it.perimeterUnit) : null)
+                    item['areaUnit'] = (it.areaUnit ? GisUtils.retrieveUnit(it.areaUnit) : null)
+                }
+
+                if(al.columnToPrint.contains('meta')) {
+                    if(al.getClass().name.contains("UserAnnotation")) {
+                        item['cropURL'] = UrlApi.getUserAnnotationCropWithAnnotationId(it.id)
+                        item['smallCropURL'] = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
+                        item['url'] = UrlApi.getUserAnnotationCropWithAnnotationId(it.id)
+                        item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
+                    } else if(al.getClass().name.contains("AlgoAnnotation")) {
+                        item['cropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(it.id)
+                        item['smallCropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
+                        item['url'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(it.id)
+                        item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
+                    }else if(al.getClass().name.contains("ReviewedAnnotation")) {
+                        item['cropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(it.id)
+                        item['smallCropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
+                        item['url'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(it.id)
+                        item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
+                    }
+                }
+                data << item
+            } else {
+                if (it.term) {
+                    data.last().term.add(it.term)
+                    data.last().term.unique()
+                    if (it.term == lastTermId) {
+                        data.last().userByTerm.last().user.add(it.userTerm)
+                        data.last().userByTerm.last().user.unique()
+                    } else {
+                        data.last().userByTerm.add([id: it.annotationTerms, term: it.term, user: [it.userTerm]])
+                    }
+                }
+            }
+            if (termAsked) {
+                lastTermId = it.term
+                lastAnnotationId = it.id
+            }
+
+        }
+        sql.close()
+        data
+    }
 
 
 
