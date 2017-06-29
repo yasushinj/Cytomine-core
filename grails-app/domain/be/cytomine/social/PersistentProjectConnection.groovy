@@ -35,20 +35,29 @@ class PersistentProjectConnection extends CytomineDomain{
 
     static belongsTo = [user : SecUser, project: Project]
 
-    @RestApiObjectField(description = "The user")
-    SecUser user
-    @RestApiObjectField(description = "The consultated project")
-    Project project
+    @RestApiObjectField(description = "The user id")
+    Long user
+    @RestApiObjectField(description = "The consultated project id")
+    Long project
     @RestApiObjectField(description = "The OS of the user")
     String os
     @RestApiObjectField(description = "The browser of the user")
     String browser
     @RestApiObjectField(description = "The browser version of the user")
     String browserVersion
+    @RestApiObjectField(description = "The duration of the user connection into the project")
+    Long time
+    @RestApiObjectField(description = "The count of viewed image during the project connection")
+    Integer countViewedImages
+    @RestApiObjectField(description = "The count of created annotation during the project connection")
+    Integer countCreatedAnnotations
 
     static constraints = {
         user (nullable:false)
         project (nullable: false)
+        time(nullable: true)
+        countViewedImages(nullable: true)
+        countCreatedAnnotations(nullable: true)
     }
 
     static mapping = {
@@ -66,8 +75,11 @@ class PersistentProjectConnection extends CytomineDomain{
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray.created = domain?.created
-        returnArray.user = domain?.user?.id
-        returnArray.project = domain?.project?.id
+        returnArray.user = domain?.user
+        returnArray.project = domain?.project
+        returnArray.time = domain?.time
+        returnArray.countViewedImages = domain?.countViewedImages
+        returnArray.countCreatedAnnotations = domain?.countCreatedAnnotations
         returnArray
     }
 }

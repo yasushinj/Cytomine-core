@@ -3,6 +3,8 @@ package be.cytomine.social
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.sql.AnnotationListing
+import be.cytomine.sql.UserAnnotationListing
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
@@ -18,15 +20,17 @@ class ProjectConnectionService extends ModelService {
     def dataSource
     def mongo
     def noSQLCollectionService
+    def imageConsultationService
 
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
         Project project = Project.read(JSONUtils.getJSONAttrLong(json,"project",0))
         securityACLService.check(project,READ)
+        closeLastProjectConnection(user, project, new Date())
         PersistentProjectConnection connection = new PersistentProjectConnection()
-        connection.user = user
-        connection.project = project
+        connection.user = user.id
+        connection.project = project.id
         connection.created = new Date()
         connection.os = json.os
         connection.browser = json.browser
@@ -48,6 +52,57 @@ class ProjectConnectionService extends ModelService {
             results << [user: it["_id"], created : it["created"]]
         }
         return results
+    }
+
+    private void closeLastProjectConnection(User user, Project project, Date before){
+        PersistentProjectConnection connection = PersistentProjectConnection.findByUserAndProjectAndCreatedLessThan(user, project, before, [sort: 'created', order: 'desc', max: 1])
+
+        //first connection
+        if(connection == null) return;
+
+        //last connection already closed
+        if(connection.time) return;
+
+        fillProjectConnection(connection, before)
+
+        connection.save(flush : true)
+    }
+
+    def annotationListingService
+    private void fillProjectConnection(PersistentProjectConnection connection, Date before = new Date()){
+        Date after = connection.created;
+
+        // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def lastConnection = db.persistentConnection.aggregate(
+                [$match: [project: connection.project, user: connection.user, $and : [[created: [$gte: after]],[created: [$lte: before]]]]],
+                [$sort: [created: 1]],
+                [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
+        );
+
+        def continuousConnections = lastConnection.results().collect { it.dateInMillis }
+
+        //we calculated the gaps between connections to identify the period of non activity
+        def continuousConnectionIntervals = []
+
+        continuousConnections.inject(connection.created.time) { result, i ->
+            continuousConnectionIntervals << (i-result)
+            i
+        }
+
+        connection.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
+
+        // count viewed images
+        connection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(connection.user, connection.project,after, before).size()
+
+        AnnotationListing al = new UserAnnotationListing()
+        al.project = connection.project
+        al.user = connection.user
+        al.beforeThan = before
+        al.afterThan = after
+
+        // count created annotations
+        connection.countCreatedAnnotations = annotationListingService.listGeneric(al).size()
     }
 
     def getConnectionByUserAndProject(User user, Project project, Integer limit, Integer offset){

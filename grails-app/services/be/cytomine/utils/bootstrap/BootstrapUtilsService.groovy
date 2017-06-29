@@ -30,9 +30,11 @@ import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
 import be.cytomine.processing.Software
 import be.cytomine.security.*
+import be.cytomine.social.PersistentProjectConnection
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
 import groovy.json.JsonBuilder
+import groovy.sql.Sql
 
 /**
  * Cytomine @ GIGA-ULG
@@ -507,6 +509,59 @@ class BootstrapUtilsService {
         if (Environment.getCurrent() == Environment.TEST) {
             rabbitConnectionService.getRabbitConnection(mbs)
         }
+    }
+
+    def mongo
+    def noSQLCollectionService
+    def imageConsultationService
+    void fillProjectConnections() {
+        SpringSecurityUtils.doWithAuth("superadmin", {
+            Date before = new Date();
+
+            def connections = PersistentProjectConnection.list(sort: 'created', order: 'desc', max: Integer.MAX_VALUE)
+            log.info "To update " + connections.size()
+
+            def sql = new Sql(dataSource)
+
+            for (PersistentProjectConnection projectConnection : connections) {
+                Date after = projectConnection.created;
+
+                // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
+                def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+                def lastConnection = db.persistentConnection.aggregate(
+                        [$match: [project: projectConnection.project, user: projectConnection.user, $and : [[created: [$gte: after]],[created: [$lte: before]]]]],
+                        [$sort: [created: 1]],
+                        [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
+                );
+
+                def continuousConnections = lastConnection.results().collect { it.dateInMillis }
+
+                //we calculate the gaps between connections to identify the period of non activity
+                def continuousConnectionIntervals = []
+
+                continuousConnections.inject(projectConnection.created.time) { result, i ->
+                    continuousConnectionIntervals << (i-result)
+                    i
+                }
+
+                projectConnection.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
+
+                // count viewed images
+                projectConnection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(projectConnection.user, projectConnection.project,after, before).size()
+
+                // count created annotations
+                String request = "SELECT COUNT(*) FROM user_annotation a WHERE a.project_id = ${projectConnection.project} AND a.user_id = ${projectConnection.user} AND a.created < '${before}' AND a.created > '${after}'"
+
+                log.info request
+                sql.eachRow(request) {
+                    projectConnection.countCreatedAnnotations = it[0];
+                }
+
+                projectConnection.save(flush : true)
+                before = projectConnection.created
+            }
+            sql.close()
+        });
     }
 
     public void cleanUpGorm() {

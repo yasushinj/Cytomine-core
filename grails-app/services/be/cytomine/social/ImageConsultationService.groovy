@@ -54,17 +54,21 @@ class ImageConsultationService extends ModelService {
     }
 
     def getImagesOfUsersByProjectBetween(User user, Project project, Date after = null, Date before = null){
+        return getImagesOfUsersByProjectBetween(user.id, project.id, after, before)
+    }
+
+    def getImagesOfUsersByProjectBetween(Long userId, Long projectId, Date after = null, Date before = null){
         def results = [];
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
         def match;
         if(after && before){
-            match = [$match:[$and : [[created: [$lt: before]], [created: [$gte: after]], [project : project.id], [user:user.id]]]]
+            match = [$match:[$and : [[created: [$lt: before]], [created: [$gte: after]], [project : projectId], [user:userId]]]]
         } else if(after){
-            match = [$match:[project : project.id, user:user.id, created: [$gte: after]]]
+            match = [$match:[project : projectId, user:userId, created: [$gte: after]]]
         } else if(before){
-            match = [$match:[project : project.id, user:user.id, created: [$lt: before]]]
+            match = [$match:[project : projectId, user:userId, created: [$lt: before]]]
         } else {
-            match = [$match:[project : project.id, user:user.id]]
+            match = [$match:[project : projectId, user:userId]]
         }
 
         def images = db.persistentImageConsultation.aggregate(
