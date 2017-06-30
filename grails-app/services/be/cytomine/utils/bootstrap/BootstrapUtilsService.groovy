@@ -518,7 +518,7 @@ class BootstrapUtilsService {
         SpringSecurityUtils.doWithAuth("superadmin", {
             Date before = new Date();
 
-            def connections = PersistentProjectConnection.list(sort: 'created', order: 'desc', max: Integer.MAX_VALUE)
+            def connections = PersistentProjectConnection.findAllByTimeIsNullOrCountCreatedAnnotationsIsNullOrCountViewedImagesIsNull(sort: 'created', order: 'desc', max: Integer.MAX_VALUE)
             log.info "To update " + connections.size()
 
             def sql = new Sql(dataSource)
