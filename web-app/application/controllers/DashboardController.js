@@ -251,7 +251,7 @@ var DashboardController = Backbone.Router.extend({
     },
 
     usersConfig: function (project) {
-        console.log("config");
+        console.log("usersConfig");
         var self = this;
         var func = function () {
             self.view.refreshUsersConfigView();
