@@ -51,7 +51,8 @@ class RestProjectConnectionController extends RestController {
 
     def lastConnectionInProject = {
         Project project = projectService.read(params.project)
-        responseSuccess(projectConnectionService.lastConnectionInProject(project));
+        Long userId = params.user ? Long.parseLong(params.user): null
+        responseSuccess(projectConnectionService.lastConnectionInProject(project, userId));
     }
 
     def getConnectionByUserAndProject = {
@@ -128,71 +129,9 @@ class RestProjectConnectionController extends RestController {
         Integer offset = params.offset != null ? params.getInt('offset') : 0
         Integer limit = params.limit != null ? params.getInt('limit') : -1
 
-        // if offset > 0, we take limit +1 object to have the created of the previous object.
-        boolean getPrevious;
-        if(offset > 0 && limit >= 0) {
-            limit++
-            offset--
-            getPrevious = true;
-        };
-
-        def connections = projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset)
-
-        Date before;
-        def result = []
-        if(connections.size() == 0) {
-            responseSuccess(result)
-            return
-        }
-        if(getPrevious) {
-            before = connections.remove(0).created;
-        } else {
-            before = new Date();
-        }
-
-        if(connections.size() >= 1) {
-
-            Date after = connections[connections.size()-1].created;
-
-            def imagesConsultations = imageConsultationService.getImagesOfUsersByProjectBetween(user, project,after, before)
-
-            imagesConsultations = (imagesConsultations.size() > 0) ? imagesConsultations : []
-
-            //merging
-            if(imagesConsultations.size()>=1) {
-                def consultedImages;
-                int beginJ = imagesConsultations.size()-1;
-                for(int i=connections.size()-1;i>=1;i--){
-                    consultedImages = [];
-
-                    def nextConnection = connections[i-1];
-                    int j = beginJ;
-                    while(j>=0 && imagesConsultations[j].created < nextConnection.created){
-                        consultedImages << imagesConsultations[j]
-                        j--
-                    }
-                    beginJ = j;
-
-                    result << [id : connections[i].id, created: connections[i].created, user: user.id,
-                               project : project.id, time:connections[i].time, images:consultedImages]
-
-                }
-                consultedImages = [];
-                for(int j=beginJ;j>=0;j--){
-                    consultedImages << imagesConsultations[j]
-                }
-
-                result << [id : connections[0].id, created: connections[0].created, user:user.id,
-                           project : project.id, time:connections[0].time, images:consultedImages]
-                result = result.reverse();
-            } else {
-                result = connections;
-            }
-        }
-
         // hack to avoid list to be cut. offset was already used in db request
         params.remove("offset")
 
-        responseSuccess(result)
+        responseSuccess(projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset))
     }
 }

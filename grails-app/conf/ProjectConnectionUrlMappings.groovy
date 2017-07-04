@@ -23,7 +23,10 @@ class ProjectConnectionUrlMappings {
         "/api/project/$project/userconnection/$user.$format"(controller: "restProjectConnection") {
             action = [GET: "getConnectionByUserAndProject"]
         }
-        "/api/project/$project/lastconnections.$format"(controller: "restProjectConnection") {
+        "/api/project/$project/lastConnection.$format"(controller: "restProjectConnection") {
+            action = [GET: "lastConnectionInProject"]
+        }
+        "/api/project/$project/lastConnection/$user.$format"(controller: "restProjectConnection") {
             action = [GET: "lastConnectionInProject"]
         }
         "/api/project/$project/connectionFrequency.$format"(controller: "restProjectConnection") {

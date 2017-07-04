@@ -26,7 +26,7 @@ class ProjectConnectionAPI extends DomainAPI {
     }
 
     static def lastConnectionInProject(Long idProject,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "/api/project/$idProject/lastconnections.json"
+        String URL = Infos.CYTOMINEURL + "/api/project/$idProject/lastConnection.json"
         return doGET(URL, username, password)
     }
 

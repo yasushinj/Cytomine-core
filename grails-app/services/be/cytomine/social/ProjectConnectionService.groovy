@@ -39,13 +39,19 @@ class ProjectConnectionService extends ModelService {
         return connection
     }
 
-    def lastConnectionInProject(Project project){
+    def lastConnectionInProject(Project project, Long userId = null){
         securityACLService.check(project,WRITE)
 
         def results = []
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def match;
+        if (userId){
+            match = [$match:[project : project.id, user : userId]]
+        } else {
+            match = [$match:[project : project.id]]
+        }
         def connection = db.persistentProjectConnection.aggregate(
-                [$match:[project : project.id]],
+                match,
                 [$group : [_id : '$user', created : [$max :'$created']]])
 
         connection.results().each {
@@ -107,7 +113,6 @@ class ProjectConnectionService extends ModelService {
 
     def getConnectionByUserAndProject(User user, Project project, Integer limit, Integer offset){
         securityACLService.check(project,WRITE)
-        def result = []
 
         def connections = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc") {
             eq("user", user)
@@ -118,51 +123,16 @@ class ProjectConnectionService extends ModelService {
 
         if(connections.size() == 0) return result;
 
-        Date after = connections[connections.size() - 1].created;
-
-        // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
-        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        def continuousConnectionsResult = db.persistentConnection.aggregate(
-                [$match: [project: project.id, user: user.id, created: [$gte: after]]],
-                [$sort: [created: -1]],
-                [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
-        );
-        def continuousConnections = continuousConnectionsResult.results().collect { it.dateInMillis }
-
-        if(continuousConnections.size() == 0) {
-            connections.each {
-                result << [id: it.id, created: it.created, user: user.id, project: project.id, time: 0]
+        if(!connections[0].time) {
+            connections[0] = ((PersistentProjectConnection) connections[0]).clone()
+            boolean online = LastConnection.findByProjectAndUser(project, user) != null
+            fillProjectConnection(connections[0])
+            if(online) {
+                connections[0].online = true
             }
-            return result
         }
 
-        def connectionsTime = connections.collect { it.created.getTime() }
-
-        //merging
-        int beginJ = continuousConnections.size() - 1;
-
-        for (int i = connections.size() - 1; i >= 1; i--) {
-            def nextConnectionDate = connectionsTime[i - 1];
-
-            int j = beginJ;
-            while (j >= 0 && continuousConnections[j] < nextConnectionDate) {
-                j--;
-            }
-
-            // if j = beginJ, short time connection (<20sec). Avoid j+1 > size of array.
-            long time = (j == beginJ) ? 0 : (continuousConnections[j + 1] - continuousConnections[beginJ]);
-            if (time < 0) time = 0;
-            beginJ = j >= 0 ? j : 0;
-
-            result << [id: connections[i].id, created: connections[i].created, user: user.id,
-                       project: project.id, time: time]
-        }
-        long time = continuousConnections[0] - continuousConnections[beginJ];
-        result << [id: connections[0].id, created: connections[0].created, user: user.id,
-                   project: project.id, time: time]
-        result = result.reverse();
-
-        return result
+        return connections
     }
 
     def numberOfConnectionsByProjectAndUser(Project project, User user = null){
