@@ -71,6 +71,7 @@ class BootstrapOldVersionService {
 
     void init20170714(){
         bootstrapUtilsService.fillProjectConnections();
+        bootstrapUtilsService.fillImageConsultations();
     }
 
     void init20170201(){

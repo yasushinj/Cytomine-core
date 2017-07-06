@@ -23,7 +23,7 @@ class UserPositionService extends ModelService {
 
         SecUser user = cytomineService.getCurrentUser()
         ImageInstance image = ImageInstance.read(JSONUtils.getJSONAttrLong(json,"image",0))
-        PersistentUserPosition position = new PersistentUserPosition()
+        def position = new LastUserPosition()
         position.user = user
         position.image = image
         position.project = image.project
@@ -38,12 +38,26 @@ class UserPositionService extends ModelService {
         position.created = new Date()
         position.updated = position.created
         position.imageName = image.getFileName()
-        position.insert(flush:true) //don't use save (stateless collection)
+        position.insert(flush:true, failOnError : true) //don't use save (stateless collection)
 
-        LastUserPosition lastUserPosition = new LastUserPosition()
-        UserPosition.copyProperties(position,lastUserPosition)
-        lastUserPosition.insert(flush:true)
-        return lastUserPosition
+        position = new PersistentUserPosition()
+        position.user = user
+        position.image = image
+        position.project = image.project
+        polygon = [
+                [JSONUtils.getJSONAttrDouble(json,"topLeftX",-1),JSONUtils.getJSONAttrDouble(json,"topLeftY",-1)],
+                [JSONUtils.getJSONAttrDouble(json,"topRightX",-1),JSONUtils.getJSONAttrDouble(json,"topRightY",-1)],
+                [JSONUtils.getJSONAttrDouble(json,"bottomRightX",-1),JSONUtils.getJSONAttrDouble(json,"bottomRightY",-1)],
+                [JSONUtils.getJSONAttrDouble(json,"bottomLeftX",-1),JSONUtils.getJSONAttrDouble(json,"bottomLeftY",-1)]
+        ]
+        position.location = polygon
+        position.zoom = JSONUtils.getJSONAttrInteger(json,"zoom",-1)
+        position.created = new Date()
+        position.updated = position.created
+        position.imageName = image.getFileName()
+        position.insert(flush:true, failOnError : true) //don't use save (stateless collection)
+
+        return position
     }
 
     def lastPositionByUser(ImageInstance image, SecUser user){

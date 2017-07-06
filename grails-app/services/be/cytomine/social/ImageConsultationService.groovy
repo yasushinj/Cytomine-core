@@ -4,6 +4,8 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.sql.AnnotationListing
+import be.cytomine.sql.UserAnnotationListing
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
@@ -21,11 +23,12 @@ class ImageConsultationService extends ModelService {
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
-        ImageInstance image = ImageInstance.read(JSONUtils.getJSONAttrLong(json,"imageinstance",0))
+        Long image = JSONUtils.getJSONAttrLong(json,"imageinstance")
+        closeLastImageConsultation(user.id, image, new Date())
         PersistentImageConsultation consultation = new PersistentImageConsultation()
-        consultation.user = user
-        consultation.image = image
-        consultation.project = image.project
+        consultation.user = user.id
+        consultation.image = image.id
+        consultation.project = image.project.id
         consultation.mode = JSONUtils.getJSONAttrStr(json,"mode",true)
         consultation.created = new Date()
         consultation.imageName = image.getFileName()
@@ -80,4 +83,54 @@ class ImageConsultationService extends ModelService {
         }
         return results
     }
+
+    private void closeLastImageConsultation(Long user, Long image, Date before){
+        PersistentImageConsultation consultation = PersistentImageConsultation.findByUserAndImageAndCreatedLessThan(user, image, before, [sort: 'created', order: 'desc', max: 1])
+
+        //first consultation
+        if(consultation == null) return;
+
+        //last consultation already closed
+        if(consultation.time) return;
+
+        fillImageConsultation(consultation, before)
+
+        consultation.save(flush : true, failOnError : true)
+    }
+    def annotationListingService
+    private void fillImageConsultation(PersistentImageConsultation consultation, Date before = new Date()){
+        Date after = consultation.created;
+
+        // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def positions = db.persistentUserPosition.aggregate(
+                [$match: [project: consultation.project, user: consultation.user, image: consultation.image, $and : [[created: [$gte: after]],[created: [$lte: before]]]]],
+                [$sort: [created: 1]],
+                [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
+        );
+
+        def continuousConnections = positions.results().collect { it.dateInMillis }
+
+        //we calculated the gaps between connections to identify the period of non activity
+        def continuousConnectionIntervals = []
+
+        continuousConnections.inject(consultation.created.time) { result, i ->
+            continuousConnectionIntervals << (i-result)
+            i
+        }
+
+        consultation.time = continuousConnectionIntervals.split{it < 15000}[0].sum()
+
+        AnnotationListing al = new UserAnnotationListing()
+        al.project = consultation.project
+        al.user = consultation.user
+        al.image = consultation.image
+        al.beforeThan = before
+        al.afterThan = after
+
+        // count created annotations
+        consultation.countCreatedAnnotations = annotationListingService.listGeneric(al).size()
+    }
+
+
 }

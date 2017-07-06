@@ -91,7 +91,18 @@ var UserOnlineCollection = PaginatedCollection.extend({
 var UserCollection = PaginatedCollection.extend({
     model: UserModel,
     url: function () {
-        if (!window.app.isUndefined(this.project) && this.representative) {
+        if (!window.app.isUndefined(this.withActivity)) {
+            var url= "api/project/" + this.project + "/usersActivity.json";
+            if (!window.app.isUndefined(this.online) && this.online) {
+                url+= "?onlineOnly=true";
+                if (!window.app.isUndefined(this.admins) && this.admins) {
+                    url+= "&adminsOnly=true";
+                }
+            } else if (!window.app.isUndefined(this.admins) && this.admins) {
+                url+= "?adminsOnly=true";
+            }
+            return url
+        } else if (!window.app.isUndefined(this.project) && this.representative) {
             return "api/project/" + this.project + "/users/representative.json";
         } else if (!window.app.isUndefined(this.project) && this.admin) {
                 return "api/project/" + this.project + "/admin.json";
@@ -124,6 +135,8 @@ var UserCollection = PaginatedCollection.extend({
         this.representative = options.representative;
         this.group = options.group;
         this.withRoles = options.withRoles;
+        this.withActivity = options.withActivity;
+        this.admins = options.admins;
     },
     comparator: function (user) {
         if (user.get("lastname") != undefined) {
@@ -138,41 +151,6 @@ var UserCollection = PaginatedCollection.extend({
         }
     }
 });
-
-var UserActivitiesCollection = PaginatedCollection.extend({
-    model: UserModel,
-    url: function () {
-        var url= "api/project/" + this.project + "/usersActivity.json";
-        if (!window.app.isUndefined(this.online) && this.online) {
-            url+= "?onlineOnly=true";
-            if (!window.app.isUndefined(this.admins) && this.admins) {
-                url+= "&adminsOnly=true";
-            }
-        } else if (!window.app.isUndefined(this.admins) && this.admins) {
-            url+= "?adminsOnly=true";
-        }
-        return url;
-    },
-    initialize: function (options) {
-        this.initPaginator(options);
-        this.project = options.project;
-        this.admins = options.admins;
-        this.online = options.online;
-    },
-    comparator: function (user) {
-        if (!window.app.isUndefined(user.get("lastname"))) {
-            return user.get("lastname") + " " + user.get("firstname")
-        }
-        else {
-            if(window.app.isUndefined(user.get("username"))) {
-                return -1;
-            } else{
-                return user.get("username").toLowerCase();
-            }
-        }
-    }
-});
-
 
 
 

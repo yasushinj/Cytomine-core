@@ -27,7 +27,7 @@ class ProjectConnectionService extends ModelService {
         SecUser user = cytomineService.getCurrentUser()
         Project project = Project.read(JSONUtils.getJSONAttrLong(json,"project",0))
         securityACLService.check(project,READ)
-        closeLastProjectConnection(user, project, new Date())
+        closeLastProjectConnection(user.id, project.id, new Date())
         PersistentProjectConnection connection = new PersistentProjectConnection()
         connection.user = user.id
         connection.project = project.id
@@ -60,7 +60,7 @@ class ProjectConnectionService extends ModelService {
         return results
     }
 
-    private void closeLastProjectConnection(User user, Project project, Date before){
+    private void closeLastProjectConnection(Long user, Long project, Date before){
         PersistentProjectConnection connection = PersistentProjectConnection.findByUserAndProjectAndCreatedLessThan(user, project, before, [sort: 'created', order: 'desc', max: 1])
 
         //first connection
@@ -80,13 +80,13 @@ class ProjectConnectionService extends ModelService {
 
         // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        def lastConnection = db.persistentConnection.aggregate(
+        def connections = db.persistentConnection.aggregate(
                 [$match: [project: connection.project, user: connection.user, $and : [[created: [$gte: after]],[created: [$lte: before]]]]],
                 [$sort: [created: 1]],
                 [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
         );
 
-        def continuousConnections = lastConnection.results().collect { it.dateInMillis }
+        def continuousConnections = connections.results().collect { it.dateInMillis }
 
         //we calculated the gaps between connections to identify the period of non activity
         def continuousConnectionIntervals = []
@@ -397,5 +397,21 @@ class ProjectConnectionService extends ModelService {
         }
         result = connections
         return result
+    }
+
+    def getUserActivityDetails(Long activityId){
+        PersistentProjectConnection connection = PersistentProjectConnection.read(activityId)
+        Project project = Project.read(connection.project)
+        securityACLService.check(project,WRITE)
+
+        println "getUserActivityDetails"
+        println connection.os
+        println connection.browser
+        println connection.browserVersion
+        println connection.user
+
+
+        //TODO call imageConsultationService
+
     }
 }

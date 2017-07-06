@@ -73,7 +73,9 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             { data: "email", searchable: true, targets: [6] },
             { data: "frequency", defaultContent: "An error happened", targets: [7]},
             { orderable: false, render : function( data, type, row ) {
-                return "<button class='btn btn-info btn-xs UserDetailsButton"+self.model.id+"' data-id="+row["id"]+" >Details</button>";
+                //return "<button class='btn btn-info btn-xs UserDetailsButton"+self.model.id+"' data-id="+row["id"]+" >Details</button>";
+                //return "<button class='btn btn-info btn-xs> <a href='#tabs-useractivity-"+self.model.id+"-"+row["id"]+"'>Details</a></button>";
+                return "<a href='#tabs-useractivity-"+self.model.id+"-"+row["id"]+"'>Details</a>";
             }, targets: [8]},
             { searchable: false, targets: "_all" }
         ];
@@ -83,7 +85,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             processing: true,
             serverSide: true,
             ajax: {
-                url: new UserActivitiesCollection({project: this.model.get('id'), admins : self.showOnlyAdmins, online : self.showOnlyOnlineUsers}).url(),
+                url: new UserCollection({withActivity: true, project: this.model.get('id'), admins : self.showOnlyAdmins, online : self.showOnlyOnlineUsers}).url(),
                 data: {
                     "datatables": "true"
                 }

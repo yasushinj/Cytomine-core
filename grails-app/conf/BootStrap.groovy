@@ -194,6 +194,6 @@ class BootStrap {
         }
 
         bootstrapUtilsService.fillProjectConnections();
-
+        bootstrapUtilsService.fillImageConsultations();
     }
 }

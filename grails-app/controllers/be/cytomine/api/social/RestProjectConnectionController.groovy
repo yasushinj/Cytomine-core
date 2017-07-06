@@ -27,6 +27,7 @@ import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
 import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 /**
  * Controller for an user connection to a project
@@ -134,4 +135,24 @@ class RestProjectConnectionController extends RestController {
 
         responseSuccess(projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset))
     }
+
+    @RestApiMethod(description="Get the details of a project connection including the actions done during a project connection of one user into a project.")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id. Mandatory"),
+            @RestApiParam(name="activity", type="long", paramType = RestApiParamType.PATH, description = "The project connection id. Mandatory"),
+            //@RestApiParam(name="offset", type="integer", paramType = RestApiParamType.QUERY, description = "An offset. Default value = 0"),
+            //@RestApiParam(name="limit", type="integer", paramType = RestApiParamType.QUERY, description = "Limit the project connections. Optionnal"),
+    ])
+    def getUserActivityDetails() {
+        Long activity = Long.parseLong(params.id)
+        //Integer offset = params.offset != null ? params.getInt('offset') : 0
+        //Integer limit = params.limit != null ? params.getInt('limit') : -1
+
+        // hack to avoid list to be cut. offset was already used in db request
+        params.remove("offset")
+
+        responseSuccess(projectConnectionService.getUserActivityDetails(activity/*,limit, offset*/))
+    }
+
+
 }
