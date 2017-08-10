@@ -434,7 +434,7 @@ body {
 </body>
 
 <g:if test="${Environment.getCurrent() == Environment.PRODUCTION}">
-    <script type="text/javascript" src="http://assets.freshdesk.com/widget/freshwidget.js"></script>
+    <script type="text/javascript" src="//assets.freshdesk.com/widget/freshwidget.js"></script>
     <script type="text/javascript">
 
         FreshWidget.init("", {"queryString": "&amp;widgetType=popup", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#0064eb", "alignment": "4", "offset": "-1500px", "formHeight": "500px", "url": "https://cytomine.freshdesk.com"} );
@@ -447,7 +447,7 @@ body {
 </g:if>
 
 <g:if test="${Environment.getCurrent() == Environment.DEVELOPMENT || Environment.getCurrent() == Environment.CUSTOM }">
-    <script type="text/javascript" src="http://assets.freshdesk.com/widget/freshwidget.js"></script>
+    <script type="text/javascript" src="//assets.freshdesk.com/widget/freshwidget.js"></script>
     <script type="text/javascript">
 
         FreshWidget.init("", {"queryString": "&amp;widgetType=popup", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#0064eb", "alignment": "4", "offset": "-1500px", "formHeight": "500px", "url": "https://cytomine.freshdesk.com"} );
