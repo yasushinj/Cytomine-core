@@ -71,12 +71,13 @@ class UserPositionService extends ModelService {
         return ["users": result.join(",")]
     }
 
-    def list(ImageInstance image, User user, Long afterThan = null){
+    def list(ImageInstance image, User user, Long afterThan = null, Long beforeThan = null){
         securityACLService.check(image,WRITE)
         return PersistentUserPosition.createCriteria().list(sort: "created", order: "asc") {
             if(user) eq("user", user)
             eq("image", image)
             if(afterThan) gte("created", new Date(afterThan))
+            if(beforeThan) lte("created", new Date(beforeThan))
         }
     }
 
