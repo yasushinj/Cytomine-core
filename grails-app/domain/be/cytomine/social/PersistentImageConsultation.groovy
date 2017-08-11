@@ -42,8 +42,12 @@ class PersistentImageConsultation extends CytomineDomain {
     Long image
     @RestApiObjectField(description = "The project which contains the image")
     Long project
+    @RestApiObjectField(description = "The project connection active during the consultation")
+    Long projectConnection
     @RestApiObjectField(description = "The image name")
     String imageName
+    @RestApiObjectField(description = "The image thumb")
+    String imageThumb
     @RestApiObjectField(description = "The consultation mode (Explore, review)")
     String mode
     @RestApiObjectField(description = "The duration of the user connection into the project", useForCreation = false)
@@ -53,6 +57,7 @@ class PersistentImageConsultation extends CytomineDomain {
     def extraProperties = [:]
 
     static constraints = {
+        projectConnection nullable: true
         project nullable: true
         time nullable: true
         countCreatedAnnotations nullable: true
@@ -73,10 +78,13 @@ class PersistentImageConsultation extends CytomineDomain {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray.created = domain?.created
-        returnArray.user = domain?.user?.id
-        returnArray.image = domain?.image?.id
+        returnArray.user = domain?.user
+        returnArray.image = domain?.image
+        returnArray.imageName = domain?.imageName
+        returnArray.imageThumb = domain?.imageThumb
         returnArray.mode = domain?.mode
-        returnArray.project = domain?.project?.id
+        returnArray.project = domain?.project
+        returnArray.projectConnection = domain?.projectConnection
         returnArray.time = domain?.time
         returnArray.countCreatedAnnotations = domain?.countCreatedAnnotations
 
@@ -90,10 +98,11 @@ class PersistentImageConsultation extends CytomineDomain {
     public Object clone() {
         PersistentImageConsultation result = new PersistentImageConsultation()
         result.user = user;
-        result.project = project;
+        result.projectConnection = projectConnection;
         result.time = time;
         result.image = image;
         result.imageName = imageName;
+        result.imageThumb = imageThumb;
         result.mode = mode;
         result.countCreatedAnnotations = countCreatedAnnotations;
         result.id = id;

@@ -309,6 +309,42 @@ var ApplicationController = Backbone.Router.extend({
         return result;
 
     },
+    convertLongToPrettyDuration: function (seconds){
+        var numyears = Math.floor(seconds / 31536000);
+        var numdays = Math.floor((seconds % 31536000) / 86400);
+        var numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+        var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+        var numseconds = Math.floor((((seconds % 31536000) % 86400) % 3600) % 60);
+        var result = "";
+        if(numyears > 0) {
+            result += numyears + " year";
+            if(numyears > 1) result += "s";
+        }
+        result += " ";
+        if(numdays > 0) {
+            result += numdays + " day";
+            if(numdays > 1) result += "s";
+        }
+        result += " ";
+        if(numhours > 0) {
+            result += numhours + " hour";
+            if(numhours > 1) result += "s";
+        }
+        result += " ";
+        if(numminutes > 0) {
+            result += numminutes + " minute";
+            if(numminutes > 1) result += "s";
+        }
+        result += " ";
+        if(numseconds > 0) {
+            result += numseconds + " second";
+            if(numseconds > 1) result += "s";
+        }
+        if(seconds < 1) result = "Less than 1 second";
+
+        result = result.replace(/\s+/g, " ");
+        return result;
+    },
     isUndefined: function(variable){
         return (typeof variable === "undefined" || variable === null);
     },

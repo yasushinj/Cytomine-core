@@ -1,7 +1,5 @@
 package be.cytomine.api.social
 
-import be.cytomine.Exception.CytomineException
-
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -19,6 +17,8 @@ import be.cytomine.Exception.CytomineException
 */
 
 import be.cytomine.api.RestController
+import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.image.ImageInstance
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
@@ -87,11 +87,14 @@ class RestUserPositionController extends RestController {
     def list() {
         ImageInstance image = imageInstanceService.read(params.image)
         User user = secUserService.read(params.user)
+        if(params.user != null && user == null) throw new ObjectNotFoundException("Invalid user")
+
         Long afterThan = params.long("afterThan")
+        Long beforeThan = params.long("beforeThan")
         if(params.getBoolean("showDetails")){
-            responseSuccess(userPositionService.list(image, user, afterThan))
+            responseSuccess(userPositionService.list(image, user, afterThan, beforeThan))
         } else {
-            responseSuccess(userPositionService.summarize(image, user, afterThan))
+            responseSuccess(userPositionService.summarize(image, user, afterThan, beforeThan))
         }
     }
 

@@ -550,6 +550,10 @@ class BootstrapUtilsService {
                 // count viewed images
                 projectConnection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(projectConnection.user, projectConnection.project,after, before).size()
 
+                db.persistentImageConsultation.update(
+                        [$and :[ [project:projectConnection.project],[user:projectConnection.user],[created:[$gte:after]],[created:[$lte:before]]]],
+                        [$set: [projectConnection: projectConnection.id]])
+
                 // count created annotations
                 String request = "SELECT COUNT(*) FROM user_annotation a WHERE a.project_id = ${projectConnection.project} AND a.user_id = ${projectConnection.user} AND a.created < '${before}' AND a.created > '${after}'"
 

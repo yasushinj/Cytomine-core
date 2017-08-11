@@ -85,7 +85,7 @@ var AdminDashboard = Backbone.View.extend({
         this.refreshCurrentStatsInterval = window.app.view.addInterval(function () {
             self.refreshCurrentConnections();
         }, 30*1000);
-        window.app.view.intervals.push(this.refreshCurrentStatsInterval);
+        //window.app.view.intervals.push(this.refreshCurrentStatsInterval);
 
         return this;
     },

@@ -24,7 +24,9 @@ var ExplorerController = Backbone.Router.extend({
         "tabs-imagemergechannel-:idProject-:idImage-": "browseChannel",
         "tabs-image-:idProject-:idImage-:idAnnotation": "browse",
         "tabs-review-:idProject-:idImage-": "reviewSimple",
-        "tabs-reviewmergechannel-:idProject-:idImage-": "reviewChannel"
+        "tabs-reviewmergechannel-:idProject-:idImage-": "reviewChannel",
+        "tabs-useractivity-:idProject-:idUser": "userActivity"
+
     },
 
     initialize: function () {
@@ -149,8 +151,29 @@ var ExplorerController = Backbone.Router.extend({
 
     },
 
+    userActivity: function (idProject, idUser, callback) {
+        $(window).scrollTop(0);
+        var self = this;
+        //create tabs if not exist
+        if (this.tabs == null) {
+            this.initTabs();
+        }
+        var createUserActivityViewTab = function () {
+            console.log("addUserActivityView");
+            self.tabs.addUserActivityView(idUser, null/*browseImageViewInitOptions*/,callback);
+            self.showView();
+        };
+
+        if (window.app.status.currentProject == undefined || window.app.status.currentProject != idProject) {//direct access -> create dashboard
+            window.app.controllers.dashboard.dashboard(idProject, createUserActivityViewTab);
+            return;
+        }
+
+        createUserActivityViewTab();
+    },
+
     close: function (idImage, review) {
-        this.tabs.removeTab(idImage, review? 'review': 'image')
+        this.tabs.removeImageTab(idImage, review? 'review': 'image')
         window.app.status.currentImages.splice($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.image})));
     },
 

@@ -200,7 +200,7 @@ body {
     <script type="text/javascript" src="application/models/OntologyModel.js" ></script>
 
     <script type="text/javascript" src="application/models/UserModel.js" ></script>
-    <script type="text/javascript" src="application/models/UserActivitiesModel.js" ></script>
+    <script type="text/javascript" src="application/models/UserActivityModel.js" ></script>
     <script type="text/javascript" src="application/models/GroupModel.js" ></script>
     <script type="text/javascript" src="application/models/ProjectModel.js" ></script>
     <script type="text/javascript" src="application/models/AnnotationModel.js" ></script>

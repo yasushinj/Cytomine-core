@@ -32,8 +32,8 @@ class DataTablesService {
     def currentRoleServiceProxy
 
     def process(params, domain, restrictions, returnFields, project) {
-        params.max = params.iDisplayLength ? params.iDisplayLength as int : 10;
-        params.offset = params.iDisplayStart ? params.iDisplayStart as int : 0;
+        params.max = params['length'] ? params['length'] as int : 10;
+        params.offset = params.start ? params.start as int : 0;
 
         String abstractImageAlias = "ai"
         String _search = params["search[value]"] ? "%"+params["search[value]"]+"%" : "%"

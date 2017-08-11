@@ -42,14 +42,13 @@ class ProjectConnectionService extends ModelService {
     def lastConnectionInProject(Project project, Long userId = null){
         securityACLService.check(project,WRITE)
 
+        if (userId) {
+            return PersistentProjectConnection.findAllByUserAndProject(userId, project.id, [sort: 'created', order: 'desc', max: 1])
+        }
+
         def results = []
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        def match;
-        if (userId){
-            match = [$match:[project : project.id, user : userId]]
-        } else {
-            match = [$match:[project : project.id]]
-        }
+        def match = [$match:[project : project.id]]
         def connection = db.persistentProjectConnection.aggregate(
                 match,
                 [$group : [_id : '$user', created : [$max :'$created']]])
@@ -99,7 +98,8 @@ class ProjectConnectionService extends ModelService {
         connection.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
 
         // count viewed images
-        connection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(connection.user, connection.project,after, before).size()
+        connection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(connection.user,
+                connection.project,after, before).unique({it.image}).size()
 
         AnnotationListing al = new UserAnnotationListing()
         al.project = connection.project
@@ -121,7 +121,7 @@ class ProjectConnectionService extends ModelService {
             maxResults(limit)
         }
 
-        if(connections.size() == 0) return result;
+        if(connections.size() == 0) return connections;
 
         if(!connections[0].time) {
             connections[0] = ((PersistentProjectConnection) connections[0]).clone()
@@ -404,14 +404,20 @@ class ProjectConnectionService extends ModelService {
         Project project = Project.read(connection.project)
         securityACLService.check(project,WRITE)
 
-        println "getUserActivityDetails"
-        println connection.os
-        println connection.browser
-        println connection.browserVersion
-        println connection.user
+        def consultations = PersistentImageConsultation.findAllByCreatedGreaterThanAndProjectConnection(connection.created, activityId, [sort: 'created', order: 'desc'])
 
-
-        //TODO call imageConsultationService
-
+        if(consultations.size() == 0) return consultations;
+        // current connection. We need to calculate time for the currently opened image
+        if(!connection.time) {
+            int i = 0;
+            Date before = new Date()
+            while(!consultations[i].time){
+                consultations[i] = ((PersistentImageConsultation) consultations[i]).clone()
+                imageConsultationService.fillImageConsultation(consultations[i], before)
+                before = consultations[i].created
+                i++
+            }
+        }
+        return consultations
     }
 }

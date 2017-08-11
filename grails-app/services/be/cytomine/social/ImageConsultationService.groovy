@@ -1,5 +1,6 @@
 package be.cytomine.social
 
+import be.cytomine.api.UrlApi
 import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -19,19 +20,27 @@ class ImageConsultationService extends ModelService {
     def dataSource
     def mongo
     def noSQLCollectionService
+    def imageInstanceService
+
+    private getProjectConnectionService() {
+        grailsApplication.mainContext.projectConnectionService
+    }
 
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
-        Long image = JSONUtils.getJSONAttrLong(json,"imageinstance")
-        closeLastImageConsultation(user.id, image, new Date())
+        Long imageId = JSONUtils.getJSONAttrLong(json,"imageinstance",-1)
+        ImageInstance image = imageInstanceService.read(imageId)
+        closeLastImageConsultation(user.id, imageId, new Date())
         PersistentImageConsultation consultation = new PersistentImageConsultation()
         consultation.user = user.id
         consultation.image = image.id
         consultation.project = image.project.id
+        consultation.projectConnection = projectConnectionService.lastConnectionInProject(image.project, user.id)[0].id
         consultation.mode = JSONUtils.getJSONAttrStr(json,"mode",true)
         consultation.created = new Date()
-        consultation.imageName = image.getFileName()
+        consultation.imageName = image.getInstanceFilename()
+        consultation.imageThumb = UrlApi.getThumbImage(image.baseImage?.id, 256)
         consultation.insert(flush:true) //don't use save (stateless collection)
 
         return consultation

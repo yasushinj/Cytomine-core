@@ -127,12 +127,13 @@ class RestProjectConnectionController extends RestController {
     def userProjectConnectionHistory() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
-        Integer offset = params.offset != null ? params.getInt('offset') : 0
-        Integer limit = params.limit != null ? params.getInt('limit') : -1
 
-        // hack to avoid list to be cut. offset was already used in db request
-        params.remove("offset")
+        params.put("offset", params.start)
+        params.put("max", params['length'])
 
+        // for datatables, all is done after the data collect.
+        Integer offset = 0
+        Integer limit = -1
         responseSuccess(projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset))
     }
 
@@ -145,11 +146,8 @@ class RestProjectConnectionController extends RestController {
     ])
     def getUserActivityDetails() {
         Long activity = Long.parseLong(params.id)
-        //Integer offset = params.offset != null ? params.getInt('offset') : 0
-        //Integer limit = params.limit != null ? params.getInt('limit') : -1
-
-        // hack to avoid list to be cut. offset was already used in db request
-        params.remove("offset")
+        params.put("offset", params.start)
+        params.put("max", params['length'])
 
         responseSuccess(projectConnectionService.getUserActivityDetails(activity/*,limit, offset*/))
     }

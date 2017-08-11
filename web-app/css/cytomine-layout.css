@@ -758,8 +758,13 @@ div.dataTables_filter
 div.dataTables_length
 {
     margin-bottom: 5px !important;
+    float: left;
 }
 
+.dataTables_reload_button
+{
+    float: right;
+}
 
 div.dataTables_info
 {
