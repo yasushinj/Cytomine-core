@@ -131,5 +131,10 @@ class UserUrlMappings {
         "/api/user/invitation.$format" (controller: "restProject") {
             action = [POST:"inviteNewUser"]
         }
+
+        /* Activities*/
+        "/api/project/$project/resumeActivity/$user.$format" (controller: "restUser") {
+            action = [GET:"resumeUserActivity"]
+        }
     }
 }

@@ -7,6 +7,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import org.joda.time.DateTime
+import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
@@ -52,6 +53,7 @@ class UserPositionService extends ModelService {
         ]
         position.location = polygon
         position.zoom = JSONUtils.getJSONAttrInteger(json,"zoom",-1)
+        position.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         position.created = new Date()
         position.updated = position.created
         position.imageName = image.getFileName()

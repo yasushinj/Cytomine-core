@@ -1,8 +1,5 @@
 package be.cytomine.api.social
 
-import be.cytomine.Exception.CytomineException
-import be.cytomine.api.RestController
-
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -19,6 +16,9 @@ import be.cytomine.api.RestController
 * limitations under the License.
 */
 import be.cytomine.project.Project
+import be.cytomine.Exception.CytomineException
+import be.cytomine.api.RestController
+
 
 /**
  * Controller for user position
@@ -41,6 +41,10 @@ class RestImageConsultationController extends RestController {
     def lastImageOfUsersByProject = {
         Project project = projectService.read(params.project)
         responseSuccess(imageConsultationService.lastImageOfUsersByProject(project))
+    }
+
+    def resumeByUserAndProject = {
+        responseSuccess(imageConsultationService.resumeByUserAndProject(Long.parseLong(params.user), Long.parseLong(params.project)))
     }
 
 }

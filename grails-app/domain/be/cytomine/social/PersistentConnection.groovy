@@ -35,6 +35,8 @@ class PersistentConnection extends CytomineDomain{
     SecUser user
     @RestApiObjectField(description = "(mandatory) The project. Null if the user is not in a project")
     Project project
+    @RestApiObjectField(description = "The sessionID active during the connection")
+    String session
 
     static constraints = {
         user (nullable:false)

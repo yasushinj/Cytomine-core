@@ -44,13 +44,15 @@ class PersistentImageConsultation extends CytomineDomain {
     Long project
     @RestApiObjectField(description = "The project connection active during the consultation")
     Long projectConnection
+    @RestApiObjectField(description = "The sessionID active during the consultation")
+    String session
     @RestApiObjectField(description = "The image name")
     String imageName
     @RestApiObjectField(description = "The image thumb")
     String imageThumb
     @RestApiObjectField(description = "The consultation mode (Explore, review)")
     String mode
-    @RestApiObjectField(description = "The duration of the user connection into the project", useForCreation = false)
+    @RestApiObjectField(description = "The duration of the user consultation into the image", useForCreation = false)
     Long time
     @RestApiObjectField(description = "The count of created annotation during the project connection", useForCreation = false)
     Integer countCreatedAnnotations
@@ -58,6 +60,7 @@ class PersistentImageConsultation extends CytomineDomain {
 
     static constraints = {
         projectConnection nullable: true
+        session nullable: true
         project nullable: true
         time nullable: true
         countCreatedAnnotations nullable: true

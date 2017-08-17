@@ -1,3 +1,7 @@
+import org.apache.log4j.Logger
+import org.springframework.context.ApplicationListener
+import org.springframework.security.core.session.SessionDestroyedEvent
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -14,24 +18,12 @@
 * limitations under the License.
 */
 
-/**
- * Cytomine @ GIGA-ULG
- * User: stevben
- * Date: 10/10/11
- * Time: 13:49
- */
-class ImageConsultationUrlMappings {
+public class LogoutEventListener implements ApplicationListener<SessionDestroyedEvent> {
 
-    static mappings = {
-        "/api/imageinstance/$id/consultation.$format" (controller : "restImageConsultation") {
-             action = [POST:"add"]
-         }
-        "/api/project/$project/lastImages.$format"(controller:"restImageConsultation") {
-            action = [GET : "lastImageOfUsersByProject"]
-        }
+    private Logger log = Logger.getLogger(getClass())
 
-        "/api/imageconsultation/resume.$format" (controller:"restImageConsultation") {
-            action = [GET : "resumeByUserAndProject"]
-        }
+    @Override
+    void onApplicationEvent(SessionDestroyedEvent event) {
+        log.info "session "+event.id+" destroyed !"
     }
 }

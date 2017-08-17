@@ -22,6 +22,7 @@ import be.cytomine.social.PersistentConnection
 import grails.converters.JSON
 import grails.converters.XML
 import grails.plugin.springsecurity.annotation.Secured
+import org.springframework.web.context.request.RequestContextHolder
 
 class ServerController {
 
@@ -81,6 +82,7 @@ class ServerController {
         PersistentConnection connectionPersist = new PersistentConnection()
         connectionPersist.user = SecUser.read(idUser)
         connectionPersist.project = Project.read(idProject)
+        connectionPersist.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         connectionPersist.date = new Date()
         connectionPersist.insert(flush:true) //don't use save (stateless collection)
     }

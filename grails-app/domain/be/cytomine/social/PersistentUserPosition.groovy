@@ -42,6 +42,7 @@ class PersistentUserPosition extends CytomineDomain {
     SecUser user
     ImageInstance image
     Project project
+    String session
 
     String imageName
 

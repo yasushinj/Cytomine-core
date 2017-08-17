@@ -57,7 +57,7 @@ ProjectUserActivityView = Backbone.View.extend({
 
         $(this.el).find(".detailedUserInfoContent").hide();
 
-        $(self.el).find("#UserActivitiesHistory-"+self.model.id).on("click", ".UserActivityDetail-"+self.model.id, function(event) {
+        $(self.el).find("#UserProjectConnectionsHistory-"+self.model.id).on("click", ".UserActivityDetail-"+self.model.id, function(event) {
             self.updateTableDetails($(event.currentTarget).data("id"));
         });
 
@@ -68,6 +68,7 @@ ProjectUserActivityView = Backbone.View.extend({
         });
 
         self.updateTableHistory();
+        self.updateTableConsultationResume();
         return this;
     },
     getValuesActivities: function (creation) {
@@ -78,24 +79,17 @@ ProjectUserActivityView = Backbone.View.extend({
             creation();
         };
 
-        $.get("/api/user/"+self.model.id+"/userannotation/count.json?project="+window.app.status.currentProject, function(data) {
-            self.numberAnnotations = data.total;
-            callback();
-        });
-
-        new UserActivitiesCollection({project: window.app.status.currentProject, user: self.model.id, last: true}).fetch({
+        new UserActivitiesCollection({project: window.app.status.currentProject, user: self.model.id, resumeActivity: true}).fetch({
             success: function (data) {
-                self.lastConnexionDate = data.pop().get("created");
+                var model = data.pop();
+                self.lastConnexionDate = model.get("lastConnection");
+                self.numberAnnotations = model.get("totalAnnotations");
+                self.numberConnexions = model.get("totalConnections");
+                self.firstConnexionDate = model.get("firstConnection");
                 callback();
             }
         });
 
-        new UserActivitiesCollection({project: window.app.status.currentProject, user: self.model.id,frequency: true}).fetch({
-            success: function (data) {
-                self.numberConnexions = data.pop().get("frequency");
-                callback();
-            }
-        });
         // TODO # consulted images
     },
     renderInfoActivities:function(){
@@ -107,12 +101,14 @@ ProjectUserActivityView = Backbone.View.extend({
 
         var prettyDate = window.app.convertLongToPrettyDate(self.lastConnexionDate);
         $(self.el).find("#lastProjectConnexion-"+self.model.id).html(prettyDate);
+        prettyDate = window.app.convertLongToPrettyDate(self.firstConnexionDate);
+        $(self.el).find("#firstProjectConnexion-"+self.model.id).html(prettyDate);
 
 
     },
     updateTableHistory: function () {
         var self = this;
-        var table = $(self.el).find("#UserActivitiesHistory-"+self.model.id).find("table");
+        var table = $(self.el).find("#UserProjectConnectionsHistory-"+self.model.id).find("table");
         var columns = [
             { data: "created", render : function ( data, type ) {
                 if(type === "display"){
@@ -180,11 +176,12 @@ ProjectUserActivityView = Backbone.View.extend({
         var self = this;
         $(self.el).find("#UserActivityDetail-"+self.model.id).show();
 
-        var rowData = $(self.el).find("#UserActivitiesHistory-"+self.model.id).find("table").DataTable().row('#'+activityId).data();
+        var rowData = $(self.el).find("#UserProjectConnectionsHistory-"+self.model.id).find("table").DataTable().row('#'+activityId).data();
         $(self.el).find("#browser-"+self.model.id).html(rowData.browser);
         $(self.el).find("#OS-"+self.model.id).html(rowData.os);
 
         var table = $(self.el).find("#UserActivityDetail-"+self.model.id).find("table");
+
         var columns = [
             { data: "created", render : function ( data, type ) {
                 if(type === "display"){
@@ -228,6 +225,55 @@ ProjectUserActivityView = Backbone.View.extend({
             serverSide: true,
             ajax: {
                 url: new UserActivityDetailsCollection({/*project: window.app.status.currentProject, */activity: activityId}).url(),
+                data: {
+                    "datatables": "true"
+                }
+            },
+            searching: false,
+            columnDefs : columns,
+            order: [],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        });
+    },
+
+
+    updateTableConsultationResume: function () {
+        var self = this;
+        var table = $(self.el).find("#UserImageConsultationsResume-"+self.model.id).find("table");
+        var columns = [
+            { data: "imageName", render : function ( data, type, row ) {
+                if(type === "display"){
+                    var result = "";
+                    if(!window.app.isUndefined(row['imageThumb'])){
+                        result += "<img src= '"+row['imageThumb']+"' style='max-width:64px;'><br/>"
+                    }
+                    result += data;
+                    return result;
+                } else {
+                    return data;
+                }
+            }, targets: [0]},
+            { data: "time", defaultContent: "< 20 s", render : function ( data, type, row ) {
+                if(type === "display"){
+                    return window.app.convertLongToPrettyDuration(data/1000);
+                } else {
+                    return data;
+                }
+            }, targets: [1]},
+            { data: "first", defaultContent: "", render : function ( data, type, row ) {
+                return window.app.convertLongToPrettyDate(row['first'])+"<br/>"+window.app.convertLongToPrettyDate(row['last']);
+            }, targets: [2]},
+            { data: "countCreatedAnnotations", defaultContent: "Unknown value", targets: [3]},
+            { searchable: false, orderable: false, targets: "_all" }
+        ];
+
+        table.DataTable({
+            destroy: true,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: new ImageConsultationCollection({project: window.app.status.currentProject, user: self.model.id}).url(),
                 data: {
                     "datatables": "true"
                 }

@@ -9,6 +9,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import groovy.time.TimeCategory
+import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
@@ -32,6 +33,7 @@ class ProjectConnectionService extends ModelService {
         connection.user = user.id
         connection.project = project.id
         connection.created = new Date()
+        connection.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         connection.os = json.os
         connection.browser = json.browser
         connection.browserVersion = json.browserVersion
@@ -411,7 +413,7 @@ class ProjectConnectionService extends ModelService {
         if(!connection.time) {
             int i = 0;
             Date before = new Date()
-            while(!consultations[i].time){
+            while(!consultations[i].time && i < consultations.size()){
                 consultations[i] = ((PersistentImageConsultation) consultations[i]).clone()
                 imageConsultationService.fillImageConsultation(consultations[i], before)
                 before = consultations[i].created

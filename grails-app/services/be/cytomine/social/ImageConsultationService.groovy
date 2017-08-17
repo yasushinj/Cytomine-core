@@ -10,6 +10,7 @@ import be.cytomine.sql.UserAnnotationListing
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
+import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -21,6 +22,7 @@ class ImageConsultationService extends ModelService {
     def mongo
     def noSQLCollectionService
     def imageInstanceService
+    def projectService
 
     private getProjectConnectionService() {
         grailsApplication.mainContext.projectConnectionService
@@ -36,6 +38,7 @@ class ImageConsultationService extends ModelService {
         consultation.user = user.id
         consultation.image = image.id
         consultation.project = image.project.id
+        consultation.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         consultation.projectConnection = projectConnectionService.lastConnectionInProject(image.project, user.id)[0].id
         consultation.mode = JSONUtils.getJSONAttrStr(json,"mode",true)
         consultation.created = new Date()
@@ -139,6 +142,27 @@ class ImageConsultationService extends ModelService {
 
         // count created annotations
         consultation.countCreatedAnnotations = annotationListingService.listGeneric(al).size()
+    }
+
+    def resumeByUserAndProject(Long userId, Long projectId) {
+        Project project = projectService.read(projectId)
+        securityACLService.check(project,READ)
+
+        // groupByImageId et get last imagename et imagethumb et
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def consultations = db.persistentImageConsultation.aggregate(
+                [$match: [project: projectId, user: userId]],
+                [$sort: [created: 1]],
+                [$group : [_id : [project : '$project', user : '$user', image: '$image'], time : [$sum : '$time'], frequency : [$sum : 1], countCreatedAnnotations : [$sum : '$countCreatedAnnotations'], first : [$first: '$created'], last : [$last: '$created'], imageName : [$last: '$imageName'], imageThumb : [$last: '$imageThumb']]]
+        );
+
+        def results = []
+        consultations.results().each{
+            results << [project : it["_id"].project, user : it["_id"].user, image : it["_id"].image, time : it.time, countCreatedAnnotations : it.countCreatedAnnotations, first : it.first, last : it.last, frequency : it.frequency, imageName : it.imageName, imageThumb : it.imageThumb]
+        }
+
+        return results;
+
     }
 
 

@@ -41,6 +41,8 @@ class PersistentProjectConnection extends CytomineDomain implements Cloneable {
     Long project
     @RestApiObjectField(description = "The duration of the user connection into the project", useForCreation = false)
     Long time
+    @RestApiObjectField(description = "The sessionID active during the connection")
+    String session
     @RestApiObjectField(description = "The OS of the user")
     String os
     @RestApiObjectField(description = "The browser of the user")
@@ -56,6 +58,7 @@ class PersistentProjectConnection extends CytomineDomain implements Cloneable {
     static constraints = {
         user (nullable:false)
         project (nullable: false)
+        session nullable: true
         time(nullable: true)
         countViewedImages(nullable: true)
         countCreatedAnnotations(nullable: true)
