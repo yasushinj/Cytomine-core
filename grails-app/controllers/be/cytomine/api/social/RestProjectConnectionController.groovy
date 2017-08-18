@@ -21,10 +21,13 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.social.PersistentProjectConnection
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
+
+import java.text.SimpleDateFormat
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
@@ -38,7 +41,7 @@ class RestProjectConnectionController extends RestController {
     def secUserService
     def projectService
     def projectConnectionService
-    def imageConsultationService
+    def exportService
     def securityACLService
 
     def add = {
@@ -134,7 +137,36 @@ class RestProjectConnectionController extends RestController {
         // for datatables, all is done after the data collect.
         Integer offset = 0
         Integer limit = -1
-        responseSuccess(projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset))
+
+        def result = projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset)
+
+        if(params.export.equals("csv")) {
+            response.contentType = grailsApplication.config.grails.mime.types[params.format]
+            SimpleDateFormat simpleFormat = new SimpleDateFormat("yyyyMMdd_hhmmss");
+            String now = simpleFormat.format(new Date())
+            response.setHeader("Content-disposition", "attachment; filename=user_${user.id}_connections_project_${project.id}_${now}.${params.export}")
+
+            def exporterIdentifier = params.export;
+            def exportResult = []
+            List fields = ["date", "time", "numberOfViewedImages", "numberOfCreatedAnnotations", "os", "browser", "browserVersion"]
+            Map labels = ["date": "Date", "time": "Duration (ms)", "numberOfViewedImages": "Number of viewed images", "numberOfCreatedAnnotations": "Number of created annotations", "os": "Operating System", "browser": "Browser", "browserVersion": "Browser Version"]
+            result.each {
+                def data = [:]
+                data.date = it.created;
+                data.time = it.time ?: 0;
+                data.numberOfViewedImages = it.countViewedImages
+                data.numberOfCreatedAnnotations = it.countCreatedAnnotations
+                data.os = it.os
+                data.browser = it.browser
+                data.browserVersion = it.browserVersion
+                exportResult << data
+            }
+
+            String title = "Connections of user ${user.id} into project ${project.id}"
+            exportService.export(exporterIdentifier, response.outputStream, exportResult, fields, labels, null, ["column.widths": [0.14, 0.14, 0.14, 0.14, 0.14, 0.14, 0.14], "title": title, "csv.encoding": "UTF-8", "separator": ";"])
+        } else {
+            responseSuccess(result)
+        }
     }
 
     @RestApiMethod(description="Get the details of a project connection including the actions done during a project connection of one user into a project.")
@@ -149,7 +181,34 @@ class RestProjectConnectionController extends RestController {
         params.put("offset", params.start)
         params.put("max", params['length'])
 
-        responseSuccess(projectConnectionService.getUserActivityDetails(activity/*,limit, offset*/))
+        def result = projectConnectionService.getUserActivityDetails(activity/*,limit, offset*/)
+
+        if(params.export.equals("csv")) {
+            PersistentProjectConnection connection = PersistentProjectConnection.read(activity);
+            response.contentType = grailsApplication.config.grails.mime.types[params.format]
+            response.setHeader("Content-disposition", "attachment; filename=image_consultations_of_user_${connection.user}_project_${connection.project}_${activity}.${params.export}")
+
+            def exporterIdentifier = params.export;
+            def exportResult = []
+            List fields = ["date", "time", "imageId", "imageName", "imageThumb", "mode", "numberOfCreatedAnnotations"]
+            Map labels = ["date": "Date", "time": "Duration (ms)", "imageId": "Id of image", "imageName": "Name", "imageThumb": "Thumb", "mode": "Consultation mode", "numberOfCreatedAnnotations": "Number of created annotations"]
+            result.each {
+                def data = [:]
+                data.date = it.created;
+                data.time = it.time ?: 0;
+                data.imageId = it.image
+                data.imageName = it.imageName
+                data.imageThumb = it.imageThumb
+                data.mode = it.mode
+                data.numberOfCreatedAnnotations = it.countCreatedAnnotations
+                exportResult << data
+            }
+
+            String title = "Consultations of images into project ${connection.project} by user ${connection.user}"
+            exportService.export(exporterIdentifier, response.outputStream, exportResult, fields, labels, null, ["column.widths": [0.14, 0.14, 0.14, 0.14, 0.14, 0.14, 0.14], "title": title, "csv.encoding": "UTF-8", "separator": ";"])
+        } else {
+            responseSuccess(result)
+        }
     }
 
 

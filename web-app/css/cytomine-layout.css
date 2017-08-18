@@ -766,6 +766,10 @@ div.dataTables_length
     float: right;
 }
 
+.dataTables_buttons_container{
+    margin-left: 30%;
+}
+
 div.dataTables_info
 {
     padding-top: 8px;

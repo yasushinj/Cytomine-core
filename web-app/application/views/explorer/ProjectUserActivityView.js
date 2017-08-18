@@ -152,7 +152,7 @@ ProjectUserActivityView = Backbone.View.extend({
             buttons: {
                 dom: {
                     container: {
-                        className: ''
+                        className: 'dataTables_buttons_container'
                     }
                 },
                 buttons: [
@@ -161,6 +161,13 @@ ProjectUserActivityView = Backbone.View.extend({
                         className: 'dataTables_reload_button',
                         action: function ( e, dt, node, config ) {
                             dt.ajax.reload();
+                        }
+                    },
+                    {
+                        text: 'CSV',
+                        className: '',
+                        action: function ( e, dt, node, config ) {
+                            window.location.href = new UserActivitiesCollection({project: window.app.status.currentProject, user: self.model.id}).url() + "?export=csv";
                         }
                     }
                 ]
@@ -224,10 +231,34 @@ ProjectUserActivityView = Backbone.View.extend({
             processing: true,
             serverSide: true,
             ajax: {
-                url: new UserActivityDetailsCollection({/*project: window.app.status.currentProject, */activity: activityId}).url(),
+                url: new UserActivityDetailsCollection({activity: activityId}).url(),
                 data: {
                     "datatables": "true"
                 }
+            },
+            dom: 'lBrtip',
+            buttons: {
+                dom: {
+                    container: {
+                        className: 'dataTables_buttons_container'
+                    }
+                },
+                buttons: [
+                    {
+                        text: 'Reload',
+                        className: 'dataTables_reload_button',
+                        action: function ( e, dt, node, config ) {
+                            dt.ajax.reload();
+                        }
+                    },
+                    {
+                        text: 'CSV',
+                        className: '',
+                        action: function ( e, dt, node, config ) {
+                            window.location.href = new UserActivityDetailsCollection({activity: activityId}).url() + "?export=csv";
+                        }
+                    }
+                ]
             },
             searching: false,
             columnDefs : columns,
@@ -277,6 +308,30 @@ ProjectUserActivityView = Backbone.View.extend({
                 data: {
                     "datatables": "true"
                 }
+            },
+            dom: 'lBrtip',
+            buttons: {
+                dom: {
+                    container: {
+                        className: 'dataTables_buttons_container'
+                    }
+                },
+                buttons: [
+                    {
+                        text: 'Reload',
+                        className: 'dataTables_reload_button',
+                        action: function ( e, dt, node, config ) {
+                            dt.ajax.reload();
+                        }
+                    },
+                    {
+                        text: 'CSV',
+                        className: '',
+                        action: function ( e, dt, node, config ) {
+                            window.location.href = new ImageConsultationCollection({project: window.app.status.currentProject, user: self.model.id}).url() + "&export=csv";
+                        }
+                    }
+                ]
             },
             searching: false,
             columnDefs : columns,
