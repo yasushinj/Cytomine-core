@@ -79,8 +79,6 @@ class RestImageConsultationController extends RestController {
         } else {
             responseSuccess(result)
         }
-
-
     }
 
 }

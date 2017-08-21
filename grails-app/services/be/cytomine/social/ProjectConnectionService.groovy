@@ -315,7 +315,7 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
-    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period, Project project = null){
+    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period, Project project = null, SecUser user = null){
 
         if(!afterThan){
             use(TimeCategory) {
@@ -354,51 +354,33 @@ class ProjectConnectionService extends ModelService {
                 break;
         }
 
-        if(project){
-            match = [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]], [ project : project.id]]]
-        } else {
-            match = [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]]]]
-        }
-        match = [$match : match]
+        match = [[ created : [$gte : new Date(afterThan)]], [ created : [$lte : new Date(beforeThan)]]]
+        if(project) match << [ project : project.id];
+        if(user) match << [ user : user.id];
+        match = [$match : [$and : match]]
 
         result = db.persistentProjectConnection.aggregate(
                 match,
                 projection1,
                 projection2,
                 group
-        )
-
+        ).results()
 
         def connections = []
 
-        int total;
-        Date firstDay;
-        firstDay = new Date(afterThan);
-        Date lastDay = new Date(beforeThan);
-
-        switch (period){
-            case "hour" :
-                total = TimeCategory.minus(lastDay, firstDay).getDays()
-                break;
-            case "day" :
-                total = TimeCategory.minus(lastDay, firstDay).getDays()/7
-                break;
-            case "week" :
-                total = TimeCategory.minus(lastDay, firstDay).getYears()
-                break;
-        }
+        int total = result.sum{it.frequency}
         if(total == 0) total = 1
-        result.results().each {
+
+        result.each {
             // TODO evolve when https://jira.mongodb.org/browse/SERVER-6310 is resolved
             // as we groupBy hours in UTC, the GMT + xh30 have problems.
 
             def time = it["time"]
-            def frequency = it["frequency"]/total
+            def frequency = (it["frequency"])/total
 
             connections << [time : time, frequency: frequency]
         }
-        result = connections
-        return result
+        return connections
     }
 
     def getUserActivityDetails(Long activityId){

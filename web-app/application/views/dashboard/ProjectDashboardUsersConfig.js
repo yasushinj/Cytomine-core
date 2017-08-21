@@ -73,9 +73,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             { data: "email", searchable: true, targets: [6] },
             { data: "frequency", defaultContent: "An error happened", targets: [7]},
             { orderable: false, render : function( data, type, row ) {
-                //return "<button class='btn btn-info btn-xs UserDetailsButton"+self.model.id+"' data-id="+row["id"]+" >Details</button>";
-                //return "<button class='btn btn-info btn-xs> <a href='#tabs-useractivity-"+self.model.id+"-"+row["id"]+"'>Details</a></button>";
-                return "<a href='#tabs-useractivity-"+self.model.id+"-"+row["id"]+"'>Details</a>";
+                return "<button class='btn btn-info btn-xs UserActivityBtn' data-user='"+row["id"]+"' data-project='"+self.model.id+"'>Details</button>";
             }, targets: [8]},
             { searchable: false, targets: "_all" }
         ];
@@ -287,8 +285,6 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                     new DetailedUserProjectInfoDialog({el: "#dialogs", model: viewModel}).render();
                 }
             });
-
-
         });
 
         self.update();
@@ -321,6 +317,9 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             title : "Average Connections",
             el: $(self.el).find("#avgConnections-"+self.model.id)}).render();
 
+        $(self.el).find("#userProjectTable"+self.model.id).on("click", ".UserActivityBtn", function(event) {
+            window.location = '#tabs-useractivity-'+$(this).data("project")+'-'+$(this).data("user");
+        });
 
     },
 

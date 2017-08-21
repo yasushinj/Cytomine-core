@@ -7,6 +7,9 @@ var AverageConnexionsGraphsView = GraphView.extend({
         if(!window.app.isUndefined(options.project)){
             url += "project="+options.project+"&";
         }
+        if(!window.app.isUndefined(options.user)){
+            url += "user="+options.user+"&";
+        }
         url += "period=";
 
         this.graphs.push({name : "Hour", period : "hour", url: url+"hour", panel : null});
@@ -86,7 +89,7 @@ var AverageConnexionsGraphsView = GraphView.extend({
                     el: panel,
                     period : chosen.period,
                     url : chosen.url+"&afterThan="+afterThan.getTime()+"&beforeThan="+beforeThan.getTime(),
-                    format: '.2r'
+                    format: '%'
                 });
                 chosen.panel.render();
             }

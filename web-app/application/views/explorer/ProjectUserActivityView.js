@@ -69,7 +69,17 @@ ProjectUserActivityView = Backbone.View.extend({
 
         self.updateTableHistory();
         self.updateTableConsultationResume();
+
+        new AverageConnexionsGraphsView({
+            project : window.app.status.currentProject,
+            user : self.model.id,
+            title : "Average Connections",
+            resize : false,
+            el: $(self.el).find("#UserProjectConnectionsGraph-"+self.model.id)}).render();
         return this;
+    },
+    show: function (options) {
+        $(this.el).find(".detailedUserInfoContent").show();
     },
     getValuesActivities: function (creation) {
         var self = this;
@@ -82,10 +92,10 @@ ProjectUserActivityView = Backbone.View.extend({
         new UserActivitiesCollection({project: window.app.status.currentProject, user: self.model.id, resumeActivity: true}).fetch({
             success: function (data) {
                 var model = data.pop();
-                self.lastConnexionDate = model.get("lastConnection");
+                self.firstConnexionDate = model.get("firstConnection") || "No connexion yet";
+                self.lastConnexionDate = model.get("lastConnection") || "No connexion yet";
                 self.numberAnnotations = model.get("totalAnnotations");
                 self.numberConnexions = model.get("totalConnections");
-                self.firstConnexionDate = model.get("firstConnection");
                 callback();
             }
         });
@@ -267,8 +277,6 @@ ProjectUserActivityView = Backbone.View.extend({
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
         });
     },
-
-
     updateTableConsultationResume: function () {
         var self = this;
         var table = $(self.el).find("#UserImageConsultationsResume-"+self.model.id).find("table");

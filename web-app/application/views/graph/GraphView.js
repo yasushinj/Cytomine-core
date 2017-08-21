@@ -4,14 +4,20 @@ var GraphView = Backbone.View.extend({
         if(!window.app.isUndefined(options.title)){
             this.title = options.title;
         }
+        if(!window.app.isUndefined(options.resize)){
+            this.resize = options.resize;
+        } else {
+            this.resize = true;
+        }
     },
     render: function () {
         var self = this;
         if(!window.app.isUndefined(this.title)){
-            $(self.el).append("<div class='header_h'>"+
-                "<h4 class='header-graph'><i class='glyphicon glyphicon-stats'></i> "+this.title+"</h4>"+
-                "<span class='resize-button' aria-hidden='true'><i class='glyphicon glyphicon-resize-full visible-md visible-lg'></i></span>"+
-                "</div>");
+            var titleHtml = "<div class='header_h'>";
+            titleHtml += "<h4 class='header-graph'><i class='glyphicon glyphicon-stats'></i> "+this.title+"</h4>";
+            if(this. resize) titleHtml += "<span class='resize-button' aria-hidden='true'><i class='glyphicon glyphicon-resize-full visible-md visible-lg'></i></span>";
+            titleHtml += "</div>";
+            $(self.el).append(titleHtml);
         }
         $(self.el).on("click",".resize-button",function(){
             $(this).closest(".graph").toggleClass('graph-enlarge');

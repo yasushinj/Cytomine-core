@@ -107,14 +107,21 @@ class RestProjectConnectionController extends RestController {
         Long beforeThan = params.long("beforeThan");
         String period = params.get("period").toString()
         Project project = params.project ? projectService.read(params.project) : null;
+        SecUser user = params.user ? secUserService.read(params.user) : null;
         if(params.project){
             securityACLService.check(project,READ)
+            if(params.user){
+                securityACLService.checkIsSameUserOrAdminContainer(project, user, cytomineService.getCurrentUser())
+            }
         } else{
             securityACLService.checkAdmin(cytomineService.getCurrentUser())
+            if(params.user){
+                securityACLService.checkIsSameUser(user, cytomineService.getCurrentUser())
+            }
         }
 
         if(period){
-            responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
+            responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project, user))
         } else {
             response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
         }
