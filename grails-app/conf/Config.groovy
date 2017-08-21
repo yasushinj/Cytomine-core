@@ -21,6 +21,7 @@ println "External config file: "+grails.config.locations
 println "###########################################################################"
 println "###########################################################################"
 
+grails.plugin.springsecurity.useHttpSessionEventPublisher = true
 grails.databinding.convertEmptyStringsToNull = false
 JSON.use('default')
 grails.project.groupId = appName // change this to alter the default package name and Maven publishing destination

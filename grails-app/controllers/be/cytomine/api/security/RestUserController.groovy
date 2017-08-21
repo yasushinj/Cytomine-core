@@ -740,8 +740,8 @@ class RestUserController extends RestController {
         Project project = projectService.read(params.long('project'))
         securityACLService.checkIsSameUserOrAdminContainer(project,user, cytomineService.currentUser)
 
-        result["firstConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'asc', max: 1])[0].created
-        result["lastConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'desc', max: 1])[0].created
+        result["firstConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'asc', max: 1])[0]?.created
+        result["lastConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'desc', max: 1])[0]?.created
         result["totalAnnotations"] = userAnnotationService.count(user, project)
         result["totalConnections"] = PersistentProjectConnection.countByUserAndProject(user.id, project.id)
 

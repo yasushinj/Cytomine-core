@@ -272,7 +272,7 @@ var ApplicationController = Backbone.Router.extend({
 
         // Takes an ISO time and returns a string representing how
         // long ago the date represents.
-
+        if(isNaN(parseFloat(longDate)) || !isFinite(longDate)) return longDate;
         var date = new Date();
         date.setTime(longDate);
 
