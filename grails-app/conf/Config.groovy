@@ -93,13 +93,13 @@ environments {
         grails.retrievalServerURL = ["http://localhost:9097"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*', '/plugins/*']
     }
     production {
         grails.serverURL = "http://localhost:8086"
         grails.uploadURL = "http://localhost:9090"
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*', '/plugins/*']
         grails.retrievalServerURL = []
     }
     development {
@@ -109,7 +109,7 @@ environments {
         grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
         grails.ImageServerPrivateKey=""
@@ -374,12 +374,11 @@ cytomine.customUI.global = [
 
 cytomine.customUI.project = [
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
-        "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
-        "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
-        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false]
+        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
+        "project-explore-spectra-panel":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
 ]
 
 environments {
