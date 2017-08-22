@@ -17,6 +17,7 @@
 
 import be.cytomine.ldap.CustomUserContextMapper
 import be.cytomine.security.CASLdapUserDetailsService
+import be.cytomine.security.SimpleUserDetailsService
 import be.cytomine.web.CytomineMultipartHttpServletRequest
 import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.cache.ehcache.EhCacheFactoryBean
@@ -80,6 +81,8 @@ beans = {
             ldapUserDetailsService=ref('ldapUserDetailsService')
             grailsApplication = ref('grailsApplication')
         }
+    } else {
+        userDetailsService(SimpleUserDetailsService)
     }
 
     ehcacheAclCache(EhCacheFactoryBean) {
