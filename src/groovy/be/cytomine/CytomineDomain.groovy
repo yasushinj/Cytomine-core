@@ -235,8 +235,6 @@ abstract class CytomineDomain  implements Comparable,Serializable{
 
 
     def get(org.codehaus.groovy.grails.web.json.JSONObject id) {
-        println "GET JSON"
-
         if(id) {
             return get(Long.parseLong(id.toString()))
         } else {
@@ -245,7 +243,6 @@ abstract class CytomineDomain  implements Comparable,Serializable{
     }
 
     def get(org.codehaus.groovy.grails.web.json.JSONObject.Null id) {
-        println "GET JSON2"
         return null
     }
 

@@ -208,7 +208,9 @@ class BasicInstanceBuilder {
     }
 
     static UserJob getUserJobNotExist(User user, boolean save = false) {
-        getUserJobNotExist(getJobNotExist(true), user, save)
+        Job job = getJobNotExist(true)
+        Infos.addUserRight(user, job.project)
+        getUserJobNotExist(job, user, save)
     }
 
     static UserJob getUserJobNotExist(Job job, User user, boolean save = false) {

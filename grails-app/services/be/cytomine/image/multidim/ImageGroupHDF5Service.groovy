@@ -109,16 +109,7 @@ class ImageGroupHDF5Service  extends  ModelService{
                 Command c = new AddCommand(user: currentUser)
                 resultDB = executeCommand(c,null,json)
             }
-            String imageServerURL = grailsApplication.config.grails.imageServerURL[0]
-            String url = "/multidim/convert.json"
-            log.info "$imageServerURL" + url
-            def http = new HTTPBuilder(imageServerURL)
-            http.request(Method.POST) {
-                uri.path = url
-                requestContentType = URLENC
-                body = [user: currentUser.id, files: imagesFilenames, dest: filename]
-                response.success = { resp ->  log.info  "Imagegroup convert launch success ${resp.statusLine}" }
-            }
+            callIMSConversion(currentUser, imagesFilenames, filename)
         }
         else {
             throw new ConstraintException("You need to have at least one Image Sequence in your Image Group to convert it")
@@ -129,6 +120,19 @@ class ImageGroupHDF5Service  extends  ModelService{
 
         resultDB
 
+    }
+
+    private void callIMSConversion(SecUser currentUser, def imagesFilenames, String filename){
+        String imageServerURL = grailsApplication.config.grails.imageServerURL[0]
+        String url = "/multidim/convert.json"
+        log.info "$imageServerURL" + url
+        def http = new HTTPBuilder(imageServerURL)
+        http.request(Method.POST) {
+            uri.path = url
+            requestContentType = URLENC
+            body = [user: currentUser.id, files: imagesFilenames, dest: filename]
+            response.success = { resp ->  log.info  "Imagegroup convert launch success ${resp.statusLine}" }
+        }
     }
 
     def retrieve(def ids) {

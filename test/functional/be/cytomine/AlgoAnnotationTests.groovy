@@ -79,13 +79,13 @@ class AlgoAnnotationTests  {
     }
 
     void testAddAlgoAnnotationMultipleCorrect() {
-        def annotationToAdd1 = BasicInstanceBuilder.getAlgoAnnotation()
-        def annotationToAdd2 = BasicInstanceBuilder.getAlgoAnnotation()
-        annotationToAdd2.image =  annotationToAdd1.image
-        annotationToAdd2.project =  annotationToAdd1.project
+        UserJob userJob = BasicInstanceBuilder.getUserJobNotExist(true)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(userJob.job.project,true)
+        def annotationToAdd1 = BasicInstanceBuilder.getAlgoAnnotationNotExist(userJob.job, userJob , image)
+        def annotationToAdd2 = BasicInstanceBuilder.getAlgoAnnotationNotExist(userJob.job, userJob , image)
 
-        Long idTerm1 = BasicInstanceBuilder.getTerm().id
-        Long idTerm2 = BasicInstanceBuilder.getAnotherBasicTerm().id
+        Long idTerm1 = BasicInstanceBuilder.getTermNotExist(image.project.ontology,true).id
+        Long idTerm2 = BasicInstanceBuilder.getTermNotExist(image.project.ontology,true).id
         def annotationWithTerm = JSON.parse((String)annotationToAdd1.encodeAsJSON())
         annotationWithTerm.term = [idTerm1, idTerm2]
 

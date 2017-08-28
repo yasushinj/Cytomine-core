@@ -51,6 +51,7 @@ class ImageGroupHDF5SecurityTests extends SecurityTestsAbstract{
 
         //Add image instance to project
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
+        BasicInstanceBuilder.saveDomain(image)
         image.project = project
 
         //Init image group
@@ -64,6 +65,11 @@ class ImageGroupHDF5SecurityTests extends SecurityTestsAbstract{
         imageGroupHDF5.filenames = "/data/28/hdf5_35398"
 
         //check if user 2 can access ImageGrouphdf5
+        result = ImageGroupHDF5API.create(imageGroupHDF5.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 400 == result.code
+
+        BasicInstanceBuilder.getImageSequence(image, 0, 0 , 0, 0, imageGroup,true)
+
         result = ImageGroupHDF5API.create(imageGroupHDF5.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         Long idImageGroup = result.data.id

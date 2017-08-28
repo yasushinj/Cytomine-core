@@ -176,6 +176,4 @@ class JobDataTests  {
     protected void setUp() {
         Holders.getGrailsApplication().config.cytomine.jobdata.filesystem = true
     }
-
-
 }

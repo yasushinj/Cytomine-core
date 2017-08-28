@@ -16,6 +16,7 @@
 
 
 import be.cytomine.image.ImageProcessingService
+import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.integration.NotifyAuroraUploadJob
 import be.cytomine.processing.ImageRetrievalService
 import be.cytomine.security.SecUser
@@ -146,6 +147,9 @@ class BootStrap {
             ImageProcessingService.metaClass.getImageFromURL = {
                 String url -> println "\n\n mocked getImageFromURL \n\n";
                     return javax.imageio.ImageIO.read(new File("test/functional/be/cytomine/utils/images/thumb256.png"))
+            }
+            ImageGroupHDF5Service.metaClass.callIMSConversion = {
+                SecUser currentUser, def imagesFilenames, String filename -> println "\n\n mocked callIMSConversion \n\n";
             }
             //mock services which use Retrieval
             ImageRetrievalService.metaClass.doRetrievalIndex = {

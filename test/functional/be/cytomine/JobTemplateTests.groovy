@@ -187,7 +187,7 @@ class JobTemplateTests {
     }
 
 
-    void testAddJobTemplateConcreteCase() {
+    /*void testAddJobTemplateConcreteCase() {
         //Algo compute area/number of annotation of a specific term inside a ROI annotation (for area: only the annotation part INSIDE the roi)
         //The job template is a shortcut to launch this algo for term "adeno"
 
@@ -279,7 +279,7 @@ class JobTemplateTests {
 
         assert areaProp
         assert areaProp.value.equals("23108698pixels²")
-    }
+    }*/
 
 
 }

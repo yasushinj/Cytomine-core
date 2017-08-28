@@ -121,10 +121,6 @@ class RestJobDataController extends RestController {
 
         JobData jobData = jobDataService.read(params.getLong('id'))
         securityACLService.checkisNotReadOnly(jobData)
-        JobDataBinaryValue value = new JobDataBinaryValue(jobData:jobData)
-        jobDataService.saveDomain(value)
-        jobData.value = value
-        jobDataService.saveDomain(jobData)
 
         byte[] bytes
 

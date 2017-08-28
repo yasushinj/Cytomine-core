@@ -30,7 +30,7 @@ import be.cytomine.CytomineDomain
  * With the first one, we only load the JobDataBinaryValue id
  * With the second one, evey time we load a JobData, we load the full byte[] automaticaly
  */
-class JobDataBinaryValue extends CytomineDomain {
+class JobDataBinaryValue {
 
     /**
      * File data
@@ -41,13 +41,5 @@ class JobDataBinaryValue extends CytomineDomain {
 
     static constraints = {
         data(nullable: true)
-    }
-    static mapping = {
-        id generator: "assigned"
-        sort "id"
-    }
-
-    public beforeValidate() {
-        super.beforeValidate()
     }
 }

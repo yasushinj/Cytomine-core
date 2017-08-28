@@ -25,6 +25,7 @@ import be.cytomine.test.Infos
 import be.cytomine.test.http.AlgoAnnotationAPI
 import be.cytomine.test.http.UserAnnotationAPI
 import be.cytomine.utils.JSONUtils
+import be.cytomine.utils.UpdateData
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
