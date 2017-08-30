@@ -23,18 +23,14 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
-import be.cytomine.image.AbstractImage
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.transaction.Transactional
-import grails.converters.JSON
-import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
-import liquibase.util.file.FilenameUtils
 
 import static groovyx.net.http.ContentType.*
 
@@ -86,7 +82,7 @@ class ImageGroupHDF5Service  extends  ModelService{
         //Convert the list in h5
         //First get all the ImageSequence from the imageGroup
         ImageGroup imageGroup = imageGroupService.read(group)
-        def imagesSequenceList = []
+        //def imagesSequenceList = []
         if (imageGroup)  {
             imagesSequenceList = imageSequenceService.list(imageGroup)
         }

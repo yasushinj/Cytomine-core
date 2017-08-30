@@ -17,7 +17,6 @@ package be.cytomine.api.ontology
 */
 
 import be.cytomine.Exception.CytomineException
-import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AlgoAnnotation

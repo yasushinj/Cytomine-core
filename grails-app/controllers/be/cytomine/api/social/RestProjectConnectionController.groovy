@@ -30,7 +30,6 @@ import org.restapidoc.pojo.RestApiParamType
 import java.text.SimpleDateFormat
 
 import static org.springframework.security.acls.domain.BasePermission.READ
-import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 /**
  * Controller for an user connection to a project

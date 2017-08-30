@@ -17,14 +17,10 @@ package be.cytomine.api.image.multidim
 */
 
 import be.cytomine.api.RestController
-import be.cytomine.image.AbstractImage
-import be.cytomine.image.ImageInstance
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageGroupHDF5
-import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.project.Project
-import be.cytomine.utils.AttachedFile
 import grails.converters.JSON
 import groovy.json.JsonSlurper
 import org.restapidoc.annotation.RestApi
@@ -32,9 +28,6 @@ import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
-
-import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
 
 /**
  * Created by IntelliJ IDEA.

@@ -17,11 +17,14 @@ package be.cytomine.search.engine
 */
 
 import be.cytomine.image.AbstractImage
+import org.apache.log4j.Logger
 
 /**
  * Created by lrollus on 7/22/14.
  */
 class AbstractImageSearch extends EngineSearch {
+
+    Logger log = Logger.getLogger(getClass())
 
     public String createRequestOnAttributes(List<String> words) {
         if (idProject) return "" //if inside a project, no need to search in abstract image (just image instance)
@@ -62,7 +65,7 @@ class AbstractImageSearch extends EngineSearch {
     }
 
     public String createRequestOnDescription(List<String> words) {
-        println "PROJECT.createRequestOnDescription"
+        log.info "PROJECT.createRequestOnDescription"
         if (idProject) return "" //if inside a project, no need to search in abstract image (just image instance)
         return """
             SELECT description.domain_ident as id, description.domain_class_name as type ${

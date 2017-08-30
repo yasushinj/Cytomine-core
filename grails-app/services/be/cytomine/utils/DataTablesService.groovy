@@ -117,7 +117,7 @@ class DataTablesService {
                     ORDER BY created desc
                 """
 
-                println request
+                log.info request
 //
 //
 //                    "SELECT ai.id, ai.original_filename, ai.created as created, true\n" +
@@ -159,7 +159,7 @@ class DataTablesService {
 
             //if desc order, inverse
             if(sort.equals("desc")) {
-                println "reverse"
+                log.info "reverse"
                 data = data.reverse()
             }
 

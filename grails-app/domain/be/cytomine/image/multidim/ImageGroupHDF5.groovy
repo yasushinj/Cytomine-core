@@ -18,9 +18,7 @@ package be.cytomine.image.multidim
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.AlreadyExistException
-import be.cytomine.project.Project
 import be.cytomine.utils.JSONUtils
-import grails.converters.JSON
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 

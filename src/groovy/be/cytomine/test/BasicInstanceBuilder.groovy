@@ -1774,7 +1774,7 @@ class BasicInstanceBuilder {
             imageInstance.baseImage = abstractImage
             saveDomain(imageInstance)
 
-            ImageSequence seq = getImageSequence(imageInstance, i, 0, 0, 0, gp, true)
+            //ImageSequence seq = getImageSequence(imageInstance, i, 0, 0, 0, gp, true)
         }
 
         ImageGroupHDF5 imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)

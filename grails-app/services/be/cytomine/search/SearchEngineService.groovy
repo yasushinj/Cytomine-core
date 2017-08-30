@@ -98,9 +98,9 @@ class SearchEngineService extends ModelService {
 
         def sql = new Sql(dataSource)
 
-        println "################################"
-        println req
-        println "################################"
+        log.info "################################"
+        log.info req
+        log.info "################################"
 
         long lastDomainId = -1
         sql.eachRow(req) {
@@ -138,7 +138,7 @@ class SearchEngineService extends ModelService {
         if (words.isEmpty()) {
             throw new WrongArgumentException("Min 1 word!")
         }
-        println "words1=${words}"
+        log.info "words1=${words}"
         if (words.size() > 5) {
             throw new WrongArgumentException("Max 5 words!")
         }
@@ -178,7 +178,7 @@ class SearchEngineService extends ModelService {
         }
 
         engines.each { engine ->
-            println "${engine.class.name} ${requestParts.size()}"
+            log.info "${engine.class.name} ${requestParts.size()}"
             if (attributes.contains("domain")) {
                 requestParts << engine.createRequestOnAttributes(words)
             }

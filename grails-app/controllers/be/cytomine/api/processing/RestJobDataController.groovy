@@ -19,7 +19,6 @@ package be.cytomine.api.processing
 import be.cytomine.api.RestController
 import be.cytomine.processing.Job
 import be.cytomine.processing.JobData
-import be.cytomine.processing.JobDataBinaryValue
 import grails.converters.JSON
 import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod

@@ -16,8 +16,6 @@ package be.cytomine.processing
 * limitations under the License.
 */
 
-import be.cytomine.CytomineDomain
-
 //* Its better to have a specific domain link than a simple 'byte[] value'.
 //* Each time we load a job data
 

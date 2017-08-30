@@ -20,7 +20,8 @@ import be.cytomine.security.User
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUserSecRole;
 import grails.plugin.springsecurity.SpringSecurityUtils
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.RandomStringUtils
+import org.apache.log4j.Logger;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,6 +30,8 @@ import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 import grails.util.Holders
 
 public class CustomUserContextMapper implements UserDetailsContextMapper {
+
+    Logger log = Logger.getLogger(getClass())
 
     @Override
     public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> grantedAuthorities) {
@@ -63,7 +66,7 @@ public class CustomUserContextMapper implements UserDetailsContextMapper {
                 secUsersecRole.save(flush: true)
             } else {
                 user.errors.each {
-                    println it
+                    log.info it
                 }
             }
 
@@ -77,6 +80,7 @@ public class CustomUserContextMapper implements UserDetailsContextMapper {
         return new org.springframework.security.core.userdetails.User(username, user.password, true, true, true, true, grantedAuthorities)
     }
 
+    @Override
     public void mapUserToContext(UserDetails user, DirContextAdapter ctx) {
     }
 }
