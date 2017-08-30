@@ -80,7 +80,7 @@ var ExplorerController = Backbone.Router.extend({
 
             // record the image consultation for the current user
             new ImageConsultationModel({
-                imageinstance: idImage,
+                image: idImage,
                 mode : "view"
             }).save();
 

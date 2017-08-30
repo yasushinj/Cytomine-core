@@ -31,7 +31,7 @@ class ImageConsultationService extends ModelService {
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
-        Long imageId = JSONUtils.getJSONAttrLong(json,"imageinstance",-1)
+        Long imageId = JSONUtils.getJSONAttrLong(json,"image",-1)
         ImageInstance image = imageInstanceService.read(imageId)
         closeLastImageConsultation(user.id, imageId, new Date())
         PersistentImageConsultation consultation = new PersistentImageConsultation()
@@ -44,7 +44,7 @@ class ImageConsultationService extends ModelService {
         consultation.created = new Date()
         consultation.imageName = image.getInstanceFilename()
         consultation.imageThumb = UrlApi.getThumbImage(image.baseImage?.id, 256)
-        consultation.insert(flush:true) //don't use save (stateless collection)
+        consultation.insert(flush:true, failOnError : true) //don't use save (stateless collection)
 
         return consultation
     }

@@ -67,10 +67,10 @@ var UserOnlineModel = Backbone.Model.extend({
 
 var ImageConsultationModel = Backbone.Model.extend({
     url: function () {
-        return '/api/imageinstance/'+this.imageinstance +'/consultation.json';
+        return '/api/imageinstance/'+this.image +'/consultation.json';
     },
     initialize: function (options) {
-        this.imageinstance = options.imageinstance;
+        this.image = options.image;
         this.mode = options.mode;
     }
 });

@@ -37,7 +37,7 @@ class ProjectConnectionService extends ModelService {
         connection.os = json.os
         connection.browser = json.browser
         connection.browserVersion = json.browserVersion
-        connection.insert(flush:true) //don't use save (stateless collection)
+        connection.insert(flush:true, failOnError : true) //don't use save (stateless collection)
         return connection
     }
 
@@ -98,6 +98,7 @@ class ProjectConnectionService extends ModelService {
         }
 
         connection.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
+        if(connection.time == null) connection.time=0;
 
         // count viewed images
         connection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(connection.user,
