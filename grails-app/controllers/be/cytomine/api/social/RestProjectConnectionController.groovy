@@ -21,12 +21,16 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.social.PersistentProjectConnection
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
+import java.text.SimpleDateFormat
+
 import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 /**
  * Controller for an user connection to a project
@@ -37,7 +41,7 @@ class RestProjectConnectionController extends RestController {
     def secUserService
     def projectService
     def projectConnectionService
-    def imageConsultationService
+    def exportService
     def securityACLService
 
     def add = {
@@ -51,7 +55,8 @@ class RestProjectConnectionController extends RestController {
 
     def lastConnectionInProject = {
         Project project = projectService.read(params.project)
-        responseSuccess(projectConnectionService.lastConnectionInProject(project));
+        Long userId = params.user ? Long.parseLong(params.user): null
+        responseSuccess(projectConnectionService.lastConnectionInProject(project, userId));
     }
 
     def getConnectionByUserAndProject = {
@@ -102,14 +107,21 @@ class RestProjectConnectionController extends RestController {
         Long beforeThan = params.long("beforeThan");
         String period = params.get("period").toString()
         Project project = params.project ? projectService.read(params.project) : null;
+        SecUser user = params.user ? secUserService.read(params.user) : null;
         if(params.project){
             securityACLService.check(project,READ)
+            if(params.user){
+                securityACLService.checkIsSameUserOrAdminContainer(project, user, cytomineService.getCurrentUser())
+            }
         } else{
             securityACLService.checkAdmin(cytomineService.getCurrentUser())
+            if(params.user){
+                securityACLService.checkIsSameUser(user, cytomineService.getCurrentUser())
+            }
         }
 
         if(period){
-            responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project))
+            responseSuccess(projectConnectionService.averageOfProjectConnections(afterThan,beforeThan,period, project, user))
         } else {
             response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
         }
@@ -125,74 +137,86 @@ class RestProjectConnectionController extends RestController {
     def userProjectConnectionHistory() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
-        Integer offset = params.offset != null ? params.getInt('offset') : 0
-        Integer limit = params.limit != null ? params.getInt('limit') : -1
 
-        // if offset > 0, we take limit +1 object to have the created of the previous object.
-        boolean getPrevious;
-        if(offset > 0 && limit >= 0) {
-            limit++
-            offset--
-            getPrevious = true;
-        };
+        params.put("offset", params.start)
+        params.put("max", params['length'])
 
-        def connections = projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset)
+        // for datatables, all is done after the data collect.
+        Integer offset = 0
+        Integer limit = -1
 
-        Date before;
-        def result = []
-        if(connections.size() == 0) {
-            responseSuccess(result)
-            return
-        }
-        if(getPrevious) {
-            before = connections.remove(0).created;
-        } else {
-            before = new Date();
-        }
+        def result = projectConnectionService.getConnectionByUserAndProject(user, project, limit, offset)
 
-        if(connections.size() >= 1) {
+        if(params.export.equals("csv")) {
+            response.contentType = grailsApplication.config.grails.mime.types[params.format]
+            SimpleDateFormat simpleFormat = new SimpleDateFormat("yyyyMMdd_hhmmss");
+            String now = simpleFormat.format(new Date())
+            response.setHeader("Content-disposition", "attachment; filename=user_${user.id}_connections_project_${project.id}_${now}.${params.export}")
 
-            Date after = connections[connections.size()-1].created;
-
-            def imagesConsultations = imageConsultationService.getImagesOfUsersByProjectBetween(user, project,after, before)
-
-            imagesConsultations = (imagesConsultations.size() > 0) ? imagesConsultations : []
-
-            //merging
-            if(imagesConsultations.size()>=1) {
-                def consultedImages;
-                int beginJ = imagesConsultations.size()-1;
-                for(int i=connections.size()-1;i>=1;i--){
-                    consultedImages = [];
-
-                    def nextConnection = connections[i-1];
-                    int j = beginJ;
-                    while(j>=0 && imagesConsultations[j].created < nextConnection.created){
-                        consultedImages << imagesConsultations[j]
-                        j--
-                    }
-                    beginJ = j;
-
-                    result << [id : connections[i].id, created: connections[i].created, user: user.id,
-                               project : project.id, time:connections[i].time, images:consultedImages]
-
-                }
-                consultedImages = [];
-                for(int j=beginJ;j>=0;j--){
-                    consultedImages << imagesConsultations[j]
-                }
-
-                result << [id : connections[0].id, created: connections[0].created, user:user.id,
-                           project : project.id, time:connections[0].time, images:consultedImages]
-                result = result.reverse();
-            } else {
-                result = connections;
+            def exporterIdentifier = params.export;
+            def exportResult = []
+            List fields = ["date", "time", "numberOfViewedImages", "numberOfCreatedAnnotations", "os", "browser", "browserVersion"]
+            Map labels = ["date": "Date", "time": "Duration (ms)", "numberOfViewedImages": "Number of viewed images", "numberOfCreatedAnnotations": "Number of created annotations", "os": "Operating System", "browser": "Browser", "browserVersion": "Browser Version"]
+            result.each {
+                def data = [:]
+                data.date = it.created;
+                data.time = it.time ?: 0;
+                data.numberOfViewedImages = it.countViewedImages
+                data.numberOfCreatedAnnotations = it.countCreatedAnnotations
+                data.os = it.os
+                data.browser = it.browser
+                data.browserVersion = it.browserVersion
+                exportResult << data
             }
+
+            String title = "Connections of user ${user.id} into project ${project.id}"
+            exportService.export(exporterIdentifier, response.outputStream, exportResult, fields, labels, null, ["column.widths": [0.14, 0.14, 0.14, 0.14, 0.14, 0.14, 0.14], "title": title, "csv.encoding": "UTF-8", "separator": ";"])
+        } else {
+            responseSuccess(result)
         }
-
-        // hack to avoid list to be cut. offset was already used in db request
-        params.remove("offset")
-
-        responseSuccess(result)
     }
+
+    @RestApiMethod(description="Get the details of a project connection including the actions done during a project connection of one user into a project.")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id. Mandatory"),
+            @RestApiParam(name="activity", type="long", paramType = RestApiParamType.PATH, description = "The project connection id. Mandatory"),
+            //@RestApiParam(name="offset", type="integer", paramType = RestApiParamType.QUERY, description = "An offset. Default value = 0"),
+            //@RestApiParam(name="limit", type="integer", paramType = RestApiParamType.QUERY, description = "Limit the project connections. Optionnal"),
+    ])
+    def getUserActivityDetails() {
+        Long activity = Long.parseLong(params.id)
+        params.put("offset", params.start)
+        params.put("max", params['length'])
+
+        def result = projectConnectionService.getUserActivityDetails(activity/*,limit, offset*/)
+
+        if(params.export.equals("csv")) {
+            PersistentProjectConnection connection = PersistentProjectConnection.read(activity);
+            response.contentType = grailsApplication.config.grails.mime.types[params.format]
+            response.setHeader("Content-disposition", "attachment; filename=image_consultations_of_user_${connection.user}_project_${connection.project}_${activity}.${params.export}")
+
+            def exporterIdentifier = params.export;
+            def exportResult = []
+            List fields = ["date", "time", "imageId", "imageName", "imageThumb", "mode", "numberOfCreatedAnnotations"]
+            Map labels = ["date": "Date", "time": "Duration (ms)", "imageId": "Id of image", "imageName": "Name", "imageThumb": "Thumb", "mode": "Consultation mode", "numberOfCreatedAnnotations": "Number of created annotations"]
+            result.each {
+                def data = [:]
+                data.date = it.created;
+                data.time = it.time ?: 0;
+                data.imageId = it.image
+                data.imageName = it.imageName
+                data.imageThumb = it.imageThumb
+                data.mode = it.mode
+                data.numberOfCreatedAnnotations = it.countCreatedAnnotations
+                exportResult << data
+            }
+
+            String title = "Consultations of images into project ${connection.project} by user ${connection.user}"
+            exportService.export(exporterIdentifier, response.outputStream, exportResult, fields, labels, null, ["column.widths": [0.14, 0.14, 0.14, 0.14, 0.14, 0.14, 0.14], "title": title, "csv.encoding": "UTF-8", "separator": ";"])
+        } else {
+            responseSuccess(result)
+        }
+    }
+
+
 }

@@ -16,6 +16,7 @@ package be.cytomine
 * limitations under the License.
 */
 
+import be.cytomine.security.SecUser
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.ImageConsultationAPI
@@ -26,48 +27,76 @@ class ImageConsultationTests {
 
 
     void testAddConsultation() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{imageinstance:${image.id},mode:test}")
+        def consultation = BasicInstanceBuilder.getImageConsultationNotExist()
 
-        def result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-        json = JSON.parse(result.data)
+        def json = JSON.parse(result.data)
 
         assert "test" == json.mode
-        assert image.id == json.image
+        assert consultation.image == json.image
 
-         //same re-opening image
-        json = JSON.parse("{imageinstance:${image.id},mode:test}")
-        result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        //same re-opening image
+        consultation = BasicInstanceBuilder.getImageConsultationNotExist()
+        result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
 
 
     void testLastImageOfUsersByProject() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{imageinstance:${image.id},mode:test}}")
+        def consultation = BasicInstanceBuilder.getImageConsultationNotExist()
 
-        def result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         // project where image is located
         def project = BasicInstanceBuilder.getProject();
         result = ImageConsultationAPI.lastImageOfUsersByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-        json = JSON.parse(result.data)
+        def json = JSON.parse(result.data)
 
+        assert json.collection.size() == 1
+        assert json.collection[0].image == consultation.image
     }
-    void testGetLastOpenedImage() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def json = JSON.parse("{imageinstance:${image.id},mode:test}}")
 
-        def result = ImageConsultationAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testGetLastOpenedImage() {
+        def consultation = BasicInstanceBuilder.getImageConsultationNotExist()
+
+        def result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         result = ImageInstanceAPI.listLastOpened(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-        json = JSON.parse(result.data)
-        assert ImageInstanceAPI.containsInJSONList(image.id,json)
+        def json = JSON.parse(result.data)
+        assert ImageInstanceAPI.containsInJSONList(consultation.image, json)
 
+    }
+
+    void testResumeByUserAndProject() {
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
+        def consultation = BasicInstanceBuilder.getImageConsultationNotExist(project.id)
+
+        def result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        SecUser user = BasicInstanceBuilder.getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD);
+
+        result = ImageConsultationAPI.resumeByUserAndProject(user.id, consultation.project, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection.size() == 1
+        assert json.collection[0].frequency == 2
+
+        consultation = BasicInstanceBuilder.getImageConsultationNotExist(project.id)
+
+        result = ImageConsultationAPI.create(consultation.image, consultation.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = ImageConsultationAPI.resumeByUserAndProject(user.id, consultation.project, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection.size() == 2
     }
 }

@@ -26,29 +26,42 @@ import org.restapidoc.annotation.RestApiObjectField
  * Info on user connection for a project
  * ex : User x connect to project y the 2013/01/01 at time y
  */
-@RestApiObject(name = "project connection", description = "Each PersistentProjectConnection represent when an user opened a project.")
-class PersistentProjectConnection extends CytomineDomain{
+@RestApiObject(name = "project connection", description = "Each PersistentProjectConnection represents an user connection to a project.")
+class PersistentProjectConnection extends CytomineDomain implements Cloneable {
 
     static mapWith = "mongo"
 
-    static transients = ['id','updated','deleted','class']
+    static transients = ['id','updated','deleted','class','extraProperties']
 
     static belongsTo = [user : SecUser, project: Project]
 
-    @RestApiObjectField(description = "The user")
-    SecUser user
-    @RestApiObjectField(description = "The consultated project")
-    Project project
+    @RestApiObjectField(description = "The user id")
+    Long user
+    @RestApiObjectField(description = "The consultated project id")
+    Long project
+    @RestApiObjectField(description = "The duration of the user connection into the project", useForCreation = false)
+    Long time
+    @RestApiObjectField(description = "The sessionID active during the connection")
+    String session
     @RestApiObjectField(description = "The OS of the user")
     String os
     @RestApiObjectField(description = "The browser of the user")
     String browser
     @RestApiObjectField(description = "The browser version of the user")
     String browserVersion
+    @RestApiObjectField(description = "The count of viewed image during the project connection", useForCreation = false)
+    Integer countViewedImages
+    @RestApiObjectField(description = "The count of created annotation during the project connection", useForCreation = false)
+    Integer countCreatedAnnotations
+    def extraProperties = [:]
 
     static constraints = {
         user (nullable:false)
         project (nullable: false)
+        session nullable: true
+        time(nullable: true)
+        countViewedImages(nullable: true)
+        countCreatedAnnotations(nullable: true)
     }
 
     static mapping = {
@@ -63,11 +76,40 @@ class PersistentProjectConnection extends CytomineDomain{
      * @param domain Domain source for json value
      * @return Map with fields (keys) and their values
      */
-    static def getDataFromDomain(def domain) {
+    static def getDataFromDomain(PersistentProjectConnection domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
-        returnArray.created = domain?.created
-        returnArray.user = domain?.user?.id
-        returnArray.project = domain?.project?.id
+        returnArray.user = domain?.user
+        returnArray.project = domain?.project
+        returnArray.time = domain?.time
+        returnArray.os = domain?.os;
+        returnArray.browser = domain?.browser;
+        returnArray.browserVersion = domain?.browserVersion;
+        returnArray.countViewedImages = domain?.countViewedImages
+        returnArray.countCreatedAnnotations = domain?.countCreatedAnnotations
+        domain?.extraProperties.each { key, value ->
+            returnArray.put(key, value)
+        }
         returnArray
+    }
+
+    @Override
+    public Object clone() {
+        PersistentProjectConnection result = new PersistentProjectConnection()
+        result.user = user;
+        result.project = project;
+        result.time = time;
+        result.os = os;
+        result.browser = browser;
+        result.browserVersion = browserVersion;
+        result.countViewedImages = countViewedImages;
+        result.countCreatedAnnotations = countCreatedAnnotations;
+        result.id = id;
+        result.created = created;
+
+        return result
+    }
+
+    def propertyMissing(String name, def value) {
+        extraProperties.put(name, value)
     }
 }

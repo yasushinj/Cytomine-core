@@ -88,23 +88,13 @@ var AdminUsersView = Backbone.View.extend({
         var self = this;
 
         var table = $(this.el).find("#usersTable");
-        if(table && table.dataTable()) {
-            table.dataTable().fnDestroy();
-        }
-
         var columns = [
-            { "mDataProp": "id", "bSearchable": true,"bSortable": false},
-            { "mDataProp": "Username", sDefaultContent: "", "bSearchable": true, "fnRender" : function(o) {
-                return o.aData["username"];
-            }},
-            { "mData": "Lastname", sDefaultContent: "", "bSearchable": true,"bSortable": false, "fnRender" : function (o) {
-                return o.aData["lastname"];
-            }},
-            { "mData": "Firstname", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
-                return o.aData["firstname"];
-            }},
-            { "mData": "Role", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
-                switch(o.aData["role"]){
+            { data: "id", orderable: false, targets: [0]},
+            { data: "username", targets: [1]},
+            { data: "lastname", orderable: false, targets: [2]},
+            { data: "firstname", orderable: false, targets: [3]},
+            { data: "role", render : function (data) {
+                switch(data){
                     case "ROLE_SUPER_ADMIN" :
                         return "<span class='label label-default'>Super Admin</span>";
                     case "ROLE_ADMIN" :
@@ -114,38 +104,41 @@ var AdminUsersView = Backbone.View.extend({
                     case "ROLE_GUEST" :
                         return "<span class='label label-primary'>Guest</span>";
                 }
-            }},
-            { "mDataProp": "email", "bSearchable": true,"bSortable": true },
-            { "mData": "displayingCreatedDate", sDefaultContent: "", "bSearchable": false,"bSortable": true,
-                "fnRender" : function (o) {
-                    return window.app.convertLongToPrettyDate(o.aData["created"]);
-                },
-                //sort on hidden column
-                "iDataSort":9
-            },
-            { "mData": "updated", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
-                if(o.aData["updated"]) return window.app.convertLongToPrettyDate(o.aData["updated"]);
-            }},
-            { "mDataProp": "action", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return "<button class='btn btn-xs btn-primary UserDetailsButton' data-id="+o.aData["id"]+" >Info</button>"
-                    +" <button class='btn btn-xs btn-primary UserEditButton' data-id="+o.aData["id"]+" >Edit</button>";
-            }},
-            { "mData": "created", "bVisible":false}
+            }, targets: [4]},
+            { data: "email", targets: [5]},
+            { data: "created", render : function ( data, type ) {
+                if(type === "display"){
+                    return window.app.convertLongToPrettyDate(data);
+                } else {
+                    return data
+                }
+            }, targets: [6]},
+            { data: "updated", defaultContent: "No record", orderable: false, render : function (data) {
+                return window.app.convertLongToPrettyDate(data);
+            }, targets: [7]},
+            { data: "id", orderable: false, render : function( data, type, row ) {
+                return "<button class='btn btn-xs btn-primary UserDetailsButton' data-id="+data+" >Info</button>"
+                    +" <button class='btn btn-xs btn-primary UserEditButton' data-id="+data+" >Edit</button>";
+            }, targets: [8]},
+            { searchable: true, targets: [0,1,2,5] },
+            { searchable: false, targets: [3,4,6,7,8] }
         ];
 
-        table.dataTable({
-            "bProcessing": true,
-            "bServerSide": false,
-            "sAjaxSource": new UserCollection({withRoles:true}).url(),
-            "fnServerParams": function ( aoData ) {
-                aoData.push( { "name": "datatables", "value": "true" } );
+        table.DataTable({
+            destroy: true,
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: new UserCollection({withRoles:true}).url(),
+                data: {
+                    "datatables": "true"
+                }
             },
 
-            "fnDrawCallback": function(oSettings, json) {
-            },
-            "aoColumns" : columns,
-            "aaSorting": [[ 0, "desc" ]],
-            "aLengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
+            columnDefs : columns,
+            order: [[ 0, "desc" ]],
+            pageLength: 50,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
         });
     },
     getValues: function (doLayout) {

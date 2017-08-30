@@ -61,8 +61,8 @@ abstract class AnnotationListing {
     def reviewUsers
     def terms = null
     def images = null
-    def afterThan
-    def beforeThan
+    def afterThan = null
+    def beforeThan = null
 
     def suggestedTerms = null
 
@@ -413,7 +413,6 @@ abstract class AnnotationListing {
             return ""
         }
     }
-
 }
 
 class UserAnnotationListing extends AnnotationListing {

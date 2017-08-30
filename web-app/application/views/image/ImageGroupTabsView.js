@@ -29,10 +29,6 @@ var ImageGroupTabsView = Backbone.View.extend({
     },
 
     refresh: function () {
-        var table = $(this.el).find("#imageGroupProjectTable" + this.idProject);
-        if(table && table.dataTable()) {
-            table.dataTable().fnDestroy();
-        }
         this.doLayout();
         return this;
     },
@@ -57,28 +53,26 @@ var ImageGroupTabsView = Backbone.View.extend({
         var table = $(this.el).find("#imageGroupProjectTable" + self.idProject);
         var body = $(this.el).find("#imageGroupProjectArray" + self.idProject);
         var columns = [
-            { sClass: 'center', "mData": "id", "bSearchable": false},
-
-            { "mDataProp": "name", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {
-                self.groups.push(o.aData);
-                return o.aData["name"];
-            }}
-            ,
-            { "mDataProp": "channel", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return'<div id="channel-'+o.aData.id+'"></div>';
-            }},
-            { "mDataProp": "zstack", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return'<div id="zstack-'+o.aData.id + '"></div>';
-            } },
-            { "mDataProp": "slice", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return'<div id="slice-'+o.aData.id + '"></div>';
-            }},
-            { "mDataProp": "time", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return'<div id="time-'+o.aData.id + '"></div>';
-            }},
-            { "mDataProp": "hdf5", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
-                var grouphdf5 = new ImageGroupHDF5Model({group: o.aData.id, id: 666});
-                var toRet = '<div id="con-'+o.aData.id + '"></div>';
+            { className: 'center', data: "id", targets: [0]},
+            { data: "name", defaultContent: "", searchable: true, orderable: true, render : function( data, type, row ) {
+                self.groups.push(row);
+                return data;
+            }, targets: [1]},
+            { data: "channel", defaultContent: "", render : function( data, type, row ) {
+                return'<div id="channel-'+row["id"]+'"></div>';
+            }, targets: [2]},
+            { data: "zstack", defaultContent: "", render : function( data, type, row ) {
+                return'<div id="zstack-'+row["id"] + '"></div>';
+            }, targets: [3]},
+            { data: "slice", defaultContent: "", render : function( data, type, row ) {
+                return'<div id="slice-'+row["id"] + '"></div>';
+            }, targets: [4]},
+            { data: "time", defaultContent: "", render : function( data, type, row ) {
+                return'<div id="time-'+row["id"] + '"></div>';
+            }, targets: [5]},
+            { data: "hdf5", defaultContent: "", orderable: true, render : function ( data, type, row ) {
+                var grouphdf5 = new ImageGroupHDF5Model({group: row["id"], id: 666});
+                var toRet = '<div id="con-'+row["id"] + '"></div>';
                 grouphdf5.fetch({
                     success: function (data) {
                         toRet =  "" + data.get("filenames");
@@ -87,33 +81,33 @@ var ImageGroupTabsView = Backbone.View.extend({
                     },
                     error: function () {
                        var tt =  '<div id="convert-allow-<%= id %>"></div>';
-                        toRet = _.template(tt, o.aData);
-                        $(self.el).find("#con-"+o.aData.id).append(toRet);
-
+                        toRet = _.template(tt, row);
+                        $(self.el).find("#con-"+row["id"]).append(toRet);
                     }
                 });
-
-
                 return toRet;
-            }},
-            { "mDataProp": "add", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
+            }, targets: [6]},
+            { data: "add", defaultContent: "", orderable: true, render : function ( data, type, row ) {
                 var html =    ' <button class="btn btn-info btn-xs" id="add-button-<%=  id  %>">Add Images</button>';
-                return _.template(html, o.aData);
-            }},
-            { "mDataProp": "delete", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function (o) {
+                return _.template(html, row);
+            }, targets: [7]},
+            { data: "delete", sDefaultContent: "", orderable: true, render : function ( data, type, row ) {
                 var html =    ' <button class="btn btn-info btn-xs" id="delete-button-<%=  id  %>">Delete</button>';
-                return _.template(html, o.aData);
-            }}
+                return _.template(html, row);
+            }, targets: [8]},
+            { searchable: false, orderable: false, targets: "_all" }
         ];
         self.imagesdDataTables = table.dataTable({
-            "bProcessing": true,
-            "bServerSide": true,
-            "sAjaxSource": new ImageGroupCollection({project: this.idProject}).url(),
-            "fnServerParams": function ( aoData ) {
-                aoData.push( { "name": "datatables", "value": "true" } );
+            destroy: true,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: new ImageGroupCollection({project: this.idProject}).url(),
+                data: {
+                    "datatables": "true"
+                }
             },
-            "fnDrawCallback": function(oSettings, json) {
-
+            drawCallback: function() {
                 _.each(self.groups, function(aData) {
                     var imageGroup = new ImageGroupModel({});
                     imageGroup.set(aData);
@@ -142,8 +136,8 @@ var ImageGroupTabsView = Backbone.View.extend({
                 });
                 self.groups = [];
             },
-            "aoColumns" : columns,
-            "aaSorting": [[ 0, "desc" ]]
+            columnDefs : columns,
+            order: [[ 0, "desc" ]]
 
         });
 

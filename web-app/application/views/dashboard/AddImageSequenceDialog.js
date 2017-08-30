@@ -49,35 +49,35 @@ var AddImageSequenceDialog = Backbone.View.extend({
         self.images = [];
         var table = $("#addImageSequenceTable" + self.model.id);
         var columns = [
-            { sClass: 'center', "mData": "id", "bSearchable": false,"bSortable": true},
-            { "mData": "macroURL", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
+            { className: 'center', data: "id", targets: [0]},
+            { data: "macroURL", defaultContent: "", orderable: false, render : function ( data, type, row ) {
                 return _.template("<div style='width : 130px;'><a href='#tabs-image-<%= project %>-<%=  id  %>-'><img src='<%= thumb %>?maxSize=128' alt='originalFilename' style='max-height : 45px;max-width : 128px;'/></a></div>",
                     {
                         project : self.model.get("project"),
-                        id : o.aData.id,
-                        thumb : o.aData["macroURL"]
+                        id : row["id"],
+                        thumb : row["macroURL"]
                     });
-            }},
-            { "mDataProp": "originalFilename", sDefaultContent: "", "bSearchable": true,"bSortable": true, "fnRender" : function (o) {
-                return o.aData.originalFilename;
-            }} ,
-            { "mDataProp": "add", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                self.images.push(o.aData);
+            }, targets: [1]},
+            { data: "originalFilename", defaultContent: "", searchable: true, targets: [2]},
+            { orderable: false, render : function( data, type, row ) {
+                self.images.push(row);
                 var html =    ' <button class="btn btn-info btn-xs" id="add-button-<%=  id  %>">Add</button>';
-                return _.template(html, o.aData);
-            }}
+                return _.template(html, row);
+            }, targets: [3]},
+            { searchable: false, targets: "_all" }
         ];
-        self.imagesdDataTables = table.dataTable({
-            "bProcessing": true,
-            "bServerSide": true,
-            "sAjaxSource": new ImageInstanceCollection({project: self.model.get("project"), imagegroup: "any"}).url(),
-            "fnServerParams": function ( aoData ) {
-                aoData.push( { "name": "datatables", "value": "true" } );
+        self.imagesdDataTables = table.DataTable({
+            processing: true,
+            serverSide: true,
+
+            ajax: {
+                url: new ImageInstanceCollection({project: self.model.get("project"), imagegroup: "any"}).url(),
+                data: {
+                    "datatables": "true"
+                }
             },
-            "fnCreatedRow": function ( row, data, index ) {
-               // console.log(data);
-            },
-            "fnDrawCallback": function(oSettings, json) {
+
+            drawCallback: function() {
 
                 $("#imageAddSeqResearch" + self.model.id).unbind();
 
@@ -123,7 +123,7 @@ var AddImageSequenceDialog = Backbone.View.extend({
                 });
                 self.images = [];
             },
-            "aoColumns" : columns
+            columnDefs : columns
         });
         $('#addImageSequenceTable' + self.idProject).show();
     }

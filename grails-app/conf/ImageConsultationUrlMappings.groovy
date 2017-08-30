@@ -30,6 +30,8 @@ class ImageConsultationUrlMappings {
             action = [GET : "lastImageOfUsersByProject"]
         }
 
-
+        "/api/imageconsultation/resume.$format" (controller:"restImageConsultation") {
+            action = [GET : "resumeByUserAndProject"]
+        }
     }
 }

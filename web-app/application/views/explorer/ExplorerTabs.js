@@ -79,7 +79,7 @@ var ExplorerTabs = Backbone.View.extend({
         if (tab != null) {
             //open tab if already exist
             tab.view.show(options);
-            self.showTab(idImage, "image");
+            self.showImageTab(idImage, "image");
             return;
         }
         tab = this.getImageView("review-" + idImage);
@@ -112,7 +112,7 @@ var ExplorerTabs = Backbone.View.extend({
                 view.position = {x:model.x,y:model.y,zoom:model.zoom}
             }
 
-            self.showTab(idImage, "image");
+            self.showImageTab(idImage, "image");
             if(view.map !== null){
                 view.map.updateSize();
                 view.map.zoomToMaxExtent();
@@ -199,17 +199,76 @@ var ExplorerTabs = Backbone.View.extend({
         if(review) {
             $("#closeTabtabs-review-" + browseImageView.model.id).on("click", function (e) {
                 var idImage = $(this).attr("data-image");
-                self.removeTab(idImage, "review");
+                self.removeImageTab(idImage, "review");
                 self.showLastTab(idImage);
             });
         } else {
             $("#closeTabtabs-image-" + browseImageView.model.id).on("click", function (e) {
                 var idImage = $(this).attr("data-image");
-                self.removeTab(idImage, "image");
+                self.removeImageTab(idImage, "image");
                 self.showLastTab(idImage);
                 window.app.status.currentImages.splice($.inArray(idImage, $.map(window.app.status.currentImages, function(a) {return a.image})));
             });
         }
+    },
+    addUserActivityTab: function (userActivityView) {
+
+        var self = this;
+
+        var tabs = $('#explorer-tab');
+
+        var tabTpl =
+            "<li>" +
+            "<a style='float: left;' id='" + "tabs-useractivity-<%= idUser %>' rel='tooltip' title='Activity of <%= username %>' href='#" + userActivityView.divId + "' data-toggle='tab'>" +
+            "<i class='icon-search'></i><span> Activity of <%= username %></span>" +
+            "<button type='button' id='closeTab-useractivity-<%= idUser %>' data-user='<%= idUser %>'  class='close' style='margin-left: 5px; margin-right: -5px;margin-top: -10px'>×</button>" +
+            "</a>" +
+            "</li>";
+
+        tabs.append(_.template(tabTpl, {
+                idProject: window.app.status.currentProject,
+                username: userActivityView.model.get('username'),
+                idUser: userActivityView.model.get('id')
+            })
+        );
+
+        $("#closeTab-useractivity-" + userActivityView.model.id).on("click", function (e) {
+            var idUser = $(this).attr("data-user");
+            self.removeUserActivityTab(idUser);
+            window.app.controllers.browse.navigate("#tabs-usersconfig-" + window.app.status.currentProject, true);
+        });
+    },
+    addUserActivityView: function (idUser, options, callback) {
+        var self = this;
+        var tab = this.getUserActivityView(idUser);
+        if (tab != null) {
+            //open tab if already exist
+            tab.view.show(options);
+            self.showUserActivityTab(idUser, "image");
+            return;
+        }
+
+        var tabs = $("#explorer-tab-content");
+        console.log("ProjectUserActivityView");
+        var view = new ProjectUserActivityView({
+            addToTab: function () {
+                self.addUserActivityTab(view)
+            },
+            el: tabs
+        });
+        self.tabs.push({idUser: idUser, view: view});
+
+        var openTab = function(model) {
+            view.model = model;
+            view.render();
+            self.showUserActivityTab(idUser);
+        };
+
+        new UserModel({id: idUser}).fetch({
+            success: function (model, response) {
+                openTab(model);
+            }
+        });
     },
     addReviewImageView: function (idImage, options,merge, callback) {
         var self = this;
@@ -217,7 +276,7 @@ var ExplorerTabs = Backbone.View.extend({
         if (tab != null) {
             //open tab if already exist
             tab.view.show(options);
-            self.showTab(idImage, "review");
+            self.showImageTab(idImage, "review");
             return;
         }
         tab = this.getImageView(idImage);
@@ -246,11 +305,11 @@ var ExplorerTabs = Backbone.View.extend({
             view.model = model.image;
             console.log(view.model);
             view.render();
-            self.showTab(idImage, "review");
+            self.showImageTab(idImage, "review");
 
             if (model.image.get("inReview") == false && model.image.get("reviewed") == false) {
 
-                self.removeTab(idImage, "review");
+                self.removeImageTab(idImage, "review");
                 window.app.view.message("Review image", "You must first start reviewing picture before review it!", "warning");
             }
         }
@@ -279,11 +338,17 @@ var ExplorerTabs = Backbone.View.extend({
         });
         return object;
     },
+    getUserActivityView: function (idUser) {
+        var object = _.detect(this.tabs, function (object) {
+            return object.idUser == idUser;
+        });
+        return object;
+    },
     /**
      * Remove a Tab
      * @param index the identifier of the Tab
      */
-    removeTab: function (idImage, prefix) {
+    removeImageTab: function (idImage, prefix) {
 
         var browseImageView = null
 
@@ -306,6 +371,19 @@ var ExplorerTabs = Backbone.View.extend({
         $('#tabs-' + prefix + '-' + idImage + "-dropdown").parent().remove();
         //Remove content
         $('#tabs-' + prefix + '-' + window.app.status.currentProject + '-' + idImage + '-').remove();
+    },
+    removeUserActivityTab: function (idUser) {
+
+        var userActivityView = this.getUserActivityView(idUser);
+
+        var indexOf = this.tabs.indexOf(userActivityView);
+
+        this.tabs.splice(indexOf, 1);
+        var tabs = $('#explorer-tab');
+        //Remove Tab
+        $('#tabs-useractivity-' + idUser).parent().remove();
+        //Remove content
+        $('#tabs-useractivity-' + window.app.status.currentProject + '-' + idUser).remove();
     },
     /**
      * Reload a Tab
@@ -337,13 +415,19 @@ var ExplorerTabs = Backbone.View.extend({
      * Show a tab
      * @param idImage the identifier of the Tab
      */
-    showTab: function (idImage, prefix) {
+    showImageTab: function (idImage, prefix) {
         window.app.status.currentImage = {};
         window.app.status.currentImage.idImage = idImage;
         window.app.status.currentImage.prefix = prefix;
         var tabs = $('#explorer-tab');
         window.app.controllers.browse.tabs.triggerRoute = false;
         $('#tabs-' + prefix + '-' + idImage).click();
+        window.app.controllers.browse.tabs.triggerRoute = true;
+    },
+    showUserActivityTab: function (idUser, prefix) {
+        var tabs = $('#explorer-tab');
+        window.app.controllers.browse.tabs.triggerRoute = false;
+        $('#tabs-useractivity-' + idUser).click();
         window.app.controllers.browse.tabs.triggerRoute = true;
     },
     /**
@@ -356,7 +440,7 @@ var ExplorerTabs = Backbone.View.extend({
         } else if(imageToOpen) {
             window.app.setNewImage(imageToOpen);
        }
-        window.app.controllers.browse.tabs.removeTab(idImageToClose,mode) //TODO support REVIEW TOO!!!!
+        window.app.controllers.browse.tabs.removeImageTab(idImageToClose,mode) //TODO support REVIEW TOO!!!!
 
         if(merge) {
             mode = mode +"mergechannel"
@@ -402,7 +486,7 @@ var ExplorerTabs = Backbone.View.extend({
         var tabs = $('#explorer-tab');
         tabs.append(_.template("<li class='custom-ui-project-dashboard-tab' id='project-dashboard-tab'><a id='dashboardLink-<%= idProject %>' href='#tabs-dashboard-<%= idProject %>' data-toggle='tab'><i class='icon-road' /> <%= name %></a></li>", { idProject: window.app.status.currentProject, name: projectName}));
         tabs.append(_.template("<li class='custom-ui-project-images-tab' id='project-images-tab'><a href='#tabs-images-<%= idProject %>' data-toggle='tab'><i class='icon-picture' /> Images</a></li>", { idProject: window.app.status.currentProject}));
-        tabs.append(_.template("<li class='custom-ui-project-imagegroups-tab' id='project-imagesgroup-tab'><a href='#tabs-groups-<%= idProject %>' data-toggle='tab'><i class='icon-picture' /> ImageGroups</a></li>", { idProject: window.app.status.currentProject}));
+        tabs.append(_.template("<li class='custom-ui-project-imagegroups-tab' id='project-imagegroups-tab'><a href='#tabs-groups-<%= idProject %>' data-toggle='tab'><i class='icon-picture' /> ImageGroups</a></li>", { idProject: window.app.status.currentProject}));
         tabs.append(_.template("<li class='custom-ui-project-annotations-tab' id='project-annotations-tab' style='display:none;'><a href='#tabs-annotations-<%= idProject %>' data-toggle='tab'><i class='icon-pencil' /> Annotations</a></li>", { idProject: window.app.status.currentProject}));
 	    tabs.append(_.template("<li class='custom-ui-project-properties-tab' id='project-properties-tab' style='display:none;'><a class='annotationTabLink' href='#tabs-properties-<%= idProject %>' data-toggle='tab'><i class='icon-list' /> Properties</a></li>", { idProject: window.app.status.currentProject}));
         tabs.append(_.template("<li class='custom-ui-project-jobs-tab' id='project-jobs-tab' style='display:none;'><a href='#tabs-algos-<%= idProject %>' data-toggle='tab'><i class='icon-tasks' /> Jobs</a></li>", { idProject: window.app.status.currentProject}));

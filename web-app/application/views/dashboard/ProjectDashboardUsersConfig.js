@@ -50,84 +50,58 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
         var self = this;
 
         var table = $(this.el).find("#userProjectTable" + self.model.get('id'));
-        if(table && table.dataTable()) {
-            table.dataTable().fnDestroy();
-        }
 
         var columns = [
-            { "mDataProp": "", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                return "<input type='checkbox' data-id='"+o.aData["id"]+"' class='userchckbox-"+self.model.get('id')+"'>";
-            }},
-            //{ sClass: 'center', "mData": "id", "bSearchable": false},
-            { "mDataProp": "Username", sDefaultContent: "", "bSearchable": false, "fnRender" : function(o) {
-                return o.aData["username"];
-            }},
-            { "mData": "Fullname", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function (o) {
-                return o.aData["firstname"] + " "+o.aData["lastname"];
-            }},
-            { "mDataProp": "LastConnexion", sDefaultContent: "", "bSearchable": false,"fnRender" : function(o) {
-                var last = o.aData["lastConnection"];
-                if(last === null) {
-                    last = "No record";
-                } else {
-                    last = window.app.convertLongToPrettyDate(last);
-                }
-                return last;
-            }},
-            { "mDataProp": "LastImg", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                var last = o.aData["lastImageName"];
-                if(last === null) {
-                    last = "No record";
-                } else {
-                    // TODO Put a link to the image ? or display the image ?
-                }
-                return last;
-            }},
-            { "mDataProp": "LDAP", sDefaultContent: "", "bSearchable": false,"fnRender" : function(o) {
-                if(o.aData["LDAP"]){
+            { orderable: false, render : function( data, type, row ) {
+                return "<input type='checkbox' data-id='"+row["id"]+"' class='userchckbox-"+self.model.get('id')+"'>";
+            }, targets: [0]},
+            { data: "username", searchable: true, targets: [1]},
+            { searchable: true, orderable: false, render : function ( data, type, row ) {
+                return row["firstname"] + " "+row["lastname"];
+            }, targets: [2]},
+            { data: "lastConnection", defaultContent: "No record", render : function( data, type, row ) {
+                return window.app.convertLongToPrettyDate(row["lastConnection"]);
+            }, targets: [3]},
+            { data: "lastImageName", defaultContent: "No record", orderable: false, targets: [4]},
+            { data: "LDAP", defaultContent: "", render : function( data) {
+                if(data){
                     return "<div class = 'led-green'></div>";
                 } else {
                     return "<div class = 'led-red'></div>";
                 }
-            }},
-            { "mDataProp": "email", "bSearchable": false,"bSortable": true },
-            { "mDataProp": "nbVisit", sDefaultContent: "", "bSearchable": false,"bSortable": true, "fnRender" : function(o) {
-                return o.aData["frequency"];
-
-            }},
-            { "mDataProp": "action", sDefaultContent: "", "bSearchable": false,"bSortable": false, "fnRender" : function(o) {
-                o.aData["project"]  = self.model.get('id');
-                return "<button class='btn btn-info btn-xs UserDetailsButton"+self.model.id+"' data-id="+o.aData["id"]+" >Details</button>";
-            }}
+            }, targets: [5]},
+            { data: "email", searchable: true, targets: [6] },
+            { data: "frequency", defaultContent: "An error happened", targets: [7]},
+            { orderable: false, render : function( data, type, row ) {
+                return "<button class='btn btn-info btn-xs UserActivityBtn' data-user='"+row["id"]+"' data-project='"+self.model.id+"'>Details</button>";
+            }, targets: [8]},
+            { searchable: false, targets: "_all" }
         ];
 
-        table.dataTable({
-            "bProcessing": true,
-            "bServerSide": true,
-            "sAjaxSource": new UserActivitiesCollection({project: this.model.get('id'), admins : self.showOnlyAdmins, online : self.showOnlyOnlineUsers}).url(),
-            "fnServerParams": function ( aoData ) {
-                aoData.push( { "name": "datatables", "value": "true" } );
+        table.DataTable({
+            destroy: true,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: new UserCollection({withActivity: true, project: this.model.get('id'), admins : self.showOnlyAdmins, online : self.showOnlyOnlineUsers}).url(),
+                data: {
+                    "datatables": "true"
+                }
             },
-
-            "fnRowCallback": function( nRow, aData ) {
-                var id = aData.id; // ID is returned by the server as part of the data
-                var $nRow = $(nRow); // cache the row wrapped up in jQuery
+            rowCallback: function( row, data,index ) {
+                var id = data["id"]; // ID is returned by the server as part of the data
+                var $nRow = $(row); // cache the row wrapped up in jQuery
                 if (self.projectAdmins.indexOf(id) >= 0) {
                     $('td', $nRow).css({"background-color":"#ff3333"});
                 }
                 if (id == window.app.status.user.id) {
                     $('td', $nRow).css({"background-color":"#3385ff"});
                 }
-                return nRow;
+                return row;
             },
-
-            "fnDrawCallback": function(oSettings, json) {
-            },
-            "aoColumns" : columns,
-            "aaSorting": [[ 0, "desc" ]],
-            "aLengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
-
-
+            columnDefs : columns,
+            order: [[ 0, "desc" ]],
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
         });
 
         $('#selectAllUsers'+self.model.id).prop('checked', false);
@@ -311,8 +285,6 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                     new DetailedUserProjectInfoDialog({el: "#dialogs", model: viewModel}).render();
                 }
             });
-
-
         });
 
         self.update();
@@ -345,6 +317,9 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
             title : "Average Connections",
             el: $(self.el).find("#avgConnections-"+self.model.id)}).render();
 
+        $(self.el).find("#userProjectTable"+self.model.id).on("click", ".UserActivityBtn", function(event) {
+            window.location = '#tabs-useractivity-'+$(this).data("project")+'-'+$(this).data("user");
+        });
 
     },
 

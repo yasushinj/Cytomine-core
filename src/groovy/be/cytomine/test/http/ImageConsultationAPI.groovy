@@ -30,4 +30,9 @@ class ImageConsultationAPI extends DomainAPI {
         def result = doPOST(URL,json,username,password)
         return result
     }
+
+    static def resumeByUserAndProject(Long idUser, Long idProject, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "/api/imageconsultation/resume.json?user=$idUser&project=$idProject"
+        return doGET(URL, username, password)
+    }
 }

@@ -24,7 +24,6 @@ import org.hibernate.FetchMode
 
 class DataTablesService {
 
-//&iColumns=14&mDataProp_0=id&mDataProp_1=baseImage.macroURL&mDataProp_2=baseImage.originalFilename&mDataProp_3=baseImage.width&mDataProp_4=baseImage.height&mDataProp_5=baseImage.magnification&mDataProp_6=baseImage.resolution&mDataProp_7=countImageAnnotations&mDataProp_8=countImageJobAnnotations&mDataProp_9=countImageReviewedAnnotations&mDataProp_10=baseImage.mime.extension&mDataProp_11=created&mDataProp_12=reviewStart&mDataProp_13=updated&sSearch=&bRegex=false&sSearch_0=&bRegex_0=false&bSearchable_0=false&sSearch_1=&bRegex_1=false&bSearchable_1=false&sSearch_2=&bRegex_2=false&bSearchable_2=true&sSearch_3=&bRegex_3=false&bSearchable_3=false&sSearch_4=&bRegex_4=false&bSearchable_4=false&sSearch_5=&bRegex_5=false&bSearchable_5=false&sSearch_6=&bRegex_6=false&bSearchable_6=false&sSearch_7=&bRegex_7=false&bSearchable_7=false&sSearch_8=&bRegex_8=false&bSearchable_8=false&sSearch_9=&bRegex_9=false&bSearchable_9=false&sSearch_10=&bRegex_10=false&bSearchable_10=true&sSearch_11=&bRegex_11=false&bSearchable_11=false&sSearch_12=&bRegex_12=false&bSearchable_12=false&sSearch_13=&bRegex_13=false&bSearchable_13=false&iSortCol_0=5&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=true&bSortable_4=true&bSortable_5=true&bSortable_6=true&bSortable_7=true&bSortable_8=true&bSortable_9=true&bSortable_10=true&bSortable_11=true&bSortable_12=true&bSortable_13=true&datatables=true&_=1392363731906
     //TODO: document this methods + params
 
     def dataSource
@@ -33,19 +32,15 @@ class DataTablesService {
     def currentRoleServiceProxy
 
     def process(params, domain, restrictions, returnFields, project) {
-        params.max = params.iDisplayLength ? params.iDisplayLength as int : 10;
-        params.offset = params.iDisplayStart ? params.iDisplayStart as int : 0;
+        params.max = params['length'] ? params['length'] as int : 10;
+        params.offset = params.start ? params.start as int : 0;
 
         String abstractImageAlias = "ai"
-        String _search = params.sSearch ? "%"+params.sSearch+"%" : "%"
+        String _search = params["search[value]"] ? "%"+params["search[value]"]+"%" : "%"
 
-        //&iSortCol_0=7&sSortDir_0=asc
-        //iSortCol_0=0&sSortDir_0=asc
-
-
-        def col = params.get("iSortCol_0");
-        def sort = params.get("sSortDir_0")
-        def sortProperty = "mDataProp_"+col
+        def col = params["order[0][column]"];
+        def sort = params["order[0][dir]"];
+        def sortProperty = "columns[$col][data]"
 
         if(domain==ImageInstance) {
             List<ImageInstance> images = ImageInstance.createCriteria().list() {
@@ -57,14 +52,14 @@ class DataTablesService {
                 ilike(abstractImageAlias + ".originalFilename", _search)
             }
 
-            def property = params.get(sortProperty)
+            def property = params[sortProperty]
 
             if(property) {
                 images.sort {
                     //id, name,....
 
 
-                    def data = null
+                    def data;
 
                     if(property.equals("numberOfAnnotations")) {
                         data = it.countImageAnnotations
@@ -74,6 +69,14 @@ class DataTablesService {
                         data = it.countImageReviewedAnnotations
                     }else if(property.equals("originalFilename")) {
                         data = it.baseImage.originalFilename
+                    }else if(property.equals("width")) {
+                        data = it.baseImage.width
+                    }else if(property.equals("height")) {
+                        data = it.baseImage.height
+                    }else if(property.equals("resolution")) {
+                        data = it.baseImage.resolution
+                    }else if(property.equals("magnification")) {
+                        data = it.baseImage.magnification
                     }else {
                         data = it."$property"
                     }

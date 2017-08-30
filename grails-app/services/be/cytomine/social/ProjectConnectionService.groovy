@@ -3,10 +3,13 @@ package be.cytomine.social
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.sql.AnnotationListing
+import be.cytomine.sql.UserAnnotationListing
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import groovy.time.TimeCategory
+import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
@@ -18,30 +21,38 @@ class ProjectConnectionService extends ModelService {
     def dataSource
     def mongo
     def noSQLCollectionService
+    def imageConsultationService
 
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
         Project project = Project.read(JSONUtils.getJSONAttrLong(json,"project",0))
         securityACLService.check(project,READ)
+        closeLastProjectConnection(user.id, project.id, new Date())
         PersistentProjectConnection connection = new PersistentProjectConnection()
-        connection.user = user
-        connection.project = project
+        connection.user = user.id
+        connection.project = project.id
         connection.created = new Date()
+        connection.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         connection.os = json.os
         connection.browser = json.browser
         connection.browserVersion = json.browserVersion
-        connection.insert(flush:true) //don't use save (stateless collection)
+        connection.insert(flush:true, failOnError : true) //don't use save (stateless collection)
         return connection
     }
 
-    def lastConnectionInProject(Project project){
+    def lastConnectionInProject(Project project, Long userId = null){
         securityACLService.check(project,WRITE)
+
+        if (userId) {
+            return PersistentProjectConnection.findAllByUserAndProject(userId, project.id, [sort: 'created', order: 'desc', max: 1])
+        }
 
         def results = []
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def match = [$match:[project : project.id]]
         def connection = db.persistentProjectConnection.aggregate(
-                [$match:[project : project.id]],
+                match,
                 [$group : [_id : '$user', created : [$max :'$created']]])
 
         connection.results().each {
@@ -50,9 +61,61 @@ class ProjectConnectionService extends ModelService {
         return results
     }
 
+    private void closeLastProjectConnection(Long user, Long project, Date before){
+        PersistentProjectConnection connection = PersistentProjectConnection.findByUserAndProjectAndCreatedLessThan(user, project, before, [sort: 'created', order: 'desc', max: 1])
+
+        //first connection
+        if(connection == null) return;
+
+        //last connection already closed
+        if(connection.time) return;
+
+        fillProjectConnection(connection, before)
+
+        connection.save(flush : true)
+    }
+
+    def annotationListingService
+    private void fillProjectConnection(PersistentProjectConnection connection, Date before = new Date()){
+        Date after = connection.created;
+
+        // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        def connections = db.persistentConnection.aggregate(
+                [$match: [project: connection.project, user: connection.user, $and : [[created: [$gte: after]],[created: [$lte: before]]]]],
+                [$sort: [created: 1]],
+                [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
+        );
+
+        def continuousConnections = connections.results().collect { it.dateInMillis }
+
+        //we calculated the gaps between connections to identify the period of non activity
+        def continuousConnectionIntervals = []
+
+        continuousConnections.inject(connection.created.time) { result, i ->
+            continuousConnectionIntervals << (i-result)
+            i
+        }
+
+        connection.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
+        if(connection.time == null) connection.time=0;
+
+        // count viewed images
+        connection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(connection.user,
+                connection.project,after, before).unique({it.image}).size()
+
+        AnnotationListing al = new UserAnnotationListing()
+        al.project = connection.project
+        al.user = connection.user
+        al.beforeThan = before
+        al.afterThan = after
+
+        // count created annotations
+        connection.countCreatedAnnotations = annotationListingService.listGeneric(al).size()
+    }
+
     def getConnectionByUserAndProject(User user, Project project, Integer limit, Integer offset){
         securityACLService.check(project,WRITE)
-        def result = []
 
         def connections = PersistentProjectConnection.createCriteria().list(sort: "created", order: "desc") {
             eq("user", user)
@@ -61,53 +124,18 @@ class ProjectConnectionService extends ModelService {
             maxResults(limit)
         }
 
-        if(connections.size() == 0) return result;
+        if(connections.size() == 0) return connections;
 
-        Date after = connections[connections.size() - 1].created;
-
-        // collect {it.created.getTime} is really slow. I just want the getTime of PersistentConnection
-        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        def continuousConnectionsResult = db.persistentConnection.aggregate(
-                [$match: [project: project.id, user: user.id, created: [$gte: after]]],
-                [$sort: [created: -1]],
-                [$project: [dateInMillis: [$subtract: ['$created', new Date(0L)]]]]
-        );
-        def continuousConnections = continuousConnectionsResult.results().collect { it.dateInMillis }
-
-        if(continuousConnections.size() == 0) {
-            connections.each {
-                result << [id: it.id, created: it.created, user: user.id, project: project.id, time: 0]
+        if(!connections[0].time) {
+            connections[0] = ((PersistentProjectConnection) connections[0]).clone()
+            boolean online = LastConnection.findByProjectAndUser(project, user) != null
+            fillProjectConnection(connections[0])
+            if(online) {
+                connections[0].online = true
             }
-            return result
         }
 
-        def connectionsTime = connections.collect { it.created.getTime() }
-
-        //merging
-        int beginJ = continuousConnections.size() - 1;
-
-        for (int i = connections.size() - 1; i >= 1; i--) {
-            def nextConnectionDate = connectionsTime[i - 1];
-
-            int j = beginJ;
-            while (j >= 0 && continuousConnections[j] < nextConnectionDate) {
-                j--;
-            }
-
-            // if j = beginJ, short time connection (<20sec). Avoid j+1 > size of array.
-            long time = (j == beginJ) ? 0 : (continuousConnections[j + 1] - continuousConnections[beginJ]);
-            if (time < 0) time = 0;
-            beginJ = j >= 0 ? j : 0;
-
-            result << [id: connections[i].id, created: connections[i].created, user: user.id,
-                       project: project.id, time: time]
-        }
-        long time = continuousConnections[0] - continuousConnections[beginJ];
-        result << [id: connections[0].id, created: connections[0].created, user: user.id,
-                   project: project.id, time: time]
-        result = result.reverse();
-
-        return result
+        return connections
     }
 
     def numberOfConnectionsByProjectAndUser(Project project, User user = null){
@@ -288,7 +316,7 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
-    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period, Project project = null){
+    def averageOfProjectConnections(Long afterThan = null, Long beforeThan = new Date().getTime(), String period, Project project = null, SecUser user = null){
 
         if(!afterThan){
             use(TimeCategory) {
@@ -327,50 +355,54 @@ class ProjectConnectionService extends ModelService {
                 break;
         }
 
-        if(project){
-            match = [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]], [ project : project.id]]]
-        } else {
-            match = [$and : [[ created : [$gte : new Date(afterThan)]],[ created : [$lte : new Date(beforeThan)]]]]
-        }
-        match = [$match : match]
+        match = [[ created : [$gte : new Date(afterThan)]], [ created : [$lte : new Date(beforeThan)]]]
+        if(project) match << [ project : project.id];
+        if(user) match << [ user : user.id];
+        match = [$match : [$and : match]]
 
         result = db.persistentProjectConnection.aggregate(
                 match,
                 projection1,
                 projection2,
                 group
-        )
-
+        ).results()
 
         def connections = []
 
-        int total;
-        Date firstDay;
-        firstDay = new Date(afterThan);
-        Date lastDay = new Date(beforeThan);
-
-        switch (period){
-            case "hour" :
-                total = TimeCategory.minus(lastDay, firstDay).getDays()
-                break;
-            case "day" :
-                total = TimeCategory.minus(lastDay, firstDay).getDays()/7
-                break;
-            case "week" :
-                total = TimeCategory.minus(lastDay, firstDay).getYears()
-                break;
-        }
+        int total = result.sum{it.frequency}
         if(total == 0) total = 1
-        result.results().each {
+
+        result.each {
             // TODO evolve when https://jira.mongodb.org/browse/SERVER-6310 is resolved
             // as we groupBy hours in UTC, the GMT + xh30 have problems.
 
             def time = it["time"]
-            def frequency = it["frequency"]/total
+            def frequency = (it["frequency"])/total
 
             connections << [time : time, frequency: frequency]
         }
-        result = connections
-        return result
+        return connections
+    }
+
+    def getUserActivityDetails(Long activityId){
+        PersistentProjectConnection connection = PersistentProjectConnection.read(activityId)
+        Project project = Project.read(connection.project)
+        securityACLService.check(project,WRITE)
+
+        def consultations = PersistentImageConsultation.findAllByCreatedGreaterThanAndProjectConnection(connection.created, activityId, [sort: 'created', order: 'desc'])
+
+        if(consultations.size() == 0) return consultations;
+        // current connection. We need to calculate time for the currently opened image
+        if(!connection.time) {
+            int i = 0;
+            Date before = new Date()
+            while(!consultations[i].time && i < consultations.size()){
+                consultations[i] = ((PersistentImageConsultation) consultations[i]).clone()
+                imageConsultationService.fillImageConsultation(consultations[i], before)
+                before = consultations[i].created
+                i++
+            }
+        }
+        return consultations
     }
 }

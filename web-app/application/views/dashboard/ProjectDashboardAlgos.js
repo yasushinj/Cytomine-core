@@ -67,7 +67,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
                 new JobCollection({ project: self.model.id, software: self.idSoftware, light: true}).fetch({
                     success: function (collection, response) {
                         self.jobsLight = collection;
-                        self.printComparatorLaunch();
+                        //self.printComparatorLaunch();
                         self.fillJobSelectView();
                     }
                 });
@@ -186,6 +186,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         });
 
 
+        /*
         //init modal for job compare
         var modalCompare = new CustomModal({
             idModal : "compareJobModal",
@@ -232,6 +233,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
             }
         });
         modalCompare.addButtons("closeCompare","Close",false,true);
+        */
     },
     printComparatorLaunch: function () {
         var self = this;
@@ -431,33 +433,116 @@ var ProjectDashboardAlgos = Backbone.View.extend({
             return;
         }
 
-        var datatable = $('#selectRunParamsTable').dataTable();
+        var datatable = $('#selectRunParamsTable').DataTable();
         console.log("buildJobParamElem=" + datatable);
         console.log("buildJobParamElem=" + $('#selectRunParamsTable').length);
-        datatable.fnClearTable();
-        //print data from project image table
-        var tbody = $('#selectRunParamsTable').find("tbody");
 
+        var data = [];
         _.each(job.get('jobParameters'), function (param) {
-
-            tbody.append('<tr><td>' + param.name + '</td><td id="' + param.id + '"><div class="alert alert-info" style="margin-left : 10px;margin-right: 10px;"><i class="icon-refresh" /> Loading...</div></td><td>' + param.type + '</td></tr>');
-            window.app.controllers.dashboard.printJobParameterValue(param, $('#selectRunParamsTable').find("tbody").find("td#" + param.id), 100);
+            data.push([param.name,
+                '<div id=' + param.id + '><div class="alert alert-info" style="margin-left : 10px;margin-right: 10px;"><i class="icon-refresh" /> Loading...</div></div>',
+                param.type
+            ]);
         });
-        $('#selectRunParamsTable').dataTable({
-            //"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
-            "sPaginationType": "bootstrap",
-            "oLanguage": {
-                "sLengthMenu": "_MENU_ records per page"
-            },
-            "iDisplayLength": 5,
-            "bLengthChange": false,
-            bDestroy: true,
-            "aoColumnDefs": [
-                { "sWidth": "40%", "aTargets": [ 0 ] },
-                { "sWidth": "40%", "aTargets": [ 1 ] },
-                { "sWidth": "20%", "aTargets": [ 2 ] }
+
+
+        $('#selectRunParamsTable').DataTable({
+            dom: "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
+            paging:   false,
+            data: data,
+            displayLength: 5,
+            lengthChange: false,
+            destroy: true,
+            columnDefs: [
+                { width: "40%", targets: [ 0 ] },
+                { width: "40%", targets: [ 1 ] },
+                { width: "20%", targets: [ 2 ] }
             ]
         });
+        _.each(job.get('jobParameters'), function (param) {
+            self.printJobParameterValue(param, $('#selectRunParamsTable').find("tbody").find("div#" + param.id), 100);
+        });
+    },
+    //print job param value in cell
+    printJobParameterValue: function (param, cell, maxSize) {
+        var self = this;
+        if (param.type == "Date") {
+            cell.html(window.app.convertLongToDate(param.value));
+        } else if (param.type == "Boolean") {
+            if (param.value == "true") {
+                cell.html('<input type="checkbox" name="" checked="checked" />');
+            }
+            else {
+                cell.html('<input type="checkbox" name="" />');
+            }
+        }
+        else if (param.type == "ListDomain" || param.type == "Domain") {
+            var ids = param.value.split(",");
+            console.log("Domain or ListDomain:" + ids);
+
+            if(param.uri) {
+                var collection = window.app.getFromCache(window.app.replaceVariable(param.uri));
+                if (collection == undefined || (collection.length > 0 && collection.at(0).id == undefined)) {
+                    console.log("Collection is NOT CACHE - Reload collection");
+                    collection = new SoftwareParameterModelCollection({uri: window.app.replaceVariable(param.uri), sortAttribut: param.uriSortAttribut});
+                    collection.fetch({
+                        success: function (col, response) {
+                            window.app.addToCache(window.app.replaceVariable(param.uri), col);
+                            cell.html(self.createJobParameterDomainValue(ids, col, param, maxSize));
+                        }
+                    });
+                } else {
+                    console.log("Collection is CACHE");
+                    cell.html(self.createJobParameterDomainValue(ids, collection, param, maxSize));
+                }
+            } else {
+                var computeValue = param.value;
+                if (param.name.toLowerCase() == "privatekey" || param.name.toLowerCase() == "publickey") {
+                    computeValue = "************************************";
+                }
+                cell.html(computeValue);
+            }
+        }
+        else {
+            var computeValue = param.value;
+            if (param.name.toLowerCase() == "privatekey" || param.name.toLowerCase() == "publickey") {
+                computeValue = "************************************";
+            }
+            cell.html(computeValue);
+        }
+    },
+    createJobParameterDomainValue: function (ids, collection, param, maxSize) {
+        var getLink = function(model, uriPrintAttribut) {
+            if (model.get("class") == 'be.cytomine.project.Project') {
+                return _.template("<a href='#tabs-dashboard-<%= id %>'><%= name %></a>", { id : model.id, name : model.get(uriPrintAttribut) });
+            } else if (model.get("class") == 'be.cytomine.image.ImageInstance') {
+                return _.template("<a href='#tabs-image-<%= idProject %>-<%= idImage %>-'><%= name %></a>", { idProject : model.get("project"), idImage : model.id, name : model.get(uriPrintAttribut) });
+            } else if (model.get("class") == 'be.cytomine.ontology.Term') {
+                return _.template("<a href='#ontology/<%= idOntology %>/<%= idTerm %>'><%= name %></a>", { idOntology : model.get("ontology"), idTerm : model.id, name : model.get(uriPrintAttribut) });
+            } else {
+                return model.get(uriPrintAttribut);
+            }
+        };
+        var names = [];
+        _.each(ids, function (id) {
+            var model = collection.get(id);
+            if (model == undefined) {
+                names.push("Unknown");
+            }
+            else {
+                names.push(getLink(model, param.uriPrintAttribut));
+            }
+
+        });
+        names = _.sortBy(names, function (name) {
+            return name;
+        });
+        var computeValue = names.join(', ');
+        var shortValue = computeValue;
+        if (computeValue.length > maxSize) {
+            shortValue = computeValue.substring(0, maxSize) + "...";
+        }
+        return shortValue;
     },
     printJobResult: function (job) {
         if (job == undefined) {

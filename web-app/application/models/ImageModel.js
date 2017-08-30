@@ -193,38 +193,3 @@ var ImageInstanceCollection = PaginatedCollection.extend({
 
     }
 });
-
-
-var UserPositionModel = Backbone.Model.extend({
-    url: function () {
-        if (this.user == undefined) {
-            return 'api/imageinstance/' + this.image + '/position.json';
-        } else {
-            return 'api/imageinstance/' + this.image + '/position/' + this.user + ".json";
-        }
-    },
-    initialize: function (options) {
-        this.image = options.image;
-        this.user = options.user;
-    }
-});
-
-var UserOnlineModel = Backbone.Model.extend({
-    url: function () {
-        return 'api/imageinstance/' + this.image + '/online.json';
-    },
-    initialize: function (options) {
-        this.image = options.image;
-    }
-});
-
-var ImageConsultationModel = Backbone.Model.extend({
-    url: function () {
-        return '/api/imageinstance/'+this.imageinstance +'/consultation.json';
-    },
-    initialize: function (options) {
-        this.imageinstance = options.imageinstance;
-        this.mode = options.mode;
-    }
-});
-

@@ -174,50 +174,37 @@ var JobSelectionView = Backbone.View.extend({
     printDatatables: function (jobs, date) {
         var self = this;
 
+        var data = [];
+        _.each(jobs, function (job) {
+            data.push(["<i class='glyphicon glyphicon-plus'></i>", job.id, job.get('number'),
+                window.app.convertLongToDate(job.get('created')),
+                self.getStateElement(job),
+                job.get('dataDeleted') ? "All job data are deleted" : '<button class="btn btn-danger btn-xs" id="' + job.id + '">Delete data</button>',
+                self.comparator ?
+                    '<a id="select' + job.id + '">Compare</a>' :
+                    '<a class="btn btn-info btn-xs" href="#tabs-algos-' + self.project.id + "-" + self.software.id + "-" + job.id + '" id="' + job.id + '">Details<br></a>'
+            ]);
+        });
+
 
         //rebuilt table
         var selectRunParamElem = $(self.el).find('#selectJobTable').find('tbody').empty();
-        var datatable = $(self.el).find('#selectJobTable').dataTable();
-
-        //show hidden column (if not done, datatable is not filled)
-        datatable.fnSetColumnVis(1, true);
-
-        datatable.fnClearTable();
-        //print data from project image table
-        var tbody = $(self.el).find('#selectJobTable').find("tbody");
-        if (jobs != undefined) {
-            _.each(jobs, function (job) {
-                var cellIcon = '<i class="icon-plus"></i>';
-                var cellId = job.id;
-                var cellNumber = job.get('number');
-                var cellDate = window.app.convertLongToDate(job.get('created'));
-                var cellState = self.getStateElement(job);
-                var cellSee = "";
-                if (self.comparator) {
-                    //if comparator then print "compare" and click must refresh parent
-                    cellSee = '<a id="select' + job.id + '">Compare</a>'
-                } else {
-                    //else if comparator then print "see details" and click must select job
-                    cellSee = '<a class="btn btn-info btn-xs" href="#tabs-algos-' + self.project.id + "-" + self.software.id + "-" + job.id + '" id="' + job.id + '">Details<br></a>'
-                }
-                var cellDelete = "";
-                if (job.get('dataDeleted')) {
-                    cellDelete = "All job data are deleted"
-                } else {
-                    cellDelete = '<button class="btn btn-danger btn-xs" id="' + job.id + '">Delete data</button>';
-                }
-
-
-                tbody.append('<tr><td>' + cellIcon + '</td><td  style="text-align:left;">' + cellId + '</td><td  style="text-align:center;">' + cellNumber + '</td><td  style="text-align:center;">' + cellDate + '</td><td  style="text-align:center;">' + cellState + '</td><td>' + cellDelete + '</td><td>' + cellSee + '</td></tr>');
-
-                if (self.comparator) {
-                    tbody.find("#select" + job.id).click(function () {
-                        self.selectedJob = job.id;
-                        //self.parent.refresh();
-                    });
-                }
-            });
-        }
+        self.table = $(self.el).find('#selectJobTable').DataTable({
+            searching: false,
+            dom: '<"toolbar">frtip',
+            data: data,
+            displayLength: 5,
+            lengthChange: false,
+            destroy: true,
+            columnDefs: [
+                { width: "5%", targets: [ 0 ] },
+                { width: "10%", targets: [ 1 ]},
+                { width: "10%", targets: [ 2 ] },
+                { width: "25%", targets: [ 3 ] },
+                { width: "20%", targets: [ 4 ] },
+                { width: "30%", targets: [ 5 ] }
+            ]
+        });
 
         //add delete job data listener
         $(self.el).find('#selectJobTable').find("tbody").find("button").click(function (elem) {
@@ -233,53 +220,7 @@ var JobSelectionView = Backbone.View.extend({
                 }
             });
         });
-
-        self.table = $(self.el).find('#selectJobTable').dataTable({
-            "bFilter": false,
-            "sDom": '<"toolbar">frtip',
-            "sPaginationType": "bootstrap",
-            "oLanguage": {
-                "sLengthMenu": "_MENU_ records per page"
-            },
-            "iDisplayLength": 5,
-            "bLengthChange": false,
-            bDestroy: true,
-            "aoColumnDefs": [
-                { "sWidth": "5%", "aTargets": [ 0 ] },
-                { "sWidth": "10%", "aTargets": [ 1 ]},
-                { "sWidth": "10%", "aTargets": [ 2 ] },
-                { "sWidth": "25%", "aTargets": [ 3 ] },
-                { "sWidth": "20%", "aTargets": [ 4 ] },
-                { "sWidth": "30%", "aTargets": [ 5 ] }
-            ]
-        });
-
-
         self.initSubGridDatatables();
-
-        //hide id column
-        //self.table.fnSetColumnVis(1, false);
-
-
-        //add select input elemen for each column
-        /*var fnCreateSelect = function fnCreateSelect( aData )
-         {
-         var r='<select><option value=""></option>', i, iLen=aData.length;
-         for ( i=0 ; i<iLen ; i++ )
-         {
-         r += '<option value="'+aData[i]+'">'+aData[i]+'</option>';
-         }
-         return r+'</select>';
-         }
-         $("#selectJobTable").append('<tfoot><th rowspan="1" colspan="1"><th rowspan="1" colspan="1"><th rowspan="1" colspan="1"><th rowspan="1" colspan="1"><th rowspan="1" colspan="1"></tfoot>');
-         _.each([], function ( i ) {
-         alert(i);
-         var th_elem = $("#selectJobTable").find("tfoot th:eq("+i+")");
-         th_elem.html(fnCreateSelect( self.table.fnGetColumnData(i)));
-         $('select', this).change( function () {
-         self.table.fnFilter( $(this).val(), i );
-         } );
-         } ); */
     },
     getStateElement: function (job) {
         if (job.isNotLaunch()) {
@@ -314,19 +255,20 @@ var JobSelectionView = Backbone.View.extend({
         var self = this;
 
         $(self.el).find("#selectJobTable tbody td i").on('click', function () {
-            var nTr = $(this).parents('tr')[0];
-            if (self.table.fnIsOpen(nTr)) {
+            var nTr = $(this).parents('tr');
+            var row = self.table.row( nTr );
+            if (row.child.isShown()) {
                 /* This row is already open - close it */
-                $(this).removeClass("class", "icon-minus");
-                $(this).addClass("class", "icon-plus");
-                self.table.fnClose(nTr);
+                $(this).removeClass("glyphicon-minus");
+                $(this).addClass("glyphicon-plus");
+                row.child.hide();
             }
             else {
                 /* Open this row */
-                $(this).removeClass("class", "icon-plus");
-                $(this).addClass("class", "icon-minus");
-                self.table.fnOpen(nTr, self.seeDetails(nTr), 'details');
-                var aData = self.table.fnGetData(nTr);
+                $(this).removeClass("glyphicon-plus");
+                $(this).addClass("glyphicon-minus");
+                row.child(self.seeDetails(nTr)).show();
+                var aData =  self.table.row( nTr).data();
                 new JobModel({ id: aData[1]}).fetch({
                     success: function (model, response) {
                         var tableParam = $(self.el).find('#selectJobTable').find('table[id=' + aData[1] + ']');
@@ -348,7 +290,8 @@ var JobSelectionView = Backbone.View.extend({
     /* Formating function for row details */
     seeDetails: function (nTr) {
         var self = this;
-        var aData = self.table.fnGetData(nTr);
+        var row = self.table.row( nTr );
+        var aData = self.table.row( nTr).data();
 
         var sOut = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;" id="' + aData[1] + '">';
         sOut += '</table>';

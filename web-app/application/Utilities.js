@@ -71,19 +71,21 @@ Status.prototype.start = function () {
     var self = this;
     var ajaxFn = function () {
 
-        var project = window.app.status.currentProject;
-        if (window.app.isUndefined(project)) {
-            project = "null";
-        }
-        new PingModel({project: project}).save({}, {
-                success: function (model, response) {
-                    self.successcallback(model);
-                },
-                error: function (model, response) {
-                    self.error();
-                }
+        if(!document.hidden) {
+            var project = window.app.status.currentProject;
+            if (window.app.isUndefined(project)) {
+                project = "null";
             }
-        );
+            new PingModel({project: project}).save({}, {
+                    success: function (model, response) {
+                        self.successcallback(model);
+                    },
+                    error: function (model, response) {
+                        self.error();
+                    }
+                }
+            );
+        }
     };
     if (!this.watcher) {
         this.watcher = setInterval(ajaxFn, this.interval);

@@ -20,7 +20,7 @@ var SpectraPanel = Backbone.View.extend({
     review: false,
 
     /**
-     * AnnotationsPanel constructor
+     * SpectraPanel constructor
      * @param options
      */
     initialize: function (options) {

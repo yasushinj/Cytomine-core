@@ -27,29 +27,43 @@ import org.restapidoc.annotation.RestApiObjectField
  * Info on user consultation of an image in a project
  * ex : User x consulted image y the 2013/01/01 at xxhyymin
  */
-@RestApiObject(name = "image consultation", description = "Each PersistentImageConsultation represent when an user opened an image into a project.")
+@RestApiObject(name = "image consultation", description = "Each PersistentImageConsultation represents an user consultation to an imageInstance.")
 class PersistentImageConsultation extends CytomineDomain {
 
     static mapWith = "mongo"
 
-    static transients = ['id','updated','deleted','class']
+    static transients = ['id','updated','deleted','class','extraProperties']
 
     static belongsTo = [user : SecUser, image : ImageInstance, project: Project]
 
     @RestApiObjectField(description = "The user")
-    SecUser user
+    Long user
     @RestApiObjectField(description = "The consulted image")
-    ImageInstance image
+    Long image
     @RestApiObjectField(description = "The project which contains the image")
-    Project project
-
+    Long project
+    @RestApiObjectField(description = "The project connection active during the consultation")
+    Long projectConnection
+    @RestApiObjectField(description = "The sessionID active during the consultation")
+    String session
     @RestApiObjectField(description = "The image name")
     String imageName
+    @RestApiObjectField(description = "The image thumb")
+    String imageThumb
     @RestApiObjectField(description = "The consultation mode (Explore, review)")
     String mode
+    @RestApiObjectField(description = "The duration of the user consultation into the image", useForCreation = false)
+    Long time
+    @RestApiObjectField(description = "The count of created annotation during the project connection", useForCreation = false)
+    Integer countCreatedAnnotations
+    def extraProperties = [:]
 
     static constraints = {
+        projectConnection nullable: true
+        session nullable: true
         project nullable: true
+        time nullable: true
+        countCreatedAnnotations nullable: true
     }
 
     static mapping = {
@@ -67,10 +81,40 @@ class PersistentImageConsultation extends CytomineDomain {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray.created = domain?.created
-        returnArray.user = domain?.user?.id
-        returnArray.image = domain?.image?.id
+        returnArray.user = domain?.user
+        returnArray.image = domain?.image
+        returnArray.imageName = domain?.imageName
+        returnArray.imageThumb = domain?.imageThumb
         returnArray.mode = domain?.mode
-        returnArray.project = domain?.project?.id
+        returnArray.project = domain?.project
+        returnArray.projectConnection = domain?.projectConnection
+        returnArray.time = domain?.time
+        returnArray.countCreatedAnnotations = domain?.countCreatedAnnotations
+
+        domain?.extraProperties.each { key, value ->
+            returnArray.put(key, value)
+        }
         returnArray
+    }
+
+    @Override
+    public Object clone() {
+        PersistentImageConsultation result = new PersistentImageConsultation()
+        result.user = user;
+        result.projectConnection = projectConnection;
+        result.time = time;
+        result.image = image;
+        result.imageName = imageName;
+        result.imageThumb = imageThumb;
+        result.mode = mode;
+        result.countCreatedAnnotations = countCreatedAnnotations;
+        result.id = id;
+        result.created = created;
+
+        return result
+    }
+
+    def propertyMissing(String name, def value) {
+        extraProperties.put(name, value)
     }
 }

@@ -86,13 +86,13 @@ var JobTableView = Backbone.View.extend({
 
         //clear row
         $(self.el).find('#searchJobTable').find("tbody").empty();
-        var datatable = $(self.el).find('#searchJobTable').dataTable();
-        datatable.fnClearTable();
+        var datatable = $(self.el).find('#searchJobTable').DataTable();
+        datatable.clear();
         $(self.el).find('#searchJobTable').find("tbody").empty();
 
         //show hidden column (if not done, datatable is not filled)
         self.buildShowHideAllColumn(datatable, true);
-        datatable.fnClearTable();
+        datatable.clear();
 
         //add row
         if (self.jobs != undefined) {
@@ -106,16 +106,15 @@ var JobTableView = Backbone.View.extend({
             window.location = '#tabs-algos-' + self.project.id + "-" + self.software.id + "-" + id + '';
         });
 
-        self.table = $(self.el).find('#searchJobTable').dataTable({
-            "bFilter": true,
-            "sDom": '<"toolbar">rtip',
-            "sPaginationType": "bootstrap",
-            "oLanguage": {
-                "sLengthMenu": "_MENU_ records per page"
+        self.table = $(self.el).find('#searchJobTable').DataTable({
+            dom: '<"toolbar">rtip',
+            //"sPaginationType": "bootstrap",
+            language: {
+                lengthMenu: "_MENU_ records per page"
             },
-            "iDisplayLength": 15,
-            "bLengthChange": false,
-            bDestroy: true
+            displayLength: 15,
+            lengthChange: false,
+            destroy: true
         });
 
         //print sub grid datatables
@@ -285,7 +284,7 @@ var JobTableView = Backbone.View.extend({
     },
     buildShowHideAllColumn: function (datatable, show) {
         var self = this;
-        for (var i = 0; i < datatable.fnSettings().aoColumns.length; i++) {
+        for (var i = 0; i < datatable.settings().columns.length; i++) {
             datatable.fnSetColumnVis(i, show);
         }
     },

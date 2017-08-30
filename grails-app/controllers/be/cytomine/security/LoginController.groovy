@@ -17,7 +17,6 @@ package be.cytomine.security
 */
 
 import be.cytomine.api.RestController
-import be.cytomine.project.Project
 import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -39,6 +38,8 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import be.cytomine.Exception.CytomineException
+import org.springframework.web.context.request.RequestContextHolder
+
 import javax.servlet.http.HttpServletResponse
 
 class LoginController extends RestController {
@@ -182,6 +183,9 @@ class LoginController extends RestController {
      */
     def ajaxSuccess () {
         User user = User.read(springSecurityService.currentUser.id)
+
+        log.info springSecurityService.principal.id
+        log.info RequestContextHolder.currentRequestAttributes().getSessionId()
         render([success: true, id: user.id, fullname: user.firstname + " " + user.lastname] as JSON)
     }
 

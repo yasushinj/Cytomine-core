@@ -37,6 +37,8 @@ import be.cytomine.project.ProjectDefaultLayer
 import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.search.SearchEngineFilter
 import be.cytomine.security.*
+import be.cytomine.social.PersistentImageConsultation
+import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.AttachedFile
 import be.cytomine.utils.Config
 import be.cytomine.utils.Description
@@ -80,6 +82,10 @@ class BasicInstanceBuilder {
      */
     static def saveDomain(def domain) {
         domain.save(flush: true, failOnError:true)
+        domain
+    }
+    static def insertDomain(def domain) {
+        domain.insert(flush: true, failOnError:true)
         domain
     }
 
@@ -1717,6 +1723,31 @@ class BasicInstanceBuilder {
         }
 
         save ? saveDomain(config) : checkDomain(config)
+    }
+
+    static PersistentProjectConnection getProjectConnection(boolean insert = false) {
+        PersistentProjectConnection connection = new PersistentProjectConnection(os: "Linux", browser : "HttpClient", browserVersion : "1",
+                project: getProject().id, user: getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id)
+        insert ? insertDomain(connection) : checkDomain(connection)
+    }
+
+    static PersistentImageConsultation getImageConsultationNotExist(boolean insert = false) {
+        def connection = getProjectConnection(true)
+        ImageInstance image = getImageInstanceNotExist(Project.read(connection.project), true)
+        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.instanceFilename,
+                imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
+                project: image.project.id)
+        insert ? insertDomain(consult) : checkDomain(consult)
+    }
+    static PersistentImageConsultation getImageConsultationNotExist(Long projectId, boolean insert = false) {
+        def connection = getProjectConnection()
+        connection.project = projectId;
+        insertDomain(connection)
+        ImageInstance image = getImageInstanceNotExist(Project.read(projectId), true)
+        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.instanceFilename,
+                imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
+                project: image.project.id)
+        insert ? insertDomain(consult) : checkDomain(consult)
     }
 
     static ImageGroupHDF5 getImageGroupHDF5() {

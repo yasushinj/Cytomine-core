@@ -584,14 +584,10 @@ class UserTests  {
 //    }
 
     void testListUsersWithLastActivity(){
-        def project = BasicInstanceBuilder.getProject()
-        def json = JSON.parse("{project:${project.id}}");
+        def connection = BasicInstanceBuilder.getProjectConnection(true)
 
-        def result = ProjectConnectionAPI.create(project.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-
-        result = UserAPI.listUsersWithLastActivity(project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        json = JSON.parse(result.data)
+        def result = UserAPI.listUsersWithLastActivity(connection.project, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def json = JSON.parse(result.data)
         assert 200 == result.code
         assert json.collection instanceof JSONArray
     }

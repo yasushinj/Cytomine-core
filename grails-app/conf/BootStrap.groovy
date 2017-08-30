@@ -196,5 +196,8 @@ class BootStrap {
                 NotifyAuroraUploadJob.schedule(grailsApplication.config.grails.integration.aurora.interval,-1, [:])
             }
         }
+
+        bootstrapUtilsService.fillProjectConnections();
+        bootstrapUtilsService.fillImageConsultations();
     }
 }

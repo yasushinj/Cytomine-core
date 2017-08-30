@@ -24,6 +24,7 @@ import be.cytomine.project.Project
 import be.cytomine.security.Group
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.SecurityUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -52,6 +53,7 @@ class RestUserController extends RestController {
     def projectConnectionService
     def imageConsultationService
     def projectRepresentativeUserService
+    def userAnnotationService
 
     /**
      * Get all project users
@@ -726,4 +728,23 @@ class RestUserController extends RestController {
         reportService.createUserListingLightDocuments(params.long('id'),params.format,response)
     }
 
+    @RestApiMethod(description="Return a resume of the activities of a user into a project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+    ])
+    def resumeUserActivity() {
+        def result = [:]
+
+        SecUser user = secUserService.get(params.long('user'))
+        Project project = projectService.read(params.long('project'))
+        securityACLService.checkIsSameUserOrAdminContainer(project,user, cytomineService.currentUser)
+
+        result["firstConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'asc', max: 1])[0]?.created
+        result["lastConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'desc', max: 1])[0]?.created
+        result["totalAnnotations"] = userAnnotationService.count(user, project)
+        result["totalConnections"] = PersistentProjectConnection.countByUserAndProject(user.id, project.id)
+
+        responseSuccess(result)
+    }
 }

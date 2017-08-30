@@ -69,6 +69,11 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
+    void init20170714(){
+        bootstrapUtilsService.fillProjectConnections();
+        bootstrapUtilsService.fillImageConsultations();
+    }
+
     void init20170201(){
         boolean exists = new Sql(dataSource).rows("SELECT column_name "+
                 "FROM information_schema.columns "+

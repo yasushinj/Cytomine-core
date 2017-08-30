@@ -71,7 +71,6 @@ class RestProjectController extends RestController {
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
     ])
     def show () {
-        println request.session.id
         Project project = projectService.read(params.long('id'))
         if (project) {
             responseSuccess(project)

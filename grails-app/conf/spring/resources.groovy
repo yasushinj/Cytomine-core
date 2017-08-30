@@ -25,6 +25,8 @@ import org.springframework.cache.ehcache.EhCacheFactoryBean
 //import grails.plugin.springsecurity.SpringSecurityUtils
 // Place your Spring DSL code here
 beans = {
+    logoutEventListener(LogoutEventListener)
+
     'apiAuthentificationFilter'(cytomine.web.APIAuthentificationFilters) {
         // properties
     }
