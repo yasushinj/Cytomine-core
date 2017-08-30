@@ -18,6 +18,7 @@
 import be.cytomine.image.ImageProcessingService
 import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.integration.NotifyAuroraUploadJob
+import be.cytomine.middleware.ImageServerService
 import be.cytomine.processing.ImageRetrievalService
 import be.cytomine.security.SecUser
 import be.cytomine.test.Infos
@@ -150,6 +151,9 @@ class BootStrap {
             }
             ImageGroupHDF5Service.metaClass.callIMSConversion = {
                 SecUser currentUser, def imagesFilenames, String filename -> println "\n\n mocked callIMSConversion \n\n";
+            }
+            ImageServerService.metaClass.getStorageSpaces = {
+                return [[used : 0, available : 10]]
             }
             //mock services which use Retrieval
             ImageRetrievalService.metaClass.doRetrievalIndex = {
