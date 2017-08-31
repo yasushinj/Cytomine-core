@@ -1,5 +1,6 @@
 package be.cytomine.stats
 
+import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ServerException
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Term
@@ -17,10 +18,7 @@ class StatsService extends ModelService {
     def imageServerService
 
     def total(def domain){
-
-        Integer total = domain.count
-
-        return ["total" : total];
+        return ["total" : CytomineDomain.isAssignableFrom(domain)? domain.countByDeletedIsNull() : domain.count];
     }
 
     def numberOfCurrentUsers(){
