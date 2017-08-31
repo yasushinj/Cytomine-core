@@ -41,7 +41,7 @@ class ImageGroupHDF5Tests {
         assert 200 == result.code
     }*/
 
-    void testDeleteImageGroupHDF5(){
+    /*void testDeleteImageGroupHDF5(){
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
         def result = ImageGroupHDF5API.delete(imageGroupHDF5.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -60,7 +60,7 @@ class ImageGroupHDF5Tests {
 
         result = ImageGroupHDF5API.show(resID, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code*/
-    }
+/*    }
 
 
     //This test launch a background task that could take a long time, so it is not really achievable if the test server is closed before
@@ -80,7 +80,7 @@ class ImageGroupHDF5Tests {
 
     }
 */
-    void testShowImageGroupFromId() {
+    /*void testShowImageGroupFromId() {
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
         println imageGroupHDF5
         def result = ImageGroupHDF5API.show(imageGroupHDF5.id, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
@@ -98,7 +98,6 @@ class ImageGroupHDF5Tests {
         def result = ImageGroupHDF5API.getFromImageGroup(imageGroup.id ,Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code
 
-    }
-
+    }*/
 
 }
