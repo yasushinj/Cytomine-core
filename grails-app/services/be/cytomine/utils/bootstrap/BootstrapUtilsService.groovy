@@ -546,6 +546,7 @@ class BootstrapUtilsService {
                 }
 
                 projectConnection.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
+                if(projectConnection.time == null) projectConnection.time=0;
 
                 // count viewed images
                 projectConnection.countViewedImages = imageConsultationService.getImagesOfUsersByProjectBetween(projectConnection.user, projectConnection.project,after, before).size()
@@ -557,12 +558,11 @@ class BootstrapUtilsService {
                 // count created annotations
                 String request = "SELECT COUNT(*) FROM user_annotation a WHERE a.project_id = ${projectConnection.project} AND a.user_id = ${projectConnection.user} AND a.created < '${before}' AND a.created > '${after}'"
 
-                log.info request
                 sql.eachRow(request) {
                     projectConnection.countCreatedAnnotations = it[0];
                 }
 
-                projectConnection.save(flush : true)
+                projectConnection.save(flush : true, failOnError: true)
                 before = projectConnection.created
             }
             sql.close()
@@ -599,6 +599,7 @@ class BootstrapUtilsService {
                 }
 
                 consultation.time = continuousConnectionIntervals.split{it < 30000}[0].sum()
+                if(consultation.time == null) consultation.time=0;
 
                 // count created annotations
                 String request = "SELECT COUNT(*) FROM user_annotation a WHERE " +
@@ -607,12 +608,11 @@ class BootstrapUtilsService {
                         "AND a.image_id = ${consultation.image} " +
                         "AND a.created < '${before}' AND a.created > '${after}'"
 
-                log.info request
                 sql.eachRow(request) {
                     consultation.countCreatedAnnotations = it[0];
                 }
 
-                consultation.save(flush : true)
+                consultation.save(flush : true, failOnError: true)
                 before = consultation.created
             }
             sql.close()

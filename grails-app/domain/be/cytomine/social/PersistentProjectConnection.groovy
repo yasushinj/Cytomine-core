@@ -60,6 +60,9 @@ class PersistentProjectConnection extends CytomineDomain implements Cloneable {
         project (nullable: false)
         session nullable: true
         time(nullable: true)
+        browser(nullable: true)
+        browserVersion(nullable: true)
+        os(nullable: true)
         countViewedImages(nullable: true)
         countCreatedAnnotations(nullable: true)
     }

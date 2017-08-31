@@ -63,6 +63,8 @@ class PersistentImageConsultation extends CytomineDomain {
         session nullable: true
         project nullable: true
         time nullable: true
+        imageName nullable: true
+        imageThumb nullable: true
         countCreatedAnnotations nullable: true
     }
 

@@ -72,6 +72,13 @@ class BootstrapOldVersionService {
     void init20170714(){
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
+        log.info "generate missing storage !"
+        for (user in User.findAll()) {
+            if (!Storage.findByUser(user)) {
+                log.info "generate missing storage for $user"
+                storageService.initUserStorage(user)
+            }
+        }
     }
 
     void init20170201(){

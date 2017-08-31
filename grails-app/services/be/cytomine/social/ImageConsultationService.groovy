@@ -132,6 +132,7 @@ class ImageConsultationService extends ModelService {
         }
 
         consultation.time = continuousConnectionIntervals.split{it < 15000}[0].sum()
+        if(consultation.time == null) consultation.time=0;
 
         AnnotationListing al = new UserAnnotationListing()
         al.project = consultation.project
