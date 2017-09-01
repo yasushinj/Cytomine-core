@@ -74,7 +74,7 @@ ProjectUserActivityView = Backbone.View.extend({
             project : window.app.status.currentProject,
             user : self.model.id,
             title : "Average Connections",
-            resize : false,
+            resizeBtn : false,
             el: $(self.el).find("#UserProjectConnectionsGraph-"+self.model.id)}).render();
         return this;
     },
