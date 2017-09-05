@@ -19,6 +19,7 @@ package be.cytomine.processing
 import be.cytomine.command.*
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.security.UserJob
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
@@ -41,6 +42,9 @@ class JobParameterService extends ModelService {
         def jobParam = JobParameter.read(id)
         if(jobParam) {
             securityACLService.check(jobParam.container(),READ)
+            if(jobParam.softwareParameter.name == "privateKey" && UserJob.findByJob(jobParam.job).user.privateKey != cytomineService.currentUser.privateKey){
+                jobParam.value = "*****************************"
+            }
         }
         jobParam
     }
