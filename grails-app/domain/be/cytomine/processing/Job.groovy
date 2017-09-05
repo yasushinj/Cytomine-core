@@ -176,7 +176,11 @@ class Job extends CytomineDomain  {
 
     public List<JobParameter> parameters() {
         if(this.version!=null) {
-            return JobParameter.findAllByJob(this,[sort: 'created'])
+            List<JobParameter> parameters = JobParameter.findAllByJob(this,[sort: 'created'])
+            parameters.each {
+                if(it.softwareParameter.name.equals("privateKey")) it.value = "*****************"
+            }
+            return parameters
         } else {
             return []
         }

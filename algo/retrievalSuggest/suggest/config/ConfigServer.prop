@@ -51,13 +51,6 @@ VOLDEMORTSOCKETTIMEOUT=1500000
 VOLDEMORTMAXTHREAD=75
 VOLDEMORTMAXCONNECTIONPERNODE=30
 
-#MYSQL
-MYSQLTABLEPREFIX=t
-MYSQLDRIVER=org.gjt.mm.mysql.Driver
-MYSQLURL=jdbc:mysql://localhost/cbir
-MYSQLUSER=root
-MYSQLPASSWORD=root
-
 #KYOTO CABINET
 # apox -> tune_alignment : default 3 (8 = 1 << 3). DB is build and not updated (0), else more
 KYOTOAPOX=6
