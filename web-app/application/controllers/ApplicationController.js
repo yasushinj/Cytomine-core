@@ -279,8 +279,12 @@ var ApplicationController = Backbone.Router.extend({
         var diff = (((new Date()).getTime() - date.getTime()) / 1000),
             day_diff = Math.floor(diff / 86400);
 
-        if ( isNaN(day_diff) || day_diff < 0) {
+        if ( isNaN(day_diff)) {
             return;
+        }
+        if ( day_diff < 0){
+            console.log("ApplicationController : convertLongToPrettyDate : WARNING : day_diff is in future.")
+            return "Not known";
         }
 
         var result = day_diff == 0 && (
