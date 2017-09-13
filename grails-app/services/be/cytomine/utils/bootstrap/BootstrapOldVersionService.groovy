@@ -26,6 +26,7 @@ import be.cytomine.security.SecUserSecRole
 import be.cytomine.security.User
 import be.cytomine.utils.Version
 import grails.converters.JSON
+import grails.plugin.springsecurity.SpringSecurityUtils
 import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
 
@@ -76,7 +77,9 @@ class BootstrapOldVersionService {
         for (user in User.findAll()) {
             if (!Storage.findByUser(user)) {
                 log.info "generate missing storage for $user"
-                storageService.initUserStorage(user)
+                SpringSecurityUtils.doWithAuth("admin", {
+                    storageService.initUserStorage(user)
+                });
             }
         }
     }

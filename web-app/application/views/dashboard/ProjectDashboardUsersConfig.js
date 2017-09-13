@@ -100,7 +100,7 @@ var ProjectDashboardUsersConfig = Backbone.View.extend({
                 return row;
             },
             columnDefs : columns,
-            order: [[ 0, "desc" ]],
+            order: [],
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
         });
 

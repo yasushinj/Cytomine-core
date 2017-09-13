@@ -561,17 +561,17 @@ class RestUserController extends RestController {
         String _search;
 
         if(params.datatables) {
-            params.max = params.iDisplayLength ? params.iDisplayLength as int : 10;
+            params.max = params["length"] ? params["length"] as int : 10;
             if(params.max < 0) params.max = null;
-            params.offset = params.iDisplayStart ? params.iDisplayStart as int : 0;
+            params.offset = params["start"] ? params["start"] as int : 0;
 
-            _search = params.sSearch ? ".*"+params.sSearch.toLowerCase()+".*" : ".*"
+            _search = params["search[value]"] ? ".*"+params["search[value]"].toLowerCase()+".*" : ".*"
 
-            def col = params.get("iSortCol_0");
-            def sortArg = params.get("sSortDir_0")
-            def sortProperty = "mDataProp_"+col
+            def col = params["order[0][column]"];
+            def sortArg = params["order[0][dir]"];
+            def sortProperty = "columns[$col][data]"
 
-            field = params.get(sortProperty)
+            field = params[sortProperty].toString().toLowerCase()
 
             if (sortArg.equals("desc")) {
                 order = -1;
@@ -611,11 +611,11 @@ class RestUserController extends RestController {
         Integer max = (params.max != null && params.getInt('max')!=0) ? params.getInt('max') : Integer.MAX_VALUE
         def maxForCollection = Math.min(users.size() - offset, max)
 
-        if(field && ["email","Username"].contains(field)) {
+        if(field && ["email","username"].contains(field)) {
             users.sort { a,b->
                 if(field.equals("email")) {
                     (order)*(a.email <=>b.email)
-                } else if(field.equals("Username")) {
+                } else if(field.equals("username")) {
                     (order)*(a.username.toLowerCase() <=>b.username.toLowerCase() )
                 }
             }
@@ -674,11 +674,11 @@ class RestUserController extends RestController {
         // sort if not already done
         if(field && !sorted) {
             results.sort { a,b->
-                if(field.equals("LastConnexion")) {
+                if(field.equals("lastconnection")) {
                     (order)*(a.lastConnection <=>b.lastConnection)
-                } else if(field.equals("LDAP")) {
+                } else if(field.equals("ldap")) {
                     (order)*(a.ldap <=>b.ldap )
-                } else if(field.equals("nbVisit")) {
+                } else if(field.equals("frequency")) {
                     (order)*(a.frequency <=>b.frequency )
                 } else {
                     a.id <=>b.id
