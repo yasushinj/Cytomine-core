@@ -19,13 +19,11 @@ package be.cytomine.security
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugin.springsecurity.userdetails.GormUserDetailsService
 import grails.plugin.springsecurity.userdetails.GrailsUser
-import org.apache.commons.lang.RandomStringUtils
 import org.springframework.dao.DataAccessException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.core.authority.GrantedAuthorityImpl
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.ldap.userdetails.InetOrgPerson
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService
 
 class CASLdapUserDetailsService extends GormUserDetailsService {
