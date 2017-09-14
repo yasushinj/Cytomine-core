@@ -48,7 +48,7 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
     }
 
     public boolean isInLdap(String username) {
-        InetOrgPerson inetOrgPerson;
+        UserDetails person;
 
         boolean ldapDisabled = grailsApplication.config.grails.plugin.springsecurity.ldap.active.toString()=="false"
         if(ldapDisabled) {
@@ -56,12 +56,12 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
         }
 
         try {
-            inetOrgPerson= (InetOrgPerson) ldapUserDetailsService.loadUserByUsername(username)
+            person = (UserDetails) ldapUserDetailsService.loadUserByUsername(username)
         } catch(UsernameNotFoundException e) {
-            inetOrgPerson = null;
+            person = null
         }
 
-        if(inetOrgPerson==null){
+        if(person==null){
             return false;
         }
         return true;
@@ -73,12 +73,12 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
     */
     @Override
     public UserDetails loadUserByUsername(String username, boolean loadRoles)
-    throws UsernameNotFoundException, DataAccessException {
+            throws UsernameNotFoundException, DataAccessException {
 
         SecUser user = SecUser.findByUsername(username)
         boolean casDisabled = grailsApplication.config.grails.plugin.springsecurity.cas.active.toString()=="false"
 
-       def authorities = []
+        def authorities = []
 
         /*if(user==null && casDisabled)  {
             log.info "loadUserByUsername return null"
@@ -122,59 +122,18 @@ class CASLdapUserDetailsService extends GormUserDetailsService {
         if (user == null) { //User does not exists in our database
 
             //fetch its informations through LDAP
-            InetOrgPerson inetOrgPerson;
+            UserDetails person;
 
             try {
-                inetOrgPerson= (InetOrgPerson) ldapUserDetailsService.loadUserByUsername(username)
+                person = (UserDetails) ldapUserDetailsService.loadUserByUsername(username)
             } catch(UsernameNotFoundException e) {
-                inetOrgPerson = null;
+                person = null
             }
 
-            if(inetOrgPerson==null) throw new UsernameNotFoundException("User not found into LDAP")
+            if(person==null) throw new UsernameNotFoundException("User not found into LDAP")
 
-            User.withTransaction {
+            user = SecUser.findByUsername(username)
 
-
-                //Can't get firstname with inetOrgPerson, but we've got the fullname and the lastname
-                String firstname = inetOrgPerson.getCn()[0].replace(inetOrgPerson.getSn(), "")
-                //remove whitespace at the beginning
-                while (firstname.startsWith(" ")) {
-                    firstname = firstname.substring(1)
-                }
-
-                if(firstname==null || firstname.trim()==""){
-                    firstname="#none"
-                }
-
-                // Create new user and save to the database
-                user = new User()
-                user.username = username
-                user.lastname = inetOrgPerson.getSn()
-                user.firstname = firstname
-                user.email = inetOrgPerson.getMail()
-                user.enabled = true
-                user.password = RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()) //not used by the user
-                user.generateKeys()
-                if (user.validate()) {
-                    user.save(flush: true)
-                    user.refresh()
-
-                    // Assign the default role of client
-                    SecRole userRole = SecRole.findByAuthority("ROLE_GUEST")
-                    SecUserSecRole secUsersecRole = new SecUserSecRole()
-                    secUsersecRole.secUser = user
-                    secUsersecRole.secRole = userRole
-                    secUsersecRole.save(flush: true)
-
-                } else {
-                    user.errors.each {
-                        log.warn it
-                    }
-                }
-                SpringSecurityUtils.doWithAuth("admin", {
-                    storageService.initUserStorage(user)
-                });
-            }
         }
 
         return user
