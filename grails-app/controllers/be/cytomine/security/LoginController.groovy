@@ -184,7 +184,7 @@ class LoginController extends RestController {
     def ajaxSuccess () {
         User user = User.read(springSecurityService.currentUser.id)
 
-        log.info springSecurityService.principal.id
+        //log.info springSecurityService.principal.id
         log.info RequestContextHolder.currentRequestAttributes().getSessionId()
         render([success: true, id: user.id, fullname: user.firstname + " " + user.lastname] as JSON)
     }
