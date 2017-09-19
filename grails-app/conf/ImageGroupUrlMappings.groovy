@@ -39,7 +39,7 @@ class ImageGroupUrlMappings {
         }
 
         /* Image group Hdf5 special */
-        /*"/api/imagegrouph5.$format"(controller: "restImageGroup"){
+        "/api/imagegrouph5.$format"(controller: "restImageGroup"){
             action = [POST:"addh5"]
         }
 
@@ -53,7 +53,7 @@ class ImageGroupUrlMappings {
 
         "/api/imagegrouph5/$id/$x/$y/pxl.$format"(controller: "restImageGroup"){
             action = [GET: "pxlh5"]
-        }*/
+        }
 
     }
 }
