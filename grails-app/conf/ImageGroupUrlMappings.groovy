@@ -55,5 +55,9 @@ class ImageGroupUrlMappings {
             action = [GET: "pxlh5"]
         }
 
+        "/api/imagegrouph5/$id/$x/$y/$w/$h/rectangle.$format"(controller: "restImageGroup"){
+            action = [GET: "rectangleh5"]
+        }
+
     }
 }
