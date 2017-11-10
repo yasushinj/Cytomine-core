@@ -82,7 +82,7 @@ class ImageGroupHDF5Service  extends  ModelService{
         //Convert the list in h5
         //First get all the ImageSequence from the imageGroup
         ImageGroup imageGroup = imageGroupService.read(group)
-        //def imagesSequenceList = []
+        def imagesSequenceList = []
         if (imageGroup)  {
             imagesSequenceList = imageSequenceService.list(imageGroup)
         }
