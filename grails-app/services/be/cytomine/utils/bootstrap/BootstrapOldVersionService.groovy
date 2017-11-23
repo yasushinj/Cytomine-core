@@ -50,6 +50,8 @@ class BootstrapOldVersionService {
     def dataSource
     def storageService
     def tableService
+    def mongo
+    def noSQLCollectionService
 
 
     void execChangeForOldVersion() {
@@ -194,7 +196,14 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20170714() {
+    void init20171124() {
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        db.annotationAction.update([:], [$rename:[annotation:'annotationIdent']], false, true)
+        db.annotationAction.update([:], [$set:[annotationClassName: 'be.cytomine.ontology.UserAnnotation']], false, true)
+        db.annotationAction.update([:], [$unset:[annotation:'']], false, true)
+    }
+
+    void init20170714(){
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
         log.info "generate missing storage !"

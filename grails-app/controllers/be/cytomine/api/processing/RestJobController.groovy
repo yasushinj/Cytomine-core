@@ -25,8 +25,6 @@ import be.cytomine.processing.Job
 import be.cytomine.processing.JobData
 import be.cytomine.processing.Software
 import be.cytomine.project.Project
-import be.cytomine.security.SecUser
-import be.cytomine.security.User
 import be.cytomine.security.UserJob
 import be.cytomine.utils.Task
 import grails.converters.JSON
@@ -56,7 +54,7 @@ class RestJobController extends RestController {
     /**
      * List all job
      */
-    @RestApiMethod(description="List jobs", listing = true)
+    @RestApiMethod(description="Get a list of jobs", listing = true)
     @RestApiParams(params=[
         @RestApiParam(name="light", type="boolean", paramType = RestApiParamType.QUERY, required = false, description = "If true, get a light/quick listing (without job parameters,...)"),
         @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, required = false, description = "A list of software id to filter"),

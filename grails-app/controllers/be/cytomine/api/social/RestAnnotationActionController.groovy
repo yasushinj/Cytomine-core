@@ -1,7 +1,14 @@
 package be.cytomine.api.social
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.api.RestController
+import be.cytomine.image.ImageInstance
+import be.cytomine.security.User
+import org.restapidoc.annotation.RestApiMethod
+import org.restapidoc.annotation.RestApiParam
+import org.restapidoc.annotation.RestApiParams
+import org.restapidoc.pojo.RestApiParamType
 
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
@@ -25,6 +32,8 @@ import be.cytomine.api.RestController
 class RestAnnotationActionController extends RestController {
 
     def annotationActionService
+    def imageInstanceService
+    def secUserService
 
     def add = {
         try {
@@ -33,6 +42,23 @@ class RestAnnotationActionController extends RestController {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
         }
+    }
+
+    @RestApiMethod(description="Summarize the UserPosition entries.")
+    @RestApiParams(params=[
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "The user id (Optional)"),
+            @RestApiParam(name="afterThan", type="long", paramType = RestApiParamType.QUERY, description = "A date. Will select all the entries created after this date. (Optional)"),
+            @RestApiParam(name="beforeThan", type="long", paramType = RestApiParamType.QUERY, description = "A date. Will select all the entries created before this date. (Optional)"),
+    ])
+    def list() {
+        ImageInstance image = imageInstanceService.read(params.image)
+        User user = secUserService.read(params.user)
+        if(params.user != null && user == null) throw new ObjectNotFoundException("Invalid user")
+
+        Long afterThan = params.long("afterThan")
+        Long beforeThan = params.long("beforeThan")
+        responseSuccess(annotationActionService.list(image, user, afterThan, beforeThan))
     }
 
 
