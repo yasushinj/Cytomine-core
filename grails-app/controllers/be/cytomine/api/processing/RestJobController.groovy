@@ -55,11 +55,11 @@ class RestJobController extends RestController {
     /**
      * List all job
      */
-    @RestApiMethod(description="Get an algo annotation", listing = true)
+    @RestApiMethod(description="Get a list of jobs", listing = true)
     @RestApiParams(params=[
-        @RestApiParam(name="boolean", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) If true, get a light/quick listing (without job parameters,...)"),
-        @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, description = "(Optional, default get all) A list of software id to filter"),
-        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "(Optional, default get all) A list of project id to filter")
+        @RestApiParam(name="boolean", type="boolean", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default false) If true, get a light/quick listing (without job parameters,...)"),
+        @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default get all) A list of software id to filter"),
+        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default get all) A list of project id to filter")
     ])
     def list() {
         Boolean light = params.boolean('light') ? params.boolean('light') : false;
