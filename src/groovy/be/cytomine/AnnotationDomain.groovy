@@ -293,8 +293,12 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def toCropURL(params=[:]) {
+        def format
+        if (params.format) format = params.format
+        else format = "png"
+
         def boundaries = retrieveCropParams(params)
-        return UrlApi.getCropURL(image.baseImage.id, boundaries)
+        return UrlApi.getCropURL(image.baseImage.id, boundaries, format)
     }
 
     def toCropParams(params=[:]) {
@@ -343,6 +347,13 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
             //limit the size (text) for the geometry (url max lenght)
             boundaries.location = simplifyGeometryService.simplifyPolygonTextSize(boundaries.location)
         }
+
+        if (params.colormap) boundaries.colormap = params.colormap
+        if (params.inverse) boundaries.inverse = params.inverse
+        if (params.bits) boundaries.bits = params.bits
+        if (params.contrast) boundaries.contrast = params.contrast
+        if (params.gamma) boundaries.gamma = params.gamma
+
         boundaries
     }
 
