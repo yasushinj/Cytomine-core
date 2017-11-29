@@ -251,7 +251,7 @@ class AbstractImageService extends ModelService {
         String imageServerURL = abstractImage.getRandomImageServerURL()
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
-        String url = "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType"
+        String url = "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType"
 
         String query = params.collect { key, value ->
             if (value instanceof String)
@@ -371,8 +371,6 @@ class AbstractImageService extends ModelService {
         List<UploadedFile> files = UploadedFile.findAllByImage(abstractImage)
         UploadedFile file = files.size() == 1 ? files[0] : files.find{it.parent!=null}
         String fif = file?.absolutePath
-
-
         if (fif) {
             String imageServerURL = abstractImage.getRandomImageServerURL()
             return "$imageServerURL/image/download?fif=$fif&mimeType=${abstractImage.mimeType}"
