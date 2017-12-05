@@ -292,12 +292,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def toCropURL(params=[:]) {
-        def format
-        if (params.format) format = params.format
-        else format = "png"
-
         def boundaries = retrieveCropParams(params)
-        return UrlApi.getCropURL(image.baseImage.id, boundaries, format)
+        return UrlApi.getCropURL(image.baseImage.id, boundaries, boundaries.format)
     }
 
     def toCropParams(params=[:]) {
@@ -317,6 +313,9 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     public LinkedHashMap<String, Integer> retrieveCropParams(params) {
         def boundaries = getBoundaries()
 
+        if (params.format) boundaries.format = params.format
+        else boundaries.format = "png"
+
         if (params.zoom) boundaries.zoom = params.zoom
         if (params.maxSize) boundaries.maxSize = params.maxSize
         if (params.draw) {
@@ -334,7 +333,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         }
         if (params.alphaMask) {
             boundaries.alphaMask = true
-            boundaries.location = location.toText()//location.toText()
+            boundaries.location = location.toText()
+            boundaries.format = "png"
         }
 
         if(location instanceof com.vividsolutions.jts.geom.Point && !params.point.equals("false")) {
