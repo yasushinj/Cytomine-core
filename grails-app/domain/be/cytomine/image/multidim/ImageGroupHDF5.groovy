@@ -25,7 +25,7 @@ import org.restapidoc.annotation.RestApiObjectField
 /**
  * Created by laurent on 06.02.17.
  */
-@RestApiObject(name = "image hdf5 group", description = "A group of image from the same source with different dimension and hdf5 support")
+@RestApiObject(name = "Image hdf5 group", description = "A group of image from the same source with different dimension and hdf5 support")
 
 class ImageGroupHDF5  extends CytomineDomain implements  Serializable {
 

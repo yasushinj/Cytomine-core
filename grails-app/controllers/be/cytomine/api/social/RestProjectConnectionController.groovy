@@ -22,6 +22,7 @@ import be.cytomine.api.RestController
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.social.PersistentProjectConnection
+import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
@@ -31,9 +32,7 @@ import java.text.SimpleDateFormat
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
-/**
- * Controller for an user connection to a project
- */
+@RestApi(name="Social | project connection services", description="Methods to manage a user connection record to a project")
 class RestProjectConnectionController extends RestController {
 
     def cytomineService
@@ -43,7 +42,7 @@ class RestProjectConnectionController extends RestController {
     def exportService
     def securityACLService
 
-    @RestApiMethod(description="Add a ProjectConnection object associated to the current user")
+    @RestApiMethod(description = "Add a new user connection record to a project")
     def add() {
         try {
             responseSuccess(projectConnectionService.add(request.JSON))
@@ -53,13 +52,31 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
+    @RestApiMethod(description = "List the last user connections in a project", listing=true)
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id")
+    ])
     def lastConnectionInProject() {
+        Project project = projectService.read(params.project)
+        responseSuccess(projectConnectionService.lastConnectionInProject(project, null));
+    }
+
+    @RestApiMethod(description = "List the last user connections in a project for a given user")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
+    ])
+    def lastConnectionInProjectByUser() {
         Project project = projectService.read(params.project)
         Long userId = params.user ? Long.parseLong(params.user): null
         responseSuccess(projectConnectionService.lastConnectionInProject(project, userId));
     }
 
-    @RestApiMethod(description="Get the project connections by user and project", listing=true)
+    @RestApiMethod(description = "Get user connections in a project", listing=true)
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
+    ])
     def getConnectionByUserAndProject() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
@@ -71,6 +88,33 @@ class RestProjectConnectionController extends RestController {
         responseSuccess(results)
     }
 
+    @RestApiMethod(description = "Get the number of connection by project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="afterThan", type="date", paramType = RestApiParamType.QUERY, description = "The date when counting starts"),
+            @RestApiParam(name="period", type="string", paramType = RestApiParamType.QUERY, description = "The period of counting"),
+    ])
+    def numberOfConnectionsByProject() {
+        Project project = projectService.read(params.project)
+        Long afterThan = params.long("afterThan");
+        String period = params.period
+
+        if(params.boolean('heatmap')) {
+            responseSuccess(projectConnectionService.numberOfConnectionsByProjectOrderedByHourAndDays(project, afterThan, null))
+        }else if(period) {
+            responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period, project))
+        } else {
+            responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, null))
+        }
+    }
+
+    @RestApiMethod(description = "Get the number of connection by project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
+            @RestApiParam(name="afterThan", type="date", paramType = RestApiParamType.QUERY, description = "The date when counting starts"),
+            @RestApiParam(name="period", type="string", paramType = RestApiParamType.QUERY, description = "The period of connections (hour : by hours, day : by days, week : by weeks)"),
+    ])
     def numberOfConnectionsByProjectAndUser() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
@@ -86,6 +130,11 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
+    @RestApiMethod(description = "Get the number of connections to all projects")
+    @RestApiParams(params=[
+            @RestApiParam(name="afterThan", type="date", paramType = RestApiParamType.QUERY, description = "The date when counting starts"),
+            @RestApiParam(name="period", type="string", paramType = RestApiParamType.QUERY, description = "The period of connections (hour : by hours, day : by days, week : by weeks)"),
+    ])
     def numberOfProjectConnections() {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
         Long afterThan = params.long("afterThan");

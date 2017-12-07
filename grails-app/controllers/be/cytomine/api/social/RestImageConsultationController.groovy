@@ -18,20 +18,18 @@ package be.cytomine.api.social
 import be.cytomine.project.Project
 import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
-import be.cytomine.security.SecUser
+import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
+import be.cytomine.security.SecUser
 import static org.springframework.security.acls.domain.BasePermission.READ
 
 import java.text.SimpleDateFormat
 
 
-/**
- * Controller for user position
- * Position of the user (x,y) on an image for a time
- */
+@RestApi(name="Social | image consultation services", description="Methods to manage the consultation records of an image by a user")
 class RestImageConsultationController extends RestController {
 
     def projectService
@@ -41,7 +39,7 @@ class RestImageConsultationController extends RestController {
     def cytomineService
     def secUserService
 
-    @RestApiMethod(description="Add a new image consultation object")
+    @RestApiMethod(description="Add a new image consultation record")
     def add() {
         try {
             responseSuccess(imageConsultationService.add(request.JSON))
@@ -51,11 +49,11 @@ class RestImageConsultationController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Get the last consultation of all users into a project")
+    @RestApiMethod(description = "List the last consulted image by each user for a given project")
     @RestApiParams(params=[
             @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id")
     ])
-    def lastImageOfUsersByProject(){
+    def lastImageOfUsersByProject() {
         Project project = projectService.read(params.project)
         responseSuccess(imageConsultationService.lastImageOfUsersByProject(project))
     }
@@ -72,10 +70,12 @@ class RestImageConsultationController extends RestController {
         securityACLService.checkIsSameUserOrAdminContainer(project, user, cytomineService.currentUser)
         responseSuccess(imageConsultationService.listImageConsultationByProjectAndUser(Long.parseLong(params.project), Long.parseLong(params.user)))
     }
-    @RestApiMethod(description="Get a summary of the consultations on an image for an user and a project")
+
+    @RestApiMethod(description = "Summarize the consulted images for a given user and a given project")
     @RestApiParams(params=[
-            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
-            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "The user id", required=true),
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "The project id", required=true),
+            @RestApiParam(name="export", type="string", paramType = RestApiParamType.QUERY, description = "The export format (supported: csv). Otherwise, return a json", required=false),
     ])
     def resumeByUserAndProject() {
         def result = imageConsultationService.resumeByUserAndProject(Long.parseLong(params.user), Long.parseLong(params.project))

@@ -27,7 +27,7 @@ import org.springframework.web.multipart.support.AbstractMultipartHttpServletReq
 /**
  * Controller for a description (big text data/with html format) on a specific domain
  */
-@RestApi(name = "attached services", description = "Methods for managing attached file on a specific domain")
+@RestApi(name = "Utils | attached services", description = "Methods for managing attached file on a specific domain")
 class RestAttachedFileController extends RestController {
 
     def springSecurityService

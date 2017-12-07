@@ -37,7 +37,7 @@ import static org.springframework.security.acls.domain.BasePermission.READ
  * Controller for job request.
  * A job is a software instance that has been, is or will be running.
  */
-@RestApi(name = "job services", description = "Methods for managing job. A job is a software instance that has been, is or will be running.")
+@RestApi(name = "Processing | job services", description = "Methods for managing job. A job is a software instance that has been, is or will be running.")
 class RestJobController extends RestController {
 
     def jobService
