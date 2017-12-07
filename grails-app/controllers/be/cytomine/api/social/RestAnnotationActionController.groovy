@@ -28,7 +28,7 @@ import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
 
-@RestApi(name = "annotation action services", description = "Methods to manage actions performed on annotations")
+@RestApi(name = "Social | annotation action services", description = "Methods to manage actions performed on annotations")
 class RestAnnotationActionController extends RestController {
 
     def annotationActionService

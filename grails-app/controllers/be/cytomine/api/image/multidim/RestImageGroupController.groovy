@@ -34,7 +34,7 @@ import org.restapidoc.pojo.RestApiParamType
  * User: lrollus
  * Date: 18/05/11
  */
-@RestApi(name = "image group services", description = "Methods for managing image group, a group of image from the same sample in different dimension (channel, zstack,...)")
+@RestApi(name = "Image | multidim | image group services", description = "Methods for managing image group, a group of image from the same sample in different dimension (channel, zstack,...)")
 class RestImageGroupController extends RestController {
 
     def imageGroupService
