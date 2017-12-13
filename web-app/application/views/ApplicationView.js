@@ -127,10 +127,9 @@ var ApplicationView = Backbone.View.extend({
                 var modal = new CustomModal({
                     idModal : "hotkeysModal",
                     button : $("#hotkeysModalButton"),
-                    header :"HotKeys",
+                    header :"Hotkeys",
                     body :tplHotkeys,
-                    width : 900,
-                    height : 800
+                    wide: true
                 });
                 modal.addButtons("closeHotKeys","Close",true,true);
             });
@@ -210,7 +209,7 @@ var ApplicationView = Backbone.View.extend({
 
                     var modal = new CustomModal({
                         idModal: "about" + "DialogModal",
-                        header: null,
+                        header: "<i class=\"glyphicon glyphicon-info-sign\"/> About Cytomine",
                         body: body,
                         wide: true
                     });
@@ -355,7 +354,7 @@ var ApplicationView = Backbone.View.extend({
                     el: "#content",
                     template: _.template(accountTpl, {}),
                     buttonAttr: {
-                        elButton: "upload-button"
+                        elButton: "account-button"
                     },
                     divId: "account",
                     onActivate: function () {
