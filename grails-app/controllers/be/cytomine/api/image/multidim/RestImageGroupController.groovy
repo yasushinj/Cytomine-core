@@ -27,6 +27,7 @@ import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
+import org.restapidoc.annotation.RestApiResponseObject
 import org.restapidoc.pojo.RestApiParamType
 
 /**
@@ -110,6 +111,22 @@ class RestImageGroupController extends RestController {
             responseNotFound("ImageGroup", "ImageGroup", params.id)
         }
     }
+
+    /**
+     * Get image thumb URL
+     */
+    @RestApiMethod(description="Get a small image (thumb) for a specific multidimensional image")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group id")
+    ])
+    @RestApiResponseObject(objectIdentifier = "image (bytes)")
+    def thumb() {
+        response.setHeader("max-age", "86400")
+        int maxSize = params.int('maxSize',  512)
+        imageGroupService.thumb(params.long('id'), maxSize)
+        responseBufferedImage(imageGroupService.thumb(params.long('id'), maxSize))
+    }
+
 
     @RestApiMethod(description="Add a new image group with hdf5 hyperspectral functionalities")
     def addh5() {
