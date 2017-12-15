@@ -45,7 +45,7 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Get an image group")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image group id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image group id")
     ])
     def show() {
         ImageGroup image = imageGroupService.read(params.long('id'))
@@ -58,7 +58,7 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Get image group listing by project", listing=true)
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
     ])
     def listByProject() {
         Project project = projectService.read(params.long('id'))
@@ -78,7 +78,7 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Update an image group")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="int", paramType = RestApiParamType.PATH, description = "The image group id")
+            @RestApiParam(name="id", type="int", paramType = RestApiParamType.PATH, description = "The image group id")
     ])
     def update() {
         update(imageGroupService, request.JSON)
@@ -86,15 +86,9 @@ class RestImageGroupController extends RestController {
 
     @RestApiMethod(description="Delete an image group")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group")
     ])
     def delete() {
-        ImageGroup image = imageGroupService.read(params.long('id'))
-        if (image) {
-            ImageGroupHDF5 imageh5 = imageGroupHDF5Service.getByGroup(image)
-            if (imageh5)
-                delete(imageGroupHDF5Service, JSON.parse("{id : $imageh5.id}"), null)
-        }
         delete(imageGroupService, JSON.parse("{id : $params.id}"),null)
     }
 
