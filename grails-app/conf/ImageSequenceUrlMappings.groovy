@@ -41,7 +41,7 @@ class ImageSequenceUrlMappings {
         }
 
         "/api/imagegroup/$id/$channel/$zstack/$slice/$time/imagesequence.$format"(controller: "restImageSequence"){
-            action = [GET:"getByImageGroupAndIndex"]
+            action = [GET:"getByImageGroupAndIndexes"]
         }
 
     }
