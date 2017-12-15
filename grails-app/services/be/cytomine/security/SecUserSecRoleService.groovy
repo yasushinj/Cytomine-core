@@ -1,5 +1,7 @@
 package be.cytomine.security
 
+import be.cytomine.Exception.ConstraintException
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -18,6 +20,7 @@ package be.cytomine.security
 
 import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.ObjectNotFoundException
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
@@ -76,6 +79,9 @@ class SecUserSecRoleService extends ModelService {
     def add(def json) {
         SecUser currentUser = cytomineService.getCurrentUser()
         SecRole role = SecRole.read(json.role)
+        if(!json.role) {
+            throw new WrongArgumentException("Not existing role !")
+        }
         if(role.authority == "ROLE_ADMIN" || role.authority == "ROLE_SUPER_ADMIN") {
             securityACLService.checkAdmin(currentUser)
         }
