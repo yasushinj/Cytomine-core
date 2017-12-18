@@ -1,19 +1,6 @@
 package be.cytomine.image
 
-import be.cytomine.api.UrlApi
-import be.cytomine.command.AddCommand
-import be.cytomine.command.Command
-import be.cytomine.command.DeleteCommand
-import be.cytomine.command.EditCommand
-import be.cytomine.command.Transaction
-import be.cytomine.image.server.ImageServer
-import be.cytomine.security.SecUser
-import be.cytomine.security.User
-import be.cytomine.security.UserJob
-import be.cytomine.utils.ModelService
-import be.cytomine.utils.Task
-import grails.converters.JSON
-import groovy.sql.Sql
+
 
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
@@ -31,14 +18,28 @@ import groovy.sql.Sql
 * limitations under the License.
 */
 
+import be.cytomine.api.UrlApi
+import be.cytomine.command.AddCommand
+import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
+import be.cytomine.command.EditCommand
+import be.cytomine.command.Transaction
+import be.cytomine.image.server.ImageServer
+import be.cytomine.security.SecUser
+import be.cytomine.security.User
+import be.cytomine.security.UserJob
+import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
+import grails.converters.JSON
+import groovy.sql.Sql
+
 class UploadedFileService extends ModelService {
 
     static transactional = true
     def cytomineService
     def securityACLService
-
-
     def dataSource
+
 
     def currentDomain() {
         return UploadedFile
