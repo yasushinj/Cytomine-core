@@ -45,7 +45,7 @@ var CustomUI = {
         //  {componentId: "project-images-tab", componentName: "Image tab"},
         {componentId: "project-annotations-tab", componentName: "Annotation tab"},
         {componentId: "project-images-tab", componentName: "Images tab"}, //TODO: if you need to add a new panel
-        //{componentId: "project-imagegroups-tab", componentName: "ImageGroups tab"},
+        {componentId: "project-imagegroups-tab", componentName: "ImageGroups tab"},
         {componentId: "project-properties-tab", componentName: "Properties tab"},
         {componentId: "project-jobs-tab", componentName: "Jobs tab"},
         {componentId: "project-usersconfiguration-tab", componentName: "Config Users tab"},
