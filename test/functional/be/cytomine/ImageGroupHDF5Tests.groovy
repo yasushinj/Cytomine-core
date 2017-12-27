@@ -17,12 +17,10 @@
 
 package be.cytomine
 
-import be.cytomine.image.AbstractImage
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
-import be.cytomine.test.http.ImageGroupAPI
 import be.cytomine.test.http.ImageGroupHDF5API
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -34,7 +32,7 @@ class ImageGroupHDF5Tests {
 
     /*void testShowPixelSpectra(){
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5NotExist(false)
-        imageGroupHDF5.filenames = "/data/28/hdf5_35398"
+        imageGroupHDF5.filename = "/data/28/hdf5_35398"
         imageGroupHDF5 = BasicInstanceBuilder.saveDomain(imageGroupHDF5)
 
         def result = ImageGroupHDF5API.pixel(imageGroupHDF5.group.id, 0,0, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
@@ -95,7 +93,7 @@ class ImageGroupHDF5Tests {
         imageGroupHDF5.group = imageGroup
         BasicInstanceBuilder.saveDomain(imageGroupHDF5)
 
-        def result = ImageGroupHDF5API.getFromImageGroup(imageGroup.id ,Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+        def result = ImageGroupHDF5API.showFromImageGroup(imageGroup.id ,Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         assert 200 == result.code
 
     }
