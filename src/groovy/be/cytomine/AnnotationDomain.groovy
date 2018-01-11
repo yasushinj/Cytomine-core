@@ -275,7 +275,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         //get num points
         int imageWidth = image.baseImage.getWidth()
         int imageHeight = image.baseImage.getHeight()
-        if (location.getNumPoints()>3) {
+        if (location.getNumPoints()>1) {
             Envelope env = location.getEnvelopeInternal();
             Integer maxY = env.getMaxY();
             Integer minX = env.getMinX();
@@ -453,7 +453,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
 
 
         //for geometrycollection, we may take first collection element
-        if (type.equals("LINESTRING") || type.equals("MULTILINESTRING") || type.equals("GEOMETRYCOLLECTION")) {
+        if (type.equals("MULTILINESTRING") || type.equals("GEOMETRYCOLLECTION")) {
             //geometry collection, take first elem
             throw new WrongArgumentException("${geom.getGeometryType()} is not a valid geometry type!")
         }
