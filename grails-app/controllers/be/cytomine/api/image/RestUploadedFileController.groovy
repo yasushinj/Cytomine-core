@@ -56,13 +56,9 @@ class RestUploadedFileController extends RestController {
 
     @RestApiMethod(description="Get all uploaded file made by the current user")
     def list() {
-        def uploadedFiles
         //get all uploaded file for this user
-        if(params["deleted"]) {
-            uploadedFiles = uploadedFileService.listDeleted()
-        } else {
-            uploadedFiles = uploadedFileService.list((User)cytomineService.getCurrentUser())
-        }
+        def uploadedFiles = uploadedFileService.list((User)cytomineService.getCurrentUser())
+
         //if view is datatables, change way to store data
         if (params.dataTables) {
             uploadedFiles = ["aaData" : uploadedFiles]
@@ -143,9 +139,9 @@ class RestUploadedFileController extends RestController {
      * Delete a new image
      * TODO:: how to manage security here?
      */
-    @RestApiMethod(description="Delete an uploaded file domain. This will not delete the file on disk by default.")
+    @RestApiMethod(description="Delete an uploaded file domain. This do not delete the file on disk.")
     @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The uploaded file id")
+    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The uploaded file id")
     ])
     def delete () {
         delete(uploadedFileService, JSON.parse("{id : $params.id}"),null)

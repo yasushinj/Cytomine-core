@@ -38,10 +38,6 @@ class ImageGroupUrlMappings {
             action = [GET:"characteristics"]
         }
 
-        "/api/imagegroup/$id/thumb.$format"(controller: "restImageGroup"){
-            action = [GET:"thumb"]
-        }
-
         /* Image group Hdf5 special */
         "/api/imagegroupHDF5.$format"(controller: "restImageGroupHDF5"){
             action = [POST:"add"]

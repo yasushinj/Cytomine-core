@@ -118,10 +118,6 @@ class UrlApi {
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/thumb.$format?maxSize=$maxSize"
     }
 
-    static def getThumbMultiDimImage(Long idImageGroup, def maxSize) {
-        return "${serverUrl()}/api/imagegroup/$idImageGroup/thumb.png?maxSize=$maxSize"
-    }
-
     /**
      * Return cytomine url to get a small crop annotation
      * @param url Cytomine base url

@@ -1,5 +1,15 @@
 package be.cytomine.image
 
+import be.cytomine.command.AddCommand
+import be.cytomine.command.Command
+import be.cytomine.command.EditCommand
+import be.cytomine.command.Transaction
+import be.cytomine.security.SecUser
+import be.cytomine.security.User
+import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
+import grails.converters.JSON
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -16,22 +26,14 @@ package be.cytomine.image
 * limitations under the License.
 */
 
-import be.cytomine.command.AddCommand
-import be.cytomine.command.Command
-import be.cytomine.command.EditCommand
-import be.cytomine.command.Transaction
-import be.cytomine.security.SecUser
-import be.cytomine.security.User
-import be.cytomine.utils.ModelService
-import be.cytomine.utils.Task
-import grails.converters.JSON
-
 class UploadedFileService extends ModelService {
 
     static transactional = true
     def cytomineService
     def securityACLService
 
+
+    def dataSource
 
     def currentDomain() {
         return UploadedFile
@@ -45,11 +47,6 @@ class UploadedFileService extends ModelService {
             isNull("deleted")
         }
         return uploadedFiles
-    }
-
-    def listDeleted() {
-        securityACLService.checkAdmin(cytomineService.currentUser)
-        return UploadedFile.findAllByDeletedIsNotNull()
     }
 
     UploadedFile read(def id) {
@@ -97,13 +94,7 @@ class UploadedFileService extends ModelService {
         jsonNewData.deleted = new Date().time
         Command c = new EditCommand(user: currentUser)
         c.delete = true
-
-        UploadedFile parent = domain.parent;
-
-        def result = executeCommand(c,domain,jsonNewData)
-        if(parent != null && UploadedFile.countByParent(parent)<=1) delete(parent);
-
-        return result
+        return executeCommand(c,domain,jsonNewData)
     }
 
     def getStringParamsI18n(def domain) {

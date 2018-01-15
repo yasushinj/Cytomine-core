@@ -21,7 +21,6 @@ import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
-import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.ontology.Ontology
 import be.cytomine.processing.Software
 import be.cytomine.security.ForgotPasswordToken
@@ -36,7 +35,6 @@ import grails.converters.JSON
 import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.security.acls.domain.BasePermission
-import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.*
 
@@ -65,7 +63,6 @@ class ProjectService extends ModelService {
     def secRoleService
     def notificationService
     def projectRepresentativeUserService
-    def imageGroupService
 
     def currentDomain() {
         Project
@@ -138,51 +135,14 @@ class ProjectService extends ModelService {
 
     def list() {
         securityACLService.checkAdmin(cytomineService.currentUser)
-        Boolean description = Boolean.parseBoolean(RequestContextHolder.currentRequestAttributes().params.description);
-
         //list ALL projects,
-        List<Project> projects = Project.findAllByDeletedIsNull([sort: "name"]);
-
-        if(description) return appendFurtherInformation(projects);
-        else return projects;
+        Project.findAllByDeletedIsNull([sort: "name"])
     }
 
     def list(SecUser user) {
         securityACLService.checkGuest(cytomineService.currentUser)
-        Boolean description = Boolean.parseBoolean(RequestContextHolder.currentRequestAttributes().params.description);
-
         //faster to get it from database table (getProjectList) than PostFilter
-        List<Project> projects = securityACLService.getProjectList(user)
-
-        if(description) return appendFurtherInformation(projects);
-        else return projects;
-    }
-
-    private def appendFurtherInformation(List<Project> projects){
-
-        def data = []
-        def sql = new Sql(dataSource)
-        sql.eachRow("select id from admin_project where user_id = ?",[cytomineService.currentUser.id]) {
-            data << it.id
-        }
-        sql.close()
-
-        def result = []
-        def tmp, json;
-        projects.each { project ->
-            json = JSON.parse((project as JSON).toString())
-            if(projects.find{data.contains(it.id)}) json.putAt("isAdmin", "true");
-            def thumbs = []
-            def groups = imageGroupService.list(project)
-            for(int i = 0;i<groups.size() && i<3;i++){
-                thumbs << [id : groups[i].id, thumb : ImageGroup.getDataFromDomain(groups[i]).thumb]
-            }
-            json.putAt("groups", thumbs);
-            result << json
-        }
-
-
-        return result
+        securityACLService.getProjectList(user)
     }
 
     def list(Ontology ontology) {
