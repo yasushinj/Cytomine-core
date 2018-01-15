@@ -211,9 +211,9 @@ class AnnotationUrlMappings {
         "/api/annotationaction.$format"(controller: "restAnnotationAction"){
             action = [POST:"add"]
         }
-        "/api/imageinstance/$image/annotationactions.$format" (controller : "restAnnotationAction") {
+        /*"/api/imageinstance/$image/annotationactions.$format" (controller : "restAnnotationAction") {
             action = [GET:"list"]
-        }
+        }*/
 
 
     }

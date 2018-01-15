@@ -51,13 +51,13 @@ class ImageGroupUrlMappings {
             action = [GET: "showFromImageGroup", DELETE:"deleteFromImageGroup"]
         }
 
-        "/api/imagegroupHDF5/$id/$x/$y/pixel.$format"(controller: "restImageGroupHDF5"){
+        /*"/api/imagegroupHDF5/$id/$x/$y/pixel.$format"(controller: "restImageGroupHDF5"){
             action = [GET: "pixelHDF5"]
         }
 
         "/api/imagegroupHDF5/$id/$x/$y/$w/$h/rectangle.$format"(controller: "restImageGroupHDF5"){
             action = [GET: "rectangleHDF5"]
-        }
+        }*/
 
     }
 }
