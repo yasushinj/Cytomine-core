@@ -41,9 +41,9 @@ class RestImageGroupController extends RestController {
     def imageSequenceService
     def projectService
 
-    @RestApiMethod(description = "Get an image group")
-    @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image group id")
+    @RestApiMethod(description="Get an image group")
+    @RestApiParams(params=[
+        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image group id")
     ])
     def show() {
         ImageGroup image = imageGroupService.read(params.long('id'))
@@ -54,44 +54,45 @@ class RestImageGroupController extends RestController {
         }
     }
 
-    @RestApiMethod(description = "Get image group listing by project", listing = true)
-    @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The project id")
+    @RestApiMethod(description="Get image group listing by project", listing=true)
+    @RestApiParams(params=[
+        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
     ])
     def listByProject() {
         Project project = projectService.read(params.long('id'))
 
         if (project) {
             responseSuccess(imageGroupService.list(project))
-        } else {
+        }
+        else {
             responseNotFound("ImageGroup", "Project", params.id)
         }
     }
 
-    @RestApiMethod(description = "Add a new image group")
-    def add() {
+    @RestApiMethod(description="Add a new image group")
+    def add () {
         add(imageGroupService, request.JSON)
     }
 
-    @RestApiMethod(description = "Update an image group")
-    @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "int", paramType = RestApiParamType.PATH, description = "The image group id")
+    @RestApiMethod(description="Update an image group")
+    @RestApiParams(params=[
+        @RestApiParam(name="id", type="int", paramType = RestApiParamType.PATH, description = "The image group id")
     ])
     def update() {
         update(imageGroupService, request.JSON)
     }
 
-    @RestApiMethod(description = "Delete an image group")
-    @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image group")
+    @RestApiMethod(description="Delete an image group")
+    @RestApiParams(params=[
+        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group")
     ])
     def delete() {
-        delete(imageGroupService, JSON.parse("{id : $params.id}"), null)
+        delete(imageGroupService, JSON.parse("{id : $params.id}"),null)
     }
 
-    @RestApiMethod(description = "Get the different Characteristics for ImageGroup")
-    @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image group")
+    @RestApiMethod(description="Get the different Characteristics for ImageGroup")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image group")
     ])
     def characteristics() {
         ImageGroup imageGroup = imageGroupService.read(params.long('id'))
@@ -116,5 +117,3 @@ class RestImageGroupController extends RestController {
         imageGroupService.thumb(params.long('id'), maxSize)
         responseBufferedImage(imageGroupService.thumb(params.long('id'), maxSize))
     }
-
-}

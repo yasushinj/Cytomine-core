@@ -22,7 +22,8 @@
 
 var ImageGroupModel = Backbone.Model.extend({
     channel:"",
-    zstack:"",
+    channelPretty:"",
+    zstack:0,
     time:"",
     slice:"",
     feeded:false,
@@ -51,42 +52,39 @@ var ImageGroupModel = Backbone.Model.extend({
                 self.channel=data.channel;
                 self.slice=data.slice;
                 self.time=data.time;
-                self.zstack=data.zStack;
+
+                var ini = ""
+                if(data.channel.length)
+                    ini = data.channel[0];
+                self.channelPretty = "[" + ini;
+                var count = 0;
+                for(var x = 1; x < data.channel.length; ++x){
+                    if(data.channel[x] > ini + 1){
+                        if(count == 0)
+                            self.channelPretty += "," + data.channel[x];
+                        else{
+                            count = 0;
+                            self.channelPretty += ".." + ini + "," + data.channel[x];
+                        }
+                        ini = data.channel[x];
+                    }
+                    else{
+                        count++;
+                        ini++;
+                    }
+                }
+                if(count != 0)
+                    self.channelPretty +=  ".." + data.channel[data.channel.length - 1] + "]";
+                else
+                    self.channelPretty += "]";
             }
 
             if(callback != undefined)
                 callback();
         });
         self.feeded=true;
-    },
-    prettyPrint: function (array) {
-        if(array.length === 0){
-            return "[]";
-        }
-        var ini = array[0];
-        var result = "[" + ini;
 
-        var nbConsecutiveValues = 0;
-        for(var i = 1; i < array.length; ++i){
-            if(array[i] === ini + 1){
-                nbConsecutiveValues++;
-                ini++;
-            }
-            else{
-                if(nbConsecutiveValues == 0)
-                    result += "," + array[i];
-                else{
-                    nbConsecutiveValues = 0;
-                    result += ".." + ini + "," + array[i];
-                }
-                ini = array[i];
-            }
-        }
-        if(nbConsecutiveValues != 0)
-            result +=  ".." + array[array.length - 1] + "]";
-        else
-            result += "]";
-        return result;
+
     },
 
     initialize: function (options) {

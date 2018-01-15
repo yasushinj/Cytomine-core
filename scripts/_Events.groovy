@@ -35,15 +35,7 @@ eventGenerateWebXmlEnd = {
         println("========= C O M P I L E == J S ========= ")
         ViewPortToBuildXML.process()
         def proc = "./scripts/yui-compressor-ant-task/doc/example/deploy.sh".execute()
-        def (output, error) = new StringWriter().with { o -> // For the output
-            new StringWriter().with { e ->                     // For the error stream
-                proc.waitForProcessOutput( o, e )
-                [ o, e ]*.toString()                             // Return them both
-            }
-        }
-        assert error.length() == 0
-
-        output.eachLine { line -> println line }
+        proc.in.eachLine { line -> println line }
         proc = "./scripts/yui-compressor-ant-task/doc/lib/deploy.sh".execute()
         proc.in.eachLine { line -> println line }
         println("======================================== ")

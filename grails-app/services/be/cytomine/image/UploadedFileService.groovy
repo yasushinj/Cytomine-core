@@ -1,7 +1,5 @@
 package be.cytomine.image
 
-
-
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -185,8 +183,7 @@ class UploadedFileService extends ModelService {
 
     def deleteDependentUploadedFile(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
 
-
-        taskService.updateTask(task,task? "Update ${UploadedFile.countByParent(uploadedFile)} uploadedFile childs":"")
+        taskService.updateTask(task,task? "Delete ${UploadedFile.countByParent(uploadedFile)} uploadedFile parents":"")
 
         UploadedFile.findAllByParent(uploadedFile).each {
             it.parent = uploadedFile.parent

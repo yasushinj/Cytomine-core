@@ -150,8 +150,6 @@ var ProjectCollection = PaginatedCollection.extend({
             }
         } else if (!window.app.isUndefined(this.ontology)) {
             return "api/ontology/" + this.ontology + "/project.json";
-        } else if (!window.app.isUndefined(this.description) && this.description == true) {
-            return "api/project.json?description=true";
         } else {
             return "api/project.json";
         }
@@ -160,7 +158,6 @@ var ProjectCollection = PaginatedCollection.extend({
         this.initPaginator(options);
         if (!window.app.isUndefined(options)) {
             this.user = options.user;
-            this.description = options.description;
             this.ontology = options.ontology;
             this.admin = options.admin;
         }
