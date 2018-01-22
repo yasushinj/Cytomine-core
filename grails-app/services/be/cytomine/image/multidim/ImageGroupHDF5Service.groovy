@@ -102,7 +102,14 @@ class ImageGroupHDF5Service  extends  ModelService{
     }
 
     private void convert(SecUser currentUser, def imagesSequenceList, def destination, def id){
-        imagesSequenceList.sort{a,b -> a.channel <=> b.channel}
+        imagesSequenceList.sort{a,b ->
+            if (a.channel == b.channel && a.time == b.time)
+                a.zStack <=> b.zStack
+            else if (a.channel == b.channel)
+                a.time <=> b.time
+            else
+                a.channel <=> b.channel
+        }
         def imagesFilenames = imagesSequenceList.collect {
             def absolutePath =  it.image.baseImage.getAbsolutePath()
             def path = it.image.baseImage.path
