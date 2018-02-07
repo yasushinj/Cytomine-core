@@ -104,21 +104,21 @@ environments {
         grails.retrievalServerURL = []
     }
     development {
-        grails.serverURL = "http://localhost:8080"
+        grails.serverURL = "http://localhost-core:8080"
         grails.uploadURL = "http://localhost-upload"
-        grails.imageServerURL = ["http://localhost:9080"]
+        grails.imageServerURL = ["http://localhost-ims"]
         grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
         grails.resources.adhoc.patterns = ['/images/*', '/js/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey=""
-        grails.ImageServerPublicKey=""
-        grails.adminPrivateKey="XXX"
-        grails.adminPublicKey="XXX"
-        grails.superAdminPrivateKey="X"
-        grails.superAdminPublicKey="X"
+        grails.ImageServerPrivateKey="6772e58e-7ea8-4693-87b0-c2aca8e1eb80"
+        grails.ImageServerPublicKey="1365da9e-133d-4ea1-9f48-99b0ea333ee7"
+        grails.adminPrivateKey="8e5deaa8-610d-442b-b652-0853619b7376"
+        grails.adminPublicKey="9ab59fdf-e381-4d3f-a8ae-37927b39e570"
+        grails.superAdminPrivateKey="944bb2d2-0d63-46f5-aae5-078a87baee2e"
+        grails.superAdminPublicKey="128290dc-2e10-4885-8c87-3be1e6dc3764"
     }
     test {
         grails.serverURL = "http://localhost:8090"
