@@ -18,9 +18,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<link rel="apple-touch-icon" href="images/logoGIGA.gif" />
-<link rel="apple-touch-icon" sizes="72x72" href="images/logoGIGA.gif" />
-<link rel="apple-touch-icon" sizes="114x114" href="images/logoGIGA.gif" />
 
 <link href="lib/dynatree/skin/ui.dynatree.css" rel="stylesheet" type="text/css"/>
 <link rel='stylesheet' href='lib/stepy/css/jquery.stepy.bootstrap.css' type='text/css'/>

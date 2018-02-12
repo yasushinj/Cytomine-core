@@ -31,7 +31,7 @@ import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
 
 /**
- * Cytomine @ GIGA-ULG
+ * Cytomine
  * User: lrollus
  * This class contains all code when you want to change the database dataset.
  * E.g.: add new rows for a specific version, drop a column, ...
@@ -184,7 +184,7 @@ class BootstrapOldVersionService {
     }
     void init20150604(){
         if(!SecUser.findByUsername("rabbitmq")) {
-            bootstrapUtilsService.createUsers([[username : 'rabbitmq', firstname : 'rabbitmq', lastname : 'user', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER"]]])
+            bootstrapUtilsService.createUsers([[username : 'rabbitmq', firstname : 'rabbitmq', lastname : 'user', email : grailsApplication.config.grails.admin.email, group : [[name : "Cytomine"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER"]]])
             SecUser rabbitMQUser = SecUser.findByUsername("rabbitmq")
             rabbitMQUser.setPrivateKey(grailsApplication.config.grails.rabbitMQPrivateKey)
             rabbitMQUser.setPublicKey(grailsApplication.config.grails.rabbitMQPublicKey)
@@ -196,13 +196,13 @@ class BootstrapOldVersionService {
     }
     void init20150101() {
         if(!SecUser.findByUsername("admin")) {
-            bootstrapUtilsService.createUsers([[username : 'admin', firstname : 'Admin', lastname : 'Master', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN"]]])
+            bootstrapUtilsService.createUsers([[username : 'admin', firstname : 'Admin', lastname : 'Master', email : grailsApplication.config.grails.admin.email, group : [[name : "Cytomine"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN"]]])
         }
         if(!SecUser.findByUsername("superadmin")) {
-            bootstrapUtilsService.createUsers([[username: 'superadmin', firstname: 'Super', lastname: 'Admin', email: grailsApplication.config.grails.admin.email, group: [[name: "GIGA"]], password: grailsApplication.config.grails.adminPassword, color: "#FF0000", roles: ["ROLE_USER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"]]])
+            bootstrapUtilsService.createUsers([[username: 'superadmin', firstname: 'Super', lastname: 'Admin', email: grailsApplication.config.grails.admin.email, group: [[name: "Cytomine"]], password: grailsApplication.config.grails.adminPassword, color: "#FF0000", roles: ["ROLE_USER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"]]])
         }
         if(!SecUser.findByUsername("monitoring")) {
-            bootstrapUtilsService.createUsers([[username : 'monitoring', firstname : 'Monitoring', lastname : 'Monitoring', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER","ROLE_SUPER_ADMIN"]]])
+            bootstrapUtilsService.createUsers([[username : 'monitoring', firstname : 'Monitoring', lastname : 'Monitoring', email : grailsApplication.config.grails.admin.email, group : [[name : "Cytomine"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER","ROLE_SUPER_ADMIN"]]])
         }
     }
 

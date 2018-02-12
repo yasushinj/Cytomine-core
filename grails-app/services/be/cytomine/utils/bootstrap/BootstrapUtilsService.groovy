@@ -38,7 +38,7 @@ import groovy.json.JsonBuilder
 import groovy.sql.Sql
 
 /**
- * Cytomine @ GIGA-ULG
+ * Cytomine
  * User: stevben
  * Date: 13/03/13
  * Time: 11:59
