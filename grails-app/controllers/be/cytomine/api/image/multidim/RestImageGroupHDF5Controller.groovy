@@ -177,7 +177,7 @@ class RestImageGroupHDF5Controller extends RestController {
                 if (params.maxChannel) parameters.maxChannel = params.maxChannel
 
                 String imageServerURL =  grailsApplication.config.grails.imageServerURL[0]
-                String url = "$imageServerURL/multidim/pixel.json?" + parameters.collect {k, v -> "$k=$v"}.join("&")
+                String url = "$imageServerURL/multidim/rectangle.json?" + parameters.collect {k, v -> "$k=$v"}.join("&")
                 log.info url
                 responseSuccess(JSON.parse( new URL(url).text ))
             }
