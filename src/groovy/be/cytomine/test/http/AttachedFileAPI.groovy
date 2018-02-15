@@ -21,7 +21,6 @@ import be.cytomine.test.Infos
 /**
  * User: lrollus
  * Date: 2013/10/07
- * GIGA-ULg
  * This class implement all method to easily get/create/update/delete/manage AttachedFile to Cytomine with HTTP request during functional test
  */
 class AttachedFileAPI extends DomainAPI {

@@ -20,7 +20,7 @@ import be.cytomine.ontology.Property
 import grails.converters.JSON
 
 /**
- * Cytomine @ GIGA-ULG
+ * Cytomine
  * User: stevben
  * Date: 19/07/11
  * Time: 15:19
