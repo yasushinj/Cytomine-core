@@ -33,7 +33,7 @@ class ImageGroupHDF5SecurityTests extends SecurityTestsAbstract{
 
     void testImageGroupSecurityForProjectUser() {
 
-        //Get user1
+        /*//Get user1
         User user1 = getUser1()
         User user2 = getUser2()
         User user3 = getUser3()
@@ -76,6 +76,7 @@ class ImageGroupHDF5SecurityTests extends SecurityTestsAbstract{
         assert (200 == ImageGroupHDF5API.show(idImageGroup,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
 
         //assert (403 == ImageGroupAPI.show(idImageGroup,SecurityTestsAbstract.USERNAME3,SecurityTestsAbstract.PASSWORD3).code)
+        */
     }
 
 

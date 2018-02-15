@@ -1656,14 +1656,14 @@ class BasicInstanceBuilder {
     static AmqpQueue getAmqpQueue() {
         AmqpQueue amqpQueue = AmqpQueue.findByName("BasicAmqpQueue")
         if(!amqpQueue) {
-            amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "rabbitmq", exchange: "exchange"+getRandomString())
+            amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "localhost", exchange: "exchange"+getRandomString())
             saveDomain(amqpQueue)
         }
         amqpQueue
     }
 
     static AmqpQueue getAmqpQueueNotExist(boolean save = false){
-        AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "rabbitmq", exchange: "exchange"+getRandomString())
+        AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "localhost", exchange: "exchange"+getRandomString())
         save ? saveDomain(amqpQueue) : checkDomain(amqpQueue)
         amqpQueue
     }
