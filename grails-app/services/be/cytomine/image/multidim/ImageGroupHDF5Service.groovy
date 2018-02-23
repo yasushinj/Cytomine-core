@@ -84,7 +84,7 @@ class ImageGroupHDF5Service  extends  ModelService{
         json.user = currentUser.id
 
         def group = JSONUtils.getJSONAttrInteger(json,'group',0)
-        json.filename = "${grailsApplication.config.storage_path}/${currentUser.id}/${group}.h5"
+        json.filename = "${grailsApplication.config.fast_data_path}/${currentUser.id}/${group}.h5"
 
         //First get all the ImageSequence from the imageGroup
         ImageGroup imageGroup = imageGroupService.read(group)
