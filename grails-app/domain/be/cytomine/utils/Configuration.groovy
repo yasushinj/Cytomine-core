@@ -17,11 +17,12 @@ package be.cytomine.utils
 */
 
 import be.cytomine.CytomineDomain
+import be.cytomine.security.SecRole
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
-@RestApiObject(name = "config", description = "A key-value entry that save the global config of the application")
-class Config extends CytomineDomain implements Serializable {
+@RestApiObject(name = "configuration", description = "A key-value entry that save the configurations through the application")
+class Configuration extends CytomineDomain implements Serializable {
 
     @RestApiObjectField(description = "The property key")
     String key
@@ -29,9 +30,13 @@ class Config extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The property value")
     String value
 
+    @RestApiObjectField(description = "The minimum role needed to access to the configuration value")
+    SecRole readingRole
+
     static constraints = {
         key(blank: false, unique: true)
         value(blank: false)
+        readingRole(blank: false)
     }
     static mapping = {
         id(generator: 'assigned', unique: true)
@@ -48,6 +53,8 @@ class Config extends CytomineDomain implements Serializable {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['key'] = domain?.key
         returnArray['value'] = domain?.value
+        returnArray['readingRole'] = domain?.readingRole.id
+
         return returnArray
     }
 
@@ -57,10 +64,11 @@ class Config extends CytomineDomain implements Serializable {
      * @param json JSON containing data
      * @return Domain with json data filled
      */
-    static Config insertDataIntoDomain(def json, def domain = new Config()){
+    static Configuration insertDataIntoDomain(def json, def domain = new Configuration()){
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.key = JSONUtils.getJSONAttrStr(json,'key')
         domain.value = JSONUtils.getJSONAttrStr(json,'value')
+        domain.readingRole = JSONUtils.getJSONAttrDomain(json, "readingRole", new SecRole(), true)
 
         return domain
     }
