@@ -296,4 +296,30 @@ class JobTests  {
         assert project.countJobAnnotations==1
     }
 
+    void testShowUserJob() {
+        def result = JobAPI.showUserJob(BasicInstanceBuilder.getUserJobNotExist(true).id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+    }
+
+    void testAddUserJobCorrect() {
+        def userJobToAdd = BasicInstanceBuilder.getUserJobNotExist()
+        def result = JobAPI.createUserJob(userJobToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        int idUserJob = result.data.id
+
+        result = JobAPI.showUserJob(idUserJob, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
+
+    void testAddUserJobIncorrect() {
+        def userJobToAdd = BasicInstanceBuilder.getUserJobNotExist()
+        println userJobToAdd
+        println userJobToAdd.job
+        userJobToAdd.job = null
+
+        def result = JobAPI.createUserJob(userJobToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
 }

@@ -1,5 +1,7 @@
 package be.cytomine.api.utils
 
+import be.cytomine.Exception.WrongArgumentException
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -19,6 +21,7 @@ package be.cytomine.api.utils
 import be.cytomine.api.RestController
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
+import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 /**
  * Controller for a description (big text data/with html format) on a specific domain
@@ -85,15 +88,19 @@ class RestAttachedFileController extends RestController {
         log.info "Upload attached file"
         Long domainIdent = params.long("domainIdent")
         String domainClassName = params.get("domainClassName")
-        def f = request.getFile('files[]')
+        if(request instanceof AbstractMultipartHttpServletRequest) {
+            def f = ((AbstractMultipartHttpServletRequest) request).getFile('files[]')
 
 
-        String filename = f.originalFilename
-        log.info "Upload $filename for domain $domainClassName $domainIdent"
-        log.info "File size = ${f.size}"
+            String filename = f.originalFilename
+            log.info "Upload $filename for domain $domainClassName $domainIdent"
+            log.info "File size = ${f.size}"
 
-        def result = attachedFileService.add(filename,f.getBytes(),domainIdent,domainClassName)
-        responseSuccess(result)
+            def result = attachedFileService.add(filename,f.getBytes(),domainIdent,domainClassName)
+            responseSuccess(result)
+        } else {
+            responseError(new WrongArgumentException("No File attached"))
+        }
     }
 
     @RestApiMethod(description="Upload a file for a domain. Decode params filled by RTEditor")
