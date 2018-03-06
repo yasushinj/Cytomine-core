@@ -70,6 +70,7 @@ class BootstrapDataService {
 
         bootstrapUtilsService.createUsers(usersSamples)
         bootstrapUtilsService.createRelation()
+        bootstrapUtilsService.createConfigurations()
 
         SecUser admin = SecUser.findByUsername("admin")
         if(!grailsApplication.config.grails.adminPrivateKey) {

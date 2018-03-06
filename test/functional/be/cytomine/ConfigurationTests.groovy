@@ -118,9 +118,6 @@ class ConfigurationTests {
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        println json
-        println json.configuration
-
         assert json.configuration.value== "test2"
     }
 }
