@@ -418,3 +418,5 @@ grails.plugin.springsecurity.password.hash.iterations = 1
 
 cytomine.middleware.rabbitmq.user = "router"
 cytomine.middleware.rabbitmq.password = "router"
+
+cytomine.retrieval.enabled = true

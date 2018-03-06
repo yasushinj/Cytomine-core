@@ -55,6 +55,7 @@ class BootstrapUtilsService {
     def amqpQueueConfigService
     def rabbitConnectionService
     def storageService
+    def configurationService
 
 
     public def createUsers(def usersSamples) {
@@ -259,6 +260,13 @@ class BootstrapUtilsService {
     }
 
     def createMultipleRetrieval() {
+        if(configurationService.readByKey("retrieval.enabled").equals("false")){
+            RetrievalServer.list().each { server ->
+                server.delete()
+            }
+            return
+        }
+
         RetrievalServer.list().each { server ->
             if(!grailsApplication.config.grails.retrievalServerURL.contains(server.url)) {
                 log.info server.url + " is not in config, drop it"
