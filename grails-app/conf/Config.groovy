@@ -61,7 +61,7 @@ grails.doc.subtitle="Documentation"
 grails.doc.authors="Hoyoux Renaud, Marée Raphaël, Rollus Loïc, Stévens Benjamin"
 grails.doc.license="Apache2"
 grails.doc.copyright="University of liège"
-grails.doc.footer="www.cytomine.be"
+grails.doc.footer="www.cytomine.org"
 
 // enable Sitemesh preprocessing of GSP pages
 grails.views.gsp.sitemesh.preprocess = true
@@ -293,7 +293,7 @@ grails.plugin.springsecurity.useSwitchUserFilter = true
 
 grails.plugin.springsecurity.cas.serviceUrl = 'http://localhost:8080/j_spring_cas_security_check'
 
-// LDAP Config
+// LDAP Configuration
 grails.plugin.springsecurity.auth.loginFormUrl = '/'
 grails.plugin.springsecurity.ldap.search.base = ''
 grails.plugin.springsecurity.ldap.context.managerDn = ''
@@ -328,7 +328,7 @@ grails.plugins.dynamicController.mixins = [
 
 // Rest API Doc plugin
 grails.plugins.restapidoc.docVersion = "0.1"
-grails.plugins.restapidoc.basePath = "http://demo.cytomine.be"
+grails.plugins.restapidoc.basePath = "http://demo.cytomine.coop"
 grails.plugins.restapidoc.customClassName = "be.cytomine.api.doc.CustomResponseDoc"
 grails.plugins.restapidoc.controllerPrefix = "Rest"
 grails.plugins.restapidoc.grailsDomainDefaultType = "long"
@@ -400,7 +400,7 @@ environments {
 }
 
 
-grails.admin.email = "info@cytomine.be"
+grails.admin.email = "info@cytomine.org"
 grails.notification.email = ""
 grails.notification.password = ""
 grails.notification.smtp.host = "smtp.gmail.com"
