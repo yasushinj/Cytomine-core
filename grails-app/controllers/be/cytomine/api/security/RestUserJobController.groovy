@@ -47,6 +47,7 @@ class RestUserJobController extends RestController {
     def jobService
     def dataSource
     def currentRoleServiceProxy
+    def securityACLService
 
     /**
      * Get a user job
@@ -85,8 +86,7 @@ class RestUserJobController extends RestController {
             if (json.parent.toString().equals("null")) {
                 user = User.read(springSecurityService.currentUser.id)
             } else {
-                //je peux mettre n'importe quoi comme parent ???? !!!!
-                // ==> improbe job security tests
+                securityACLService.checkAdmin(springSecurityService.currentUser)
                 user = User.read(json.parent.toString())
             }
 
