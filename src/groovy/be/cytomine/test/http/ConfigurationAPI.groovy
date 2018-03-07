@@ -41,7 +41,6 @@ class ConfigurationAPI extends DomainAPI {
 
         String URL = Infos.CYTOMINEURL + "api/configuration.json"
         def result = doPOST(URL,json,username,password)
-        result.data = Configuration.get(JSON.parse(result.data)?.configuration?.id)
         return result
     }
 

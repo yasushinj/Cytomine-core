@@ -84,9 +84,9 @@ class ConfigurationTests {
         def result = ConfigurationAPI.create(configToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
 
         assert 200 == result.code
-        def configAdded = result.data
+        def json = JSON.parse(result.data).configuration
 
-        String key =  configAdded.key
+        String key =  json.key
 
         //UNDO & REDO
         result = ConfigurationAPI.show(key, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
