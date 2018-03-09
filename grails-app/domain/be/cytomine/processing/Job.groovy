@@ -31,6 +31,8 @@ import org.restapidoc.annotation.RestApiObjectFields
  */
 @RestApiObject(name = "Job", description = "A job is a software instance. This is the execution of software with some parameters")
 class Job extends CytomineDomain  {
+
+    int test
     /**
      * Job status (enum type are too heavy with GORM)
      */
