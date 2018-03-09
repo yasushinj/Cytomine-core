@@ -761,17 +761,17 @@ class BasicInstanceBuilder {
         sai
     }
 
-    static ProcessingServer getProcessingServer() {
-        def ps = ProcessingServer.findByUrl("processing_server_url")
+    static ImagingServer getProcessingServer() {
+        def ps = ImagingServer.findByUrl("processing_server_url")
         if (!ps) {
-            ps = new ProcessingServer(url: "processing_server_url")
+            ps = new ImagingServer(url: "processing_server_url")
             saveDomain(ps)
         }
         ps
     }
 
-    static ProcessingServer getProcessingServerNotExist (boolean save = false) {
-        ProcessingServer ps = new ProcessingServer(url: getRandomString())
+    static ImagingServer getProcessingServerNotExist (boolean save = false) {
+        ImagingServer ps = new ImagingServer(url: getRandomString())
         if(save) {
             saveDomain(ps)
         } else {
@@ -1546,9 +1546,9 @@ class BasicInstanceBuilder {
         }
 
 
-        ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.be")
+        ImagingServer processingServer = ImagingServer.findByUrl("http://image.cytomine.be")
         if (!processingServer) {
-            processingServer = new ProcessingServer()
+            processingServer = new ImagingServer()
             processingServer.url = "http://image.cytomine.be"
             BasicInstanceBuilder.saveDomain(processingServer)
         }

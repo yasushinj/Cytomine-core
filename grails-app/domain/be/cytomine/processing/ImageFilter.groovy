@@ -37,7 +37,7 @@ class ImageFilter extends CytomineDomain {
     String baseUrl
 
     @RestApiObjectField(description = "The URL of the processing server", allowedType = "string",useForCreation = false)
-    ProcessingServer processingServer
+    ImagingServer processingServer
 
     @RestApiObjectFields(params=[
         @RestApiObjectField(apiFieldName = "id", description = "The domain id",allowedType = "long",useForCreation = false)
@@ -58,8 +58,8 @@ class ImageFilter extends CytomineDomain {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
         domain.baseUrl = JSONUtils.getJSONAttrStr(json, 'baseUrl')
-        domain.processingServer = ProcessingServer.findByUrl(JSONUtils.getJSONAttrStr(json, 'processingServer'))
-        if(!domain.processingServer) throw new WrongArgumentException("ProcessingServer doesn't exist")
+        domain.processingServer = ImagingServer.findByUrl(JSONUtils.getJSONAttrStr(json, 'processingServer'))
+        if(!domain.processingServer) throw new WrongArgumentException("ImagingServer doesn't exist")
 
         return domain;
     }

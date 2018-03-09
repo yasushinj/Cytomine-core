@@ -16,7 +16,7 @@ package be.cytomine.test.http
 * limitations under the License.
 */
 
-import be.cytomine.processing.ProcessingServer
+import be.cytomine.processing.ImagingServer
 import be.cytomine.test.Infos
 import grails.converters.JSON
 
@@ -40,7 +40,7 @@ class ProcessingServerAPI extends DomainAPI {
     static def create(String json, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/processing_server.json"
         def result = doPOST(URL,json,username,password)
-        result.data = ProcessingServer.get(JSON.parse(result.data)?.processingserver?.id)
+        result.data = ImagingServer.get(JSON.parse(result.data)?.processingserver?.id)
         return result
     }
 
