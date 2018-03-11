@@ -48,7 +48,13 @@ class RestSoftwareRepositoryController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The software repository id")
     ])
     def delete() {
-        delete(softwareRepositoryService, JSON.parse("{id : $params.id}"), null)
+        println("RES : " + JSON.parse("{id : $params.id}"))
+        delete(softwareRepositoryService, JSON.parse("{id : $params.id}"),null)
+    }
+
+    @RestApiMethod(description = "Check for newly added softwares in all repositories")
+    def refreshRepositories() {
+        responseSuccess(softwareRepositoryService.refreshRepositories())
     }
 
 }

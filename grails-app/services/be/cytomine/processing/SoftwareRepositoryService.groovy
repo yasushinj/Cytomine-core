@@ -2,9 +2,11 @@ package be.cytomine.processing
 
 import be.cytomine.Exception.CytomineException
 import be.cytomine.command.*
+import be.cytomine.middleware.AmqpQueue
 import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import groovy.json.JsonBuilder
 
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.WRITE
@@ -17,6 +19,7 @@ class SoftwareRepositoryService extends ModelService {
     def transactionService
     def aclUtilService
     def securityACLService
+    def amqpQueueService
 
     def currentDomain() {
         return SoftwareRepository
@@ -73,6 +76,14 @@ class SoftwareRepositoryService extends ModelService {
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.provider, domain.repositoryUser, domain.prefix, domain.installerName]
+    }
+
+    def refreshRepositories() {
+        def message = [requestType: 2]
+        JsonBuilder jsonBuilder = new JsonBuilder()
+        jsonBuilder(message)
+
+        amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
     }
 
 }

@@ -1,11 +1,7 @@
 package be.cytomine.processing
 
 import be.cytomine.Exception.CytomineException
-import be.cytomine.command.AddCommand
-import be.cytomine.command.Command
-import be.cytomine.command.DeleteCommand
-import be.cytomine.command.EditCommand
-import be.cytomine.command.Transaction
+import be.cytomine.command.*
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.security.SecUser
@@ -65,7 +61,7 @@ class ProcessingServerService extends ModelService {
     }
 
     @Override
-    protected afterAdd(Object domain, Object response) {
+    def afterAdd(Object domain, Object response) {
         aclUtilService.addPermission(domain, cytomineService.currentUser.username, BasePermission.ADMINISTRATION)
 
         String queueName = amqpQueueService.queuePrefixProcessingServer + ((domain as ProcessingServer).name).capitalize()
@@ -75,11 +71,12 @@ class ProcessingServerService extends ModelService {
             AmqpQueue amqpQueue = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
             amqpQueue.save(failOnError: true)
 
-            amqpQueueService.createAmqpQueueDefault(amqpQueueService)
+            amqpQueueService.createAmqpQueueDefault(amqpQueue)
 
-            def mapInfosQueue = [name: amqpQueue.name, host: amqpQueue.host, exchange: amqpQueue.exchange]
+            def message = [requestType: 1, name: amqpQueue.name, host: amqpQueue.host, exchange: amqpQueue.exchange]
             JsonBuilder jsonBuilder = new JsonBuilder()
-            jsonBuilder(mapInfosQueue)
+            jsonBuilder(message)
+
             amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
         }
     }
