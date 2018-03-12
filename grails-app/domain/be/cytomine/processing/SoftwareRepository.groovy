@@ -1,6 +1,7 @@
 package be.cytomine.processing
 
 import be.cytomine.CytomineDomain
+import be.cytomine.Exception.AlreadyExistException
 import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObjectField
 
@@ -27,6 +28,18 @@ class SoftwareRepository extends CytomineDomain {
         id(generator: "assigned")
         sort("id")
         installerName(defaultValue: "'add_cytomine_software.py'")
+    }
+
+    @Override
+    void checkAlreadyExist() {
+        SoftwareRepository.withNewSession {
+            if (repositoryUser) {
+                SoftwareRepository softwareRepository = SoftwareRepository.findByRepositoryUser(repositoryUser)
+                if (softwareRepository != null && softwareRepository.id != id) {
+                    throw new AlreadyExistException("Software repository " + softwareRepository.repositoryUser + " already exists !");
+                }
+            }
+        }
     }
 
     /**

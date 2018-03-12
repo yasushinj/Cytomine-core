@@ -15,14 +15,17 @@ class SoftwareRepositoryService extends ModelService {
 
     static transactional = true
 
-    def cytomineService
     def transactionService
-    def aclUtilService
     def securityACLService
     def amqpQueueService
 
+    @Override
     def currentDomain() {
         return SoftwareRepository
+    }
+
+    SoftwareRepository get(def id) {
+        return SoftwareRepository.get(id)
     }
 
     SoftwareRepository read(def id) {
@@ -41,8 +44,7 @@ class SoftwareRepositoryService extends ModelService {
      */
     def add(def json) throws CytomineException {
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.checkGuest(currentUser)
-        //json.user = currentUser.id
+        securityACLService.checkAdmin(currentUser)
         return executeCommand(new AddCommand(user: currentUser), null, json)
     }
 
@@ -53,8 +55,8 @@ class SoftwareRepositoryService extends ModelService {
      * @return Response structure (new domain data, old domain data..)
      */
     def update(SoftwareRepository domain, def jsonNewData) {
-        securityACLService.check(domain.container(), WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
+        securityACLService.checkAdmin(currentUser)
         return executeCommand(new EditCommand(user: currentUser), domain, jsonNewData)
     }
 
@@ -67,13 +69,13 @@ class SoftwareRepositoryService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(SoftwareRepository domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        log.info "delete software"
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.check(domain.container(), DELETE)
+        securityACLService.checkAdmin(currentUser)
         Command c = new DeleteCommand(user: currentUser, transaction: transaction)
         return executeCommand(c, domain, null)
     }
 
+    @Override
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.provider, domain.repositoryUser, domain.prefix, domain.installerName]
     }

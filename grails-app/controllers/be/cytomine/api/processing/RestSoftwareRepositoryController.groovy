@@ -35,7 +35,7 @@ class RestSoftwareRepositoryController extends RestController {
         }
     }
 
-    @RestApiMethod(description = "Update a software.", listing = true)
+    @RestApiMethod(description = "Update a software repository.", listing = true)
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The software repository id")
     ])
@@ -43,7 +43,7 @@ class RestSoftwareRepositoryController extends RestController {
         update(softwareRepositoryService, request.JSON)
     }
 
-    @RestApiMethod(description = "Delete a software.", listing = true)
+    @RestApiMethod(description = "Delete a software repository.", listing = true)
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The software repository id")
     ])
