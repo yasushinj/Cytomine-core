@@ -430,7 +430,7 @@ class RestUserController extends RestController {
     def resetPassword () {
         try {
             SecUser user = SecUser.get(params.long('id'))
-            String newPassword = params.password;
+            String newPassword = request.JSON.password == JSONObject.NULL ? null : request.JSON.password;
 
             log.info "change password for user $user with new password $newPassword"
             if(user && newPassword) {
