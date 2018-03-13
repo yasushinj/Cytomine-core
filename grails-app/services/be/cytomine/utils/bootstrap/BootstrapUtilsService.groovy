@@ -260,7 +260,8 @@ class BootstrapUtilsService {
     }
 
     def createMultipleRetrieval() {
-        if(Configuration.findByKey("retrieval.enabled").value.equals("false")){
+        Configuration retrieval = Configuration.findByKey("retrieval.enabled")
+        if(retrieval && retrieval.value.equals("false")){
             RetrievalServer.list().each { server ->
                 server.delete()
             }
