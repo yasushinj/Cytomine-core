@@ -28,7 +28,7 @@ import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
-import be.cytomine.processing.Software
+import be.cytomine.processing.ProcessingServer
 import be.cytomine.security.*
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
@@ -485,10 +485,10 @@ class BootstrapUtilsService {
             AmqpQueue queueCommunication = amqpQueueService.read("queueCommunication")
             amqpQueueService.createAmqpQueueDefault(queueCommunication)
         }
-        Software.list().each {
-            String queueName = amqpQueueService.queuePrefixSoftware + ((it as Software).name).capitalize()
+        ProcessingServer.list().each {
+            String queueName = amqpQueueService.queuePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
             if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
-                String exchangeName = amqpQueueService.exchangePrefixSoftware + ((it as Software).name).capitalize()
+                String exchangeName = amqpQueueService.exchangePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
                 String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
                 AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
                 aq.save(failOnError: true)

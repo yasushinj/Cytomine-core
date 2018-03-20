@@ -32,17 +32,12 @@ import com.rabbitmq.client.MessageProperties
  */
 class AmqpQueueService extends ModelService {
 
-
     static transactionService = true
     boolean saveOnUndoRedoStack = true
+
     final static queuePrefixProcessingServer = "queueProcessingServer"
     final static channelPrefixProcessingServer = "channelProcessingServer"
     final static exchangePrefixProcessingServer = "exchangeProcessingServer"
-
-    // remove later
-    final static queuePrefixSoftware = "queueSoftware"
-    final static channelPrefixSoftware = "channelSoftware"
-    final static exchangePrefixSoftware = "exchangeSoftware"
 
     def securityACLService
     def amqpQueueConfigInstanceService

@@ -1,5 +1,21 @@
 package be.cytomine.processing
 
+/*
+ * Copyright (c) 2009-2018. Authors: see NOTICE file.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import be.cytomine.Exception.CytomineException
 import be.cytomine.command.*
 import be.cytomine.middleware.AmqpQueue
@@ -18,6 +34,7 @@ class SoftwareRepositoryService extends ModelService {
     def transactionService
     def securityACLService
     def amqpQueueService
+    def softwareService
 
     @Override
     def currentDomain() {
@@ -75,13 +92,20 @@ class SoftwareRepositoryService extends ModelService {
         return executeCommand(c, domain, null)
     }
 
+    def deleteDependentSoftware(SoftwareRepository softwareRepository, Transaction transaction, Task task = null) {
+        log.info("delteDependantSoftware ${Software.findAllBySoftwareRepository(softwareRepository).size()}")
+        Software.findAllBySoftwareRepository(softwareRepository).each {
+            softwareService.delete(it, transaction, null, false)
+        }
+    }
+
     @Override
     def getStringParamsI18n(def domain) {
-        return [domain.id, domain.provider, domain.repositoryUser, domain.prefix, domain.installerName]
+        return [domain.id, domain.provider, domain.userName, domain.repositoryName]
     }
 
     def refreshRepositories() {
-        def message = [requestType: 2]
+        def message = [requestType: "refreshRepositories"]
         JsonBuilder jsonBuilder = new JsonBuilder()
         jsonBuilder(message)
 

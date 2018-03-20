@@ -119,31 +119,11 @@ class SoftwareService extends ModelService {
         softParam.save(failOnError: true)
         softParam = new SoftwareParameter(software: domain as Software, name: "privateKey", type: "String", required: true, index: 300, setByServer: true)
         softParam.save(failOnError: true)
-
-        // add an AMQP queue with the name of the software (default parameters)
-        String queueName = amqpQueueService.queuePrefixSoftware + ((domain as Software).name).capitalize()
-        if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
-            String exchangeName = amqpQueueService.exchangePrefixSoftware + ((domain as Software).name).capitalize()
-            String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
-            AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
-            aq.save(failOnError: true)
-
-            // Creates the queue on the rabbit server
-            amqpQueueService.createAmqpQueueDefault(aq)
-
-            // Notify the queueCommunication that a software has been added
-            def mapInfosQueue = [name: aq.name, host: aq.host, exchange: aq.exchange]
-            JsonBuilder builder = new JsonBuilder()
-            builder(mapInfosQueue)
-            amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), builder.toString())
-
-        }
     }
 
     def afterDelete(def domain, def response) {
 
     }
-
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.name]

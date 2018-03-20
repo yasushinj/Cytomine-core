@@ -31,7 +31,6 @@ import org.restapidoc.annotation.RestApiObjectFields
 @RestApiObject(name = "Software", description = "Software is an application that can read/add/update/delete data from cytomine. Each time a software is launch, we create a job instance")
 class Software extends CytomineDomain {
 
-
     def softwareParameterService
 
     /**
@@ -40,17 +39,11 @@ class Software extends CytomineDomain {
     @RestApiObjectField(description = "The software name")
     String name
 
-    /**
-     * Service that will be call when we launch the software
-     * This server will, for example, launch a binary file with ssh
-     */
-    def service
+    @RestApiObjectField(description = "The software's software repository")
+    SoftwareRepository softwareRepository
 
-    /**
-     * Service name used to load service
-     */
-    @RestApiObjectField(description = "Service name used to load software and create job", mandatory = false)
-    String serviceName
+    @RestApiObjectField(description = "The software's default processing server")
+    ProcessingServer defaultProcessingServer
 
     /**
      * Type of result page
@@ -89,6 +82,7 @@ class Software extends CytomineDomain {
     ])
     static transients = []
 
+    static belongsTo = [SoftwareRepository]
 
     static constraints = {
         name(nullable: false, unique: true)
@@ -104,13 +98,6 @@ class Software extends CytomineDomain {
         sort "id"
     }
 
-     def afterLoad = {
-         //load service thanks to serviceName from DB
-        if (!service) {
-            service = grailsApplication.getMainContext().getBean(serviceName)
-        }
-     }
-
     /**
      * Check if this domain will cause unique constraint fail if saving on database
      */
@@ -122,7 +109,6 @@ class Software extends CytomineDomain {
                     throw new AlreadyExistException("Software "+softwareSameName.name + " already exist!")
                 }
             }
-
         }
     }
 
@@ -136,24 +122,14 @@ class Software extends CytomineDomain {
      * @param json JSON containing data
      * @return Domain with json data filled
      */
-    static Software insertDataIntoDomain(def json,def domain=new Software()) {
+    static Software insertDataIntoDomain(def json, def domain = new Software()) {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
+        domain.softwareRepository = JSONUtils.getJSONAttrDomain(json, "softwareRepository", new SoftwareRepository(), true)
+        domain.defaultProcessingServer = JSONUtils.getJSONAttrDomain(json, "defaultProcessingServer", new ProcessingServer(), false)
         domain.description = JSONUtils.getJSONAttrStr(json, 'description')
-        domain.serviceName = JSONUtils.getJSONAttrStr(json, 'serviceName')
         domain.resultName = JSONUtils.getJSONAttrStr(json, 'resultName')
         domain.executeCommand = JSONUtils.getJSONAttrStr(json, 'executeCommand')
-
-        def service
-        try {
-            service = grailsApplication.getMainContext().getBean(json.serviceName)
-        } catch(Exception e) {
-           throw new WrongArgumentException("Software service-name cannot be launch:"+e)
-        }
-        if(!service)  {
-            throw new WrongArgumentException("Software service-name cannot be found with name:"+json.serviceName)
-        }
-
         return domain;
     }
 
@@ -165,7 +141,8 @@ class Software extends CytomineDomain {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['name'] = domain?.name
-        returnArray['serviceName'] = domain?.serviceName
+        returnArray['softwareRepository'] = domain?.softwareRepository?.id
+        returnArray['defaultProcessingServer'] = domain?.defaultProcessingServer?.id
         returnArray['resultName'] = domain?.resultName
         returnArray['description'] = domain?.description
         returnArray['executeCommand'] = domain?.executeCommand
