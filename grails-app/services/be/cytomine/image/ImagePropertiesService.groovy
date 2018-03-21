@@ -43,7 +43,7 @@ class ImagePropertiesService implements Serializable{
         fif = fif.replace(" ","%20")
         String mimeType = abstractImage.mimeType
 
-        String uri = "$imageServerURL/image/properties?fif=$fif&mimeType=$mimeType"
+        String uri = "$imageServerURL/image/properties?fif="+URLEncoder.encode(fif, "UTF-8")+"&mimeType=$mimeType"
         println uri
         def properties = JSON.parse(new URL(uri).text)
         println properties
