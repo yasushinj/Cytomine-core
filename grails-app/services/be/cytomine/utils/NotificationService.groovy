@@ -112,18 +112,17 @@ class NotificationService {
                 null)
     }
 
-    def notifyShareAnnotation(User sender, def receiversEmail, def request, def attachments, def cid) {
-        String subject = request.JSON.subject
+    def notifyShareAnnotation(User sender, def receiversEmail, def json, def attachments, def cid) {
         String shareMessage = renderService.createShareMessage([
-                from: request.JSON.from,
-                to: request.JSON.to,
-                comment: request.JSON.comment,
-                annotationURL: request.JSON.annotationURL,
-                shareAnnotationURL: request.JSON.shareAnnotationURL,
+                from: json.from,
+                comment: json.comment,
+                annotationURL: json.annotationURL,
+                shareAnnotationURL: json.shareAnnotationURL,
                 by: grailsApplication.config.grails.serverURL,
                 cid : cid
         ])
 
+        String subject = json.subject ?: ""
         cytomineMailService.send(
                 cytomineMailService.NO_REPLY_EMAIL,
                 receiversEmail,

@@ -171,6 +171,7 @@ class SharedAnnotationService extends ModelService {
 
 
         log.info "send mail to " + receiversEmail
+        notificationService.notifyShareAnnotation(sender, receiversEmail, json, attachments, cid)
 
 
         securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
