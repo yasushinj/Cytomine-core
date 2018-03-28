@@ -120,7 +120,7 @@ class ImageGroupHDF5Service  extends  ModelService{
         }
 
         imagesSequenceList.each {
-            maxBits = Math.max(maxBits, it.image.baseImage.bitDepth)
+            maxBits = Math.max(maxBits, it.image.baseImage.bitDepth ?: 8)
         }
 
         def body = [user: currentUser.id, files: imagesFilenames, dest: destination, id: id,
