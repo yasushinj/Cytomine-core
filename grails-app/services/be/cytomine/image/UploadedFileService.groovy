@@ -43,7 +43,21 @@ class UploadedFileService extends ModelService {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
-            isNull("parent.id")
+            isNull("deleted")
+        }
+        return uploadedFiles
+    }
+
+    def list(User user, Long parentId, Boolean onlyRoot) {
+
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
+            eq("user.id", user.id)
+            if(onlyRoot) {
+                isNull("parent.id")
+            } else if(parentId != null){
+                eq("parent.id", parentId)
+            }
             isNull("deleted")
         }
         return uploadedFiles

@@ -45,12 +45,26 @@ var UploadedFileCollection = PaginatedCollection.extend({
             return;
         }
         this.dataTables = options.dataTables;
+        this.parent = options.parent;
+        this.onlyRoot = options.onlyRoot;
     },
     url: function () {
-        if (this.dataTables) {
-            return 'api/uploadedfile.json?dataTables=true';
+        var baseUrl = 'api/uploadedfile.json';
+
+        if (this.dataTables || this.parent || this.onlyRoot) {
+            baseUrl += '?';
         } else {
-            return 'api/uploadedfile.json';
+            return baseUrl
         }
+
+        if (this.dataTables) {
+            baseUrl += 'dataTables=true&';
+        }
+        if (this.parent) {
+            baseUrl += 'parent='+this.parent+'&';
+        } else if (this.onlyRoot) {
+            baseUrl += 'onlyRoot='+this.onlyRoot+'&';
+        }
+        return baseUrl.substr(0,baseUrl.length-1);
     }
 });

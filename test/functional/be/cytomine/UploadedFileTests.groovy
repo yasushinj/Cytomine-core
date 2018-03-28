@@ -36,14 +36,58 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  */
 class UploadedFileTests {
 
-  void testListUploadedFil() {
-      def result = UploadedFileAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json.collection instanceof JSONArray
-  }
+    void testListUploadedFile() {
+        def result = UploadedFileAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
 
-  void testShowUploadedFileWithCredential() {
+    void testListUploadedFileRootOrFromParent() {
+        UploadedFile uploadedfileToAdd = BasicInstanceBuilder.getUploadedFileNotExist()
+        def result = UploadedFileAPI.create(uploadedfileToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        int idUploadedFile = result.data.id
+
+        result = UploadedFileAPI.show(idUploadedFile, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        UploadedFile uploadedfileChildToAdd = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedfileChildToAdd.parent = UploadedFile.get(idUploadedFile)//uploadedfileToAdd
+
+        result = UploadedFileAPI.create(uploadedfileChildToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        int idUploadedFileChild = result.data.id
+
+        result = UploadedFileAPI.show(idUploadedFileChild, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = UploadedFileAPI.listOnlyRoots(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        def root = json.collection.find { it.id == idUploadedFile}
+        def child = json.collection.find { it.id == idUploadedFileChild}
+
+        assert root != null
+        assert child == null
+
+
+        result = UploadedFileAPI.listChilds(idUploadedFile, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        root = json.collection.find { it.id == idUploadedFile}
+        child = json.collection.find { it.id == idUploadedFileChild}
+
+        assert child != null
+        assert root == null
+
+    }
+
+    void testShowUploadedFileWithCredential() {
       def result = UploadedFileAPI.show(BasicInstanceBuilder.getUploadedFile().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
       def json = JSON.parse(result.data)
