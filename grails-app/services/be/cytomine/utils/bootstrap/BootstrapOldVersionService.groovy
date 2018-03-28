@@ -209,14 +209,15 @@ class BootstrapOldVersionService {
             new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image ADD COLUMN colorspace varchar(255);")
         }
 
-        List<AbstractImage> abstractImages = AbstractImage.findAll()
-        abstractImages.eachWithIndex { image, index ->
-            if(index%100==0) {
-                log.info "Populate image properties: ${(index/abstractImages.size())*100}"
-            }
-            imagePropertiesService.populate(image)
-            imagePropertiesService.extractUseful(image)
-        }
+//        List<AbstractImage> abstractImages = AbstractImage.findAllByDeletedIsNullAndBitDepthIsNull()
+//        log.info "${abstractImages.size()} image to populate"
+//        abstractImages.eachWithIndex { image, index ->
+//            if(index%100==0) {
+//                log.info "Populate image properties: ${(index/abstractImages.size())*100}"
+//            }
+//            imagePropertiesService.populate(image)
+//            imagePropertiesService.extractUseful(image)
+//        }
     }
 
     void init20171219() {
