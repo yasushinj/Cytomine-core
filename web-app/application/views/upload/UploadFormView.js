@@ -667,32 +667,36 @@ var UploadFormView = Backbone.View.extend({
         var self = this;
         var uploadTable = $('#uploaded_files');
         var loadingDiv = $("#loadingUploadedFiles");
-        var uploadedFileCollectionUrl = new UploadedFileCollection({ dataTables: true}).url();
+        var uploadedFileCollectionUrl = new UploadedFileCollection({ dataTables: true, onlyRoot: true}).url();
         uploadTable.hide();
         loadingDiv.show();
+
         self.uploadDataTables = uploadTable.DataTable({
             displayLength: 25,
             destroy: true,
             processing: true,
 
             columnDefs: [
+                {orderable: false, className: "testPlus", render: function (data, type, row) {
+                    return "<i style=\"margin-left:"+(10*row["level"])+"px;\" class=\"glyphicon glyphicon-"+ (row["expanded"]===true? "minus" : "plus")+"\"></i>";
+                }, targets: [ 0 ] },
                 {defaultContent: "No preview available", render : function (data, type, row) {
                     if(window.app.isUndefined(row["thumbURL"]) || window.app.isUndefined(row["id"])) return null;
                     return '<img class="thumbcommand" id="thumbcommand'+data+'" '+
                         'src="'+row["thumbURL"] +'?maxWidth=128" style="max-width: 128px;max-height: 45px;"/>';
-                },targets: [ 0 ]},
-                {data: "originalFilename", searchable: true,orderable: true, targets: [1]},
+                },targets: [ 1 ]},
+                {data: "originalFilename", searchable: true,orderable: true, targets: [2]},
                 {data: "created", orderable: true,render : function (data) {
                     return window.app.convertLongToDate(data);
-                },targets: [ 2 ]},
+                },targets: [ 3 ]},
                 {data: "size", orderable: true, render : function (data) {
                     var mbSize = (data / (1024 * 1024)).toFixed(2);
                     return mbSize + "Mo";
-                },targets: [ 3 ]},
-                {data: "contentType", targets: [ 4 ]},
+                },targets: [ 4 ]},
+                {data: "contentType", targets: [ 5 ]},
                 {orderable: true, render: function (data, type, row) {
                     return self.getStatusLabel(row);
-                }, targets: [ 5 ] },
+                }, targets: [ 6 ] },
                 {render: function ( data, type, row ) {
                     var result = "";
                     // we allow deletion of non deployed image after a security gap of 24h.
@@ -709,7 +713,7 @@ var UploadFormView = Backbone.View.extend({
                         }
                     }
                     return result;
-                },targets: [ 6 ]},
+                },targets: [ 7 ]},
                 { searchable: false, orderable: false, targets: "_all" }
             ],
             order: [[ 1, "desc" ]],
@@ -719,6 +723,7 @@ var UploadFormView = Backbone.View.extend({
                     "datatables": "true"
                 }*/
             },
+            autoWidth: false,
             drawCallback: function() {
                 new UploadedFileCollection().fetch({
                     success: function(model,response) {
@@ -732,6 +737,63 @@ var UploadFormView = Backbone.View.extend({
                 });
             }
         });
+
+        // Add event listener for opening and closing details
+        self.uploadDataTables.on('click', 'td.testPlus', function (e) {
+
+            var tr = $(this).closest('tr');
+            var row = self.uploadDataTables.row( tr );
+
+            var data = $.extend(true, {}, self.uploadDataTables.data()).toArray();
+
+            if ( row.data().expanded ) {
+                // This row is already open - close it
+                $(this).find("i").removeClass("glyphicon-minus");
+                $(this).find("i").addClass("glyphicon-plus");
+
+                if(data[row.index()].level == null) data[row.index()].level = 0;
+
+                data[row.index()].expanded = false;
+
+                var nbIndexToRemove = 0;
+
+                for(var i =row.index()+1;i<data.length;i++) {
+                    if (data[i].level > data[row.index()].level) {
+                        nbIndexToRemove++;
+                    } else {
+                        break;
+                    }
+                }
+
+                data.splice(row.index()+1, nbIndexToRemove);
+
+                self.uploadDataTables.clear();
+                self.uploadDataTables.rows.add(data).draw();
+            }
+            else {
+                // Open this row
+
+                $(this).find("i").removeClass("glyphicon-plus");
+                $(this).find("i").addClass("glyphicon-minus");
+
+                $.get(new UploadedFileCollection({ parent: row.data().id}).url(), function(childs){
+
+                    self.uploadDataTables.clear();
+
+                    data[row.index()].expanded = true;
+
+                    for(var i =0;i<childs.collection.length;i++){
+                        childs.collection[i].level = data[row.index()].level + 1 || 1;
+                        data.splice(row.index()+1+i, 0, childs.collection[i]);
+                    }
+
+                    self.uploadDataTables.rows.add(data).draw();
+                });
+            }
+            return false
+
+        } );
+
         uploadTable.show();
         loadingDiv.hide();
 
