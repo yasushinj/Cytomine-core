@@ -48,6 +48,7 @@ class RestUserJobController extends RestController {
     def dataSource
     def currentRoleServiceProxy
     def securityACLService
+    def userJobService
 
     /**
      * Get a user job
@@ -287,12 +288,24 @@ class RestUserJobController extends RestController {
 
         }
         userJob.created = date
-        jobService.saveDomain(userJob)
+        secUserService.saveDomain(userJob)
 
         //add the same role to user job
         currentRoleServiceProxy.findCurrentRole(user).each { secRole ->
             SecUserSecRole.create(userJob, secRole)
         }
         return userJob
+    }
+
+    /**
+     * Update a userjob
+     */
+    @RestApiMethod(description="Edit a user job")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The userjob id")
+    ])
+    def update() {
+
+        update(userJobService, request.JSON)
     }
 }
