@@ -179,6 +179,12 @@ var UploadFormView = Backbone.View.extend({
                         data.context.each(function (index) {
                             var file = ($.isArray(data.result) &&
                                 data.result[index]) || {error: 'emptyResult'};
+
+                            if(data.result.status != 200){
+                                file.error = data.result.error
+                            }
+
+
                             if (file.error) {
                                 that._adjustMaxNumberOfFiles(1);
                             }
@@ -221,7 +227,7 @@ var UploadFormView = Backbone.View.extend({
                             if (data.errorThrown !== 'abort') {
                                 var file = data.files[index];
                                 file.error = file.error || data.errorThrown ||
-                                    true;
+                                    "An error occured";
                                 that._transitionCallback(
                                     $(this).removeClass('in'),
                                     function (node) {
