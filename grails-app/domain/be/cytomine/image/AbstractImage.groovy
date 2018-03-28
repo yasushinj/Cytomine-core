@@ -156,7 +156,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         domain.magnification = JSONUtils.getJSONAttrInteger(json,'magnification',null)
         domain.resolution = JSONUtils.getJSONAttrDouble(json,'resolution',null)
         domain.bitDepth = JSONUtils.getJSONAttrInteger(json, 'bitDepth', null)
-        domain.colorspace = JSONUtils.getJSONAttrStr(json, 'colorspace', null)
+        domain.colorspace = JSONUtils.getJSONAttrStr(json, 'colorspace', false)
         domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
 
         if (domain.mime.imageServers().size() == 0) {
