@@ -36,6 +36,7 @@ import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
+import org.json.simple.JSONObject
 
 /**
  * Cytomine
@@ -54,7 +55,7 @@ class BootstrapUtilsService {
     def amqpQueueConfigService
     def rabbitConnectionService
     def storageService
-
+    def processingServerService
 
     public def createUsers(def usersSamples) {
 
@@ -626,4 +627,47 @@ class BootstrapUtilsService {
         session.clear()
         propertyInstanceMap.get().clear()
     }
+
+    void addDefaultProcessingServer() {
+        SpringSecurityUtils.doWithAuth {
+            if (!ProcessingServer.findByName("local-instance")) {
+                ProcessingServer processingServer = new ProcessingServer(
+                        name: "local-container",
+                        host: "localhost",
+                        port: 10022,
+                        type: "slurm",
+                        processingMethodName: "SlurmProcessingMethod"
+                )
+
+                String processingServerName = processingServer.name.capitalize()
+                String queueName = amqpQueueService.queuePrefixProcessingServer + processingServerName
+
+                if (!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
+                    String exchangeName = amqpQueueService.exchangePrefixProcessingServer + processingServerName
+                    String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
+                    AmqpQueue amqpQueue = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
+                    amqpQueue.save(failOnError: true)
+
+                    amqpQueueService.createAmqpQueueDefault(amqpQueue)
+
+                    // Associates the processing server to an amqp queue
+                    processingServer.amqpQueue = amqpQueue
+                    processingServer.save()
+
+                    // Sends a message on the communication queue to warn the software router a new queue has been created
+                    def message = [requestType: "addProcessingServer",
+                                   name: amqpQueue.name,
+                                   host: amqpQueue.host,
+                                   exchange: amqpQueue.exchange,
+                                   processingServerId: processingServer.id]
+
+                    JsonBuilder jsonBuilder = new JsonBuilder()
+                    jsonBuilder(message)
+
+                    amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
+                }
+            }
+        }
+    }
+
 }
