@@ -18,14 +18,12 @@ package be.cytomine.processing
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.AlreadyExistException
-import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.utils.JSONUtils
-import com.rabbitmq.tools.json.JSONUtil
+import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
-import java.rmi.AlreadyBoundException
-
+@RestApiObject(name = "Processing server", description = "A processing server is a server that can be used to run algorithms (containers)")
 class ProcessingServer extends CytomineDomain {
 
     @RestApiObjectField(description = "The name of the processing server")
@@ -34,14 +32,14 @@ class ProcessingServer extends CytomineDomain {
     @RestApiObjectField(description = "The host of the processing server")
     String host
 
+    @RestApiObjectField(description = "The port of the processing server")
+    Integer port
+
     @RestApiObjectField(description = "The type of the processing server")
     String type
 
     @RestApiObjectField(description = "The processing method name of the processing server")
     String processingMethodName
-
-    @RestApiObjectField(description = "The communication method name of the processing server")
-    String communicationMethodName
 
     @RestApiObjectField(description = "The amqp queue associated to a given processing server")
     AmqpQueue amqpQueue
@@ -49,8 +47,8 @@ class ProcessingServer extends CytomineDomain {
     static constraints = {
         name(nullable: false, blank: false, unique: true)
         host(blank: false)
+        port(blank: false)
         processingMethodName(blank: false)
-        communicationMethodName(blank: false)
         amqpQueue(nullable: true)
     }
 
@@ -58,6 +56,7 @@ class ProcessingServer extends CytomineDomain {
         id(generator: "assigned")
         sort("id")
         host(defaultValue: "'localhost'")
+        port(defaultValue: "22")
     }
 
     @Override
@@ -82,9 +81,9 @@ class ProcessingServer extends CytomineDomain {
         domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
         domain.host = JSONUtils.getJSONAttrStr(json, 'host')
+        domain.port = JSONUtils.getJSONAttrStr(json, 'port')
         domain.type = JSONUtils.getJSONAttrStr(json, 'type')
         domain.processingMethodName = JSONUtils.getJSONAttrStr(json, 'processingMethodName')
-        domain.communicationMethodName = JSONUtils.getJSONAttrStr(json, 'communicationMethodName')
         domain.amqpQueue = JSONUtils.getJSONAttrDomain(json, 'amqpQueue', new AmqpQueue(), false)
         return domain
     }
@@ -98,9 +97,9 @@ class ProcessingServer extends CytomineDomain {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['name'] = domain?.name
         returnArray['host'] = domain?.host
+        returnArray['port'] = domain?.port
         returnArray['type'] = domain?.type
         returnArray['processingMethodName'] = domain?.processingMethodName
-        returnArray['communicationMethodName'] = domain?.communicationMethodName
         returnArray['amqpQueue'] = domain?.amqpQueue
         return returnArray
     }
