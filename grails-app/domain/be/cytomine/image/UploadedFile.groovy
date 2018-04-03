@@ -42,6 +42,9 @@ class UploadedFile extends CytomineDomain implements Serializable{
     public static int ERROR_CONVERT = 4
     public static int UNCOMPRESSED = 5
     public static int TO_DEPLOY = 6
+    public static int TO_CONVERT = 7
+    public static int ERROR_CONVERSION = 8
+    public static int ERROR_DEPLOYMENT = 9
 
     @RestApiObjectField(description = "The user that upload the file")
     SecUser user
