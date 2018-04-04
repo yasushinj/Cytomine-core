@@ -79,8 +79,7 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
                                     isLazy : infos.lazy,
                                     key : file.id,
                                     noLink : true,
-                                    unselectable : true//,
-                                    //hideCheckbox: true,
+                                    unselectable : true
                                 });
                             }
                             // PWS status OK
@@ -132,9 +131,6 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         }
 
         title += " <span title=\"" + model.getStatus() + "\" class=\"" + clazz + "\" style='margin-left:20px;'> <i class=\"" + icon + "\"></i></span>";
-        //title += " <span title=\""+model.getStatus()+"\" class=\""+clazz+"\"> <i class=\""+icon+"\"></i></span>";
-        title += " test";
-        //title += " <img src ='http://localhost-core:8080/api/abstractimage/25914/associated/macro.png'>";
 
         var size = model.get("size");
         if(size < 1024) {
