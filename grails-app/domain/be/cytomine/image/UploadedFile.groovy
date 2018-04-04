@@ -39,12 +39,11 @@ class UploadedFile extends CytomineDomain implements Serializable{
     public static int CONVERTED = 1
     public static int DEPLOYED = 2
     public static int ERROR_FORMAT = 3
-    public static int ERROR_CONVERT = 4
+    public static int ERROR_CONVERSION = 4
     public static int UNCOMPRESSED = 5
     public static int TO_DEPLOY = 6
     public static int TO_CONVERT = 7
-    public static int ERROR_CONVERSION = 8
-    public static int ERROR_DEPLOYMENT = 9
+    public static int ERROR_DEPLOYMENT = 8
 
     @RestApiObjectField(description = "The user that upload the file")
     SecUser user
@@ -122,7 +121,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['converted'] = (uploaded?.status == UploadedFile.CONVERTED)
         returnArray['deployed'] = (uploaded?.status == UploadedFile.DEPLOYED)
         returnArray['error_format'] = (uploaded?.status == UploadedFile.ERROR_FORMAT)
-        returnArray['error_convert'] = (uploaded?.status == UploadedFile.ERROR_CONVERT)
+        returnArray['error_convert'] = (uploaded?.status == UploadedFile.ERROR_CONVERSION)
         returnArray['uncompressed'] = (uploaded?.status == UploadedFile.UNCOMPRESSED)
         returnArray['to_deploy'] = (uploaded?.status == UploadedFile.TO_DEPLOY)
         returnArray['image'] = uploaded?.getAbstractImage()?.id

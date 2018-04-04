@@ -22,6 +22,39 @@ var UploadedFileModel = Backbone.Model.extend({
         }
         this.image = options.image;
     },
+    getStatus: function() {
+        var result;
+        switch(this.get('status')){
+            case 0:
+                result = "UPLOADED";
+                break;
+            case 1:
+                result = "CONVERTED";
+                break;
+            case 2:
+                result = "DEPLOYED";
+                break;
+            case 3:
+                result = "ERROR FORMAT";
+                break;
+            case 4:
+                result = "ERROR CONVERSION";
+                break;
+            case 5:
+                result = "UNCOMPRESSED";
+                break;
+            case 6:
+                result = "TO DEPLOY";
+                break;
+            case 7:
+                result = "TO CONVERT";
+                break;
+            case 8:
+                result = "ERROR DEPLOYMENT";
+                break;
+        }
+        return result;
+    },
     url: function () {
         var base = 'api/uploadedfile';
         var format = '.json';

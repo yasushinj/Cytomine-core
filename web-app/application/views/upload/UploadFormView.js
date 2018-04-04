@@ -683,131 +683,90 @@ var UploadFormView = Backbone.View.extend({
             processing: true,
 
             columnDefs: [
-                {orderable: false, className: "testPlus", render: function (data, type, row) {
-                    return "<i style=\"margin-left:"+(10*row["level"])+"px;\" class=\"glyphicon glyphicon-"+ (row["expanded"]===true? "minus" : "plus")+"\"></i>";
-                }, targets: [ 0 ] },
                 {defaultContent: "No preview available", render : function (data, type, row) {
                     if(window.app.isUndefined(row["thumbURL"]) || window.app.isUndefined(row["id"])) return null;
                     return '<img class="thumbcommand" id="thumbcommand'+data+'" '+
                         'src="'+row["thumbURL"] +'?maxWidth=128" style="max-width: 128px;max-height: 45px;"/>';
-                },targets: [ 1 ]},
-                {data: "originalFilename", searchable: true,orderable: true, targets: [2]},
+                },targets: [ 0 ]},
+                {data: "originalFilename", searchable: true,orderable: true, targets: [1]},
                 {data: "created", orderable: true,render : function (data) {
                     return window.app.convertLongToDate(data);
-                },targets: [ 3 ]},
+                },targets: [ 2 ]},
                 {data: "size", orderable: true, render : function (data) {
                     var mbSize = (data / (1024 * 1024)).toFixed(2);
                     return mbSize + "Mo";
-                },targets: [ 4 ]},
-                {data: "contentType", targets: [ 5 ]},
+                },targets: [ 3 ]},
+                {data: "contentType", targets: [ 4 ]},
                 {orderable: true, render: function (data, type, row) {
                     return self.getStatusLabel(row);
-                }, targets: [ 6 ] },
+                }, targets: [ 5 ] },
                 {render: function ( data, type, row ) {
                     var result = "";
-                    // we allow deletion of non deployed image after a security gap of 24h.
-                    if(row["to_deploy"] || row["error_format"] || row["error_convert"]){
-                        if(($.now() - row["updated"])/3600000 > 24) {
-                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+">Delete</button>";
-                        } else {
-                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+" disabled>Delete</button>";
-                        }
-                    }else {
-                        result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+" disabled>Delete</button> ";
-                        if(row["image"] !== null && window.app.status.user.model.get("adminByNow")){
-                            result+="<a class='btn btn-info btn-xs' href='api/abstractimage/"+row["image"]+"/download'> Download</a>";
-                        }
-                    }
+                    result+="<button class='btn btn-info btn-xs detailsImage' data-ufid="+row["id"]+">Details</button>";
                     return result;
-                },targets: [ 7 ]},
+                },targets: [ 6 ]},
                 { searchable: false, orderable: false, targets: "_all" }
             ],
-            order: [[ 1, "desc" ]],
+            order: [[ 3, "desc" ]],
             ajax: {
-                url: uploadedFileCollectionUrl/*,
-                data: {
-                    "datatables": "true"
-                }*/
+                url: uploadedFileCollectionUrl
             },
             autoWidth: false,
-            drawCallback: function() {
-                new UploadedFileCollection().fetch({
-                    success: function(model,response) {
-
-                        $.get( "/api/abstractimage/unused.json", function( data ) {
-                            for(var i = 0; i<data.collection.length;i++) {
-                                $('button[id^=deleteimage-][id$=-'+data.collection[i].id+']').prop("disabled",false);
-                            }
-                        });
-                    }
-                });
-            }
         });
-
-        // Add event listener for opening and closing details
-        self.uploadDataTables.on('click', 'td.testPlus', function (e) {
-
-            var tr = $(this).closest('tr');
-            var row = self.uploadDataTables.row( tr );
-
-            var data = $.extend(true, {}, self.uploadDataTables.data()).toArray();
-
-            if ( row.data().expanded ) {
-                // This row is already open - close it
-                $(this).find("i").removeClass("glyphicon-minus");
-                $(this).find("i").addClass("glyphicon-plus");
-
-                if(data[row.index()].level == null) data[row.index()].level = 0;
-
-                data[row.index()].expanded = false;
-
-                var nbIndexToRemove = 0;
-
-                for(var i =row.index()+1;i<data.length;i++) {
-                    if (data[i].level > data[row.index()].level) {
-                        nbIndexToRemove++;
-                    } else {
-                        break;
-                    }
-                }
-
-                data.splice(row.index()+1, nbIndexToRemove);
-
-                self.uploadDataTables.clear();
-                self.uploadDataTables.rows.add(data).draw();
-            }
-            else {
-                // Open this row
-
-                $(this).find("i").removeClass("glyphicon-plus");
-                $(this).find("i").addClass("glyphicon-minus");
-
-                $.get(new UploadedFileCollection({ parent: row.data().id}).url(), function(childs){
-
-                    self.uploadDataTables.clear();
-
-                    data[row.index()].expanded = true;
-
-                    for(var i =0;i<childs.collection.length;i++){
-                        childs.collection[i].level = data[row.index()].level + 1 || 1;
-                        data.splice(row.index()+1+i, 0, childs.collection[i]);
-                    }
-
-                    self.uploadDataTables.rows.add(data).draw();
-                });
-            }
-            return false
-
-        } );
 
         uploadTable.show();
         loadingDiv.hide();
 
-        $(document).on('click', "#refreshUploadedFiles", function (e) {
+        $(this.el).on('click', "#refreshUploadedFiles", function (e) {
             e.preventDefault();
             self.uploadDataTables.ajax.reload();
         });
-        $(document).on('click', ".deleteimage", function (e) {
+
+        $(this.el).on('click', ".detailsImage", function (e) {
+            var idUpload = $(e.currentTarget).data("ufid");
+
+            //get data from the datatable
+            var tr = $(this).closest('tr');
+            var row = self.uploadDataTables.row( tr );
+
+            var data = $.extend(true, {}, row.data());
+
+            new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data}).render();
+
+
+            //var idImage = $(e.currentTarget).data("aiid");
+
+            /*DialogModal.initDialogModal(null, idUpload, 'UploadFile', 'Do you want to delete this image ?', 'CONFIRMATIONWARNING', function(){
+                var deleteUploadFile = function() {
+                    new UploadedFileModel({id: idUpload}).destroy({
+                        success: function (model, response) {
+                            window.app.view.message("Uploaded file", "deleted", "success");
+                            self.uploadDataTables.ajax.reload();
+                        },
+                        error: function (model, response) {
+                            var json = $.parseJSON(response.responseText);
+                            window.app.view.message("Delete failed", json.errors, "error");
+                        }
+                    });
+                };
+
+                if(idImage == null || idImage == 'null') {
+                    deleteUploadFile();
+                } else {
+                    new ImageModel({id: idImage}).destroy({
+                        success: function(model, response){
+                            deleteUploadFile();
+                        },
+                        error: function(model, response){
+                            var json = $.parseJSON(response.responseText);
+                            window.app.view.message("Delete failed", json.errors, "error");
+                        }
+                    });
+                }
+            });*/
+        });
+
+        /*$(document).on('click', ".deleteimage", function (e) {
             var idUpload = $(e.currentTarget).data("ufid");
             var idImage = $(e.currentTarget).data("aiid");
 
@@ -839,7 +798,7 @@ var UploadFormView = Backbone.View.extend({
                      });
                  }
              });
-        });
+        });*/
     },
     refreshProjectAndStorage : function() {
         var self = this;
