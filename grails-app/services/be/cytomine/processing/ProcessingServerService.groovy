@@ -80,7 +80,7 @@ class ProcessingServerService extends ModelService {
 
     @Override
     def getStringParamsI18n(def domain) {
-        return [domain.id, domain.name, domain.host, domain.type, domain.processingMethodName, domain.communicationMethodName]
+        return [domain.id, domain.name, domain.host, domain.type, domain.processingMethodName]
     }
 
     @Override
@@ -106,8 +106,8 @@ class ProcessingServerService extends ModelService {
                            name: amqpQueue.name,
                            host: amqpQueue.host,
                            exchange: amqpQueue.exchange,
-                           processingMethodName: (domain as ProcessingServer).processingMethodName,
-                           communicationMethodName: (domain as ProcessingServer).communicationMethodName]
+                           processingServerId: (domain as ProcessingServer).id]
+
             JsonBuilder jsonBuilder = new JsonBuilder()
             jsonBuilder(message)
 

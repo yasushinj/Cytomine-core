@@ -39,8 +39,8 @@ class Software extends CytomineDomain {
     @RestApiObjectField(description = "The software name")
     String name
 
-    @RestApiObjectField(description = "The software's software repository")
-    SoftwareRepository softwareRepository
+    @RestApiObjectField(description = "The software's software user repository")
+    SoftwareUserRepository softwareUserRepository
 
     @RestApiObjectField(description = "The software's default processing server")
     ProcessingServer defaultProcessingServer
@@ -82,7 +82,7 @@ class Software extends CytomineDomain {
     ])
     static transients = []
 
-    static belongsTo = [SoftwareRepository]
+    static belongsTo = [SoftwareUserRepository]
 
     static constraints = {
         name(nullable: false, unique: true)
@@ -125,7 +125,7 @@ class Software extends CytomineDomain {
     static Software insertDataIntoDomain(def json, def domain = new Software()) {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
-        domain.softwareRepository = JSONUtils.getJSONAttrDomain(json, "softwareRepository", new SoftwareRepository(), true)
+        domain.softwareUserRepository = JSONUtils.getJSONAttrDomain(json, "softwareUserRepository", new SoftwareUserRepository(), true)
         domain.defaultProcessingServer = JSONUtils.getJSONAttrDomain(json, "defaultProcessingServer", new ProcessingServer(), false)
         domain.description = JSONUtils.getJSONAttrStr(json, 'description')
         domain.resultName = JSONUtils.getJSONAttrStr(json, 'resultName')
@@ -141,7 +141,7 @@ class Software extends CytomineDomain {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['name'] = domain?.name
-        returnArray['softwareRepository'] = domain?.softwareRepository?.id
+        returnArray['softwareUserRepository'] = domain?.softwareUserRepository?.id
         returnArray['defaultProcessingServer'] = domain?.defaultProcessingServer?.id
         returnArray['resultName'] = domain?.resultName
         returnArray['description'] = domain?.description

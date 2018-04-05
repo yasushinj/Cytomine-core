@@ -39,7 +39,7 @@ class SoftwareParameterService extends ModelService{
     }
 
     def list() {
-        securityACLService.checkAdmin(cytomineService.currentUser)
+//        securityACLService.checkAdmin(cytomineService.currentUser)
         SoftwareParameter.list()
     }
 
