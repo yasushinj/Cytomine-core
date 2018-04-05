@@ -51,28 +51,42 @@ class JobLauncherService {
      * @return the command with the given parameters
      * @throws be.cytomine.Exception.WrongArgumentException one required argument was not supplied
      */
-    String[] getCommandJobWithArgs(Job job) throws WrongArgumentException {
-        Collection<SoftwareParameter> parameters = SoftwareParameter.findAllBySoftware(job.software, [sort: "index", order: "asc"])
-        def paramsAndValue = [:]
+    String[] getCommandJobWithArgs(Job job) {
+        def parameters = SoftwareParameter.findAllBySoftware(job.software, [sort: "index", order: "asc"])
+        def values = [:]
 
-        //Fill default value if no value specified, check if mandatory value are well defined
-        parameters.eachWithIndex { softParam, i ->
-            JobParameter jobParam = JobParameter.findByJobAndSoftwareParameter(job, softParam)
+        parameters.each { softwareParameter ->
+            JobParameter jobParameter = JobParameter.findByJobAndSoftwareParameter(job, softwareParameter)
 
-            String value = softParam.defaultValue
-            if (jobParam) {
-                value = jobParam.value
-            } else if (softParam.required) {
-                throw new WrongArgumentException("Argument " + softParam.name + " is required!")
-            }
-            paramsAndValue.put(softParam, value)
-            log.info softParam.name + "=" + value
+            String value = softwareParameter.defaultValue
+            if (jobParameter)
+                value = jobParameter.value
+            else if (softwareParameter.required)
+                throw new WrongArgumentException("Argument ${softwareParameter.name} is required !")
+
+            values.put(softwareParameter, value)
+            log.info("${softwareParameter.name} = ${value}")
         }
 
-        // Replace the arguments with actual parameters' value
         String command = job.software.executeCommand
-        paramsAndValue.each {
-            command = command.replaceAll('\\\$' + (it.key as SoftwareParameter).name, it.value as String)
+        values.each {
+            SoftwareParameter softwareParameter = it.key as SoftwareParameter
+
+            String regex = "\\[${softwareParameter.name.toUpperCase()}\\]"
+            String replacement = "--${softwareParameter.name} ${it.value as String}"
+
+            if (softwareParameter.name.toUpperCase() == "HOST") {
+                regex = "\\[CYTOMINE_HOST\\]"
+                replacement = "--cytomine_host ${it.value as String}"
+            } else if (softwareParameter.name.toUpperCase() == "PUBLICKEY") {
+                regex = "\\[CYTOMINE_PUBLIC_KEY\\]"
+                replacement = "--cytomine_public_key ${it.value as String}"
+            } else if (softwareParameter.name.toUpperCase() == "PRIVATEKEY") {
+                regex = "\\[CYTOMINE_PRIVATE_KEY\\]"
+                replacement = "--cytomine_private_key ${it.value as String}"
+            }
+
+            command = command.replaceAll(regex, replacement)
         }
 
         return command.split(' ')
@@ -83,10 +97,10 @@ class JobLauncherService {
         jobParameterService.add(JSON.parse(createJobParameter("publicKey", job, userJob.publicKey).encodeAsJSON()))
         jobParameterService.add(JSON.parse(createJobParameter("privateKey", job, userJob.privateKey).encodeAsJSON()))
 
-        //get all parameters with set by server = true.
+        // Get all the parameters set by the server
         def softwareParameters = softwareParameterService.list(job.software, true)
 
-        // then set if these parameters exist
+        // Set all the parameters if they exist
         if (softwareParameters.find { it.name == "cytomine_id_software" })
             jobParameterService.add(JSON.parse(createJobParameter("cytomine_id_software", job, job.software.id.toString()).encodeAsJSON()))
         if (softwareParameters.find { it.name == "cytomine_id_project" })
