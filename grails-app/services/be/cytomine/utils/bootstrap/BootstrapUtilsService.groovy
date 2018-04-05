@@ -631,6 +631,7 @@ class BootstrapUtilsService {
     void addDefaultProcessingServer() {
         SpringSecurityUtils.doWithAuth {
             if (!ProcessingServer.findByName("local-instance")) {
+                // TODO : config file
                 ProcessingServer processingServer = new ProcessingServer(
                         name: "local-container",
                         host: "localhost",
@@ -643,6 +644,7 @@ class BootstrapUtilsService {
                 String queueName = amqpQueueService.queuePrefixProcessingServer + processingServerName
 
                 if (!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
+                    // Creation of the default processing server queue
                     String exchangeName = amqpQueueService.exchangePrefixProcessingServer + processingServerName
                     String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
                     AmqpQueue amqpQueue = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
