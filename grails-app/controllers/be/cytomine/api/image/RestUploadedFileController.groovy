@@ -54,6 +54,7 @@ class RestUploadedFileController extends RestController {
 
     static allowedMethods = [image: 'POST']
 
+    def dataTablesService
     @RestApiMethod(description="Get all uploaded file made by the current user")
     def list() {
 
@@ -69,8 +70,8 @@ class RestUploadedFileController extends RestController {
         def uploadedFiles = uploadedFileService.list((User)cytomineService.getCurrentUser(), parent, onlyRoot)
 
         //if view is datatables, change way to store data
-        if (params.dataTables) {
-            uploadedFiles = ["aaData" : uploadedFiles]
+        if (params.datatables) {
+            uploadedFiles = dataTablesService.process(params, UploadedFile, null, null, null)
         }
         responseSuccess(uploadedFiles)
     }

@@ -135,12 +135,12 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         var size = model.get("size");
         if(size < 1024) {
             size = size + "o";
-        } else if(size < 1024^2) {
+        } else if(size < Math.pow(1024,2)) {
             size = (size / 1024).toFixed(2) + "Ko";
-        } else if(size < 1024^3) {
-            size = (size / (1024^2)).toFixed(2) + "Mo";
-        } else if(size < 1024^3) {
-            size = (size / (1024^3)).toFixed(2) + "Go";
+        } else if(size < Math.pow(1024,3)) {
+            size = (size / Math.pow(1024,2)).toFixed(2) + "Mo";
+        } else {
+            size = (size / Math.pow(1024,3)).toFixed(2) + "Go";
         }
 
         title += " <span style='margin-left:20px;'>"+size+"</span>";

@@ -77,21 +77,21 @@ var UploadedFileCollection = PaginatedCollection.extend({
         if (!options) {
             return;
         }
-        this.dataTables = options.dataTables;
+        this.datatables = options.datatables;
         this.parent = options.parent;
         this.onlyRoot = options.onlyRoot;
     },
     url: function () {
         var baseUrl = 'api/uploadedfile.json';
 
-        if (this.dataTables || this.parent || this.onlyRoot) {
+        if (this.datatables || this.parent || this.onlyRoot) {
             baseUrl += '?';
         } else {
             return baseUrl
         }
 
-        if (this.dataTables) {
-            baseUrl += 'dataTables=true&';
+        if (this.datatables) {
+            baseUrl += 'datatables=true&';
         }
         if (this.parent) {
             baseUrl += 'parent='+this.parent+'&';

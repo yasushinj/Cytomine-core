@@ -16,15 +16,6 @@
 
 var UploadFormView = Backbone.View.extend({
 
-    statusLabels: {
-        uploadedLabel: '<span class="label label-default">UPLOADED</span>',
-        errorFormatLabel: '<span class="label label-danger">ERROR FORMAT</span>',
-        convertedLabel: '<span class="label label-info">CONVERTED</span>',
-        deployedLabel: '<span class="label label-success">DEPLOYED</span>',
-        errorConvertLabel: '<span class="label label-danger">ERROR CONVERT</span>',
-        uncompressed : '<span class="label label-success">UNCOMPRESSED</span>',
-        to_deploy : '<span class="label label-info">TO DEPLOY</span>'
-    },
     fileUploadErrors: {
         maxFileSize: 'File is too big',
         minFileSize: 'File is too small',
@@ -645,35 +636,36 @@ var UploadFormView = Backbone.View.extend({
             }
         });
     },
-    getStatusLabel: function (model) {
-        if (model.uploaded) {
-            return this.statusLabels.uploadedLabel;
-        } else if (model.converted) {
-            return this.statusLabels.convertedLabel;
-        } else if (model.deployed) {
-            return this.statusLabels.deployedLabel;
-        } else if (model.error_format) {
-            return this.statusLabels.errorFormatLabel;
-        } else if (model.error_convert) {
-            return this.statusLabels.errorConvertLabel;
-        } else if (model.uncompressed) {
-            return this.statusLabels.uncompressed;
-        } else if (model.to_deploy) {
-            return this.statusLabels.to_deploy;
-        }
+    getStatusLabel: function (file) {
+        var status = new UploadedFileModel(file).getStatus()
+        var result = "<span class=\"label ";
 
-        return "?";//this.statusLabels.deployedLabel;
-    },
-    appendUploadedFile: function (model, target) {
-        var rowTpl = "<tr><td><%= image %></td><td><%= originalFilename %></td><td><%= created %></td><td><%= size %></td><td><%= contentType %></td><td><%= status %></td></tr>";
-        model.set({status: this.getStatusLabel(model)});
-        target.append(_.template(rowTpl, model.toJSON()));
+        switch(file.status){
+            case 0:
+            case 6:
+            case 7:
+                result += "label-info";
+                break;
+            case 1:
+            case 2:
+                result += "label-success";
+                break;
+            case 3:
+            case 4:
+            case 5:
+            case 8:
+                result += "label-danger";
+                break;
+        }
+        result += "\">"+status+"</span>";
+
+        return result;
     },
     renderUploadedFiles: function () {
         var self = this;
         var uploadTable = $('#uploaded_files');
         var loadingDiv = $("#loadingUploadedFiles");
-        var uploadedFileCollectionUrl = new UploadedFileCollection({ dataTables: true, onlyRoot: true}).url();
+        var uploadedFileCollectionUrl = new UploadedFileCollection({ datatables: true}).url();
         uploadTable.hide();
         loadingDiv.show();
 
@@ -681,6 +673,7 @@ var UploadFormView = Backbone.View.extend({
             displayLength: 25,
             destroy: true,
             processing: true,
+            serverSide : true,
 
             columnDefs: [
                 {defaultContent: "No preview available", render : function (data, type, row) {
@@ -697,17 +690,31 @@ var UploadFormView = Backbone.View.extend({
                     return mbSize + "Mo";
                 },targets: [ 3 ]},
                 {data: "contentType", targets: [ 4 ]},
-                {orderable: true, render: function (data, type, row) {
-                    return self.getStatusLabel(row);
-                }, targets: [ 5 ] },
+                {data: "globalSize", orderable: true, render : function (data) {
+                    var mbSize = (data / (1024 * 1024)).toFixed(2);
+                    if(mbSize < 1024 ) return mbSize + "Mo";
+                    else return (mbSize/1024) + "Go";
+                },targets: [ 5 ]},
+                {render: function (data, type, row) {
+                    var text =  self.getStatusLabel(row);
+                    if(row["nbChildren"] == 0) return text;
+                    text += " ("+row["nbChildren"]+" file";
+                    if(row["nbChildren"] > 1) {
+                        text += "s)";
+                    } else {
+                        text += ")";
+                    }
+                    return text;
+                }, targets: [ 6 ] },
+                {data: "parentFilename", targets: [ 7 ]},
                 {render: function ( data, type, row ) {
                     var result = "";
                     result+="<button class='btn btn-info btn-xs detailsImage' data-ufid="+row["id"]+">Details</button>";
                     return result;
-                },targets: [ 6 ]},
+                },targets: [ 8 ]},
                 { searchable: false, orderable: false, targets: "_all" }
             ],
-            order: [[ 3, "desc" ]],
+            order: [[ 2, "desc" ]],
             ajax: {
                 url: uploadedFileCollectionUrl
             },
