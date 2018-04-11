@@ -709,7 +709,7 @@ var UploadFormView = Backbone.View.extend({
                 {data: "parentFilename", targets: [ 7 ]},
                 {render: function ( data, type, row ) {
                     var result = "";
-                    result+="<button class='btn btn-info btn-xs detailsImage' data-ufid="+row["id"]+">Details</button>";
+                    result+="<button class='btn btn-info btn-xs detailsUploadedFile' data-ufid="+row["id"]+">Details</button>";
                     return result;
                 },targets: [ 8 ]},
                 { searchable: false, orderable: false, targets: "_all" }
@@ -729,7 +729,7 @@ var UploadFormView = Backbone.View.extend({
             self.uploadDataTables.ajax.reload();
         });
 
-        $(this.el).on('click', ".detailsImage", function (e) {
+        $(this.el).on('click', ".detailsUploadedFile", function (e) {
             var idUpload = $(e.currentTarget).data("ufid");
 
             //get data from the datatable

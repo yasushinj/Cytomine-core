@@ -181,7 +181,7 @@ class DataTablesService {
         order += sort.equals("asc") ? " ASC" : " DESC"
         String request =
                 "SELECT uf.id, uf.content_type as contentType, uf.created, uf.filename, uf.original_filename as originalFilename, uf.size, uf.status, \n" +
-                        "parent.original_filename as parentFilename, \n" +
+                        "parent.original_filename as parentFilename, uf.parent_id as parentId, \n" +
                         "COUNT(tree.id) as nbChildren, " +
                         "COALESCE(SUM(tree.size),0)+uf.size as globalSize, " +
                         "CASE WHEN COUNT(tree.id) = 0 THEN uf.image_id ELSE MAX(tree.image_id) END as preview_image_id \n" +
@@ -193,6 +193,7 @@ class DataTablesService {
                         "    SELECT * FROM uploaded_file\n" +
                         "  ) parent ON parent.id = uf.parent_id\n" +
                         "WHERE uf.content_type NOT similar to '%zip|ome%' AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') \n" +
+                        "AND uf.user_id = "+cytomineService.currentUser.id+" \n" +
                         "GROUP BY uf.id, parent.original_filename \n" +
                         "ORDER BY "+order+"\n" +
                         "LIMIT "+params.max+" OFFSET "+ params.offset
@@ -212,6 +213,7 @@ class DataTablesService {
             row.size = it[i++]
             row.status = it[i++]
             row.parentFilename = it[i++]
+            row.parentId = it[i++]
             row.nbChildren = it[i++]
             row.globalSize = it[i++]
 

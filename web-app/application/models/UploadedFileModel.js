@@ -78,13 +78,14 @@ var UploadedFileCollection = PaginatedCollection.extend({
             return;
         }
         this.datatables = options.datatables;
+        this.root = options.root;
         this.parent = options.parent;
-        this.onlyRoot = options.onlyRoot;
+        this.onlyRoots = options.onlyRoots;
     },
     url: function () {
         var baseUrl = 'api/uploadedfile.json';
 
-        if (this.datatables || this.parent || this.onlyRoot) {
+        if (this.datatables || this.parent || this.root || this.onlyRoots) {
             baseUrl += '?';
         } else {
             return baseUrl
@@ -95,8 +96,10 @@ var UploadedFileCollection = PaginatedCollection.extend({
         }
         if (this.parent) {
             baseUrl += 'parent='+this.parent+'&';
-        } else if (this.onlyRoot) {
-            baseUrl += 'onlyRoot='+this.onlyRoot+'&';
+        } else if (this.onlyRoots) {
+            baseUrl += 'onlyRoots='+this.onlyRoots+'&';
+        } else if (this.root) {
+            baseUrl += 'root='+this.root+'&';
         }
         return baseUrl.substr(0,baseUrl.length-1);
     }

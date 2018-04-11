@@ -1,5 +1,6 @@
 package be.cytomine.image
 
+import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.EditCommand
@@ -9,6 +10,7 @@ import be.cytomine.security.User
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import groovy.sql.Sql
 
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
@@ -61,6 +63,39 @@ class UploadedFileService extends ModelService {
             isNull("deleted")
         }
         return uploadedFiles
+    }
+
+    def listHierarchicalTree(User user, Long rootId){
+        UploadedFile root = UploadedFile.get(rootId)
+
+        securityACLService.checkIsSameUser(root.user, cytomineService.currentUser)
+        String request =
+                "SELECT uf.id, uf.created, uf.original_filename, uf.l_tree, uf.parent_id, uf.size, uf.status, uf.image_id \n" +
+                        "FROM uploaded_file uf\n" +
+                        "WHERE uf.l_tree <@ "+root.lTree+"::text::ltree \n" +
+                        "AND uf.user_id = "+user.id+" \n" +
+                        "ORDER BY uf.l_tree ASC "
+
+        def data = []
+        def sql = new Sql(dataSource)
+        sql.eachRow(request) {
+            def row = [:]
+            int i = 0
+            row.id = it[i++]
+            row.created = it[i++]
+            row.originalFilename = it[i++]
+            row.lTree = it[i++].value
+            row.parentId = it[i++]
+            row.size = it[i++]
+            row.status = it[i++]
+
+            Long imageId = it[i++]
+            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAssociatedImage(imageId, "macro") : null
+            data << row
+        }
+        sql.close()
+
+        return data
     }
 
     UploadedFile read(def id) {

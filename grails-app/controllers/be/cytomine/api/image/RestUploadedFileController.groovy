@@ -58,21 +58,28 @@ class RestUploadedFileController extends RestController {
     @RestApiMethod(description="Get all uploaded file made by the current user")
     def list() {
 
-        Boolean onlyRoot
-        if(params.onlyRoot) {
-            onlyRoot = Boolean.parseBoolean(params.onlyRoot)
-        }
-        Long parent
-        if(params.parent){
-            parent = Long.parseLong(params.parent)
-        }
-
-        def uploadedFiles = uploadedFileService.list((User)cytomineService.getCurrentUser(), parent, onlyRoot)
-
-        //if view is datatables, change way to store data
-        if (params.datatables) {
+        Long root
+        def uploadedFiles
+        if(params.root) {
+            root = Long.parseLong(params.root)
+            uploadedFiles = uploadedFileService.listHierarchicalTree((User)cytomineService.getCurrentUser(), root)
+            //if view is datatables, change way to store data
+        } else if (params.datatables) {
             uploadedFiles = dataTablesService.process(params, UploadedFile, null, null, null)
+        } else {
+            Boolean onlyRoots
+            if(params.onlyRoots) {
+                onlyRoots = Boolean.parseBoolean(params.onlyRoots)
+            }
+            Long parent
+            if(params.parent){
+                parent = Long.parseLong(params.parent)
+            }
+
+            uploadedFiles = uploadedFileService.list((User)cytomineService.getCurrentUser(), parent, onlyRoots)
         }
+
+
         responseSuccess(uploadedFiles)
     }
 

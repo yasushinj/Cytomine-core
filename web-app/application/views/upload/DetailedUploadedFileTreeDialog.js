@@ -33,71 +33,76 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
     doLayout: function (tpl) {
         var self = this;
 
-        var htmlCode = _.template(tpl, self.model);
-        $(this.el).html(htmlCode);
+        $("#detailedUploadedFileTreeDialog-"+self.model.id).remove();
 
-        var root = [{
-            title : self.getNodeInfo(self.model).title,
-            expand: true,
-            key : self.model.id,
-            noLink : true,
-            unselectable : true,
-            children : []
-        }];
-        $.get( new UploadedFileCollection({ parent: self.model.id}).url(), function( data ) {
-            var children = [];
-            for(var i = 0; i<data.collection.length;i++) {
-                var infos = self.getNodeInfo(data.collection[i]);
-                children.push({
+        var htmlCode = _.template(tpl, self.model);
+
+        $(this.el).append(htmlCode);
+
+        $.get( new UploadedFileCollection({ root: self.model.id}).url(), function( data ) {
+            var nodes = [];
+            var allNodes = [];
+            var infos = self.getNodeInfo(data.collection[0]);
+            var node = {
+                title : infos.title,
+                expand : true,
+                key : data.collection[0].id,
+                noLink : true,
+                unselectable : true//,
+            };
+            nodes.push(node);
+            allNodes.push(node);
+
+            for(var i = 1; i<data.collection.length;i++) {
+
+                var parent = $.grep(allNodes, function( n ) {
+                    return ( n.key ==  data.collection[i].parentId );
+                })[0];
+
+                infos = self.getNodeInfo(data.collection[i]);
+                node = {
                     title : infos.title,
-                    isLazy : infos.lazy,
+                    expand : true,
                     key : data.collection[i].id,
                     noLink : true,
                     unselectable : true//,
-                });
+                };
+                if(parent.children == null) parent.children = [];
+                parent.children.push(node);
+                allNodes.push(node);
             }
-            root[0].children = children;
 
-            $("#treefile").empty();
-            $("#treefile").dynatree({
-                children: root,
-                onLazyRead: function(node) {
-                    $.ajax({
-                        url: new UploadedFileCollection({parent: node.data.key}).url(),
-                        success: function (data, textStatus) {
+            $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").empty();
+            $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").dynatree({
+                children: nodes
+            });
+        });
 
-                            // Convert the response to a native Dynatree JavaScript object.
-                            var list = data.collection;
-                            var res = [];
-                            for(var i=0; i<list.length; i++){
-                                var file = list[i];
+        $("#detailedUploadedFileTreeDialog-"+self.model.id).on('click', '.previewUploadedFile', function(e) {
+            var url = $(this).data('url');
+            $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#filePreview")[0].src = url;
+            return false;
+        });
 
-                                var infos = self.getNodeInfo(file);
+        $("#detailedUploadedFileTreeDialog-"+self.model.id).on('click', ".detailsUploadedFile", function (e) {
+            var idUpload = $(e.currentTarget).data("ufid");
+            $.get( new UploadedFileModel({ id: idUpload}).url(), function( data ) {
+                $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('hide');
+                data.parentFilename = null;
 
-                                res.push({
-                                    title : infos.title,
-                                    isLazy : infos.lazy,
-                                    key : file.id,
-                                    noLink : true,
-                                    unselectable : true
-                                });
-                            }
-                            // PWS status OK
-                            node.setLazyNodeStatus(DTNodeStatus_Ok);
-                            node.addChild(res);
-                        }
+                data.parentId = data.parent;
+                if(data.parent != null){
+                    $.get( new UploadedFileModel({ id: data.parent}).url(), function( parentData ) {
+                        data.parentFilename = parentData.originalFilename;
+                        new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data}).render();
                     });
+                } else {
+                    new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data}).render();
                 }
             });
         });
 
-        $(this.el).on('click', '.previewUploadedFile', function(e) {
-            var url = $(this).data('url');
-            $(self.el).find("#filePreview")[0].src = url;
-            return false;
-        });
-
-        $("#detailedUploadedFileTreeDialog").modal('show');
+        $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
     },
 
     getNodeInfo : function (file) {
