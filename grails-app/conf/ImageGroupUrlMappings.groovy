@@ -15,7 +15,7 @@
 */
 
 /**
- * Cytomine @ GIGA-ULG
+ * Cytomine
  * User: stevben
  * Date: 10/10/11
  * Time: 13:49
@@ -36,6 +36,10 @@ class ImageGroupUrlMappings {
 
         "/api/imagegroup/$id/characteristics.$format"(controller: "restImageGroup"){
             action = [GET:"characteristics"]
+        }
+
+        "/api/imagegroup/$id/thumb.$format"(controller: "restImageGroup"){
+            action = [GET:"thumb"]
         }
 
         /* Image group Hdf5 special */

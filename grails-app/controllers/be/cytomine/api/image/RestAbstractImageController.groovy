@@ -171,7 +171,7 @@ class RestAbstractImageController extends RestController {
     def thumb() {
         response.setHeader("max-age", "86400")
         int maxSize = params.int('maxSize',  512)
-        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize))
+        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params))
     }
 
     @RestApiMethod(description="Get available associated images", listing = true)
@@ -214,11 +214,11 @@ class RestAbstractImageController extends RestController {
     def preview() {
         response.setHeader("max-age", "86400")
         int maxSize = params.int('maxSize',  1024)
-        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize))
+        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params))
     }
 
     def download() {
-        String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")))
+        String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")), params.boolean("parent", false))
         log.info "redirect url"
         redirect (url : url)
     }
@@ -323,6 +323,9 @@ class RestAbstractImageController extends RestController {
 
             def images = imageSequenceService.list(group)
 
+            if(merge.equals("channel")){
+                images = images.findAll{it.zStack == sequence.zStack && it.time == sequence.time}
+            }
             log.info "all image for this group=$images"
 
 
@@ -358,8 +361,8 @@ class RestAbstractImageController extends RestController {
 
             def urls = []
 
-            (0..5).each {
-                urls << servers.get(myRandomizer.nextInt(servers.size())).url +"/"+ url
+            servers.each {
+                urls << it.url +"/"+ url
             }
 
             //retrieve all image instance (same sequence)

@@ -46,6 +46,7 @@ grails.mime.types = [
 ]
 cytomine.maxRequestSize = 10485760
 storage_path="/data" //default path for image locations
+fast_data_path="/data" //default path for HDF5 files location (for ex: a SSD)
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "none" // none, html, base64

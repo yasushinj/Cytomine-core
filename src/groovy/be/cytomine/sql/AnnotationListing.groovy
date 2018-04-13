@@ -29,7 +29,6 @@ import com.vividsolutions.jts.io.WKTReader
 /**
  * User: lrollus
  * Date: 31/05/13
- * GIGA-ULg
  *
  *
  */

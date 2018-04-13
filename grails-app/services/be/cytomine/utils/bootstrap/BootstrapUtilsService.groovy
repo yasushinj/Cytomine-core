@@ -38,7 +38,7 @@ import groovy.json.JsonBuilder
 import groovy.sql.Sql
 
 /**
- * Cytomine @ GIGA-ULG
+ * Cytomine
  * User: stevben
  * Date: 13/03/13
  * Time: 11:59
@@ -251,6 +251,7 @@ class BootstrapUtilsService {
             if(!grailsApplication.config.grails.messageBrokerServerURL.contains(messageBroker.host)) {
                 log.info messageBroker.host + "is not in config, drop it"
                 log.info "delete Message Broker Server " + messageBroker
+                AmqpQueue.findAllByHost(messageBroker.host).each {it.delete(failOnError:true)}
                 messageBroker.delete()
             }
         }

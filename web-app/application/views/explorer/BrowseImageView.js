@@ -664,7 +664,7 @@ BrowseImageView = Backbone.View.extend({
                                     var spec = new ImageGroupSpectraModel({
                                         group : dd.id,
                                         x: lon,
-                                        y: lat
+                                        y: self.model.get('height') - lat
                                     });
                                     spec.fetch({
                                         success: function (ddd, response) {
