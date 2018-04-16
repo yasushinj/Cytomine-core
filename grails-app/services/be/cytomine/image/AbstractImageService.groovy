@@ -231,7 +231,7 @@ class AbstractImageService extends ModelService {
             c.delete = true
             return executeCommand(c,domain,jsonNewData)
         } else{
-            throw new ForbiddenException("Abstract Image has instances in active projects");
+            throw new ForbiddenException("Abstract Image has instances in active projects : "+ImageInstance.findAllByBaseImageAndDeletedIsNull(domain).collect{it.project.name}.join(","));
         }
     }
 

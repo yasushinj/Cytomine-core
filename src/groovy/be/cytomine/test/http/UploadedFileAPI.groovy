@@ -38,12 +38,16 @@ class UploadedFileAPI extends DomainAPI {
     }
 
     static def listOnlyRoots(String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?onlyRoot=true"
+        String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?onlyRoots=true"
         return doGET(URL, username, password)
     }
 
     static def listChilds(Long parentId, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?parent="+parentId
+        return doGET(URL, username, password)
+    }
+    static def hierarchicalList(Long rootId, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?root="+rootId
         return doGET(URL, username, password)
     }
 

@@ -3,6 +3,7 @@ package be.cytomine.image
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.security.SecUser
@@ -98,10 +99,6 @@ class UploadedFileService extends ModelService {
         return data
     }
 
-    UploadedFile read(def id) {
-        UploadedFile.read(id)
-    }
-
     UploadedFile get(def id) {
         UploadedFile.get(id)
     }
@@ -114,6 +111,7 @@ class UploadedFileService extends ModelService {
      */
     def add(def json) {
         SecUser currentUser = cytomineService.getCurrentUser()
+        securityACLService.checkUser(currentUser)
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
 
@@ -123,9 +121,11 @@ class UploadedFileService extends ModelService {
      * @param jsonNewData New domain datas
      * @return  Response structure (new domain data, old domain data..)
      */
-    def update(UploadedFile uploadedFile, def jsonNewData) {
+    def update(UploadedFile uploadedFile, def jsonNewData, Transaction transaction = null) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        return executeCommand(new EditCommand(user: currentUser), uploadedFile,jsonNewData)
+        securityACLService.checkUser(currentUser)
+        securityACLService.checkIsSameUser(uploadedFile.user, currentUser)
+        return executeCommand(new EditCommand(user: currentUser, transaction : transaction), uploadedFile,jsonNewData)
     }
 
     /**
@@ -137,13 +137,10 @@ class UploadedFileService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(UploadedFile domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        //We don't delete domain, we juste change a flag
         SecUser currentUser = cytomineService.getCurrentUser()
-        def jsonNewData = JSON.parse(domain.encodeAsJSON())
-        jsonNewData.deleted = new Date().time
-        Command c = new EditCommand(user: currentUser)
-        c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+        securityACLService.checkIsSameUser(domain.user, currentUser)
+        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+        return executeCommand(c,domain,null)
     }
 
     def getStringParamsI18n(def domain) {
@@ -151,12 +148,20 @@ class UploadedFileService extends ModelService {
     }
 
 
+    def abstractImageService
+
+    def deleteDependentAbstractImage(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
+        if(uploadedFile.image) abstractImageService.delete(uploadedFile.image,transaction,null,false)
+    }
+
     def deleteDependentUploadedFile(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
 
-        taskService.updateTask(task,task? "Delete ${UploadedFile.countByParent(uploadedFile)} uploadedFile parents":"")
+
+        taskService.updateTask(task,task? "Update ${UploadedFile.countByParent(uploadedFile)} uploadedFile childs":"")
 
         UploadedFile.findAllByParent(uploadedFile).each {
-            this.delete(it,transaction,null, false)
+            it.parent = uploadedFile.parent
+            this.update(it,JSON.parse(it.encodeAsJSON()), transaction)
         }
     }
 }

@@ -122,8 +122,9 @@ class RestUploadedFileController extends RestController {
     @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def show () {
-        UploadedFile up = uploadedFileService.read(params.long('id'))
+        UploadedFile up = uploadedFileService.get(params.long('id'))
         if (up) {
+            securityACLService.checkIsSameUser(up.user, cytomineService.getCurrentUser())
             responseSuccess(up)
         } else {
             responseNotFound("UploadedFile", params.id)
