@@ -29,7 +29,17 @@ class CommandController extends RestController {
     def springSecurityService
     def messageSource
     def commandService
+    def cytomineService
+    def securityACLService
 
+    def listDelete() {
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        String domain
+        if(params.domain){
+            domain = params.domain;
+        }
+        responseSuccess(commandService.list(domain, DeleteCommand))
+    }
     /**
      * Do undo op on the last command/transaction done by this user
      */
