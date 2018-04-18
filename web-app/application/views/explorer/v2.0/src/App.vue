@@ -47,16 +47,22 @@ export default {
       maps: [],
       lastEventMapId: null,
       images: [],
-      projectId: '82029',
       imageToAdd: "",
       imageGroupToAdd: "",
-      baseImage: '82258',
       filters: [],
       imageGroupIndex: [],
-	  imageSequences: [],
-    baseSequence: {},
-	onlineUsers: [],
-	currentUser: {},
+      imageSequences: [],
+      baseSequence: {},
+      onlineUsers: [],
+      currentUser: {},
+    }
+  },
+  computed: {
+    projectId() {
+      return document.querySelector('.get-data').dataset.project;
+    },
+    baseImage() {
+      return document.querySelector('.get-data').dataset.id;
     }
   },
   methods: {
