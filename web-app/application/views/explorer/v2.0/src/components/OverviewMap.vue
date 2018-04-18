@@ -1,5 +1,10 @@
 <template>
-  <div id="overview-map"></div>
+    <div class="overview-container">
+        <div v-show="showOverviewMap" id="overview-map"></div>
+        <button class="btn btn-default" style="width: 100%;" id="overview-map-collapse" @click="showOverviewMap = !showOverviewMap">
+            <span :class="`glyphicon glyphicon-chevron-${showOverviewMap ? 'right' : 'left'}`"></span>
+        </button>
+    </div>
 </template>
 
 <script>
@@ -13,6 +18,7 @@ export default {
       return {
           overviewMap: {},
           overviewMapCount: 0,
+          showOverviewMap: true,
       }
   },
   props: [
@@ -46,7 +52,8 @@ export default {
   methods: {
       initOverviewMap(map = this.maps[0]) {
         this.overviewMap = new OverviewMap({
-            collapsed: false,
+            collapsed: true,
+            // collapsible: false,
             target: "overview-map",
             view: new View({
                 projection: new Projection({
@@ -56,7 +63,7 @@ export default {
                 center:[0, 0],
                 minZoom: 1,
                 maxZoom: 2,
-            })
+            }),
         })
         this.$openlayers.getMap(map.id).addControl(this.overviewMap);
       },
@@ -65,12 +72,12 @@ export default {
 </script>
 
 <style>
-    .ol-overviewmap {
+    .overview-container {
         position: fixed;
-        top: 15px;
         right: 15px;
         z-index: 9999; 
         border: 3px solid black;
+        background: grey;
     }
     .ol-overviewmap-map {
         width: 256px;
@@ -78,6 +85,9 @@ export default {
     }
     .ol-overviewmap .ol-overviewmap-box {
         border: 2px solid red;
+    }
+    button[title="Overview map"] {
+        display: none;
     }
 </style>
 

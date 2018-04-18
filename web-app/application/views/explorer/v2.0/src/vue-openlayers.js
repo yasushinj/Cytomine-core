@@ -407,7 +407,7 @@ const VueOpenlayers = {
 
     this.Maps[setting.element] = new OlMap({
       layers: [],
-      controls: controls,
+      controls: setting.controls,
       target: setting.element,
       view: this.Views[setting.element],
       interactions: OlInteraction.defaults({

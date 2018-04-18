@@ -1,5 +1,6 @@
 <template>
   <div>
+        <div class="alert alert-info">Enable or disable digital zoom (interpolation)</div>
         <input @change="toggleDigitalZoom" v-model="digitalZoom" type="checkbox" :name="'digital-zoom-'+currentMap.id" :id="'digital-zoom-'+currentMap.id">
         <label :for="'digital-zoom-'+currentMap.id">Digital zoom</label>
   </div>

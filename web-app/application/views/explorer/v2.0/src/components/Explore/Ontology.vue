@@ -1,19 +1,21 @@
 <template>
   <div>
-        <ul>
-            <li v-for="term in terms" :key="'term-'+term.id">
+        <ul class="list-group mt-4">
+            <li class="list-group-item" v-for="term in terms" :key="'term-'+term.id">
                 <input @change="handlePost(term.id)" v-model="featureTerms" :value="term.id" type="checkbox" :name="'term-'+term.id" :id="'term-'+term.id">
                 <label :for="'term-'+term.id">{{term.key}} ({{term.value}})</label>
                 <label :for="'show-term-'+term.id">Show</label>
                 <input v-model="visibleTerms" :value="term.id" type="checkbox" :id="'show-term-'+term.id">
             </li>
         </ul>
-
-        <input v-model="showWithNoTerm" type="checkbox" name="showNoTermAnnotation" id="showNoTermAnnotation">
-        <label for="showNoTermAnnotation">Show annotations without terms</label>
-
-        <button @click="showAllTerms">Show all</button>
-        <button @click="hideAllTerms">Hide all</button>
+        <div>
+            <input v-model="showWithNoTerm" type="checkbox" name="showNoTermAnnotation" id="showNoTermAnnotation">
+            <label for="showNoTermAnnotation">Show annotations without terms</label>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-default" @click="showAllTerms">Show all</button>
+            <button class="btn btn-default" @click="hideAllTerms">Hide all</button>
+        </div>
   </div>
 </template>
 

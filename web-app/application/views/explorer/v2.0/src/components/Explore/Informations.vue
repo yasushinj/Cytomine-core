@@ -8,9 +8,14 @@
         <dt>Height</dt>
         <dd>{{currentMap.data.height}} pixels</dd>
       </div>
-      <div>
-        <ul>
-          <li><a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`">Explore</a></li>
+      <div class="btn-group dropup display-block">
+        <a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`" class="btn btn-info">Expore</a>
+        <button class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="caret"></span>
+          <span class="sr-only">Toggle dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+          <!-- <li><a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`">Explore</a></li> -->
           <li><a @click="reviewMode" :href="`#tabs-review-${this.currentMap.data.project}-${this.currentMap.imageId}-`">Review</a></li>
           <li><a :href="`#tabs-reviewdash-${currentMap.data.project}-${currentMap.imageId}-null-null`">Review (Cyto)</a></li>
           <li><a @click="validateImage" href="#">Validate image</a></li>
@@ -23,10 +28,16 @@
           <li><a href="#">More info</a></li>
         </ul>
       </div>
-      <div>
-        <button @click="setAdjacentImage('previous')">Previous image</button>
-        <button @click="setAdjacentImage('next')">Next image</button>
-        <small v-if="adjacentImageError != ''">{{adjacentImageError}}</small>
+      <div class="btn-group mt-4">
+        <div class="alert alert-warning" v-if="adjacentImageError != ''"><strong>Warning!</strong> {{adjacentImageError}}</div>
+        <button class="btn btn-default" @click="setAdjacentImage('previous')">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+          Previous image
+        </button>
+        <button class="btn btn-default" @click="setAdjacentImage('next')">
+          Next image
+          <span class="glyphicon glyphicon-chevron-right"></span>
+        </button>
       </div>
   </div>
 </template>
@@ -47,6 +58,7 @@ export default {
     return {
       adjacentImage: {},
       adjacentImageError: '',
+      showDropdown: false,
     }
   },
   watch: {
@@ -94,3 +106,16 @@ export default {
   },
 }
 </script>
+
+<style>
+  dd {
+    margin-bottom: 1em;
+  }
+  .display-block {
+    display: block;
+    margin-bottom: 1em;
+  }
+  .mt-4 {
+    margin-top: 1em;
+  }
+</style>

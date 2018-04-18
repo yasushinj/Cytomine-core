@@ -1,22 +1,30 @@
 <template>
   <div>
-    <select v-model="layerToBeAdded" name="user-layer" id="user-layer">
+      <div class="btn-group" style="display:flex;">
+        <select class="btn btn-default" v-model="layerToBeAdded" name="user-layer" id="user-layer">
             <option :value="{}">Choose an annotation layer</option>
             <option v-for="layer in layersNotAdded" :key="layer.id" :value="layer">{{userDisplayName(layer)}}</option>
-      </select>
-      <button @click="addLayer(layerToBeAdded)">Add</button>
-      <ul>
-            <li v-for="layer in layersSelected" :key="layer.id">
+        </select>
+        <button class="btn btn-default" @click="addLayer(layerToBeAdded)">Add</button>
+      </div>
+      <ul class="list-group display-inline-block mt-4">
+            <li class="list-group-item" v-for="layer in layersSelected" :key="layer.id">
                 <input @click="toggleVisibility(layer)" v-model="layer.visible" type="checkbox" :name="'hide-layer-' + layer.id" :id="'hide-layer-' + layer.id">
                 <label :for="'hide-layer-' + layer.id">Visible</label>
                 <input @click="followUser(layer.id)" v-model="userToFollow" :disabled="isUserOnline(layer.id)" :value="layer.id" type="checkbox" :name="'follow-' + layer.id" :id="'follow-' + layer.id">
                 <label :for="'follow-' + layer.id">Follow</label>
 
                 {{userDisplayName(layer)}}
-                <button @click="removeLayer(layer)">Remove</button>
+                <button class="btn btn-default" @click="removeLayer(layer)">
+                    <span class="glyphicon glyphicon-remove"></span>
+                    Remove
+                </button>
             </li>
       </ul>
-      <input v-model.number="vectorLayersOpacity" min="0" max="1" step="0.01" type="range" name="layers-opacity" id="layers-opacity">
+      <div>
+          <label for="layers-opacity">Opacity</label>
+          <input v-model.number="vectorLayersOpacity" min="0" max="1" step="0.01" type="range" name="layers-opacity" id="layers-opacity">
+      </div>
   </div>
 </template>
 
@@ -51,7 +59,7 @@ export default {
         layerToBeAdded: {},
         layersSelected: [],
         vectorLayer: {},
-        vectorLayersOpacity: 0.5,
+        vectorLayersOpacity: 0.3,
         annotationIndex: {},
         userToFollow: [],
         intervalId: '',
@@ -250,5 +258,7 @@ export default {
 </script>
 
 <style>
-
+    .display-inline-block {
+        display: inline-block;
+    }
 </style>
