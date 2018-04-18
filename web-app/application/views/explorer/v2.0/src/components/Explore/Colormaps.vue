@@ -1,27 +1,36 @@
 <template>
   <div>
+    <div class="alert alert-info text-center">Click on the graph to select a value to edit</div>
     <div :id="'colormaps-' + currentMap.id"></div>
-    <button v-if="modeSelected" @click="switchMode">{{modeToShow}}</button>
-    <select v-if="modeSelected == 'rgb'" v-model="colorSelected">
-      <option value="r">Red</option>
-      <option value="g">Green</option>
-      <option value="b">Blue</option>
-    </select>
-    <div>
-      <label for="">Click tolerance</label>
-      <input v-model.number="clickTolerance" type="number" step="1" :max="(Math.pow(2, data.bitdepth) - 1) / 10" :min="0">
-      <input v-model.number="clickTolerance" type="range" step="1" :max="(Math.pow(2, data.bitdepth) - 1) / 10" :min="0">
+    <div class="btn-group flex">
+      <button class="btn btn-default" v-if="modeSelected" @click="switchMode">{{modeToShow}}</button>
+      <select :class="`btn btn-${colorToRender}`" v-if="modeSelected == 'rgb'" v-model="colorSelected">
+        <option value="r">Red</option>
+        <option value="g">Green</option>
+        <option value="b">Blue</option>
+      </select>
     </div>
-    <div>
-      <label for="">x:</label>
-      <input v-model.number="xSelected" type="number" step="1" :max="Math.pow(2, data.bitdepth) - 1" :min="0">
-      <input v-model.number="xSelected" type="range" step="1" :max="Math.pow(2, data.bitdepth) - 1" :min="0">
+    <div class="flex mt-4">
+      <div class="input-group">
+        <label class="input-group-addon" for="">Click tolerance</label>
+        <input class="form-control" v-model.number="clickTolerance" type="number" step="1" :max="(Math.pow(2, data.bitdepth) - 1) / 10" :min="0">
+      </div>
+      <input class="range" v-model.number="clickTolerance" type="range" step="1" :max="(Math.pow(2, data.bitdepth) - 1) / 10" :min="0">
+    </div>
+    <div class="flex mt-4">
+      <div class="input-group">
+        <label class="input-group-addon" for="">x:</label>
+        <input class="form-control" v-model.number="xSelected" type="number" step="1" :max="Math.pow(2, data.bitdepth) - 1" :min="0">
+      </div>
+      <input class="range" v-model.number="xSelected" type="range" step="1" :max="Math.pow(2, data.bitdepth) - 1" :min="0">
     </div>
 
-    <div>
-      <label for="">y:</label>
-      <input v-model.number="yValue" type="number" step="1" max="255" min="0">
-      <input v-model.number="yValue" type="range" step="1" max="255" min="0">
+    <div class="flex mt-4">
+      <div class="input-group">
+        <label class="input-group-addon" for="">y:</label>
+        <input class="form-control" v-model.number="yValue" type="number" step="1" max="255" min="0">
+      </div>
+      <input class="range" v-model.number="yValue" type="range" step="1" max="255" min="0">
     </div>
   </div>
 </template>
@@ -71,6 +80,23 @@ export default {
           return 'RGB'
         } else {
           return 'Grayscale'
+        }
+      },
+      colorToRender() {
+        switch (this.colorSelected) {
+          case 'r':
+            return 'danger'
+            break;
+          case 'g':
+            return 'success'
+            break;
+          case 'b':
+            return 'info'
+            break;
+        
+          default:
+            return 'default'
+            break;
         }
       }
     },
@@ -194,3 +220,16 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+  .flex {
+    display: flex;  
+    max-width: 100%;
+  }
+  .input-group {
+    max-width: 300px;
+  }
+  .range {
+    width: auto;
+  }
+</style>

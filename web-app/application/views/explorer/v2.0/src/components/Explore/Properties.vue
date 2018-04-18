@@ -1,9 +1,10 @@
 <template>
-  <div>
-      <select @change="handleKey" v-model="colorSelected" name="property-color" id="property-color">
+  <div class="btn-group">
+      <div class="alert alert-info">Choose a color and a property to show</div>
+      <select class="btn btn-default" @change="handleKey" v-model="colorSelected" name="property-color" id="property-color">
           <option v-for="color in colors" :key="color.value" :value="color.value">{{color.name}}</option>
       </select>
-      <select @change="handleKey" v-model="propertySelected" name="properties" id="properties">
+      <select class="btn btn-default" @change="handleKey" v-model="propertySelected" name="properties" id="properties">
           <option value="">No key selected</option>
           <option v-for="property in propertiesToShow" :key="property.key" :value="property">{{property.key}}</option>
       </select>

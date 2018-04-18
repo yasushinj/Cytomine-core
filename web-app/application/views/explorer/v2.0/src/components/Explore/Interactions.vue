@@ -1,26 +1,107 @@
 <template>
   <div>
-        <ul>
-            <li><button @click="addInteraction('Select')">Select</button></li>
-            <li><button @click="addInteraction('Point')">Point</button></li>
-            <li><button @click="addInteraction('Line')">Line</button></li>
-            <li><button @click="addInteraction('Arrow')">Arrow</button></li>
-            <li><button @click="addInteraction('Rectangle')">Rectangle</button></li>
-            <li><button @click="addInteraction('Ellipse')">Ellipse</button></li>
-            <li><button @click="addInteraction('Circle')">Circle</button></li>
-            <li><button @click="addInteraction('Polygon')">Polygon</button></li>
-            <li><button @click="addInteraction('MagicWand')">MagicWand</button></li>
-            <li><button @click="addInteraction('Polygon', true)">Freehand</button></li>
-            <li><button @click="addInteraction('Correction', true)">Union</button></li>
-            <li><button @click="addInteraction('Correction', true, true)">Difference</button></li>
-            <li><button @click="addInteraction('Ruler')">Ruler</button></li>
+        <ul class="toolbar2">
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Select')">
+                    <span class="glyphicon glyphicon-move" aria-hidden="true"></span>
+                    Select
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Point')">
+                    <span class="glyphicon glyphicon-marker" aria-hidden="true"></span>
+                    Point
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Line')">
+                    Line
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Arrow')">
+                    <span class="glyphicon glyphicon-up" aria-hidden="true"></span>
+                    Arrow
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Rectangle')">
+                    Rectangle
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Ellipse')">
+                    Ellipse
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Circle')">
+                    Circle
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Polygon')">
+                    Polygon
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('MagicWand')">
+                    MagicWand
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Polygon', true)">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Correction', true)">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Correction', true, true)">
+                    <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+            </li>
+            <li>
+                <button class="btn btn-default btn-xs" @click="addInteraction('Ruler')">
+                    Ruler
+                </button>
+            </li>
             <template v-if="featureSelected.getArray()[0]">
-                <li><button @click="addInteraction('Fill')">Fill</button></li>
-                <li><button @click="addInteraction('Edit')">Edit</button></li>
-                <li><button @click="addInteraction('Rotate')">Rotate</button></li>
-                <li><button @click="addInteraction('Resize')">Resize</button></li>
-                <li><button @click="addInteraction('Drag')">Drag</button></li>
-                <li><button @click="addInteraction('Remove')">Remove</button></li>
+                <li>
+                    <button class="btn btn-default btn-xs" @click="addInteraction('Fill')">
+                        Fill
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-default btn-xs" @click="addInteraction('Edit')">
+                        Edit
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-default btn-xs" @click="addInteraction('Rotate')">
+                        Rotate
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-default btn-xs" @click="addInteraction('Resize')">
+                        Resize
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-default btn-xs" @click="addInteraction('Drag')">
+                        Drag
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-default btn-xs" @click="addInteraction('Remove')">
+                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    </button>
+                </li>
             </template>
         </ul>
   </div>
@@ -138,7 +219,7 @@ export default {
             this.draw.overlay.measureTooltipElement.parentNode.removeChild(this.draw.overlay.measureTooltipElement);
         }
         this.draw.overlay.measureTooltipElement = document.createElement('div');
-        this.draw.overlay.measureTooltipElement.className = 'tooltip tooltip-measure';
+        this.draw.overlay.measureTooltipElement.className = 'alert alert-info measure tooltip-measure';
         this.draw.overlay.measureTooltip = new Overlay({
             element: this.draw.overlay.measureTooltipElement,
             offset: [0, -15],
@@ -353,7 +434,7 @@ export default {
                     helpTooltipElement.parentNode.removeChild(helpTooltipElement);
                     }
                     helpTooltipElement = document.createElement('div');
-                    helpTooltipElement.className = 'tooltip hidden';
+                    helpTooltipElement.className = 'measure alert alert-info hidden';
                     this.draw.overlay.helpTooltip = new Overlay({
                     element: helpTooltipElement,
                     offset: [15, 0],
@@ -433,7 +514,7 @@ export default {
 
             this.draw.interaction.on('drawend',
                 () => {
-                    this.draw.overlay.measureTooltipElement.className = 'tooltip tooltip-static';
+                    this.draw.overlay.measureTooltipElement.className = 'measure alert alert-info  tooltip-static';
                     this.draw.overlay.measureTooltip.setOffset([0, -7]);
                     // unset sketch
                     sketch = null;
@@ -468,3 +549,15 @@ export default {
   },
 }
 </script>
+
+<style>
+    .toolbar2 {
+        display: flex;
+        flex-wrap: wrap;
+        position: absolute;
+        top: 1em;
+        left: 67px;
+        list-style: none;
+        padding: 0;
+    }
+</style>

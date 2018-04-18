@@ -1,8 +1,10 @@
 <template>
   <div>
-      <button @click="filter = 'all'">All</button>
-      <button @click="filter = term.id" v-for="term in terms" :key="term.id + uuid()">{{term.key}}</button>
-      <ul class="container">
+      <div class="btn-group">
+        <button :class="['btn', 'btn-default', {active: filter == 'all'}]" @click="filter = 'all'">All</button>
+        <button :class="['btn', 'btn-default', {active: filter == term.id}]" @click="filter = term.id" v-for="term in terms" :key="term.id + uuid()">{{term.key}}</button>
+      </div>
+      <ul class="annotations-container">
         <li class="img-box" v-for="annotation in annotationsToShow" :key="annotation.id + uuid()">
             <popper>
                 <div class="popper" trigger="hover" :options="{placement: 'top'}">
@@ -25,6 +27,9 @@
                 </div>
             </popper>
         </li>
+        <div v-if="annotationsToShow[0] == undefined" class="alert alert-info mt-4">
+            No annotation
+        </div>
       </ul>
   </div>
 </template>
@@ -117,9 +122,12 @@ export default {
         max-width: 90px;
         max-height: 90px;
     }
-    .container {
+    .annotations-container {
         display: flex;
         list-style: none;
+        flex-wrap: wrap;
+        padding: 0;
+        margin-top: 1em;
     }
 </style>
 

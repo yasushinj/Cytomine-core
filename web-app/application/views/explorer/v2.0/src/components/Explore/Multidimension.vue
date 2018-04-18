@@ -1,22 +1,36 @@
 <template>
   <div>
-      <h4>Multidimension</h4>
-      <select @change="setImageGroup(currentMap.imageId, imageGroupSelected)" v-model="imageGroupSelected" name="imageGroupSelect" id="imageGroupSelect">
-          <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence.imageGroup">{{getImageGroupName(sequence.imageGroup)}}</option>
-      </select>
+      <h3>Multidimension</h3>
+      <div>
+          <label for="">Imagegroup</label>
+        <select class="btn btn-default" @change="setImageGroup(currentMap.imageId, imageGroupSelected)" v-model="imageGroupSelected" name="imageGroupSelect" id="imageGroupSelect">
+            <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence.imageGroup">{{getImageGroupName(sequence.imageGroup)}}</option>
+        </select>
+      </div>
       <p>Picture is in position</p>
-      <dl>
-          <dt>c:</dt>
-          <dd>{{currentSequence.channel}}</dd>
-          <dt>z:</dt>
-          <dd>{{currentSequence.zStack}}</dd>
-          <dt>s:</dt>
-          <dd>{{currentSequence.slice}}</dd>
-          <dt>t:</dt>
-          <dd>{{currentSequence.time}}</dd>
+      <dl class="list-group">
+          <div class="list-group-item">
+            <dt>c:</dt>
+            <dd>{{currentSequence.channel}}</dd>
+          </div>
+          <div class="list-group-item">
+            <dt>z:</dt>
+            <dd>{{currentSequence.zStack}}</dd>
+          </div>
+          <div class="list-group-item">
+            <dt>s:</dt>
+            <dd>{{currentSequence.slice}}</dd>
+          </div>
+          <div class="list-group-item">
+            <dt>t:</dt>
+            <dd>{{currentSequence.time}}</dd>
+          </div>
       </dl>
+      <div>
+        <label for="">Switch to an other image</label>
+      </div>
       <input v-model.number="sequenceSelected" min="1" :max="imageGroup.length" type="number" name="channel-select" id="channel-select">
-      <button @click="selectImageSequence">Select</button>
+      <button class="btn btn-default" @click="selectImageSequence">Select</button>
       <overlay :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap" :imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>
       <spectra :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"></spectra>
   </div>
@@ -102,3 +116,13 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+    dd {
+        display: inline;
+    }
+    dt {
+        display: inline;
+    }
+</style>
+

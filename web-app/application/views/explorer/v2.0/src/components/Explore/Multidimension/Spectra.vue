@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <h5>Spectra</h5>
+    <div v-if="spectra != {}">
+        <h4>Spectra</h4>
         <div :id="'spectra-'+currentMap.id"></div>
     </div>
 </template>

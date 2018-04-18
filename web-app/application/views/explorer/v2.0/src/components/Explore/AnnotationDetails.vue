@@ -16,7 +16,7 @@
       </section>
       <section>
           <h4>Annotation preview</h4>
-        <img :src="data.smallCropURL" alt="An image of the annotation area">
+        <img class="thumbnail" :src="data.smallCropURL" alt="An image of the annotation area">
       </section>
       <section>
           <h4>Similarities</h4>
