@@ -40,7 +40,7 @@ import be.cytomine.security.*
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.AttachedFile
-import be.cytomine.utils.Config
+import be.cytomine.utils.Configuration
 import be.cytomine.utils.Description
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
@@ -1703,22 +1703,22 @@ class BasicInstanceBuilder {
 
     }
 
-    static Config getConfig() {
+    static Configuration getConfiguration() {
         def key = "test".toUpperCase()
         def value = "test"
-        def config = Config.findByKey(key)
+        def config = Configuration.findByKey(key)
 
         if (!config) {
-            config = new Config(key: key, value: value)
+            config = new Configuration(key: key, value: value, readingRole: SecRole.findByAuthority("ROLE_GUEST"))
             config = saveDomain(config)
         }
         config
     }
 
-    static Config getConfigNotExist(boolean save = false) {
-        def config = new Config(key: getRandomString(), value: getRandomString())
+    static Configuration getConfigurationNotExist(boolean save = false) {
+        def config = new Configuration(key: getRandomString(), value: getRandomString(), readingRole: SecRole.findByAuthority("ROLE_GUEST"))
         log.debug "add config "+ config.key
-        Config.list().each {
+        Configuration.list().each {
             log.debug it.id + " " + it.version + " " + it.key
         }
 

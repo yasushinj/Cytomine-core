@@ -16,31 +16,46 @@ package be.cytomine.utils
 * limitations under the License.
 */
 
+import be.cytomine.Exception.ForbiddenException
+
 import be.cytomine.command.*
 import be.cytomine.security.SecUser
 import grails.transaction.Transactional
 
 @Transactional
-class ConfigService extends ModelService {
+class ConfigurationService extends ModelService {
 
     static transactional = true
     def cytomineService
     def transactionService
     def dataSource
     def securityACLService
+    def currentRoleServiceProxy
+    def secRoleService
 
     def currentDomain() {
-        return Config;
+        return Configuration;
     }
 
     def list() {
         securityACLService.checkGuest(cytomineService.currentUser)
-        return Config.list()
+        if(currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser)) {
+            return Configuration.list()
+        } else {
+            return Configuration.findAllByReadingRoleNotEqual(secRoleService.findByAuthority("ROLE_ADMIN"))
+        }
     }
 
     def readByKey(String key) {
         securityACLService.checkGuest(cytomineService.currentUser)
-        Config.findByKey(key)
+        Configuration config = Configuration.findByKey(key)
+
+        if(config && config.readingRole.authority.equals("ROLE_ADMIN")){
+            if(!currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser)) {
+                throw new ForbiddenException("You don't have the right to read this resource! You must be admin!")
+            }
+        }
+        return config
     }
 
     def add(def json) {
@@ -56,7 +71,7 @@ class ConfigService extends ModelService {
      * @param jsonNewData New domain datas
      * @return  Response structure (new domain data, old domain data..)
      */
-    def update(Config ap, def jsonNewData) {
+    def update(Configuration ap, def jsonNewData) {
         securityACLService.checkAdmin(cytomineService.currentUser)
         SecUser currentUser = cytomineService.getCurrentUser()
         Command command = new EditCommand(user: currentUser)
@@ -71,7 +86,7 @@ class ConfigService extends ModelService {
      * @param printMessage Flag if client will print or not confirm message
      * @return Response structure (code, old domain,..)
      */
-    def delete(Config domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+    def delete(Configuration domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         securityACLService.checkAdmin(cytomineService.currentUser)
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
