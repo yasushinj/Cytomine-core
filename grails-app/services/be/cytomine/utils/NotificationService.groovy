@@ -112,12 +112,14 @@ class NotificationService {
                 null)
     }
 
-    def notifyShareAnnotation(User sender, def receiversEmail, def json, def attachments, def cid) {
+    def notifyShareAnnotation(User sender, def receiversEmail, def request, def attachments, def cid) {
+        String subject = request.subject
         String shareMessage = renderService.createShareMessage([
-                from: json.from,
-                comment: json.comment,
-                annotationURL: json.annotationURL,
-                shareAnnotationURL: json.shareAnnotationURL,
+                from: request.from,
+                to: request.to,
+                comment: request.comment,
+                annotationURL: request.annotationURL,
+                shareAnnotationURL: request.shareAnnotationURL,
                 by: grailsApplication.config.grails.serverURL,
                 cid : cid
         ])

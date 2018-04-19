@@ -306,8 +306,8 @@ class BootstrapUtilsService {
     def createMessageBrokerServer() {
         MessageBrokerServer.list().each { messageBroker ->
             if(!grailsApplication.config.grails.messageBrokerServerURL.contains(messageBroker.host)) {
-                log.info messageBroker.host + " is not in config, drop it"
-                log.info "delete Message Broker Server " + messageBroker.host
+                log.info messageBroker.host + "is not in config, drop it"
+                log.info "delete Message Broker Server " + messageBroker
                 AmqpQueue.findAllByHost(messageBroker.host).each {it.delete(failOnError:true)}
                 messageBroker.delete()
             }

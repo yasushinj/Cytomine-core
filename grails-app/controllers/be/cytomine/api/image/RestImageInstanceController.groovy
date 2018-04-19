@@ -47,7 +47,7 @@ import java.awt.image.BufferedImage
  * Date: 18/05/11
  * Controller that handle request for project images.
  */
-@RestApi(name = "image instance services", description = "Methods for managing an image instance : abstract image linked to a project")
+@RestApi(name = "Image | image instance services", description = "Methods for managing an image instance : abstract image linked to a project")
 class RestImageInstanceController extends RestController {
 
     def imageProcessingService
@@ -466,8 +466,9 @@ class RestImageInstanceController extends RestController {
 
     def download() {
         Long id = params.long("id")
+        Boolean parent = params.boolean("parent", false)
         ImageInstance imageInstance = imageInstanceService.read(id)
-        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage)
+        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage, parent)
         if (downloadURL) {
             log.info "redirect $downloadURL"
             redirect (url : downloadURL)

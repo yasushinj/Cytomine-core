@@ -36,6 +36,7 @@ class ImageGroupService extends ModelService {
     def reviewedAnnotationService
     def imageSequenceService
     def securityACLService
+    def abstractImageService
 
     def currentDomain() {
         return ImageGroup
@@ -130,5 +131,13 @@ class ImageGroupService extends ModelService {
         s = s.unique().sort()
         return [slice:s,zStack:z,time:t,channel:c, imageGroup:imageGroup.id]
 
+    }
+
+    def thumb(Long id, int maxSize) {
+        ImageGroup imageGroup = ImageGroup.get(id)
+        def sequences = ImageSequence.findAllByImageGroupAndSliceAndTimeAndChannel(imageGroup,0,0,0)
+        def zs = sequences.collect{it.zStack}
+        int zMean = (zs.max() - zs.min())/2
+        return abstractImageService.thumb(sequences.find{it.zStack == zMean}.image.baseImage.id, maxSize)
     }
 }

@@ -46,6 +46,7 @@ grails.mime.types = [
 ]
 cytomine.maxRequestSize = 10485760
 storage_path="/data" //default path for image locations
+fast_data_path="/data" //default path for HDF5 files location (for ex: a SSD)
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "none" // none, html, base64
@@ -81,7 +82,7 @@ cytomine.jobdata.filesystem = false
 cytomine.jobdata.filesystemPath = "algo/data/"
 
 // RabbitMQ server
-grails.messageBrokerServerURL = "localhost:5672"
+grails.messageBrokerServerURL = "rabbitmq:5672"
 grails.LTIConsumer = []
 
 // set per-environment serverURL stem for creating absolute links
@@ -104,21 +105,23 @@ environments {
         grails.retrievalServerURL = []
     }
     development {
-        grails.serverURL = "http://localhost:8080"
+        grails.serverURL = "http://localhost-core:8080"
         grails.uploadURL = "http://localhost-upload"
-        grails.imageServerURL = ["http://localhost:9080"]
+        grails.imageServerURL = ["http://localhost-ims"]
         grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
         grails.resources.adhoc.patterns = ['/images/*', '/css/jsondoc/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey=""
-        grails.ImageServerPublicKey=""
+        grails.ImageServerPrivateKey="XXX"
+        grails.ImageServerPublicKey="XXX"
         grails.adminPrivateKey="XXX"
         grails.adminPublicKey="XXX"
-        grails.superAdminPrivateKey="X"
-        grails.superAdminPublicKey="X"
+        grails.superAdminPrivateKey="XXX"
+        grails.superAdminPublicKey="XXX"
+        grails.rabbitMQPrivateKey="XXX"
+        grails.rabbitMQPublicKey="XXX"
     }
     test {
         grails.serverURL = "http://localhost:8090"
@@ -376,12 +379,12 @@ cytomine.customUI.global = [
 cytomine.customUI.project = [
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
-        //"project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
+        "project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
-        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false]
-        //"project-explore-spectra-panel":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
+        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
+        "project-explore-spectra-panel":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
 ]
 
 environments {

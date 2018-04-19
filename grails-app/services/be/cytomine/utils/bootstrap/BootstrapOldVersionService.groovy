@@ -1,5 +1,7 @@
 package be.cytomine.utils.bootstrap
 
+import be.cytomine.image.AbstractImage
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -51,6 +53,9 @@ class BootstrapOldVersionService {
     def dataSource
     def storageService
     def tableService
+    def mongo
+    def noSQLCollectionService
+    def imagePropertiesService
 
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
@@ -68,6 +73,46 @@ class BootstrapOldVersionService {
         }
 
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
+    }
+
+    void init20180301() {
+        boolean exists = new Sql(dataSource).rows("SELECT column_name "+
+                "FROM information_schema.columns "+
+                "WHERE table_name='abstract_image' and column_name='colorspace';").size() == 1;
+        if(!exists){
+            // add columns
+            new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image ADD COLUMN bit_depth integer;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image ADD COLUMN colorspace varchar(255);")
+        }
+
+//        List<AbstractImage> abstractImages = AbstractImage.findAllByDeletedIsNullAndBitDepthIsNull()
+//        log.info "${abstractImages.size()} image to populate"
+//        abstractImages.eachWithIndex { image, index ->
+//            if(index%100==0) {
+//                log.info "Populate image properties: ${(index/abstractImages.size())*100}"
+//            }
+//            imagePropertiesService.populate(image)
+//            imagePropertiesService.extractUseful(image)
+//        }
+    }
+
+    void init20171219() {
+        boolean exists = new Sql(dataSource).rows("SELECT column_name "+
+                "FROM information_schema.columns "+
+                "WHERE table_name='image_grouphdf5' and column_name='progress';").size() == 1;
+        if(!exists){
+            // add columns
+            new Sql(dataSource).executeUpdate("ALTER TABLE image_grouphdf5 ADD COLUMN progress integer DEFAULT 0;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE image_grouphdf5 ADD COLUMN status integer DEFAULT 0;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE image_grouphdf5 RENAME filenames TO filename;")
+        }
+    }
+
+    void init20171124(){
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        db.annotationAction.update([:], [$rename:[annotation:'annotationIdent']], false, true)
+        db.annotationAction.update([:], [$set:[annotationClassName: 'be.cytomine.ontology.UserAnnotation']], false, true)
+        db.annotationAction.update([:], [$unset:[annotation:'']], false, true)
     }
 
     void init20170714(){

@@ -23,7 +23,6 @@ import org.restapidoc.annotation.RestApiObjectField
 
 @RestApiObject(name = "configuration", description = "A key-value entry that save the configurations through the application")
 class Configuration extends CytomineDomain implements Serializable {
-
     @RestApiObjectField(description = "The property key")
     String key
 

@@ -38,7 +38,7 @@ import static org.springframework.security.acls.domain.BasePermission.READ
  * Controller for job request.
  * A job is a software instance that has been, is or will be running.
  */
-@RestApi(name = "job services", description = "Methods for managing job. A job is a software instance that has been, is or will be running.")
+@RestApi(name = "Processing | job services", description = "Methods for managing job. A job is a software instance that has been, is or will be running.")
 class RestJobController extends RestController {
 
     def jobService
@@ -55,11 +55,11 @@ class RestJobController extends RestController {
     /**
      * List all job
      */
-    @RestApiMethod(description="Get an algo annotation", listing = true)
+    @RestApiMethod(description="Get a list of jobs", listing = true)
     @RestApiParams(params=[
-        @RestApiParam(name="boolean", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) If true, get a light/quick listing (without job parameters,...)"),
-        @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, description = "(Optional, default get all) A list of software id to filter"),
-        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "(Optional, default get all) A list of project id to filter")
+        @RestApiParam(name="boolean", type="boolean", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default false) If true, get a light/quick listing (without job parameters,...)"),
+        @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default get all) A list of software id to filter"),
+        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default get all) A list of project id to filter")
     ])
     def list() {
         Boolean light = params.boolean('light') ? params.boolean('light') : false;
@@ -107,7 +107,9 @@ class RestJobController extends RestController {
         try {
             def result = jobService.add(request.JSON)
             long idJob = result?.data?.job?.id
-            jobService.createUserJob(User.read(springSecurityService.currentUser.id), Job.read(idJob))
+            def userjob = jobService.createUserJob(User.read(springSecurityService.currentUser.id), Job.read(idJob))
+            result?.data?.job?.userJob = userjob?.id
+            log.info userjob
             responseResult(result)
         } catch (CytomineException e) {
             log.error(e)

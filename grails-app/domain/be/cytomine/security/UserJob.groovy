@@ -17,11 +17,12 @@ package be.cytomine.security
 */
 
 import be.cytomine.processing.Job
+import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 import org.restapidoc.annotation.RestApiObjectFields
 
-@RestApiObject(name = "user job", description="A cytomine software user")
+@RestApiObject(name = "User job", description="A cytomine software user")
 class UserJob extends SecUser {
 
     def springSecurityService
@@ -74,6 +75,21 @@ class UserJob extends SecUser {
      */
     boolean algo() {
         return true
+    }
+
+    /**
+     * Insert JSON data into domain in param
+     * @param domain Domain that must be filled
+     * @param json JSON containing data
+     * @return Domain with json data filled
+     */
+    static UserJob insertDataIntoDomain(def json, def domain = new UserJob()) {
+        domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
+        domain.username = JSONUtils.getJSONAttrStr(json,'username')
+
+        domain.created = JSONUtils.getJSONAttrDate(json, 'created')
+        domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+        return domain;
     }
 
     /**
