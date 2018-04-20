@@ -110,7 +110,7 @@ grails.project.dependency.resolution = {
         }
         test ":geb:0.9.0"
         compile ':webxml:1.4.1'
-
+        compile ":teamcity:1.0.3"
     }
 }
 // Remove the DisableOptimizationsTransformation jar before the war is bundled
