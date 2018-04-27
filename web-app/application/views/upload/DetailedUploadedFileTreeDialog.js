@@ -33,6 +33,7 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
     doLayout: function (tpl) {
         var self = this;
 
+        console.log("doLayout")
         $("#detailedUploadedFileTreeDialog-"+self.model.id).remove();
 
         var htmlCode = _.template(tpl, self.model);
@@ -40,6 +41,7 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         $(this.el).append(htmlCode);
 
         $.get( new UploadedFileCollection({ root: self.model.id}).url(), function( data ) {
+            console.log("coucou")
             var nodes = [];
             var allNodes = [];
             var infos = self.getNodeInfo(data.collection[0]);
@@ -73,6 +75,11 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
             }
 
             $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").empty();
+
+            console.log("ici")
+            console.log($("#detailedUploadedFileTreeDialog-"+self.model.id))
+            console.log($("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile"))
+
             $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").dynatree({
                 children: nodes
             });
@@ -150,9 +157,13 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
 
         title += " <span style='margin-left:20px;'>"+size+"</span>";
 
+        //title += " <span style='margin-left:20px;'><a class='deleteUploadedFile btn btn-danger' data-id='"+file.id+"' data-aiid='"+file.image+"' style='color:white !important;'><i class='glyphicon glyphicon-trash'></i> Delete</a></span>";
+
         if(model.getStatus() === "DEPLOYED"){
             title += " <span style='margin-left:20px;'><a href='#' class='previewUploadedFile' data-url='"+file.thumbURL+"' style='color:#428bca !important;'>See preview</a></span>";
         }
+
+        // si format en erreur proposer un refresh
 
         var lazy = false;
         if(model.getStatus() === "CONVERTED" || model.getStatus() === "UNCOMPRESSED" || model.getStatus() === "ERROR CONVERSION"){
@@ -165,3 +176,35 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
 });
 
 
+/*
+*
+*                     // we allow deletion of non deployed image after a security gap of 24h.
+*                     //ne plus utiliser cela et se baser seulement sur le status
+                    /*if(row["to_deploy"] || row["error_format"] || row["error_convert"]){
+                        if(($.now() - row["updated"])/3600000 > 24) {
+                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+">Delete</button>";
+                        } else {
+                            result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+" disabled>Delete</button>";
+                        }
+                    }else {
+                        result+="<button class='btn btn-info btn-xs deleteimage' id='deleteimage-"+row["image"]+"' data-ufid="+row["id"]+" data-aiid="+row["image"]+" disabled>Delete</button> ";
+                        if(row["image"] !== null && window.app.status.user.model.get("adminByNow")){
+                            result+="<a class='btn btn-info btn-xs' href='api/abstractimage/"+row["image"]+"/download'> Download</a>";
+                        }
+                    }*/
+
+
+
+
+/*drawCallback: function() {
+    new UploadedFileCollection().fetch({
+        success: function(model,response) {
+
+            $.get( "/api/abstractimage/unused.json", function( data ) {
+                for(var i = 0; i<data.collection.length;i++) {
+                    $('button[id^=deleteimage-][id$=-'+data.collection[i].id+']').prop("disabled",false);
+                }
+            });
+        }
+    });
+}*/

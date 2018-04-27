@@ -73,7 +73,7 @@ class UploadedFileService extends ModelService {
         String request =
                 "SELECT uf.id, uf.created, uf.original_filename, uf.l_tree, uf.parent_id, uf.size, uf.status, uf.image_id \n" +
                         "FROM uploaded_file uf\n" +
-                        "WHERE uf.l_tree <@ "+root.lTree+"::text::ltree \n" +
+                        "WHERE uf.l_tree <@ '"+root.lTree+"'::text::ltree \n" +
                         "AND uf.user_id = "+user.id+" \n" +
                         "ORDER BY uf.l_tree ASC "
 
