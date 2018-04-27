@@ -32,6 +32,9 @@ class ProcessingServer extends CytomineDomain {
     @RestApiObjectField(description = "The host of the processing server")
     String host
 
+    @RestApiObjectField(description = "The user of the processing server")
+    String username
+
     @RestApiObjectField(description = "The port of the processing server")
     Integer port
 
@@ -47,6 +50,7 @@ class ProcessingServer extends CytomineDomain {
     static constraints = {
         name(nullable: false, blank: false, unique: true)
         host(blank: false)
+        username(blank: false, nullable: false)
         port(blank: false)
         processingMethodName(blank: false)
         amqpQueue(nullable: true)
@@ -81,7 +85,8 @@ class ProcessingServer extends CytomineDomain {
         domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
         domain.host = JSONUtils.getJSONAttrStr(json, 'host')
-        domain.port = JSONUtils.getJSONAttrStr(json, 'port')
+        domain.username = JSONUtils.getJSONAttrStr(json, 'username')
+        domain.port = JSONUtils.getJSONAttrInteger(json, 'port', null)
         domain.type = JSONUtils.getJSONAttrStr(json, 'type')
         domain.processingMethodName = JSONUtils.getJSONAttrStr(json, 'processingMethodName')
         domain.amqpQueue = JSONUtils.getJSONAttrDomain(json, 'amqpQueue', new AmqpQueue(), false)
@@ -97,6 +102,7 @@ class ProcessingServer extends CytomineDomain {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['name'] = domain?.name
         returnArray['host'] = domain?.host
+        returnArray['username'] = domain?.username
         returnArray['port'] = domain?.port
         returnArray['type'] = domain?.type
         returnArray['processingMethodName'] = domain?.processingMethodName

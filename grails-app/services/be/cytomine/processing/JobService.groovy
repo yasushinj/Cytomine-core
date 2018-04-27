@@ -47,7 +47,7 @@ class JobService extends ModelService {
     def dataSource
     def currentRoleServiceProxy
     def securityACLService
-    def jobLauncherService
+    def jobManagerService
 
     def currentDomain() {
         return Job

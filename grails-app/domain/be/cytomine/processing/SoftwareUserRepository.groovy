@@ -19,8 +19,10 @@ package be.cytomine.processing
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.AlreadyExistException
 import be.cytomine.utils.JSONUtils
+import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
+@RestApiObject(name = "Software user repository", description = "")
 class SoftwareUserRepository extends CytomineDomain {
 
     @RestApiObjectField(description = "The provider name the user repository")

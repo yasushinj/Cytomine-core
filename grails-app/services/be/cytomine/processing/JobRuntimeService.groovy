@@ -18,13 +18,15 @@ package be.cytomine.processing
 
 import be.cytomine.Exception.MiddlewareException
 import be.cytomine.Exception.WrongArgumentException
+import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.security.UserJob
 import grails.converters.JSON
 import grails.util.Holders
+import groovy.json.JsonBuilder
 import org.json.JSONObject
 
-class JobLauncherService {
+class JobRuntimeService {
 
     static transactional = true
 
@@ -45,6 +47,30 @@ class JobLauncherService {
         return jobParameter
     }
 
+    def retrieveParameters(Job job, def parameters) {
+        def values = [:]
+
+        parameters.each { parameter ->
+            println parameter.name
+
+            JobParameter jobParameter = JobParameter.findByJobAndSoftwareParameter(job, parameter as SoftwareParameter)
+
+            println jobParameter
+
+            String value = parameter.defaultValue
+            if (jobParameter)
+                value = jobParameter.value
+            else if (parameter.required && value == null)
+                throw new WrongArgumentException("Argument ${parameter.name} is required !")
+
+            values.put(parameter, value)
+
+            log.info("${parameter.name} = ${value}")
+        }
+
+        return values
+    }
+
     /**
      * Returns the command to execute with the replaced parameters
      * @param job : the job to execute
@@ -52,21 +78,9 @@ class JobLauncherService {
      * @throws be.cytomine.Exception.WrongArgumentException one required argument was not supplied
      */
     String[] getCommandJobWithArgs(Job job) {
-        def parameters = SoftwareParameter.findAllBySoftware(job.software, [sort: "index", order: "asc"])
-        def values = [:]
+        def parameters = SoftwareParameter.findAllBySoftwareAndServerParameter(job.software, false, [sort: "index", order: "asc"])
 
-        parameters.each { softwareParameter ->
-            JobParameter jobParameter = JobParameter.findByJobAndSoftwareParameter(job, softwareParameter)
-
-            String value = softwareParameter.defaultValue
-            if (jobParameter)
-                value = jobParameter.value
-            else if (softwareParameter.required)
-                throw new WrongArgumentException("Argument ${softwareParameter.name} is required !")
-
-            values.put(softwareParameter, value)
-            log.info("${softwareParameter.name} = ${value}")
-        }
+        def values = retrieveParameters(job, parameters)
 
         String command = job.software.executeCommand
         values.each {
@@ -92,6 +106,15 @@ class JobLauncherService {
         return command.split(' ')
     }
 
+    def getServerParameters(Job job) {
+        def serverParameters = SoftwareParameter.findAllBySoftwareAndServerParameter(job.software, true, [sort: "index", order: "asc"])
+
+        def returnedValues = [:]
+        retrieveParameters(job, serverParameters).each { elem -> returnedValues.put(elem.key.name, elem.value) }
+
+        return returnedValues
+    }
+
     def initJob(Job job, UserJob userJob) {
         jobParameterService.add(JSON.parse(createJobParameter("host", job, Holders.getGrailsApplication().config.grails.serverURL).encodeAsJSON()))
         jobParameterService.add(JSON.parse(createJobParameter("publicKey", job, userJob.publicKey).encodeAsJSON()))
@@ -107,39 +130,63 @@ class JobLauncherService {
             jobParameterService.add(JSON.parse(createJobParameter("cytomine_id_project", job, job.project.id.toString()).encodeAsJSON()))
     }
 
-    /**
-     * Sends a job execution request to the software router
-     * @param job : the job we want to execute
-     * @param userJob : the userJob associated with this job
-     * @param processingServer : the processing server on which we want to execute the job
-     * @return /
-     */
     def execute(Job job, UserJob userJob, ProcessingServer processingServer = null) {
         initJob(job, userJob)
 
-        if (!job.software.executeCommand) {
+        if (!job.software.executeCommand)
             throw new MiddlewareException("No command found for this job, the execution is aborted !")
-        }
 
         ProcessingServer currentProcessingServer = processingServer == null ? job.software.defaultProcessingServer : processingServer
 
+        job.processingServer = currentProcessingServer
+        job.save(failOnError: true)
+
         String queueName = amqpQueueService.queuePrefixProcessingServer + currentProcessingServer.name.capitalize()
+
+        MessageBrokerServer messageBrokerServer = MessageBrokerServer.findByName("MessageBrokerServer")
+        if (!amqpQueueService.checkRabbitQueueExists(queueName, messageBrokerServer))
+            throw new MiddlewareException("The amqp queue doesn't exist, the execution is aborded !")
+
+        JSONObject jsonObject = new JSONObject()
+        jsonObject.put("requestType", "execute")
+        jsonObject.put("jobId", job.id)
+        jsonObject.put("command", getCommandJobWithArgs(job))
+        jsonObject.put("serverParameters", getServerParameters(job))
+
+        log.info("JOB REQUEST : ${jsonObject}")
+
+//        job.discard()
+
+        amqpQueueService.publishMessage(amqpQueueService.read(queueName), jsonObject.toString())
+    }
+
+    def killJob(Job job) {
+
+        String queueName = amqpQueueService.queuePrefixProcessingServer + job.processingServer.name.capitalize()
 
         MessageBrokerServer messageBrokerServer = MessageBrokerServer.findByName("MessageBrokerServer")
         if (!amqpQueueService.checkRabbitQueueExists(queueName, messageBrokerServer)) {
             throw new MiddlewareException("The amqp queue doesn't exist, the execution is aborded !")
         }
 
-        JSONObject jsonObject = new JSONObject()
-        jsonObject.put("requestType", "execute")
-        jsonObject.put("jobId", job.id)
-        jsonObject.put("command", getCommandJobWithArgs(job))
+        def message = [requestType: "kill", jobId: job.id]
 
-        log.info("JOB REQUEST : ${jsonObject}")
+        JsonBuilder jsonBuilder = new JsonBuilder()
+        jsonBuilder(message)
 
-        job.discard()
+        log.info("KILL REQUEST : jobId - ${job.id} | processingServer - ${job.processingServer.id}")
 
-        amqpQueueService.publishMessage(amqpQueueService.read(queueName), jsonObject.toString())
+        amqpQueueService.publishMessage(AmqpQueue.findByName(queueName), jsonBuilder.toString())
+
+    }
+
+    def getLogs(Job job) {
+        def message = [requestType: "getLogs", jobId: job.id]
+
+        JsonBuilder jsonBuilder = new JsonBuilder()
+        jsonBuilder(message)
+
+        amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
     }
 
 }
