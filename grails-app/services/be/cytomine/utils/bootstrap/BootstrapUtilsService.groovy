@@ -28,6 +28,7 @@ import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
+import be.cytomine.processing.ParameterConstraint
 import be.cytomine.processing.ProcessingServer
 import be.cytomine.security.*
 import be.cytomine.social.PersistentImageConsultation
@@ -635,6 +636,7 @@ class BootstrapUtilsService {
                 ProcessingServer processingServer = new ProcessingServer(
                         name: "local-container",
                         host: "localhost",
+                        username: "cytomine",
                         port: 10022,
                         type: "slurm",
                         processingMethodName: "SlurmProcessingMethod"
@@ -667,6 +669,32 @@ class BootstrapUtilsService {
                     jsonBuilder(message)
 
                     amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
+                }
+            }
+        }
+    }
+
+    void addDefaultConstraints() {
+        SpringSecurityUtils.doWithAuth {
+            def constraints = []
+            // "Number" dataType
+            constraints.add(new ParameterConstraint(name: "minimum", expression: '[parameterValue] < [value]', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '[parameterValue] > [value]', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "equals", expression: '[parameterValue] == [value]', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").find { elem -> (Double.valueOf(elem) as Number) == [parameterValue] } != null', dataType: "Number"))
+
+            // "String" dataType
+            constraints.add(new ParameterConstraint(name: "minimum", expression: '[parameterValue].length() < [value].length()', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '[parameterValue].length() < [value].length()', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "equals", expression: '[parameterValue] == [value]', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '[value].tokenize([separator]).contains([parameterValue])', dataType: "String"))
+
+            // "Boolean" dataType
+            constraints.add(new ParameterConstraint(name: "equals", expression: 'Boolean.parseBoolean([value]) == Boolean.parseBoolean([parameterValue])', dataType: "Boolean"))
+
+            constraints.each { constraint ->
+                if (!ParameterConstraint.findByName(constraint.name as String)) {
+                    constraint.save()
                 }
             }
         }

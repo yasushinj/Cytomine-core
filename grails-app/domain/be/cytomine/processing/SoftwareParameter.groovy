@@ -94,6 +94,8 @@ class SoftwareParameter extends CytomineDomain {
     @RestApiObjectField(description = "Indicated if the field is autofilled by the server", mandatory = false)
     Boolean setByServer = false
 
+    @RestApiObjectField(description = "Indicates if the field is a parameter used by a processingServer", mandatory = false)
+    Boolean serverParameter = false
 
     static belongsTo = [Software]
 
@@ -147,6 +149,7 @@ class SoftwareParameter extends CytomineDomain {
         returnArray['uriPrintAttribut'] = domain?.uriPrintAttribut
         returnArray['uriSortAttribut'] = domain?.uriSortAttribut
         returnArray['setByServer'] = domain?.setByServer
+        returnArray['serverParameter'] = domain?.serverParameter
         return returnArray
     }
 
@@ -171,6 +174,7 @@ class SoftwareParameter extends CytomineDomain {
         domain.uriPrintAttribut = JSONUtils.getJSONAttrStr(json,'uriPrintAttribut')
         domain.uriSortAttribut = JSONUtils.getJSONAttrStr(json,'uriSortAttribut')
         domain.setByServer = JSONUtils.getJSONAttrBoolean(json,'setByServer', false)
+        domain.serverParameter = JSONUtils.getJSONAttrBoolean(json, 'serverParameter', false)
         return domain;
     }
 

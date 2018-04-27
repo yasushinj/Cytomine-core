@@ -205,5 +205,6 @@ class BootStrap {
         bootstrapUtilsService.fillImageConsultations();
 
         bootstrapUtilsService.addDefaultProcessingServer()
+        bootstrapUtilsService.addDefaultConstraints()
     }
 }
