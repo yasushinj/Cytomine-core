@@ -488,7 +488,7 @@ class HttpClient {
         log.info("url=" + url + " is " + code + "(OK=" + HttpURLConnection.HTTP_OK + ",MOVED=" + HttpURLConnection.HTTP_MOVED_TEMP + ")");
 
         boolean isOK = (code == HttpURLConnection.HTTP_OK);
-        boolean isFound = (code == HttpURLConnection.HTTP_MOVED_TEMP);
+        boolean isFound = (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM);
         boolean isErrorServer = (code == HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         if (!isOK && !isFound & !isErrorServer) throw new IOException(url + " cannot be read: " + code);
