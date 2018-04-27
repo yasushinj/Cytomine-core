@@ -125,6 +125,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['size'] = uploaded?.size
         returnArray['path'] = uploaded?.path
         returnArray['status'] = uploaded?.status
+
         returnArray['uploaded'] = (uploaded?.status == UploadedFile.UPLOADED)
         returnArray['converted'] = (uploaded?.status == UploadedFile.CONVERTED)
         returnArray['deployed'] = (uploaded?.status == UploadedFile.DEPLOYED)
@@ -132,6 +133,8 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['error_convert'] = (uploaded?.status == UploadedFile.ERROR_CONVERSION)
         returnArray['uncompressed'] = (uploaded?.status == UploadedFile.UNCOMPRESSED)
         returnArray['to_deploy'] = (uploaded?.status == UploadedFile.TO_DEPLOY)
+
+
         returnArray['image'] = uploaded?.getAbstractImage()?.id
         returnArray['parent'] = uploaded?.parent?.id
         returnArray['thumbURL'] = uploaded?.status == UploadedFile.DEPLOYED && uploaded?.image ? UrlApi.getAssociatedImage(uploaded?.image?.id, "macro") : null

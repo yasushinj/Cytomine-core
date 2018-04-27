@@ -24,7 +24,6 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
-import be.cytomine.image.server.ImageProperty
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.project.Project
@@ -193,9 +192,8 @@ class AbstractImageService extends ModelService {
         AbstractImage domain = AbstractImage.read(id);
         boolean usedByImageInstance = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain).size() != 0
         boolean usedByNestedFile = NestedFile.findAllByAbstractImage(domain).size() != 0
-        boolean usedByImageProperty = ImageProperty.findAllByImage(domain).size() != 0
 
-        return usedByImageInstance || usedByNestedFile ||  usedByImageProperty
+        return usedByImageInstance || usedByNestedFile
     }
 
     /**
@@ -300,23 +298,6 @@ class AbstractImageService extends ModelService {
     }
 
 
-
-//    /**
-//     * Extract image properties from file for a specific image
-//     */
-//    def imageProperties(AbstractImage abstractImage) {
-//        if (!ImageProperty.findByImage(abstractImage)) {
-//            imagePropertiesService.populate(abstractImage)
-//        }
-//        return ImageProperty.findAllByImage(abstractImage)
-//    }
-//
-//    /**
-//     * Get a single property thx to its id
-//     */
-//    def imageProperty(long imageProperty) {
-//        return ImageProperty.findById(imageProperty)
-//    }
 
     /**
      * Get all image servers for an image id

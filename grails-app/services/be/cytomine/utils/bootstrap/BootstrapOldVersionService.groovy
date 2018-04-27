@@ -1,5 +1,7 @@
 package be.cytomine.utils.bootstrap
 
+import be.cytomine.image.UploadedFile
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -16,19 +18,16 @@ package be.cytomine.utils.bootstrap
 * limitations under the License.
 */
 
-import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.Storage
+import be.cytomine.ontology.AlgoAnnotationTerm
 import be.cytomine.ontology.Property
 import be.cytomine.project.Project
-import be.cytomine.security.SecRole
-import be.cytomine.security.SecUser
-import be.cytomine.security.SecUserSecRole
 import be.cytomine.security.User
 import be.cytomine.utils.Version
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
 import groovy.sql.Sql
-import org.apache.commons.lang.RandomStringUtils
+import org.apache.commons.io.FilenameUtils
 
 /**
  * Cytomine
@@ -52,13 +51,19 @@ class BootstrapOldVersionService {
     def storageService
     def tableService
 
+    // TODO check que tout ici est bien fait comme il faut dans le bootstrap et pas des trucs qui manque genre le superadmin d'ims !!!
+
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
         Version version = Version.getLastVersion()
+
+        println "version"
+        println version.number
+
         methods.each { method ->
-            if(method.startsWith("init")) {
-                Long methodDate = Long.parseLong(method.replace("init",""))
-                if(methodDate>version.number) {
+            if (method.startsWith("init")) {
+                Long methodDate = Long.parseLong(method.replace("init", ""))
+                if (methodDate > version.number) {
                     log.info "Run code for version > $methodDate"
                     this."init$methodDate"()
                 } else {
@@ -70,12 +75,69 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
-    void init20180409(){
-        // add columns
-        new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file ADD COLUMN l_tree ltree;")
+    void init20180409() {
+        //unused domain
+        println "drop table"
+        new Sql(dataSource).executeUpdate("DROP TABLE image_property;")
+
+        // add ltree column
+        println "add ltree"
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='uploaded_file' and column_name='l_tree';").size() == 1;
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("CREATE EXTENSION ltree;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file ADD COLUMN l_tree ltree;")
+        }
+
+        // update ltree
+        println "update ltree"
+        UploadedFile.findAllByParentIsNullAndLTreeIsNull().each {
+            it.save()
+        }
+        def ufs
+        UploadedFile.findAllByParentIsNotNullAndLTreeIsNull().each {
+            if(it.lTree == null) {
+                ufs = [it]
+                def current = it
+                while(current.parent != null && current.parent.lTree == null){
+                    ufs << current
+                    current = current.parent
+                }
+                ufs = ufs.reverse()
+                for(int i = 0;i<ufs.size();i++) {
+                    ufs[i].save()
+                }
+            }
+        }
+
+        println "create new uploadedfile"
+        // recreate uploadedFile from abstractimage
+        // only for converted abstract_image
+        ufs = UploadedFile.createCriteria().list {
+            ne("filename", image.path)
+        }
+
+        ufs.each {
+            def uf = new UploadedFile()
+            uf.contentType = "image/pyrtiff"
+            uf.image = it.image
+            uf.originalFilename = uf.image.originalFilename
+            uf.filename = uf.image.path
+            uf.parent = it
+            uf.path= it.path
+            uf.ext = FilenameUtils.getExtension(uf.filename)
+            uf.status = UploadedFile.DEPLOYED
+            uf.user = it.user
+
+            uf.save(flush: true, failOnError: true)
+
+            it.image = null
+            it.save()
+        }
     }
 
-    void init20170714(){
+    void init20170714() {
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
         log.info "generate missing storage !"
@@ -89,11 +151,11 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20170201(){
-        boolean exists = new Sql(dataSource).rows("SELECT column_name "+
-                "FROM information_schema.columns "+
+    void init20170201() {
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
                 "WHERE table_name='shared_annotation' and column_name='annotation_class_name';").size() == 1;
-        if(!exists){
+        if (!exists) {
             // add columns
             new Sql(dataSource).executeUpdate("ALTER TABLE shared_annotation ADD COLUMN annotation_class_name varchar(255);")
             new Sql(dataSource).executeUpdate("ALTER TABLE shared_annotation ADD COLUMN annotation_ident bigint;")
@@ -111,12 +173,12 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20160901(){
+    void init20160901() {
 
-        boolean exists = new Sql(dataSource).rows("SELECT column_name "+
-                "FROM information_schema.columns "+
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
                 "WHERE table_name='project' and column_name='mode';").size() == 1;
-        if(!exists){
+        if (!exists) {
             new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN mode varchar(255) NOT NULL DEFAULT 'CLASSIC';")
 
             String request = "SELECT id FROM project WHERE is_read_only;"
@@ -126,13 +188,13 @@ class BootstrapOldVersionService {
                 data << it[0]
             }
             sql.close()
-            new Sql(dataSource).executeUpdate("UPDATE project SET mode = 'READ_ONLY' WHERE id IN ("+data.join(",")+");")
+            new Sql(dataSource).executeUpdate("UPDATE project SET mode = 'READ_ONLY' WHERE id IN (" + data.join(",") + ");")
 
 
-            exists = new Sql(dataSource).rows("SELECT column_name "+
-                    "FROM information_schema.columns "+
+            exists = new Sql(dataSource).rows("SELECT column_name " +
+                    "FROM information_schema.columns " +
                     "WHERE table_name='project' and column_name='is_read_only';").size() == 1;
-            if(exists){
+            if (exists) {
                 log.info "reinit table..."
                 new Sql(dataSource).executeUpdate("DROP VIEW user_project;")
                 new Sql(dataSource).executeUpdate("DROP VIEW admin_project;")
@@ -142,11 +204,11 @@ class BootstrapOldVersionService {
             }
         }
 
-        List<Property> properties = Property.findAllByDomainClassNameAndKey(Project.name,"@CUSTOM_UI_PROJECT")
+        List<Property> properties = Property.findAllByDomainClassNameAndKey(Project.name, "@CUSTOM_UI_PROJECT")
         def configProject;
         properties.each { prop ->
             configProject = JSON.parse(prop.value)
-            configProject.each{
+            configProject.each {
                 it.value["CONTRIBUTOR_PROJECT"] = it.value["GUEST_PROJECT"]
                 it.value.remove("GUEST_PROJECT")
                 it.value.remove("USER_PROJECT")
@@ -157,99 +219,18 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20160503(){
+    void init20160503() {
         bootstrapUtilsService.convertMimeTypes();
     }
-    void init20160324(){
+
+    void init20160324() {
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS mime_type;")
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS converted_filename;")
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS converted_ext;")
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS download_parent_id;")
     }
-    void init20160224(){
+
+    void init20160224() {
         new Sql(dataSource).executeUpdate("DELETE FROM attached_file WHERE domain_class_name = 'be.cytomine.image.AbstractImage' AND (filename LIKE '%thumb%' OR filename LIKE '%nested%');")
     }
-    void init20150729(){
-        new Sql(dataSource).executeUpdate("ALTER TABLE job_parameter ALTER COLUMN value TYPE varchar(5000);")
-    }
-    void init20150728(){
-        new Sql(dataSource).executeUpdate("ALTER TABLE storage DROP COLUMN IF EXISTS port;")
-        new Sql(dataSource).executeUpdate("ALTER TABLE storage DROP COLUMN IF EXISTS ip;")
-        new Sql(dataSource).executeUpdate("ALTER TABLE storage DROP COLUMN IF EXISTS key_file;")
-        new Sql(dataSource).executeUpdate("ALTER TABLE storage DROP COLUMN IF EXISTS username;")
-        new Sql(dataSource).executeUpdate("ALTER TABLE storage DROP COLUMN IF EXISTS password;")
-
-        log.info "generate missing storage !"
-        for (user in User.findAll()) {
-            if (!Storage.findByUser(user)) {
-                log.info "generate missing storage for $user"
-                storageService.initUserStorage(user)
-            }
-        }
-    }
-    void init20150604(){
-        if(!SecUser.findByUsername("rabbitmq")) {
-            bootstrapUtilsService.createUsers([[username : 'rabbitmq', firstname : 'rabbitmq', lastname : 'user', email : grailsApplication.config.grails.admin.email, group : [[name : "Cytomine"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER"]]])
-            SecUser rabbitMQUser = SecUser.findByUsername("rabbitmq")
-            rabbitMQUser.setPrivateKey(grailsApplication.config.grails.rabbitMQPrivateKey)
-            rabbitMQUser.setPublicKey(grailsApplication.config.grails.rabbitMQPublicKey)
-            rabbitMQUser.save(flush : true)
-        }
-    }
-    void init20150529(){
-        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ADD CONSTRAINT unique_public_key UNIQUE (public_key);")
-    }
-    void init20150101() {
-        if(!SecUser.findByUsername("admin")) {
-            bootstrapUtilsService.createUsers([[username : 'admin', firstname : 'Admin', lastname : 'Master', email : grailsApplication.config.grails.admin.email, group : [[name : "Cytomine"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN"]]])
-        }
-        if(!SecUser.findByUsername("superadmin")) {
-            bootstrapUtilsService.createUsers([[username: 'superadmin', firstname: 'Super', lastname: 'Admin', email: grailsApplication.config.grails.admin.email, group: [[name: "Cytomine"]], password: grailsApplication.config.grails.adminPassword, color: "#FF0000", roles: ["ROLE_USER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"]]])
-        }
-        if(!SecUser.findByUsername("monitoring")) {
-            bootstrapUtilsService.createUsers([[username : 'monitoring', firstname : 'Monitoring', lastname : 'Monitoring', email : grailsApplication.config.grails.admin.email, group : [[name : "Cytomine"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER","ROLE_SUPER_ADMIN"]]])
-        }
-    }
-
-    void init20140925() {
-        bootstrapUtilsService.addMimeVentanaTiff()
-    }
-
-    void  init20140717() {
-        bootstrapUtilsService.addMimePhilipsTiff()
-    }
-
-    void  init20140716() {
-        bootstrapUtilsService.addMimePyrTiff()
-    }
-
-    void  init20140630() {
-        bootstrapUtilsService.transfertProperty()
-    }
-
-    void  init20140625() {
-        if((UploadedFile.count() == 0 || UploadedFile.findByImageIsNull()?.size > 0)) {
-            bootstrapUtilsService.checkImages()
-        }
-    }
-
-    void  init20140601() {
-        //version>2014 05 12
-        if(!SecRole.findByAuthority("ROLE_SUPER_ADMIN")) {
-            SecRole role = new SecRole(authority:"ROLE_SUPER_ADMIN")
-            role.save(flush:true,failOnError: true)
-        }
-
-        //version>2014 05 12  OTOD: DO THIS FOR IFRES,...
-        if(SecUser.findByUsername("ImageServer1")) {
-            def imageUser = SecUser.findByUsername("ImageServer1")
-            def superAdmin = SecRole.findByAuthority("ROLE_SUPER_ADMIN")
-            if(!SecUserSecRole.findBySecUserAndSecRole(imageUser,superAdmin)) {
-                new SecUserSecRole(secUser: imageUser,secRole: superAdmin).save(flush:true)
-            }
-
-        }
-    }
-
-
 }
