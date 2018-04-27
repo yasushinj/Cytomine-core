@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-var ImageInstancePropertyModel = Backbone.Model.extend({
+var PropertyModel = Backbone.Model.extend({
     initialize: function (options) {
-        this.idImageInstance = options.idImageInstance;
+        this.domainClassName = options.domainClassName;
+        this.domainIdent = options.domainIdent;
     },
     url: function () {
-        var base = 'api/imageinstance/' + this.idImageInstance + '/property';
+        var base = 'api/domain/' + this.domainClassName + '/' + this.domainIdent + '/property';
         var format = '.json';
         if (this.isNew()) {
             return base + format;
@@ -33,15 +34,16 @@ var ImageInstancePropertyModel = Backbone.Model.extend({
     }
 });
 
-var ImageInstancePropertyCollection = PaginatedCollection.extend({
-    model: ImageInstancePropertyModel,
+var PropertyCollection = PaginatedCollection.extend({
+    model: PropertyModel,
     initialize: function (options) {
         this.initPaginator(options);
-        this.idImageInstance = options.idImageInstance;
+        this.domainClassName = options.domainClassName;
+        this.domainIdent = options.domainIdent;
     },
     url: function () {
-        if (this.idImageInstance != undefined) {
-            return "api/imageinstance/" + this.idImageInstance + "/property.json";
+        if (this.domainClassName != undefined && this.domainIdent != undefined) {
+            return 'api/domain/' + this.domainClassName + '/' + this.domainIdent + '/property.json';
         }
     }
 });
