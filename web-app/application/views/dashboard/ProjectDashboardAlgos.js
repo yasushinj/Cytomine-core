@@ -417,7 +417,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         }
     },
     getJobLabel: function (className, text, width) {
-        return _.template('<span class="badge <%= className %>"><%= text %></span>', { className: className, text: text});
+        return _.template('<span class="label <%= className %>"><%= text %></span>', { className: className, text: text});
         //return '<span class="'+className+'""> '+text+'</span>';
     },
     getJobProgress: function (job, className, text, width) {   //todo: add class " progress-striped"
@@ -562,6 +562,26 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         }
     },
     initJobResult: function (job) {
+        var target = $("#job-properties-content");
+        target.empty();
+        new PropertyCollection({domainClassName:"be.cytomine.processing.Job", domainIdent:job.get('id')}).fetch({
+            success: function (collection, response) {
+                if (collection.size() === 0) {
+                    target.empty();
+                    target.append(_.template("No data to display", {}));
+                }
+                else {
+                    collection.each(function (model) {
+                        console.log("key");
+                        console.log(model.get("key"));
+                        target.append(_.template("<li><b><%= key %></b> : <%= value %></li>",
+                            {key: model.get("key"), value: model.get("value")}));
+                    });
+                }
+
+            }
+        });
+
         $("#panelJobResultsDiv").empty();
         var self = this;
         var createJobResultView = function() {
