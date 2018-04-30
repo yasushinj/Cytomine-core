@@ -68,6 +68,12 @@ class Software extends CytomineDomain {
      */
     String executeCommand
 
+    String pullingCommand
+
+    Boolean deprecated
+
+    String softwareVersion
+
     @RestApiObjectFields(params=[
         @RestApiObjectField(apiFieldName = "parameters", description = "List of 'software parameter' for this software (sort by index asc)",allowedType = "list",useForCreation = false),
         @RestApiObjectField(apiFieldName = "numberOfJob", description = "The number of job for this software",allowedType = "long",useForCreation = false),
@@ -130,7 +136,10 @@ class Software extends CytomineDomain {
         domain.description = JSONUtils.getJSONAttrStr(json, 'description')
         domain.resultName = JSONUtils.getJSONAttrStr(json, 'resultName')
         domain.executeCommand = JSONUtils.getJSONAttrStr(json, 'executeCommand')
-        return domain;
+        domain.pullingCommand = JSONUtils.getJSONAttrStr(json, 'pullingCommand')
+        domain.deprecated = JSONUtils.getJSONAttrBoolean(json, 'deprecated', false)
+        domain.softwareVersion = JSONUtils.getJSONAttrStr(json, 'softwareVersion')
+        return domain
     }
 
     /**
@@ -146,6 +155,9 @@ class Software extends CytomineDomain {
         returnArray['resultName'] = domain?.resultName
         returnArray['description'] = domain?.description
         returnArray['executeCommand'] = domain?.executeCommand
+        returnArray['pullingCommand'] = domain?.pullingCommand
+        returnArray['deprecated'] = domain?.deprecated
+        returnArray['softwareVersion'] = domain?.softwareVersion
         try {
             returnArray['parameters'] = SoftwareParameter.findAllBySoftwareAndSetByServer(domain, false, [sort : "index", order : "asc"])
             returnArray['numberOfJob'] = Job.countBySoftware(domain)

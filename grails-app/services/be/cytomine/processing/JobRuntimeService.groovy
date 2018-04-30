@@ -151,11 +151,10 @@ class JobRuntimeService {
         jsonObject.put("requestType", "execute")
         jsonObject.put("jobId", job.id)
         jsonObject.put("command", getCommandJobWithArgs(job))
+        jsonObject.put("pullingCommand", job.software.pullingCommand)
         jsonObject.put("serverParameters", getServerParameters(job))
 
         log.info("JOB REQUEST : ${jsonObject}")
-
-//        job.discard()
 
         amqpQueueService.publishMessage(amqpQueueService.read(queueName), jsonObject.toString())
     }
