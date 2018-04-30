@@ -121,6 +121,14 @@ class NotificationService {
                 by: grailsApplication.config.grails.serverURL,
                 cid : cid
         ])
+
+        cytomineMailService.send(
+                cytomineMailService.NO_REPLY_EMAIL,
+                receiversEmail,
+                sender.getEmail(),
+                subject,
+                shareMessage,
+                attachments)
     }
 
     def notifyForgotUsername(User user) {
