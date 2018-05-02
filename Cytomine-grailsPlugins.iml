@@ -7,17 +7,17 @@
     <facet type="web" name="GrailsWeb">
       <configuration>
         <webroots>
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/rest-api-doc-0.6/web-app" relative="/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/rest-api-doc-0.6/grails-app/views" relative="/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/resources-1.2.8/web-app" relative="/" />
           <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/quartz-monitor-0.3-RC3/web-app" relative="/" />
           <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/quartz-monitor-0.3-RC3/grails-app/views" relative="/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/plugin-config-0.2.0/web-app" relative="/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/mail-1.0.7/grails-app/views" relative="/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/export-1.6/web-app" relative="/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/spring-security-core-2.0-RC4/grails-app/views" relative="/" />
           <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/spring-security-appinfo-2.0-RC2/grails-app/views" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/rest-api-doc-0.6/web-app" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/rest-api-doc-0.6/grails-app/views" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/mail-1.0.7/grails-app/views" relative="/" />
           <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/database-migration-1.3.8/grails-app/views" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/plugin-config-0.2.0/web-app" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/export-1.6/web-app" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/resources-1.2.8/web-app" relative="/" />
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/spring-security-core-2.0-RC4/grails-app/views" relative="/" />
         </webroots>
         <sourceRoots />
       </configuration>

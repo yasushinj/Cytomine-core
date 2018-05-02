@@ -47,8 +47,8 @@ class SoftwareUserRepository extends CytomineDomain {
     @Override
     void checkAlreadyExist() {
         SoftwareUserRepository.withNewSession {
-            if (username) {
-                SoftwareUserRepository softwareUserRepository = SoftwareUserRepository.findByUsername(username)
+            if (provider && username && prefix) {
+                SoftwareUserRepository softwareUserRepository = SoftwareUserRepository.findByProviderAndUsernameAndPrefix(provider, username, prefix)
                 if (softwareUserRepository != null && softwareUserRepository.id != id) {
                     throw new AlreadyExistException("The software user repository ${softwareUserRepository.username} already exists !")
                 }
