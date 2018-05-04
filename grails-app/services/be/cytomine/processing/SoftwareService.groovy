@@ -68,6 +68,11 @@ class SoftwareService extends ModelService {
         SoftwareProject.findAllByProject(project).collect {it.software}
     }
 
+    def list(SoftwareUserRepository softwareUserRepository) {
+        securityACLService.checkGuest(cytomineService.currentUser)
+        Software.findAllBySoftwareUserRepositoryAndDeprecated(softwareUserRepository, false)
+    }
+
     /**
      * Add the new domain with JSON data
      * @param json New domain data
