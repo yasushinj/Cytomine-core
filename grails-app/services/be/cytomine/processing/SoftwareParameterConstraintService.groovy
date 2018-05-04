@@ -17,6 +17,7 @@ package be.cytomine.processing
  */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.SoftwareParameterConstraintException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
@@ -27,7 +28,7 @@ import be.cytomine.utils.Task
 
 class SoftwareParameterConstraintService extends ModelService {
 
-    static final separator = "ß"
+    static final separator = "ð"
 
     static transactional = true
 
@@ -78,33 +79,51 @@ class SoftwareParameterConstraintService extends ModelService {
         return [domain.id]
     }
 
+    @Override
+    def beforeAdd(def domain) {
+        SoftwareParameterConstraint softwareParameterConstraint = domain as SoftwareParameterConstraint
+
+        String parameterType = softwareParameterConstraint.softwareParameter.type
+        String constraintType = softwareParameterConstraint.parameterConstraint.dataType
+
+        if (parameterType.trim().toLowerCase() != constraintType.trim().toLowerCase()) {
+            throw new SoftwareParameterConstraintException("Incompatible data types !")
+        }
+    }
+
     def evaluate(SoftwareParameterConstraint domain, def parameterValue) {
         ParameterConstraint currentParameterConstraint = domain.parameterConstraint
         SoftwareParameter currentSoftwareParameter = domain.softwareParameter
-
-        //Number, String, Date, Boolean, Domain (e.g: image instance id,...), ListDomain
-
-        String parameterReplaced = null
-
-        switch (currentSoftwareParameter.type.toLowerCase()) {
-            case "number":
-                parameterReplaced = "(Double.valueOf(${parameterValue}) as Number)"
-                break
-            case "string":
-                parameterReplaced = '"" + ' + parameterValue
-                break
-
-        }
 
         def expression = currentParameterConstraint.expression
         expression = expression
                 .replaceAll("\\[value]", domain.value)
                 .replaceAll("\\[separator]", separator)
-                .replaceAll("\\[parameterValue]", parameterReplaced)
+                .replaceAll("\\[parameterValue]", parameterValue as String)
 
-        println expression
+        log.info("Expression ${expression}")
 
         return Eval.me(expression)
+//        String parameterReplaced = null
+//
+//        switch (currentSoftwareParameter.type.toLowerCase()) {
+//            case "number":
+//                parameterReplaced = "(Double.valueOf(${parameterValue}) as Number)"
+//                break
+//            case "string":
+//                parameterReplaced = '"" + ' + parameterValue
+//                break
+//        }
+//
+//        def expression = currentParameterConstraint.expression
+//        expression = expression
+//                .replaceAll("\\[value]", domain.value)
+//                .replaceAll("\\[separator]", separator)
+//                .replaceAll("\\[parameterValue]", parameterReplaced)
+//
+//        println expression
+//
+//        return Eval.me(expression)
     }
 
 }

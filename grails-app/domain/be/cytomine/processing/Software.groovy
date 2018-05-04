@@ -66,12 +66,16 @@ class Software extends CytomineDomain {
     /**
      * Command to execute software
      */
+    @RestApiObjectField(description = "The command used to execute the piece of software")
     String executeCommand
 
+    @RestApiObjectField(description = "The command used to retrieve the image")
     String pullingCommand
 
+    @RestApiObjectField(description = "Flag used to identify the validity of a piece of software")
     Boolean deprecated
 
+    @RestApiObjectField(description = "The version")
     String softwareVersion
 
     @RestApiObjectFields(params=[
@@ -91,7 +95,8 @@ class Software extends CytomineDomain {
     static belongsTo = [SoftwareUserRepository]
 
     static constraints = {
-        name(nullable: false, unique: true)
+        name(nullable: false, unique: false)
+        softwareVersion(nullable: false, unique: false)
         resultName(nullable:true)
         description(nullable:true, blank : false, maxSize: 65560)
         resultSample(nullable:true)
@@ -107,13 +112,15 @@ class Software extends CytomineDomain {
     /**
      * Check if this domain will cause unique constraint fail if saving on database
      */
+    @Override
     void checkAlreadyExist() {
         Software.withNewSession {
-            if(name) {
-                Software softwareSameName = Software.findByName(name)
-                if(softwareSameName && (softwareSameName.id!=id))  {
-                    throw new AlreadyExistException("Software "+softwareSameName.name + " already exist!")
+            if (name && softwareVersion) {
+                Software softwareSameNameAndVersion = Software.findByNameAndSoftwareVersion(name, softwareVersion)
+                if (softwareSameNameAndVersion && softwareSameNameAndVersion.id != id) {
+                    throw new AlreadyExistException("Software " + softwareSameNameAndVersion.name + " " + softwareSameNameAndVersion.softwareVersion + " already exist !")
                 }
+
             }
         }
     }

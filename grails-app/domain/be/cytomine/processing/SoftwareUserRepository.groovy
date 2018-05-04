@@ -19,10 +19,11 @@ package be.cytomine.processing
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.AlreadyExistException
 import be.cytomine.utils.JSONUtils
+import com.rabbitmq.tools.json.JSONUtil
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
-@RestApiObject(name = "Software user repository", description = "")
+@RestApiObject(name = "Software user repository", description = "Representation of a repository manager and its docker hub")
 class SoftwareUserRepository extends CytomineDomain {
 
     @RestApiObjectField(description = "The provider name the user repository")
@@ -31,12 +32,16 @@ class SoftwareUserRepository extends CytomineDomain {
     @RestApiObjectField(description = "The username of the user repository")
     String username
 
+    @RestApiObjectField(description = "The docker username associated to the software repository")
+    String dockerUsername
+
     @RestApiObjectField(description = "The prefix used to identify a software repository")
     String prefix
 
     static constraints = {
         provider(nullable: false, blank: false)
         username(nullable: false, blank: false)
+        dockerUsername(nullable: false, blank: false)
     }
 
     static mapping = {
@@ -47,8 +52,8 @@ class SoftwareUserRepository extends CytomineDomain {
     @Override
     void checkAlreadyExist() {
         SoftwareUserRepository.withNewSession {
-            if (provider && username && prefix) {
-                SoftwareUserRepository softwareUserRepository = SoftwareUserRepository.findByProviderAndUsernameAndPrefix(provider, username, prefix)
+            if (provider && username && dockerUsername && prefix) {
+                SoftwareUserRepository softwareUserRepository = SoftwareUserRepository.findByProviderAndUsernameAndDockerUsernameAndPrefix(provider, username, dockerUsername, prefix)
                 if (softwareUserRepository != null && softwareUserRepository.id != id) {
                     throw new AlreadyExistException("The software user repository ${softwareUserRepository.username} already exists !")
                 }
@@ -66,6 +71,7 @@ class SoftwareUserRepository extends CytomineDomain {
         domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
         domain.provider = JSONUtils.getJSONAttrStr(json, 'provider')
         domain.username = JSONUtils.getJSONAttrStr(json, 'username')
+        domain.dockerUsername = JSONUtils.getJSONAttrStr(json, 'dockerUsername')
         domain.prefix = JSONUtils.getJSONAttrStr(json, 'prefix')
         return domain
     }
@@ -79,6 +85,7 @@ class SoftwareUserRepository extends CytomineDomain {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['provider'] = domain?.provider
         returnArray['username'] = domain?.username
+        returnArray['dockerUsername'] = domain?.dockerUsername
         returnArray['prefix'] = domain?.prefix
         return returnArray
     }

@@ -630,9 +630,10 @@ class BootstrapUtilsService {
     }
 
     void addDefaultProcessingServer() {
+        log.info("Add the default processing server")
+
         SpringSecurityUtils.doWithAuth {
             if (!ProcessingServer.findByName("local-instance")) {
-                // TODO : config file
                 ProcessingServer processingServer = new ProcessingServer(
                         name: "local-container",
                         host: "localhost",
@@ -675,28 +676,43 @@ class BootstrapUtilsService {
     }
 
     void addDefaultConstraints() {
+        log.info("Add the default constraints")
+
         SpringSecurityUtils.doWithAuth {
             def constraints = []
+            
             // "Number" dataType
-            constraints.add(new ParameterConstraint(name: "minimum", expression: '[parameterValue] < [value]', dataType: "Number"))
-            constraints.add(new ParameterConstraint(name: "maximum", expression: '[parameterValue] > [value]', dataType: "Number"))
-            constraints.add(new ParameterConstraint(name: "equals", expression: '[parameterValue] == [value]', dataType: "Number"))
-            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").find { elem -> (Double.valueOf(elem) as Number) == [parameterValue] } != null', dataType: "Number"))
+            log.info("Add Number constraints")
+            constraints.add(new ParameterConstraint(name: "minimum", expression: '(Double.valueOf("[parameterValue]") as Number) < (Double.valueOf("[value]") as Number)', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '(Double.valueOf("[parameterValue]") as Number) > (Double.valueOf("[value]") as Number)', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "equals", expression: '(Double.valueOf("[parameterValue]") as Number) == (Double.valueOf("[value]") as Number)', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").find { elem -> (Double.valueOf(elem) as Number) == (Double.valueOf("[parameterValue]") as Number) } != null', dataType: "Number"))
 
             // "String" dataType
-            constraints.add(new ParameterConstraint(name: "minimum", expression: '[parameterValue].length() < [value].length()', dataType: "String"))
-            constraints.add(new ParameterConstraint(name: "maximum", expression: '[parameterValue].length() < [value].length()', dataType: "String"))
-            constraints.add(new ParameterConstraint(name: "equals", expression: '[parameterValue] == [value]', dataType: "String"))
-            constraints.add(new ParameterConstraint(name: "in", expression: '[value].tokenize([separator]).contains([parameterValue])', dataType: "String"))
+            log.info("Add String constraints")
+            constraints.add(new ParameterConstraint(name: "minimum", expression: '"[parameterValue]".length() < "[value]".length()', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '"[parameterValue]".length() < "[value]".length()', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "equals", expression: '"[parameterValue]" == "[value]"', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize([separator]).contains("[parameterValue]")', dataType: "String"))
 
             // "Boolean" dataType
-            constraints.add(new ParameterConstraint(name: "equals", expression: 'Boolean.parseBoolean([value]) == Boolean.parseBoolean([parameterValue])', dataType: "Boolean"))
+            log.info("Add Boolean constraints")
+            constraints.add(new ParameterConstraint(name: "equals", expression: 'Boolean.parseBoolean("[value]") == Boolean.parseBoolean("[parameterValue]")', dataType: "Boolean"))
 
+            // "Date" dataType
+            log.info("Add Date constraints")
+            constraints.add(new ParameterConstraint(name: "minimum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") > new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") < new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
+            constraints.add(new ParameterConstraint(name: "equals", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") == new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize([separator]).contains("[parameterValue]")', dataType: "Date"))
+
+            // dateMin, dateMax, timeEquals, timeIn
             constraints.each { constraint ->
-                if (!ParameterConstraint.findByName(constraint.name as String)) {
+                if (!ParameterConstraint.findByNameAndDataType(constraint.name as String, constraint.dataType as String)) {
                     constraint.save()
                 }
             }
+
         }
     }
 

@@ -132,5 +132,4 @@ class SoftwareUserRepositoryService extends ModelService {
         amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
     }
 
-
 }

@@ -26,17 +26,17 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
-@RestApiObject(name = "Software para", description = "")
+@RestApiObject(name = "Software parameter constraint services", description = "Methods for managing software parameter constraints")
 class RestSoftwareParameterConstraintController extends RestController {
 
     def softwareParameterConstraintService
 
-    @RestApiMethod(description = "")
+    @RestApiMethod(description = "Get all the software parameter constraints available in Cytomine")
     def list() {
         responseSuccess(softwareParameterConstraintService.list())
     }
 
-    @RestApiMethod(description = "")
+    @RestApiMethod(description = "Get a specific software parameter constraint")
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The constraint id")
     ])
@@ -49,12 +49,12 @@ class RestSoftwareParameterConstraintController extends RestController {
         }
     }
 
-    @RestApiMethod(description = "Add a new constraint to Cytomine")
+    @RestApiMethod(description = "Add a new software parameter constraint to Cytomine")
     def add() {
         add(softwareParameterConstraintService, request.JSON)
     }
 
-    @RestApiMethod(description = "")
+    @RestApiMethod(description = "Update a software parameter constraint available in Cytomine")
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The container id")
     ])
@@ -62,7 +62,7 @@ class RestSoftwareParameterConstraintController extends RestController {
         update(softwareParameterConstraintService, request.JSON)
     }
 
-    @RestApiMethod(description = "", listing = true)
+    @RestApiMethod(description = "Delete a software parameter constraint", listing = true)
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The container id")
     ])
@@ -70,7 +70,7 @@ class RestSoftwareParameterConstraintController extends RestController {
         delete(softwareParameterConstraintService, JSON.parse("{id : $params.id}"), null)
     }
 
-    @RestApiMethod(description = "")
+    @RestApiMethod(description = "Evaluate a software parameter constraint")
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The software constraint id"),
             @RestApiParam(name = "value", type = "string", paramType = RestApiParamType.PATH, description = "The constraint's value")
@@ -79,12 +79,8 @@ class RestSoftwareParameterConstraintController extends RestController {
         SoftwareParameterConstraint softwareParameterConstraint = SoftwareParameterConstraint.read(params.long('id'))
         def value = params.get('value')
 
-        println "VALUE : ${value}"
-
         if (softwareParameterConstraint && value) {
-            def result = [result: softwareParameterConstraintService.evaluate(softwareParameterConstraint, value)]
-
-            responseSuccess(result)
+            responseSuccess([result: softwareParameterConstraintService.evaluate(softwareParameterConstraint, value)])
         } else {
             responseNotFound("SoftwareParameterConstraint", params.id)
         }

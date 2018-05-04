@@ -22,10 +22,8 @@ import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
-@RestApiObject(name = "Software parameter constraint", description = "")
+@RestApiObject(name = "Software parameter constraint", description = "The association between a software parameter and a parameter constraint")
 class SoftwareParameterConstraint extends CytomineDomain {
-
-    // https://stackoverflow.com/questions/13261984/gorm-many-to-many-mapping-and-jointable-with-an-additional-field
 
     @RestApiObjectField(description = "The value af a given constraint")
     String value

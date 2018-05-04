@@ -25,7 +25,7 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
-@RestApiObject(name = "", description = "")
+@RestApiObject(name = "Processing server services", description = "Methods for managing processing servers")
 class RestProcessingServerController extends RestController {
 
     def processingServerService

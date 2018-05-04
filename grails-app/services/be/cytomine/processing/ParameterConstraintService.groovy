@@ -76,22 +76,4 @@ class ParameterConstraintService extends ModelService {
         return [domain.id, domain.name]
     }
 
-    def evaluate(def parameterConstraintId, def softwareParameterId, def value) {
-        ParameterConstraint parameterConstraint = ParameterConstraint.findById(parameterConstraintId as Long)
-        if (parameterConstraint == null) println("THROW EXCEPTION") // TODO: refactor later
-
-        SoftwareParameter softwareParameter = SoftwareParameter.findById(softwareParameterId as Long)
-
-        SoftwareParameterConstraint softwareParameterConstraint = SoftwareParameterConstraint.findByParameterConstraintAndSoftwareParameter(parameterConstraint, softwareParameter)
-        if (softwareParameterConstraint == null) println("TRHOW EXCEPTION") //TODO: refactor later
-
-        def expression = parameterConstraint.expression
-                .replaceAll("\\[value]", softwareParameterConstraint.value)
-                .replaceAll("\\[separator]", separator)
-
-        if (parameterConstraint.argumentsNumber == 1) {
-            return Eval.x(value, expression)
-        }
-    }
-
 }

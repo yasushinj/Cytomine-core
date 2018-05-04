@@ -17,11 +17,12 @@ package be.cytomine.processing
  */
 
 import be.cytomine.CytomineDomain
+import be.cytomine.Exception.AlreadyExistException
 import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
-@RestApiObject(name = "", description = "")
+@RestApiObject(name = "Parameter constraint", description = "Representation of a constraint applicable to a software parameter")
 class ParameterConstraint extends CytomineDomain {
 
     @RestApiObjectField(description = "The name of the constraint")
@@ -30,13 +31,25 @@ class ParameterConstraint extends CytomineDomain {
     @RestApiObjectField(description = "The expression used to evaluate the constraint")
     String expression
 
-    @RestApiObjectField(description = "The data type associated with the constraint")
+    @RestApiObjectField(description = "The data type associated with the constraint (Number, Boolean, String, Date, ...)")
     String dataType
 
     static constraints = {
-        name(nullable: false, blank: false, unique: true)
+        name(nullable: false, blank: false, unique: false)
         expression(nullable: false, blank: false)
         dataType(nullable: false, blank: false)
+    }
+
+    @Override
+    void checkAlreadyExist() {
+        ParameterConstraint.withNewSession {
+            if (name && dataType) {
+                ParameterConstraint parameterConstraint = ParameterConstraint.findByNameAndDataType(name, dataType)
+                if (parameterConstraint != null && parameterConstraint.id != id) {
+                    throw new AlreadyExistException("The parameter constraint [${name} - ${dataType}] already exist !")
+                }
+            }
+        }
     }
 
     /**

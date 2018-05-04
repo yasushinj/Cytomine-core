@@ -25,19 +25,19 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
-@RestApiObject(name = "Constraint services", description = "Methods for managing constraints")
+@RestApiObject(name = "Parameter constraint services", description = "Methods for managing parameter constraints")
 class RestParameterConstraintController extends RestController {
 
     def parameterConstraintService
 
-    @RestApiMethod(description = "Get all the constraints available in Cytomine")
+    @RestApiMethod(description = "Get all the parameter constraints available in Cytomine")
     def list() {
         responseSuccess(parameterConstraintService.list())
     }
 
-    @RestApiMethod(description = "Get a constraint")
+    @RestApiMethod(description = "Get a parameter constraint")
     @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The constraint id")
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The parameter constraint id")
     ])
     def show() {
         ParameterConstraint parameterConstraint = parameterConstraintService.read(params.long('id'))
@@ -48,12 +48,12 @@ class RestParameterConstraintController extends RestController {
         }
     }
 
-    @RestApiMethod(description = "Add a new constraint to Cytomine")
+    @RestApiMethod(description = "Add a new parameter constraint to Cytomine")
     def add() {
         add(parameterConstraintService, request.JSON)
     }
 
-    @RestApiMethod(description = "Update a constraint available in Cytomine")
+    @RestApiMethod(description = "Update a parameter constraint available on Cytomine")
     @RestApiParams(params = [
         @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The container id")
     ])
@@ -61,20 +61,12 @@ class RestParameterConstraintController extends RestController {
         update(parameterConstraintService, request.JSON)
     }
 
-    @RestApiMethod(description = "Delete a constraint", listing = true)
+    @RestApiMethod(description = "Delete a parameter constraint", listing = true)
     @RestApiParams(params = [
         @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The container id")
     ])
     def delete() {
         delete(parameterConstraintService, JSON.parse("{id : $params.id}"), null)
     }
-
-    @RestApiMethod(description = "Evaluate a constraint using its expression")
-    @RestApiParams(params = [])
-    def evaluate() {
-        long parameterConstraintId = params.long('parameterconstraintid')
-
-    }
-
 
 }
