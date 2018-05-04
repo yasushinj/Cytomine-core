@@ -368,9 +368,11 @@ class AbstractImageService extends ModelService {
         List<UploadedFile> files = UploadedFile.findAllByImage(abstractImage)
         UploadedFile file = files.size() == 1 ? files[0] : files.find{it.parent!=null}
         String fif = file?.absolutePath
+
+
         if (fif) {
             String imageServerURL = abstractImage.getRandomImageServerURL()
-            return "$imageServerURL/image/download?fif=$fif"
+            return "$imageServerURL/image/download?fif=$fif&mimeType=${abstractImage.mimeType}"
         } else {
             return null
         }
