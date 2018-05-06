@@ -30,17 +30,17 @@ class RestSoftwareUserRepositoryController extends RestController {
 
     def softwareUserRepositoryService
 
-    @RestApiMethod(description = "Get all the software user repositories available in Cytomine.", listing = true)
+    @RestApiMethod(description = "Get all the software user repositories.", listing = true)
     def list() {
         responseSuccess(softwareUserRepositoryService.list())
     }
 
-    @RestApiMethod(description = "Add a new software user repository to cytomine.")
+    @RestApiMethod(description = "Add a new software user repository.")
     def add() {
         add(softwareUserRepositoryService, request.JSON)
     }
 
-    @RestApiMethod(description = "Get a specific software user repository")
+    @RestApiMethod(description = "Get a specific software user repository.")
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The software repository id")
     ])
@@ -66,10 +66,10 @@ class RestSoftwareUserRepositoryController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The software user repository id")
     ])
     def delete() {
-        delete(softwareUserRepositoryService, JSON.parse("{id : $params.id}", null))
+        delete(softwareUserRepositoryService, JSON.parse("{id : $params.id}"), null)
     }
 
-    @RestApiMethod(description = "Check for newly added softwares in all repositories")
+    @RestApiMethod(description = "Refresh the software user repositories loaded by the software-router")
     def refreshUserRepositories() {
         responseSuccess(softwareUserRepositoryService.refreshRepositories())
     }

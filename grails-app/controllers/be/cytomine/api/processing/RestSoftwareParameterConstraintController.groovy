@@ -31,7 +31,7 @@ class RestSoftwareParameterConstraintController extends RestController {
 
     def softwareParameterConstraintService
 
-    @RestApiMethod(description = "Get all the software parameter constraints available in Cytomine")
+    @RestApiMethod(description = "Get all the software parameter constraints")
     def list() {
         responseSuccess(softwareParameterConstraintService.list())
     }
@@ -54,7 +54,7 @@ class RestSoftwareParameterConstraintController extends RestController {
         add(softwareParameterConstraintService, request.JSON)
     }
 
-    @RestApiMethod(description = "Update a software parameter constraint available in Cytomine")
+    @RestApiMethod(description = "Update a software parameter constraint")
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The container id")
     ])

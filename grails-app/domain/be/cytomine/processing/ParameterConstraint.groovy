@@ -25,13 +25,13 @@ import org.restapidoc.annotation.RestApiObjectField
 @RestApiObject(name = "Parameter constraint", description = "Representation of a constraint applicable to a software parameter")
 class ParameterConstraint extends CytomineDomain {
 
-    @RestApiObjectField(description = "The name of the constraint")
+    @RestApiObjectField(description = "The name of the parameter constraint")
     String name
 
-    @RestApiObjectField(description = "The expression used to evaluate the constraint")
+    @RestApiObjectField(description = "The expression used to evaluate the parameter constraint")
     String expression
 
-    @RestApiObjectField(description = "The data type associated with the constraint (Number, Boolean, String, Date, ...)")
+    @RestApiObjectField(description = "The data type associated with the parameter constraint (Number, Boolean, String, Date, ...)")
     String dataType
 
     static constraints = {
