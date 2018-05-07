@@ -19,7 +19,7 @@ import be.cytomine.image.UploadedFile
 */
 
 import be.cytomine.image.server.Storage
-import be.cytomine.ontology.AlgoAnnotationTerm
+import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.ontology.Property
 import be.cytomine.project.Project
 import be.cytomine.security.User
@@ -57,9 +57,6 @@ class BootstrapOldVersionService {
         def methods = this.metaClass.methods*.name.sort().unique()
         Version version = Version.getLastVersion()
 
-        println "version"
-        println version.number
-
         methods.each { method ->
             if (method.startsWith("init")) {
                 Long methodDate = Long.parseLong(method.replace("init", ""))
@@ -76,12 +73,13 @@ class BootstrapOldVersionService {
     }
 
     void init20180409() {
+        log.info "20180409"
         //unused domain
-        println "drop table"
+        log.info "drop table"
         new Sql(dataSource).executeUpdate("DROP TABLE image_property;")
 
         // add ltree column
-        println "add ltree"
+        log.info "add ltree"
         boolean exists = new Sql(dataSource).rows("SELECT column_name " +
                 "FROM information_schema.columns " +
                 "WHERE table_name='uploaded_file' and column_name='l_tree';").size() == 1;
@@ -91,7 +89,7 @@ class BootstrapOldVersionService {
         }
 
         // update ltree
-        println "update ltree"
+        log.info "update ltree"
         UploadedFile.findAllByParentIsNullAndLTreeIsNull().each {
             it.save()
         }
@@ -111,29 +109,44 @@ class BootstrapOldVersionService {
             }
         }
 
-        println "create new uploadedfile"
+        log.info "create new uploadedfile"
         // recreate uploadedFile from abstractimage
         // only for converted abstract_image
         ufs = UploadedFile.createCriteria().list {
-            ne("filename", image.path)
+            join("image")
+            createAlias("image", "i")
+            neProperty("filename", "i.path")
+
+            isNotNull("image")
         }
 
-        ufs.each {
-            def uf = new UploadedFile()
-            uf.contentType = "image/pyrtiff"
-            uf.image = it.image
-            uf.originalFilename = uf.image.originalFilename
-            uf.filename = uf.image.path
-            uf.parent = it
-            uf.path= it.path
-            uf.ext = FilenameUtils.getExtension(uf.filename)
-            uf.status = UploadedFile.DEPLOYED
-            uf.user = it.user
+        UploadedFile.withTransaction {
+            ufs.each {
+                def uf = new UploadedFile()
 
-            uf.save(flush: true, failOnError: true)
+                uf.contentType = "image/pyrtiff"
+                uf.image = it.image
 
-            it.image = null
-            it.save()
+                String filename = it.image.originalFilename
+                int index = filename.lastIndexOf('.')
+                filename = filename.substring(0,index) + "_pyr"+ filename.substring(index)
+
+                uf.originalFilename = filename
+                uf.filename = it.image.path
+                uf.parent = it
+                uf.path= it.path
+                uf.ext = FilenameUtils.getExtension(it.image.path)
+                uf.status = UploadedFile.DEPLOYED
+                uf.user = it.user
+                uf.storages = StorageAbstractImage.findAllByAbstractImage(it.image).collect {it.storage.id}
+                uf.size = 0L
+
+                uf.save(flush: true, failOnError: true)
+
+                it.image = null
+                it.status = UploadedFile.CONVERTED
+                it.save()
+            }
         }
     }
 

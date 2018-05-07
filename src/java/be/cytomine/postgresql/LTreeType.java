@@ -22,7 +22,7 @@ public class LTreeType implements UserType {
     }
 
     public boolean equals(Object x, Object y) throws HibernateException {
-        return x.equals(y);
+        return x!= null && x.equals(y);
     }
 
     public int hashCode(Object x) throws HibernateException {
