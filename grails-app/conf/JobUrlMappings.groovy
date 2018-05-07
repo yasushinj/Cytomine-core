@@ -28,7 +28,7 @@ class JobUrlMappings {
             action = [DELETE: "deleteAllJobData", GET: "listAllJobData"]
         }
         "/api/job/$id/execute.$format" (controller : "restJob") {
-            action = [POST : "execute"]
+            action = [POST : "execute", GET: "execute"]
         }
         "/api/job/$job_id/processing_server/$processing_server_id/execute.$format" (controller: "restJob") {
             action = [POST: "executeWithProcessingServer", GET: "executeWithProcessingServer"]
