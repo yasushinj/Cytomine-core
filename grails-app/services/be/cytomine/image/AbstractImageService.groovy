@@ -240,7 +240,7 @@ class AbstractImageService extends ModelService {
         String imageServerURL = abstractImage.getRandomImageServerURL()
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
-        return "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
+        return "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
     }
 
     def getCropIMSUrl(params) {

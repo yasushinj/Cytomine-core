@@ -45,7 +45,11 @@ class AttachedFileService extends ModelService {
     }
 
     def list(Long domainIdent,String domainClassName) {
-        securityACLService.check(domainIdent,domainClassName,"container",READ)
+        if(domainClassName.contains("AbstractImage")) {
+            securityACLService.checkAtLeastOne(domainIdent,domainClassName,"containers",READ)
+        } else {
+            securityACLService.check(domainIdent,domainClassName,"container",READ)
+        }
         return AttachedFile.findAllByDomainIdentAndDomainClassName(domainIdent,domainClassName)
     }
 
