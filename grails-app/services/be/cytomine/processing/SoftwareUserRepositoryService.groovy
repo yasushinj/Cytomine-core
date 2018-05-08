@@ -104,7 +104,7 @@ class SoftwareUserRepositoryService extends ModelService {
 
     @Override
     def getStringParamsI18n(def domain) {
-        return [domain.id, domain.provider, domain.username, domain.prefix]
+        return [domain.username, domain.dockerUsername, domain.prefix]
     }
 
     @Override
@@ -115,6 +115,7 @@ class SoftwareUserRepositoryService extends ModelService {
                        id: softwareUserRepository.id,
                        provider: softwareUserRepository.provider,
                        username: softwareUserRepository.username,
+                       dockerUsername: softwareUserRepository.dockerUsername,
                        prefix: softwareUserRepository.prefix]
 
         JsonBuilder jsonBuilder = new JsonBuilder()
