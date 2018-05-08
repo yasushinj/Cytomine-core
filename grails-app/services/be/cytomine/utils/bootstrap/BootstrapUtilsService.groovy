@@ -690,10 +690,10 @@ class BootstrapUtilsService {
 
             // "String" dataType
             log.info("Add String constraints")
-            constraints.add(new ParameterConstraint(name: "minimum", expression: '"[parameterValue]".length() < "[value]".length()', dataType: "String"))
-            constraints.add(new ParameterConstraint(name: "maximum", expression: '"[parameterValue]".length() < "[value]".length()', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "minimum", expression: '"[parameterValue]".length() < [value]', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '"[parameterValue]".length() < [value]', dataType: "String"))
             constraints.add(new ParameterConstraint(name: "equals", expression: '"[parameterValue]" == "[value]"', dataType: "String"))
-            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize([separator]).contains("[parameterValue]")', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").contains("[parameterValue]")', dataType: "String"))
 
             // "Boolean" dataType
             log.info("Add Boolean constraints")
@@ -704,7 +704,7 @@ class BootstrapUtilsService {
             constraints.add(new ParameterConstraint(name: "minimum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") > new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
             constraints.add(new ParameterConstraint(name: "maximum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") < new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
             constraints.add(new ParameterConstraint(name: "equals", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") == new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
-            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize([separator]).contains("[parameterValue]")', dataType: "Date"))
+            constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").contains("[parameterValue]")', dataType: "Date"))
 
             // dateMin, dateMax, timeEquals, timeIn
             constraints.each { constraint ->
