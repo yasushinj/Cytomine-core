@@ -80,7 +80,7 @@ class ProcessingServerService extends ModelService {
 
     @Override
     def getStringParamsI18n(def domain) {
-        return [domain.id, domain.name, domain.host, domain.type, domain.processingMethodName]
+        return [domain.name]
     }
 
     @Override

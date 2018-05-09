@@ -73,7 +73,7 @@ class ParameterConstraintService extends ModelService {
 
     @Override
     def getStringParamsI18n(def domain) {
-        return [domain.id, domain.name]
+        return [domain.name, domain.dataType]
     }
 
 }

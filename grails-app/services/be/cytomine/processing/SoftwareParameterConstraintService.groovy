@@ -76,7 +76,7 @@ class SoftwareParameterConstraintService extends ModelService {
 
     @Override
     def getStringParamsI18n(def domain) {
-        return [domain.id]
+        return [domain.softwareParameter, domain.parameterConstraint]
     }
 
     @Override
@@ -104,26 +104,6 @@ class SoftwareParameterConstraintService extends ModelService {
         log.info("Expression ${expression}")
 
         return Eval.me(expression)
-//        String parameterReplaced = null
-//
-//        switch (currentSoftwareParameter.type.toLowerCase()) {
-//            case "number":
-//                parameterReplaced = "(Double.valueOf(${parameterValue}) as Number)"
-//                break
-//            case "string":
-//                parameterReplaced = '"" + ' + parameterValue
-//                break
-//        }
-//
-//        def expression = currentParameterConstraint.expression
-//        expression = expression
-//                .replaceAll("\\[value]", domain.value)
-//                .replaceAll("\\[separator]", separator)
-//                .replaceAll("\\[parameterValue]", parameterReplaced)
-//
-//        println expression
-//
-//        return Eval.me(expression)
     }
 
 }
