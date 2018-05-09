@@ -195,6 +195,7 @@ class RestUploadedFileController extends RestController {
         UploadedFile uploadedFile = UploadedFile.read(params.long('uploadedFile'))
         String path = request.JSON.path ?: uploadedFile.getFilename();
         String filename = request.JSON.filename ?: uploadedFile.getFilename();
+        String originalFilename = request.JSON.originalFilename ?: uploadedFile.getOriginalFilename();
         String mimeType = request.JSON.mimeType;
         Collection<Storage> storages = []
         uploadedFile.getStorages()?.each {
@@ -221,7 +222,7 @@ class RestUploadedFileController extends RestController {
         log.info "#################################################################"
         AbstractImage abstractImage = new AbstractImage(
                 filename: filename,
-                originalFilename:  uploadedFile.getOriginalFilename(),
+                originalFilename:  originalFilename,
                 scanner: null,
                 sample: sample,
                 path: path,
