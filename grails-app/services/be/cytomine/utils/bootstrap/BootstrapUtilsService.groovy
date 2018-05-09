@@ -636,9 +636,9 @@ class BootstrapUtilsService {
             if (!ProcessingServer.findByName("local-instance")) {
                 ProcessingServer processingServer = new ProcessingServer(
                         name: "local-container",
-                        host: "localhost",
+                        host: "slurm",
                         username: "cytomine",
-                        port: 10022,
+                        port: 22,
                         type: "slurm",
                         processingMethodName: "SlurmProcessingMethod"
                 )
@@ -691,7 +691,7 @@ class BootstrapUtilsService {
             // "String" dataType
             log.info("Add String constraints")
             constraints.add(new ParameterConstraint(name: "minimum", expression: '"[parameterValue]".length() < [value]', dataType: "String"))
-            constraints.add(new ParameterConstraint(name: "maximum", expression: '"[parameterValue]".length() < [value]', dataType: "String"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '"[parameterValue]".length() > [value]', dataType: "String"))
             constraints.add(new ParameterConstraint(name: "equals", expression: '"[parameterValue]" == "[value]"', dataType: "String"))
             constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").contains("[parameterValue]")', dataType: "String"))
 
@@ -701,8 +701,8 @@ class BootstrapUtilsService {
 
             // "Date" dataType
             log.info("Add Date constraints")
-            constraints.add(new ParameterConstraint(name: "minimum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") > new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
-            constraints.add(new ParameterConstraint(name: "maximum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") < new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
+            constraints.add(new ParameterConstraint(name: "minimum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") < new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") > new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
             constraints.add(new ParameterConstraint(name: "equals", expression: 'new Date().parse("HH:mm:ss", "[parameterValue]").format("HH:mm:ss") == new Date().parse("HH:mm:ss", "[value]").format("HH:mm:ss")', dataType: "Date"))
             constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").contains("[parameterValue]")', dataType: "Date"))
 
