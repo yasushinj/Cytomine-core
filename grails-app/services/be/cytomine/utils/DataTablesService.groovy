@@ -195,10 +195,11 @@ class DataTablesService {
                         "WHERE uf.content_type NOT similar to '%zip|ome%' AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') \n" +
                         "AND uf.user_id = "+cytomineService.currentUser.id+" \n" +
                         "GROUP BY uf.id, parent.original_filename \n" +
-                        "ORDER BY "+order+"\n" +
+                        "ORDER BY "+order+"\n" /*+
                         "LIMIT "+params.max+" OFFSET "+ params.offset
         params.max = 0;
-        params.offset = 0;
+        params.offset = 0; ==> will not return the total size so pagination will not work !
+        */
         def data = []
         def sql = new Sql(dataSource)
         sql.eachRow(request) {
