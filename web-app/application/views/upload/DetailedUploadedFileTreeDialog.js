@@ -33,7 +33,6 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
     doLayout: function (tpl) {
         var self = this;
 
-        console.log("doLayout")
         $("#detailedUploadedFileTreeDialog-"+self.model.id).remove();
 
         var htmlCode = _.template(tpl, self.model);
@@ -41,7 +40,6 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         $(this.el).append(htmlCode);
 
         $.get( new UploadedFileCollection({ root: self.model.id}).url(), function( data ) {
-            console.log("coucou")
             var nodes = [];
             var allNodes = [];
             var infos = self.getNodeInfo(data.collection[0]);
@@ -75,11 +73,6 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
             }
 
             $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").empty();
-
-            console.log("ici")
-            console.log($("#detailedUploadedFileTreeDialog-"+self.model.id))
-            console.log($("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile"))
-
             $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").dynatree({
                 children: nodes
             });
@@ -108,6 +101,43 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
                 }
             });
         });
+
+        /*$("#detailedUploadedFileTreeDialog-"+self.model.id).on('click', ".deleteUploadedFile", function (e) {
+            var idUpload = $(e.currentTarget).data("id");
+            var idImage = $(e.currentTarget).data("aiid");
+
+            $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('hide');
+
+            DialogModal.initDialogModal(null, idUpload, 'UploadFile', 'Do you want to delete this image ?', 'CONFIRMATIONWARNING', function(){
+                var deleteUploadFile = function() {
+                    new UploadedFileModel({id: idUpload}).destroy({
+                        success: function (model, response) {
+                            window.app.view.message("Uploaded file", "deleted", "success");
+                        },
+                        error: function (model, response) {
+                            var json = $.parseJSON(response.responseText);
+                            window.app.view.message("Delete failed", json.errors, "error");
+                        }
+                    });
+                };
+
+                if(idImage == null || idImage == 'null'|| idImage == 'undefined') {
+                    deleteUploadFile();
+                } else {
+                    new ImageModel({id: idImage}).destroy({
+                        success: function(model, response){
+                            deleteUploadFile();
+                        },
+                        error: function(model, response){
+                            var json = $.parseJSON(response.responseText);
+                            window.app.view.message("Delete failed", json.errors, "error");
+                        }
+                    });
+                }
+            }, function(){
+                $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
+            });
+        });*/
 
         $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
     },
