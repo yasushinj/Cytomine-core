@@ -112,13 +112,13 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def list(User user) {
+    def list(SecUser user) {
         if(currentRoleServiceProxy.isAdminByNow(user)) {
             return AbstractImage.list()
         } else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
             List<AbstractImage> images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}
-            return images
+            return images.findAll{!it.deleted}
         }
     }
 
