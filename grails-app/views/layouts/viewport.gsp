@@ -22,7 +22,7 @@
 <link href="lib/dynatree/skin/ui.dynatree.css" rel="stylesheet" type="text/css"/>
 <link rel='stylesheet' href='lib/stepy/css/jquery.stepy.bootstrap.css' type='text/css'/>
 <link rel='stylesheet' href='lib/multiselect-next/css/jquery.uix.multiselect.css' type='text/css'/>
-<link rel="stylesheet" href="//code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="lib/jquery-ui/jquery-ui.css" />
 <link rel='stylesheet' href='lib/OpenLayers-2.13.1/theme/default/style.css' type='text/css'/>
 <link rel="stylesheet" href="lib/bootstrap-3.0.3/css/bootstrap.min.css"/>
 <link rel="stylesheet" href="lib/Trumbowyg/ui/trumbowyg.min.css"/>
@@ -43,7 +43,7 @@ body {
 <script type="text/javascript" src="lib/mousetrap.min.js"></script>
 
 <wthr:isOldMsie>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>-
+    <script src="lib/jquery/jquery.min.js"></script>-
     <script src="/lib/r2d3/r2d3.js" charset="utf-8"></script>
     <script src="lib/html5.js"></script>
     <script src="lib/Respond/src/respond.js"></script>
@@ -113,7 +113,7 @@ body {
 <script src="lib/Trumbowyg/plugins/upload/trumbowyg.upload.min.js"></script>
 <script src="lib/Trumbowyg/plugins/specialchars/trumbowyg.specialchars.min.js"></script>
 
-<link href="lib/magicsuggest2//magicsuggest-min.css" rel="stylesheet"/>
+<link href="lib/magicsuggest2/magicsuggest-min.css" rel="stylesheet"/>
 <script type="text/javascript" src="lib/magicsuggest2/magicsuggest-min.js"></script>
 
 <g:if test="${Environment.getCurrent() == Environment.DEVELOPMENT || Environment.getCurrent() == Environment.CUSTOM}">
@@ -424,23 +424,11 @@ body {
 <div id="alerts"></div>
 <div id="phono-messages"></div>
 
-<script type="text/javascript">
-    function showClassicWidget() {
-        /*		FreshWidget.show();
-         return false;*/
-    }
-</script>
 
 
 </body>
 
 <g:if test="${Environment.getCurrent() == Environment.PRODUCTION}">
-    <script type="text/javascript" src="//assets.freshdesk.com/widget/freshwidget.js"></script>
-    <script type="text/javascript">
-
-        FreshWidget.init("", {"queryString": "&amp;widgetType=popup", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#0064eb", "alignment": "4", "offset": "-1500px", "formHeight": "500px", "url": "https://cytomine.freshdesk.com"} );
-
-    </script>
 
     <script type="text/javascript" src="lib.js?version=${grailsApplication.metadata.'app.version'}" ></script>
     <script type="text/javascript" src="application.js?version=${grailsApplication.metadata.'app.version'}" ></script>
@@ -448,13 +436,6 @@ body {
 </g:if>
 
 <g:if test="${Environment.getCurrent() == Environment.DEVELOPMENT || Environment.getCurrent() == Environment.CUSTOM }">
-    <script type="text/javascript" src="//assets.freshdesk.com/widget/freshwidget.js"></script>
-    <script type="text/javascript">
-
-        FreshWidget.init("", {"queryString": "&amp;widgetType=popup", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#0064eb", "alignment": "4", "offset": "-1500px", "formHeight": "500px", "url": "https://cytomine.freshdesk.com"} );
-
-    </script>
-
 
     <script type="text/javascript">
         $(function() {
