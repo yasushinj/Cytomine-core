@@ -299,17 +299,20 @@ class RestUserController extends RestController {
     @RestApiMethod(description="Get current user info")
     def showCurrent() {
         SecUser user = secUserService.readCurrentUser()
-        def  maps = JSON.parse(user.encodeAsJSON())
-        def  authMaps = secUserService.getAuth(user)
-        maps.admin = authMaps.get("admin")
-        maps.user = authMaps.get("user")
-        maps.guest = authMaps.get("guest")
-        maps.adminByNow = authMaps.get("adminByNow")
-        maps.userByNow = authMaps.get("userByNow")
-        maps.guestByNow = authMaps.get("guestByNow")
-        maps.isSwitched = SpringSecurityUtils.isSwitched()
-        if(maps.isSwitched) {
-            maps.realUser = SpringSecurityUtils.switchedUserOriginalUsername
+        def maps = JSON.parse(user.encodeAsJSON())
+        if(!user.algo()){
+            def authMaps = secUserService.getAuth(user)
+            maps.admin = authMaps.get("admin")
+            maps.user = authMaps.get("user")
+            maps.guest = authMaps.get("guest")
+            maps.adminByNow = authMaps.get("adminByNow")
+            maps.userByNow = authMaps.get("userByNow")
+            maps.guestByNow = authMaps.get("guestByNow")
+            maps.isSwitched = SpringSecurityUtils.isSwitched()
+            if(maps.isSwitched) {
+                maps.realUser = SpringSecurityUtils.switchedUserOriginalUsername
+            }
+
         }
         responseSuccess(maps)
     }

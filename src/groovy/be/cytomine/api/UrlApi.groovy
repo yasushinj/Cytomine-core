@@ -34,8 +34,8 @@ class UrlApi {
         return "${serverUrl()}/api/$type/${id}.json"
     }
 
-    static def getCropURL(Long idImage, def parameters) {
-        String url = "${serverUrl()}/api/abstractimage/$idImage/crop.png"
+    static def getCropURL(Long idImage, def parameters, String format) {
+        String url = "${serverUrl()}/api/abstractimage/$idImage/crop."+(format ?: "png")
         String query = parameters.collect { key, value ->
             if (value instanceof String)
                 value = URLEncoder.encode(value, "UTF-8")

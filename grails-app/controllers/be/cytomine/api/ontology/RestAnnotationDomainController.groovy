@@ -296,6 +296,8 @@ class RestAnnotationDomainController extends RestController {
      * Check if we ask algo annotation
      */
     private boolean isAlgoAnnotationAsked(def params) {
+        if(params.getBoolean('includeAlgo')) return true;
+
         def idUser = params.getLong('user')
         if(idUser) {
            def user = SecUser.read(idUser)

@@ -111,13 +111,13 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def list(User user) {
+    def list(SecUser user) {
         if(currentRoleServiceProxy.isAdminByNow(user)) {
             return AbstractImage.list()
         } else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
             List<AbstractImage> images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}
-            return images
+            return images.findAll{!it.deleted}
         }
     }
 
@@ -240,7 +240,7 @@ class AbstractImageService extends ModelService {
         String imageServerURL = abstractImage.getRandomImageServerURL()
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
-        return "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
+        return "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
     }
 
     def getCropIMSUrl(params) {
