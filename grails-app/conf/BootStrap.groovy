@@ -106,9 +106,8 @@ class BootStrap {
         log.info "#############################################################################"
 
         if(Version.count()==0) {
-            log.info "Version was not set, set to 0"
-            //Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
-            Version.setCurrentVersion(0)
+            log.info "Version was not set, set to last version"
+            Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
         }
 
         //Initialize marshallers and services

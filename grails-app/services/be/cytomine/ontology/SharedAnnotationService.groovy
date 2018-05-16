@@ -18,6 +18,7 @@ package be.cytomine.ontology
 
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.MiddlewareException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
 import be.cytomine.security.ForgotPasswordToken
@@ -28,6 +29,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import grails.util.Environment
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
@@ -171,7 +173,15 @@ class SharedAnnotationService extends ModelService {
 
 
         log.info "send mail to " + receiversEmail
-        notificationService.notifyShareAnnotation(sender, receiversEmail, json, attachments, cid)
+        try {
+            notificationService.notifyShareAnnotation(sender, receiversEmail, json, attachments, cid)
+        } catch (MiddlewareException e) {
+            if(Environment.getCurrent() == Environment.DEVELOPMENT){
+                e.printStackTrace()
+            } else {
+                throw e
+            }
+        }
 
 
         securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)

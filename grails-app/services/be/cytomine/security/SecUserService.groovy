@@ -80,6 +80,13 @@ class SecUserService extends ModelService {
         SecUser.get(id)
     }
 
+    User getUser(def id) {
+        securityACLService.checkGuest(cytomineService.currentUser)
+        SecUser user = SecUser.get(id)
+        if(user instanceof UserJob) user = ((UserJob)user).user
+        return ((User) user)
+    }
+
     def findByUsername(def username) {
         if(!username) return null
         securityACLService.checkGuest(cytomineService.currentUser)
@@ -111,9 +118,6 @@ class SecUserService extends ModelService {
         data['adminByNow'] = currentRoleServiceProxy.isAdminByNow(user)
         data['userByNow'] = !data['adminByNow'] && currentRoleServiceProxy.isUserByNow(user)
         data['guestByNow'] = !data['adminByNow'] && !data['userByNow'] && currentRoleServiceProxy.isGuestByNow(user)
-//        data['admin'] = false
-//        data['user'] = false
-//        data['ghest'] = true
         return data
     }
 

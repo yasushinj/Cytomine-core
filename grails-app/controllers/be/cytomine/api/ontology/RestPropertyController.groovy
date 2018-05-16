@@ -296,7 +296,7 @@ class RestPropertyController extends RestController {
         add(propertyService, request.JSON)
     }
 
-    @RestApiMethod(description="Add a property to an abstract image")
+    @RestApiMethod(description="Add a property to an generic domain")
     @RestApiParams(params=[
     @RestApiParam(name="idDomain", type="long", paramType = RestApiParamType.PATH, description = "The abstract image id"),
     ])

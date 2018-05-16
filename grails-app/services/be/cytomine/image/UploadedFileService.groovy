@@ -91,6 +91,7 @@ class UploadedFileService extends ModelService {
             row.status = it[i++]
 
             Long imageId = it[i++]
+            row.image = imageId
             row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAssociatedImage(imageId, "macro") : null
             data << row
         }

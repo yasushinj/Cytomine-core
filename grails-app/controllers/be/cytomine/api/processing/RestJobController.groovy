@@ -25,6 +25,7 @@ import be.cytomine.processing.Job
 import be.cytomine.processing.JobData
 import be.cytomine.processing.Software
 import be.cytomine.project.Project
+import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.security.UserJob
 import be.cytomine.utils.Task
@@ -107,7 +108,9 @@ class RestJobController extends RestController {
         try {
             def result = jobService.add(request.JSON)
             long idJob = result?.data?.job?.id
-            jobService.createUserJob(User.read(springSecurityService.currentUser.id), Job.read(idJob))
+            def userjob = jobService.createUserJob(secUserService.getUser(springSecurityService.currentUser.id), Job.read(idJob))
+            result?.data?.job?.userJob = userjob?.id
+            log.info userjob
             responseResult(result)
         } catch (CytomineException e) {
             log.error(e)
