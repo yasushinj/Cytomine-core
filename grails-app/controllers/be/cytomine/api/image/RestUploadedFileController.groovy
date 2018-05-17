@@ -76,7 +76,7 @@ class RestUploadedFileController extends RestController {
                 parent = Long.parseLong(params.parent)
             }
 
-            uploadedFiles = uploadedFileService.list((User)cytomineService.getCurrentUser(), parent, onlyRoots)
+            uploadedFiles = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
         }
 
 

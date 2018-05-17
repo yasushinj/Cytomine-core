@@ -8,6 +8,7 @@ import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.security.UserJob
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
@@ -112,6 +113,7 @@ class UploadedFileService extends ModelService {
      */
     def add(def json) {
         SecUser currentUser = cytomineService.getCurrentUser()
+        if(currentUser instanceof UserJob) currentUser = (UserJob)currentUser.user
         securityACLService.checkUser(currentUser)
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
