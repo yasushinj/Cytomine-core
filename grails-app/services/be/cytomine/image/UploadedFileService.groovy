@@ -113,7 +113,7 @@ class UploadedFileService extends ModelService {
      */
     def add(def json) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        if(currentUser instanceof UserJob) currentUser = (UserJob)currentUser.user
+        if(currentUser instanceof UserJob) currentUser = ((UserJob)currentUser).user
         securityACLService.checkUser(currentUser)
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
