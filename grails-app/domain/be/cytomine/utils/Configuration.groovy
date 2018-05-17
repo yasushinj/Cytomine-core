@@ -53,7 +53,7 @@ class Configuration extends CytomineDomain implements Serializable {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['key'] = domain?.key
         returnArray['value'] = domain?.value
-        returnArray['readingRole'] = domain?.readingRole.id
+        returnArray['readingRole'] = domain?.readingRole?.id
 
         return returnArray
     }
@@ -73,6 +73,7 @@ class Configuration extends CytomineDomain implements Serializable {
         return domain
     }
 
+    //TODO fix this
     public CytomineDomain container() {
         return this;
     }
