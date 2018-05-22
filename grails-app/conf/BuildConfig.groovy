@@ -91,7 +91,7 @@ grails.project.dependency.resolution = {
         compile ':cache:1.1.7'
         compile ':asset-pipeline:1.9.6'
         compile ":grails-melody:1.49.0"
-        compile ":rest-api-doc:0.4.1"
+        compile ":rest-api-doc:0.6"
         compile ":rest:0.8"
         compile ':spring-security-core:2.0-RC4'
         compile ":spring-security-acl:2.0-RC2"
