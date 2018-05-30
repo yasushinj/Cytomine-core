@@ -89,6 +89,19 @@ class RoiAnnotationTests {
         assert 400 == result.code
     }
 
+    void testAddRoiAnnotationOutOfBoundsGeom() {
+        def annotationToAdd = BasicInstanceBuilder.getRoiAnnotation()
+        ImageInstance im = annotationToAdd.image
+
+        def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.location = "POLYGON((-1 -1,-1 $im.baseImage.height,${im.baseImage.width+5} $im.baseImage.height,$im.baseImage.width 0,-1 -1))"
+
+        def result = RoiAnnotationAPI.create(updateAnnotation.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        assert result.data.location.toString() == "POLYGON ((0 $im.baseImage.height, $im.baseImage.width $im.baseImage.height, $im.baseImage.width 0, 0 0, 0 $im.baseImage.height))"
+
+    }
+
     void testAddRoiAnnotationBadGeomEmpty() {
         def annotationToAdd = BasicInstanceBuilder.getRoiAnnotation()
         def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())

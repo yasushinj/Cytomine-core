@@ -29,6 +29,8 @@ import be.cytomine.sql.AnnotationListing
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -48,6 +50,7 @@ class AlgoAnnotationService extends ModelService {
     def annotationListingService
     def securityACLService
     def sharedAnnotationService
+    def imageInstanceService
 
     def currentDomain() {
         return AlgoAnnotation
@@ -120,9 +123,15 @@ class AlgoAnnotationService extends ModelService {
         def minPoint = json.minPoint
         def maxPoint = json.maxPoint
 
+        Geometry annotationForm = new WKTReader().read(json.location);
+        ImageInstance im = imageInstanceService.read(json.image)
+        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
+
+        annotationForm = annotationForm.intersection(imageBounds)
+
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(json.location,minPoint,maxPoint)
+            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),minPoint,maxPoint)
             json.location = new WKTWriter().write(data.geometry)
             json.geometryCompression = data.rate
         } catch (Exception e) {
@@ -162,9 +171,16 @@ class AlgoAnnotationService extends ModelService {
     def update(AlgoAnnotation annotation, def jsonNewData) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkIsCreator(annotation,currentUser)
+
+        Geometry annotationForm = new WKTReader().read(jsonNewData.location);
+        ImageInstance im = imageInstanceService.read(jsonNewData.image)
+        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
+
+        annotationForm = annotationForm.intersection(imageBounds)
+
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(jsonNewData.location, annotation?.geometryCompression)
+            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),annotation?.geometryCompression)
             jsonNewData.location = new WKTWriter().write(data.geometry)
         } catch (Exception e) {
             log.error("Cannot simplify:" + e)
