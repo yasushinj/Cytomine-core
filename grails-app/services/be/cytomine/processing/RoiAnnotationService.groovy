@@ -17,11 +17,14 @@ package be.cytomine.processing
 */
 
 import be.cytomine.command.*
+import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.sql.RoiAnnotationListing
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -40,6 +43,7 @@ class RoiAnnotationService extends ModelService {
     def propertyService
     def annotationListingService
     def securityACLService
+    def imageInstanceService
 
 
     def currentDomain() {
@@ -68,9 +72,15 @@ class RoiAnnotationService extends ModelService {
         securityACLService.check(json.project, Project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
 
+        Geometry annotationForm = new WKTReader().read(json.location);
+        ImageInstance im = imageInstanceService.read(json.image)
+        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
+
+        annotationForm = annotationForm.intersection(imageBounds)
+
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(json.location,minPoint,maxPoint)
+            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),minPoint,maxPoint)
             json.location = new WKTWriter().write(data.geometry)
             json.geometryCompression = data.rate
         } catch (Exception e) {
@@ -92,10 +102,16 @@ class RoiAnnotationService extends ModelService {
     def update(RoiAnnotation annotation, def jsonNewData) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkIsSameUserOrAdminContainer(annotation,annotation.user,currentUser)
+        Geometry annotationForm = new WKTReader().read(jsonNewData.location);
+        ImageInstance im = imageInstanceService.read(jsonNewData.image)
+        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
+
+        annotationForm = annotationForm.intersection(imageBounds)
+
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(json.location, annotation?.geometryCompression)
-            json.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),annotation?.geometryCompression)
+            jsonNewData.location = new WKTWriter().write(data.geometry)
         } catch (Exception e) {
             log.error("Cannot simplify:" + e)
         }
