@@ -16,7 +16,8 @@
 
 var DetailedUploadedFileTreeDialog = Backbone.View.extend({
 
-    initialize: function () {
+    initialize: function (options) {
+        this.callback = options.callback;
         _.bindAll(this, 'render');
     },
     render: function () {
@@ -30,6 +31,7 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         return this;
     },
     tree:null,
+    callback:null,
 
     doLayout: function (tpl) {
         var self = this;
@@ -58,10 +60,10 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
                 if(data.parent != null){
                     $.get( new UploadedFileModel({ id: data.parent}).url(), function( parentData ) {
                         data.parentFilename = parentData.originalFilename;
-                        new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data}).render();
+                        new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data, callback:self.callback}).render();
                     });
                 } else {
-                    new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data}).render();
+                    new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data, callback: self.callback}).render();
                 }
             });
         });
@@ -74,13 +76,13 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
 
             DialogModal.initDialogModal(null, idUpload, 'UploadFile', 'Do you want to delete this image ?', 'CONFIRMATIONWARNING', function(){
                 var deleteUploadFile = function() {
-                    $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
                     new UploadedFileModel({id: idUpload}).destroy({
                         success: function (model, response) {
                             window.app.view.message("Uploaded file", "deleted", "success");
                             self.update();
                         },
                         error: function (model, response) {
+                            $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
                             var json = $.parseJSON(response.responseText);
                             window.app.view.message("Delete failed", json.errors, "error");
                         }
@@ -106,6 +108,12 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         });
 
         $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
+
+
+        $("#detailedUploadedFileTreeDialog-"+self.model.id).on('hide.bs.modal', function () {
+            self.callback();
+        });
+
     },
 
     update : function () {
@@ -116,6 +124,11 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
         }
 
         $.get( new UploadedFileCollection({ root: self.model.id}).url(), function( data ) {
+            if(data.collection.length == 0) {
+                $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('hide');
+            }
+
+            $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('show');
 
             var nodes = [];
             var allNodes = [];
@@ -153,6 +166,8 @@ var DetailedUploadedFileTreeDialog = Backbone.View.extend({
             self.tree = $("#detailedUploadedFileTreeDialog-"+self.model.id).find("#treefile").dynatree({
                 children: nodes
             });
+        }).fail(function( data ) {
+            $("#detailedUploadedFileTreeDialog-"+self.model.id).modal('hide');
         });
     },
 

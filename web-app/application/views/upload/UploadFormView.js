@@ -729,6 +729,10 @@ var UploadFormView = Backbone.View.extend({
             self.uploadDataTables.ajax.reload();
         });
 
+        var closeCallback = function () {
+            self.uploadDataTables.ajax.reload();
+        };
+
         $(this.el).on('click', ".detailsUploadedFile", function (e) {
             var idUpload = $(e.currentTarget).data("ufid");
 
@@ -738,7 +742,7 @@ var UploadFormView = Backbone.View.extend({
 
             var data = $.extend(true, {}, row.data());
 
-            new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data}).render();
+            new DetailedUploadedFileTreeDialog({el: "#dialogs", model: data, callback : closeCallback}).render();
 
 
             //var idImage = $(e.currentTarget).data("aiid");
