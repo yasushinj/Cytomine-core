@@ -38,7 +38,9 @@ class CommandController extends RestController {
         if(params.domain){
             domain = params.domain;
         }
-        responseSuccess(commandService.list(domain, DeleteCommand))
+        Long afterThan;
+        if(params.after) afterThan = params.long("after")
+        responseSuccess(commandService.list(domain, DeleteCommand, afterThan))
     }
     /**
      * Do undo op on the last command/transaction done by this user

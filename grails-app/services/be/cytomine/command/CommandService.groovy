@@ -80,11 +80,11 @@ class CommandService {
         return result
     }
 
-    def list(String domain, Class commandclass) {
+    def list(String domain, Class commandclass, Long afterThan) {
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(domain) {
             String serviceName = GrailsNameUtils.getPropertyName(domain) + 'Service'
-            return commandclass.findAllByServiceName(serviceName)
+            return commandclass.findAllByServiceNameAndCreatedGreaterThan(serviceName, new Date(afterThan))
         }
         return commandclass.findAll()
     }
