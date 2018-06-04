@@ -1709,14 +1709,14 @@ class BasicInstanceBuilder {
         def config = Configuration.findByKey(key)
 
         if (!config) {
-            config = new Configuration(key: key, value: value, readingRole: SecRole.findByAuthority("ROLE_GUEST"))
+            config = new Configuration(key: key, value: value, readingRole: Configuration.Role.ALL)
             config = saveDomain(config)
         }
         config
     }
 
     static Configuration getConfigurationNotExist(boolean save = false) {
-        def config = new Configuration(key: getRandomString(), value: getRandomString(), readingRole: SecRole.findByAuthority("ROLE_GUEST"))
+        def config = new Configuration(key: getRandomString(), value: getRandomString(), readingRole: Configuration.Role.ALL)
         log.debug "add config "+ config.key
         Configuration.list().each {
             log.debug it.id + " " + it.version + " " + it.key
