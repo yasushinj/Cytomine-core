@@ -1,5 +1,7 @@
 package be.cytomine
 
+import be.cytomine.image.ImageInstance
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
