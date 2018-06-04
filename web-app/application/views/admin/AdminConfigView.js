@@ -70,11 +70,11 @@ var AdminConfigView = Backbone.View.extend({
         $(self.el).find("#saveWelcomeMessageButton").on("click", function(){
             var text = $("#adminWelcomeMessageEditor").trumbowyg('html');
 
-            var data = {key: "WELCOME", value: text};
+            var data = {key: "WELCOME", value: text, readingRole: "all"};
 
             $.ajax({
                 type:"PUT",
-                url: "api/config/key/"+data.key+".json",
+                url: "api/configuration/key/"+data.key+".json",
                 data: JSON.stringify(data),
                 contentType:"application/json; charset=utf-8",
                 success : function(){
@@ -92,7 +92,7 @@ var AdminConfigView = Backbone.View.extend({
             if(config != null) {
                 $.ajax({
                     type:"DELETE",
-                    url: "api/config/key/"+"WELCOME"+".json",
+                    url: "api/configuration/key/"+"WELCOME"+".json",
                     contentType:"application/json; charset=utf-8",
                     success : function(){
                         self.allConfigs["WELCOME"] = "";
@@ -113,7 +113,7 @@ var AdminConfigView = Backbone.View.extend({
 
         var self = this;
 
-        $.get( "api/config.json", function( data ) {
+        $.get( "api/configuration.json", function( data ) {
             self.allConfigs = {};
             $.each(data.collection, function(index,item){
                 self.allConfigs[item.key] = item.value;
