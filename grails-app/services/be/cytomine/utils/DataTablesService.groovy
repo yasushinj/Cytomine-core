@@ -194,6 +194,7 @@ class DataTablesService {
                         "  ) parent ON parent.id = uf.parent_id\n" +
                         "WHERE uf.content_type NOT similar to '%zip|ome%' AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') \n" +
                         "AND uf.user_id = "+cytomineService.currentUser.id+" \n" +
+                        "AND uf.original_filename LIKE '"+_search+"' \n" +
                         "GROUP BY uf.id, parent.original_filename \n" +
                         "ORDER BY "+order+"\n" /*+
                         "LIMIT "+params.max+" OFFSET "+ params.offset
