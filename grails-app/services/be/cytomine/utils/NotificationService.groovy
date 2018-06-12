@@ -124,7 +124,6 @@ class NotificationService {
                 cid : cid
         ])
 
-        String subject = json.subject ?: ""
         cytomineMailService.send(
                 cytomineMailService.NO_REPLY_EMAIL,
                 receiversEmail,
