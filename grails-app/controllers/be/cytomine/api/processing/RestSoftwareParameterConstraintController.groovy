@@ -19,7 +19,6 @@ package be.cytomine.api.processing
 import be.cytomine.api.RestController
 import be.cytomine.processing.SoftwareParameterConstraint
 import com.mongodb.util.JSON
-import org.json.simple.JSONObject
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiParam

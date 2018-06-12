@@ -22,7 +22,6 @@ import be.cytomine.processing.Software
 import be.cytomine.processing.SoftwareUserRepository
 import be.cytomine.project.Project
 import grails.converters.JSON
-import groovy.json.JsonSlurper
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
@@ -56,7 +55,7 @@ class RestSoftwareController extends RestController {
     }
 
     /**
-     * List all software for a given software user repository
+     * List all software by software user repository
      */
     @RestApiMethod(description = "Get all the software for a software use repository", listing = true)
     @RestApiParams(params = [

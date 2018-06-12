@@ -176,7 +176,6 @@ class JobRuntimeService {
         log.info("KILL REQUEST : jobId - ${job.id} | processingServer - ${job.processingServer.id}")
 
         amqpQueueService.publishMessage(AmqpQueue.findByName(queueName), jsonBuilder.toString())
-
     }
 
     def getLogs(Job job) {

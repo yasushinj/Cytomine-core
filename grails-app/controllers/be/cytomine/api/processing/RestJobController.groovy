@@ -190,7 +190,6 @@ class RestJobController extends RestController {
         log.info("JOB : ${job}")
 
         securityACLService.check(job.container(), READ)
-        UserJob userJob = UserJob.findByJob(job)
 
         jobRuntimeService.killJob(job)
 
