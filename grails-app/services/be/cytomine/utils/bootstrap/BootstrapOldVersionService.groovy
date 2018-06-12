@@ -75,6 +75,24 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
+    void init20180313() {
+        boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'software' " +
+                "AND COLUMN_NAME = 'service_name';").size() == 1
+        if (exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN service_name;")
+        }
+    }
+
+    void init20180311() {
+        boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'processing_server' and COLUMN_NAME = 'url';").size() == 1
+        if (exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE processing_server RENAME TO imaging_server;")
+        }
+
     void init20180301() {
         boolean exists = new Sql(dataSource).rows("SELECT column_name "+
                 "FROM information_schema.columns "+
@@ -94,6 +112,7 @@ class BootstrapOldVersionService {
 //            imagePropertiesService.populate(image)
 //            imagePropertiesService.extractUseful(image)
 //        }
+
     }
 
     void init20171219() {

@@ -208,5 +208,8 @@ class BootStrap {
 
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
+
+        bootstrapUtilsService.addDefaultProcessingServer()
+        bootstrapUtilsService.addDefaultConstraints()
     }
 }

@@ -31,6 +31,7 @@ import org.restapidoc.annotation.RestApiObjectFields
  */
 @RestApiObject(name = "Job", description = "A job is a software instance. This is the execution of software with some parameters")
 class Job extends CytomineDomain  {
+
     /**
      * Job status (enum type are too heavy with GORM)
      */
@@ -73,6 +74,9 @@ class Job extends CytomineDomain  {
     @RestApiObjectField(description = "The project of the job")
     Project project
 
+    @RestApiObjectField(description = "The processing server in charge to run the job")
+    ProcessingServer processingServer
+
     /**
      * Generic field for job rate info
      * The rate is a quality value about the job works
@@ -106,6 +110,7 @@ class Job extends CytomineDomain  {
         statusComment(nullable:true)
         status(range: 0..7)
         rate(nullable: true)
+        processingServer(nullable: true)
     }
 
     static mapping = {
@@ -138,12 +143,13 @@ class Job extends CytomineDomain  {
         domain.progress = JSONUtils.getJSONAttrInteger(json, 'progress', 0)
         domain.statusComment = JSONUtils.getJSONAttrStr(json, 'statusComment')
         domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
+        domain.processingServer = JSONUtils.getJSONAttrDomain(json, "processingServer", new ProcessingServer(), false)
         domain.software = JSONUtils.getJSONAttrDomain(json, "software", new Software(), true)
         domain.rate = JSONUtils.getJSONAttrDouble(json, 'rate', -1)
         domain.dataDeleted =  JSONUtils.getJSONAttrBoolean(json,'dataDeleted', false)
         domain.created = JSONUtils.getJSONAttrDate(json, 'created')
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
-        return domain;
+        return domain
     }
 
     /**
@@ -159,6 +165,7 @@ class Job extends CytomineDomain  {
         returnArray['number'] = domain?.number
         returnArray['statusComment'] = domain?.statusComment
         returnArray['project'] = domain?.project?.id
+        returnArray['processingServer'] = domain?.processingServer?.id
         returnArray['software'] = domain?.software?.id
         returnArray['softwareName'] = domain?.software?.name
         returnArray['rate'] = domain?.rate

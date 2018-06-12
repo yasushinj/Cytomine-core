@@ -1,7 +1,4 @@
 package be.cytomine
-
-import be.cytomine.processing.ProcessingServer
-
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -32,7 +29,7 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  * Time: 16:12
  * To change this template use File | Settings | File Templates.
  */
-class ProcessingServerTests  {
+class ImagingServerTests {
 
     void testListProcessingServerWithCredential() {
         def result = ProcessingServerAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)

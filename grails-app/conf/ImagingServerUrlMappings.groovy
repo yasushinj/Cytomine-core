@@ -14,21 +14,15 @@
 * limitations under the License.
 */
 
-class SoftwareUrlMappings {
+class ImagingServerUrlMappings {
 
     static mappings = {
-        /* Software */
-        "/api/software.$format"(controller:"restSoftware"){
-            action = [GET: "list",POST:"add"]
+        "/api/imaging_server.$format"(controller: "restImagingServer") {
+            action = [GET: "list", POST: "add"]
         }
-        "/api/software/$id.$format"(controller:"restSoftware"){
-            action = [GET:"show",PUT:"update", DELETE:"delete"]
-        }
-        "/api/project/$id/software.$format"(controller:"restSoftware"){
-            action = [GET: "listByProject"]
-        }
-        "/api/software_user_repository/$id/software.$format"(controller: "restSoftware") {
-            action = [GET: "listBySoftwareUserRepository"]
+        "/api/imaging_server.$format"(controller: "restImagingServer") {
+            action = [GET: "show", DELETE: "delete"]
         }
     }
+
 }
