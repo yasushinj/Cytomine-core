@@ -159,14 +159,14 @@ class BootstrapUtilsService {
     }
 
     def createConfigurations(){
-        SecRole adminRole = SecRole.findByAuthority("ROLE_ADMIN")
-        SecRole guestRole = SecRole.findByAuthority("ROLE_GUEST")
+        Configuration.Role adminRole = Configuration.Role.ADMIN
+        Configuration.Role allUsers = Configuration.Role.ALL
 
         def configs = []
 
-        configs << new Configuration(key: "welcome", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: guestRole)
+        configs << new Configuration(key: "welcome", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
 
-        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: guestRole)
+        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: allUsers)
 
         configs << new Configuration(key: "admin.email", value: grailsApplication.config.grails.admin.email, readingRole: adminRole)
 
@@ -181,7 +181,7 @@ class BootstrapUtilsService {
         //configs << new Configuration(key: , value: , readingRole: )
 
         //LDAP values
-        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: guestRole)
+        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: allUsers)
         configs << new Configuration(key: "ldap.context.server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
         configs << new Configuration(key: "ldap.search.base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
         configs << new Configuration(key: "ldap.context.managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
