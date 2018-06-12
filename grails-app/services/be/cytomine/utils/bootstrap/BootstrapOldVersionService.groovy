@@ -1,5 +1,7 @@
 package be.cytomine.utils.bootstrap
 
+import be.cytomine.image.AbstractImage
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -53,6 +55,7 @@ class BootstrapOldVersionService {
     def tableService
     def mongo
     def noSQLCollectionService
+    def imagePropertiesService
 
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
@@ -72,16 +75,6 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
     }
 
-    void init20180319() {
-        boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
-                "FROM INFORMATION_SCHEMA.COLUMNS " +
-                "WHERE TABLE_NAME = 'amqp_queue'").size() == 1
-        if (exists) {
-            log.info("TABLE amqp_queue FOUND !")
-//            new Sql(dataSource).executeUpdate("ALTER TABLE amqp_queue ADD COLUMN ")
-        }
-    }
-
     void init20180313() {
         boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
@@ -99,6 +92,27 @@ class BootstrapOldVersionService {
         if (exists) {
             new Sql(dataSource).executeUpdate("ALTER TABLE processing_server RENAME TO imaging_server;")
         }
+
+    void init20180301() {
+        boolean exists = new Sql(dataSource).rows("SELECT column_name "+
+                "FROM information_schema.columns "+
+                "WHERE table_name='abstract_image' and column_name='colorspace';").size() == 1;
+        if(!exists){
+            // add columns
+            new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image ADD COLUMN bit_depth integer;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image ADD COLUMN colorspace varchar(255);")
+        }
+
+//        List<AbstractImage> abstractImages = AbstractImage.findAllByDeletedIsNullAndBitDepthIsNull()
+//        log.info "${abstractImages.size()} image to populate"
+//        abstractImages.eachWithIndex { image, index ->
+//            if(index%100==0) {
+//                log.info "Populate image properties: ${(index/abstractImages.size())*100}"
+//            }
+//            imagePropertiesService.populate(image)
+//            imagePropertiesService.extractUseful(image)
+//        }
+
     }
 
     void init20171219() {

@@ -15,14 +15,14 @@
 */
 
 
-class ConfigUrlMappings
+class ConfigurationUrlMappings
 {
     static mappings = {
 
-        "/api/config.$format"(controller:"restConfig"){
-            action = [GET:"list"]
+        "/api/configuration.$format"(controller:"restConfiguration"){
+            action = [GET:"list", POST:"add"]
         }
-        "/api/config/key/$key.$format"(controller:"restConfig"){
+        "/api/configuration/key/$key.$format"(controller:"restConfiguration"){
             action = [GET:"show",PUT:"update",DELETE:"delete"]
         }
     }

@@ -17,7 +17,7 @@ package be.cytomine.api.utils
 */
 
 import be.cytomine.api.RestController
-import be.cytomine.utils.Config
+import be.cytomine.utils.Configuration
 import grails.converters.JSON
 import grails.converters.XML
 import org.restapidoc.annotation.RestApiMethod
@@ -25,13 +25,13 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
-class RestConfigController extends RestController {
+class RestConfigurationController extends RestController {
 
-    def configService
+    def configurationService
 
     @RestApiMethod(description="Get all global configs")
     def list() {
-        def data = configService.list()
+        def data = configurationService.list()
         responseSuccess(data)
     }
 
@@ -40,31 +40,31 @@ class RestConfigController extends RestController {
             @RestApiParam(name="key", type="String", paramType = RestApiParamType.PATH,description = "The config key")
     ])
     def show() {
-        Config config = configService.readByKey(params.key)
+        Configuration config = configurationService.readByKey(params.key)
 
         if (config) {
             responseSuccess(config)
         } else {
-            responseNotFound("Config", params.key)
+            responseNotFound("Configuration", params.key)
         }
     }
 
     @RestApiMethod(description="Add a global config")
     def add() {
-        add(configService, request.JSON)
+        add(configurationService, request.JSON)
     }
 
 
     @RestApiMethod(description="Edit a config")
     def update() {
-        Config config = configService.readByKey(params.key)
+        Configuration config = configurationService.readByKey(params.key)
 
         if (config) {
             request.JSON.id = config.id
-            configService.update(config, request.JSON)
-            update(configService, request.JSON)
+            configurationService.update(config, request.JSON)
+            update(configurationService, request.JSON)
         } else {
-            add(configService, request.JSON)
+            add(configurationService, request.JSON)
         }
     }
 
@@ -76,8 +76,8 @@ class RestConfigController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The config id")
     ])
     def delete()  {
-        Config config = configService.readByKey(params.key)
-        def result = configService.delete(config)
+        Configuration config = configurationService.readByKey(params.key)
+        def result = configurationService.delete(config)
         responseResult(result)
     }
 

@@ -50,6 +50,8 @@ class SoftwareParameterService extends ModelService{
     }
 
     def list(Software software, Boolean includeSetByServer = false) {
+        if (includeSetByServer)
+            return SoftwareParameter.findAllBySoftware(software)
         SoftwareParameter.findAllBySoftwareAndSetByServer(software, includeSetByServer)
     }
 

@@ -110,15 +110,21 @@ class ImageGroupHDF5Service  extends  ModelService{
             else
                 a.channel <=> b.channel
         }
+        def maxBits = 8
         def imagesFilenames = imagesSequenceList.collect {
-            def absolutePath =  it.image.baseImage.getAbsolutePath()
-            def path = it.image.baseImage.path
+            def baseImage = it.image.baseImage
+            def absolutePath =  baseImage.getAbsolutePath()
+            def path = baseImage.path
             def basePath = absolutePath - path
-            basePath + it.image.baseImage.filename
+            basePath + baseImage.filename
+        }
+
+        imagesSequenceList.each {
+            maxBits = Math.max(maxBits, it.image.baseImage.bitDepth ?: 8)
         }
 
         def body = [user: currentUser.id, files: imagesFilenames, dest: destination, id: id,
-                    cytomine:UrlApi.serverUrl()]
+                    cytomine:UrlApi.serverUrl(), bpc:maxBits]
 
         log.info body
 

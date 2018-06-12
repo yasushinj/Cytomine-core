@@ -62,7 +62,7 @@ class ImageSequenceService extends ModelService {
     }
 
     def get(ImageInstance image) {
-        ImageSequence.findByImage(image)
+        ImageSequence.findAllByImage(image)
     }
 
     def list(ImageGroup imageGroup) {
