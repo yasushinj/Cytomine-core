@@ -160,14 +160,14 @@ class RestJobController extends RestController {
 
     @RestApiMethod(description = "Execute a job with a given processing server")
     @RestApiParams(params = [
-        @RestApiParam(name = "job_id", type = "long", paramType = RestApiParamType.PATH, description = "The job id"),
-        @RestApiParam(name = "processing_server_id", type = "long", paramType = RestApiParamType.PATH, description = "The processing server id")
+        @RestApiParam(name = "jobId", type = "long", paramType = RestApiParamType.PATH, description = "The job id"),
+        @RestApiParam(name = "processingServerId", type = "long", paramType = RestApiParamType.PATH, description = "The processing server id")
     ])
     def executeWithProcessingServer() {
-        long jobId = params.long("job_id")
+        long jobId = params.long("jobId")
         Job job = Job.read(jobId)
 
-        long processingServerId = params.long("processing_server_id")
+        long processingServerId = params.long("processingServerId")
         ProcessingServer processingServer = ProcessingServer.read(processingServerId)
 
         securityACLService.check(job.container(), READ)
