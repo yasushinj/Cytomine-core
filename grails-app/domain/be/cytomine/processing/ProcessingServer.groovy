@@ -47,13 +47,15 @@ class ProcessingServer extends CytomineDomain {
     @RestApiObjectField(description = "The amqp queue associated to a given processing server")
     AmqpQueue amqpQueue
 
+    // Most of parameters must be nullable to accept rename of old ProcessingServer to ImagingServer
     static constraints = {
-        name(nullable: false, blank: false, unique: true)
+        name(nullable: true, blank: false, unique: true)
         host(blank: false)
-        username(blank: false, nullable: false)
-        port(blank: false)
-        processingMethodName(blank: false)
+        username(blank: false, nullable: true)
+        port(nullable: false)
+        processingMethodName(blank: false, nullable: true)
         amqpQueue(nullable: true)
+        type(nullable: true)
     }
 
     static mapping = {
@@ -83,12 +85,12 @@ class ProcessingServer extends CytomineDomain {
      */
     static ProcessingServer insertDataIntoDomain(def json, def domain = new ProcessingServer()) {
         domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
-        domain.name = JSONUtils.getJSONAttrStr(json, 'name')
-        domain.host = JSONUtils.getJSONAttrStr(json, 'host')
-        domain.username = JSONUtils.getJSONAttrStr(json, 'username')
+        domain.name = JSONUtils.getJSONAttrStr(json, 'name', true)
+        domain.host = JSONUtils.getJSONAttrStr(json, 'host', true)
+        domain.username = JSONUtils.getJSONAttrStr(json, 'username', true)
         domain.port = JSONUtils.getJSONAttrInteger(json, 'port', null)
-        domain.type = JSONUtils.getJSONAttrStr(json, 'type')
-        domain.processingMethodName = JSONUtils.getJSONAttrStr(json, 'processingMethodName')
+        domain.type = JSONUtils.getJSONAttrStr(json, 'type', true)
+        domain.processingMethodName = JSONUtils.getJSONAttrStr(json, 'processingMethodName', true)
         domain.amqpQueue = JSONUtils.getJSONAttrDomain(json, 'amqpQueue', new AmqpQueue(), false)
         return domain
     }

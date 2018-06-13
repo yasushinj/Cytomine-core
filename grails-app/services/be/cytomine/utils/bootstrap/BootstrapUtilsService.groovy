@@ -545,24 +545,26 @@ class BootstrapUtilsService {
             amqpQueueService.createAmqpQueueDefault(queueCommunication)
         }
         ProcessingServer.list().each {
-            String queueName = amqpQueueService.queuePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
-            if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
-                String exchangeName = amqpQueueService.exchangePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
-                String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
-                AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
-                aq.save(failOnError: true)
-            }
-            if(!amqpQueueService.checkRabbitQueueExists(queueName,mbs)) {
-                AmqpQueue aq = amqpQueueService.read(queueName)
+            if (it.name != null) {
+                String queueName = amqpQueueService.queuePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
+                if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
+                    String exchangeName = amqpQueueService.exchangePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
+                    String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
+                    AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
+                    aq.save(failOnError: true)
+                }
+                if(!amqpQueueService.checkRabbitQueueExists(queueName,mbs)) {
+                    AmqpQueue aq = amqpQueueService.read(queueName)
 
-                // Creates the queue on the rabbit server
-                amqpQueueService.createAmqpQueueDefault(aq)
+                    // Creates the queue on the rabbit server
+                    amqpQueueService.createAmqpQueueDefault(aq)
 
-                // Notify the queueCommunication that a software has been added
-                def mapInfosQueue = [name: aq.name, host: aq.host, exchange: aq.exchange]
-                JsonBuilder builder = new JsonBuilder()
-                builder(mapInfosQueue)
-                amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), builder.toString())
+                    // Notify the queueCommunication that a software has been added
+                    def mapInfosQueue = [name: aq.name, host: aq.host, exchange: aq.exchange]
+                    JsonBuilder builder = new JsonBuilder()
+                    builder(mapInfosQueue)
+                    amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), builder.toString())
+                }
             }
         }
 
@@ -690,9 +692,9 @@ class BootstrapUtilsService {
         log.info("Add the default processing server")
 
         SpringSecurityUtils.doWithAuth {
-            if (!ProcessingServer.findByName("local-instance")) {
+            if (!ProcessingServer.findByName("local-server")) {
                 ProcessingServer processingServer = new ProcessingServer(
-                        name: "local-container",
+                        name: "local-server",
                         host: "slurm",
                         username: "cytomine",
                         port: 22,
@@ -708,13 +710,13 @@ class BootstrapUtilsService {
                     String exchangeName = amqpQueueService.exchangePrefixProcessingServer + processingServerName
                     String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
                     AmqpQueue amqpQueue = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
-                    amqpQueue.save(failOnError: true)
+                    amqpQueue.save(flush: true, failOnError: true)
 
                     amqpQueueService.createAmqpQueueDefault(amqpQueue)
 
                     // Associates the processing server to an amqp queue
                     processingServer.amqpQueue = amqpQueue
-                    processingServer.save()
+                    processingServer.save(flush: true)
 
                     // Sends a message on the communication queue to warn the software router a new queue has been created
                     def message = [requestType: "addProcessingServer",
@@ -766,7 +768,7 @@ class BootstrapUtilsService {
             // dateMin, dateMax, timeEquals, timeIn
             constraints.each { constraint ->
                 if (!ParameterConstraint.findByNameAndDataType(constraint.name as String, constraint.dataType as String)) {
-                    constraint.save()
+                    constraint.save(flush: true)
                 }
             }
 

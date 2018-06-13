@@ -59,11 +59,6 @@ class Software extends CytomineDomain {
     String description
 
     /**
-     * Result sample (image, report, ...). Still used?????
-     */
-    byte[] resultSample
-
-    /**
      * Command to execute software
      */
     @RestApiObjectField(description = "The command used to execute the piece of software")
@@ -96,11 +91,14 @@ class Software extends CytomineDomain {
 
     static constraints = {
         name(nullable: false, unique: false)
-        softwareVersion(nullable: false, unique: false)
+        softwareVersion(nullable: true, unique: false)
         resultName(nullable:true)
         description(nullable:true, blank : false, maxSize: 65560)
-        resultSample(nullable:true)
         executeCommand(nullable: true, maxSize: 5000)
+        defaultProcessingServer(nullable: true)
+        deprecated(nullable: true)
+        pullingCommand(nullable: true)
+        softwareUserRepository(nullable: true)
     }
 
     static mapping = {

@@ -17,7 +17,7 @@ package be.cytomine
 
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
-import be.cytomine.test.http.ProcessingServerAPI
+import be.cytomine.test.http.ImagingServerAPI
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -31,65 +31,65 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  */
 class ImagingServerTests {
 
-    void testListProcessingServerWithCredential() {
-        def result = ProcessingServerAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testListImagingServerWithCredential() {
+        def result = ImagingServerAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
     }
 
-    void testShowProcessingServerWithCredential() {
-        def result = ProcessingServerAPI.show(BasicInstanceBuilder.getProcessingServer().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testShowImagingServerWithCredential() {
+        def result = ImagingServerAPI.show(BasicInstanceBuilder.getImagingServer().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        result = ProcessingServerAPI.show(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImagingServerAPI.show(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
     }
 
-    void testAddProcessingServerCorrect() {
-        def processingServerToAdd = BasicInstanceBuilder.getProcessingServerNotExist()
+    void testAddImagingServerCorrect() {
+        def imagingServerToAdd = BasicInstanceBuilder.getImagingServerNotExist()
 
-        def result = ProcessingServerAPI.create(processingServerToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImagingServerAPI.create(imagingServerToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         int idSoftware = result.data.id
 
-        result = ProcessingServerAPI.show(idSoftware, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImagingServerAPI.show(idSoftware, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
 
-    void testAddProcessingServerAlreadyExist() {
-        def processingServerToAdd = BasicInstanceBuilder.getProcessingServer()
-        def result = ProcessingServerAPI.create(processingServerToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testAddImagingServerAlreadyExist() {
+        def imagingServerToAdd = BasicInstanceBuilder.getImagingServer()
+        def result = ImagingServerAPI.create(imagingServerToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 409 == result.code
     }
 
-    void testAddProcessingServerWithoutCredential() {
-        def processingServerToAdd = BasicInstanceBuilder.getProcessingServerNotExist()
-        def result = ProcessingServerAPI.create(processingServerToAdd.encodeAsJSON(), Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+    void testAddImagingServerWithoutCredential() {
+        def imagingServerToAdd = BasicInstanceBuilder.getImagingServerNotExist()
+        def result = ImagingServerAPI.create(imagingServerToAdd.encodeAsJSON(), Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         assert 403 == result.code
     }
 
-    void testDeleteProcessingServerWithCredential() {
-        def processingServerToDelete = BasicInstanceBuilder.getProcessingServerNotExist(true)
-        def id = processingServerToDelete.id
-        def result = ProcessingServerAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testDeleteImagingServerWithCredential() {
+        def imagingServerToDelete = BasicInstanceBuilder.getImagingServerNotExist(true)
+        def id = imagingServerToDelete.id
+        def result = ImagingServerAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        def showResult = ProcessingServerAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def showResult = ImagingServerAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == showResult.code
     }
 
-    void testDeleteProcessingServerWithoutCredential() {
-        def processingServerToDelete = BasicInstanceBuilder.getProcessingServerNotExist(true)
-        def id = processingServerToDelete.id
-        def result = ProcessingServerAPI.delete(id, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+    void testDeleteImagingServerWithoutCredential() {
+        def imagingServerToDelete = BasicInstanceBuilder.getImagingServerNotExist(true)
+        def id = imagingServerToDelete.id
+        def result = ImagingServerAPI.delete(id, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         assert 403 == result.code
     }
 
     void testDeleteSoftwareNotExist() {
-        def result = ProcessingServerAPI.delete(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImagingServerAPI.delete(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
     }
 

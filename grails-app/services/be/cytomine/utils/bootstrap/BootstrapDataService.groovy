@@ -56,16 +56,14 @@ class BootstrapDataService {
 
 
         def usersSamples = [
-                //[username : 'anotheruser', firstname : 'Another', lastname : 'User', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : 'password', color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]],
                 [username : 'ImageServer1', firstname : 'Image', lastname : 'Server', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN"]],
                 [username : 'superadmin', firstname : 'Super', lastname : 'Admin', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN"]],
                 [username : 'admin', firstname : 'Just an', lastname : 'Admin', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : grailsApplication.config.grails.adminPassword, color : "#FF0000", roles : ["ROLE_USER", "ROLE_ADMIN"]],
-                [username : 'rabbitmq', firstname : 'rabbitmq', lastname : 'user', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER"]],
+                [username : 'rabbitmq', firstname : 'rabbitmq', lastname : 'user', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER", "ROLE_SUPER_ADMIN"]],
+                [username : 'monitoring', firstname : 'Monitoring', lastname : 'Monitoring', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER","ROLE_SUPER_ADMIN"]],
                 [username : 'jsnow', firstname : 'John', lastname : 'Snow', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "jsnow", color : "#FF0000", roles : ["ROLE_USER"]],
                 [username : 'estark', firstname : 'Eddard', lastname : 'Stark', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "estark", color : "#FF0000", roles : ["ROLE_USER"]],
-                [username : 'clannister', firstname : 'Cersei', lastname : 'Lannister', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "clannister", color : "#FF0000", roles : ["ROLE_USER"]],
-                [username : 'monitoring', firstname : 'Monitoring', lastname : 'Monitoring', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : RandomStringUtils.random(32,  (('A'..'Z') + ('0'..'0')).join().toCharArray()), color : "#FF0000", roles : ["ROLE_USER","ROLE_SUPER_ADMIN"]]
-
+                [username : 'clannister', firstname : 'Cersei', lastname : 'Lannister', email : grailsApplication.config.grails.admin.email, group : [[name : "GIGA"]], password : "clannister", color : "#FF0000", roles : ["ROLE_USER"]]
         ]
 
         bootstrapUtilsService.createUsers(usersSamples)
@@ -94,6 +92,9 @@ class BootstrapDataService {
         superAdmin.setPublicKey((String) grailsApplication.config.grails.superAdminPublicKey)
         superAdmin.save(flush : true)
 
+
+        bootstrapUtilsService.addDefaultProcessingServer()
+        bootstrapUtilsService.addDefaultConstraints()
     }
 
     public void recreateTableFromNotDomainClass() {

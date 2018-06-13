@@ -106,6 +106,7 @@ class SoftwareParameter extends CytomineDomain {
         uri (nullable: true, blank : true)
         uriPrintAttribut (nullable: true, blank : true)
         uriSortAttribut (nullable: true, blank : true)
+        serverParameter(nullable: true)
     }
 
     public beforeInsert() {
