@@ -47,29 +47,29 @@ class SoftwareParameterConstraintService extends ModelService {
     }
 
     ParameterConstraint get(def id) {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        securityACLService.checkAdmin(cytomineService.getCurrentUser()) //TODO: security
         return SoftwareParameterConstraint.get(id)
     }
 
     ParameterConstraint read(def id) {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        securityACLService.checkAdmin(cytomineService.getCurrentUser()) //TODO: security
         return SoftwareParameterConstraint.read(id)
     }
 
     def add(def json) throws CytomineException {
-        SecUser currentUser = cytomineService.getCurrentUser()
+        SecUser currentUser = cytomineService.getCurrentUser() //TODO: security
         securityACLService.checkAdmin(currentUser)
         return executeCommand(new AddCommand(user: currentUser), null, json)
     }
 
     def update(SoftwareParameterConstraint domain, def jsonNewData) {
-        SecUser currentUser = cytomineService.getCurrentUser()
+        SecUser currentUser = cytomineService.getCurrentUser() //TODO: security
         securityACLService.checkAdmin(currentUser)
         return executeCommand(new EditCommand(user: currentUser), domain, jsonNewData)
     }
 
     def delete(SoftwareParameterConstraint domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        SecUser currentUser = cytomineService.getCurrentUser()
+        SecUser currentUser = cytomineService.getCurrentUser() //TODO: security
         securityACLService.checkAdmin(currentUser)
         return executeCommand(new DeleteCommand(user: currentUser, transaction: transaction), domain, null)
     }

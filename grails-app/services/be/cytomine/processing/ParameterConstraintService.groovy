@@ -39,17 +39,17 @@ class ParameterConstraintService extends ModelService {
     }
 
     def list() {
-//        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        securityACLService.checkUser(cytomineService.getCurrentUser())
         return ParameterConstraint.list()
     }
 
     ParameterConstraint get(def id) {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        securityACLService.checkUser(cytomineService.getCurrentUser())
         return ParameterConstraint.get(id)
     }
 
     ParameterConstraint read(def id) {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        securityACLService.checkUser(cytomineService.getCurrentUser())
         return ParameterConstraint.read(id)
     }
 

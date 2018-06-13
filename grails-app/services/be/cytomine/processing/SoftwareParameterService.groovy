@@ -38,15 +38,15 @@ class SoftwareParameterService extends ModelService{
         return SoftwareParameter
     }
 
-    def list() {
-//        securityACLService.checkAdmin(cytomineService.currentUser)
-        SoftwareParameter.list()
-    }
-
     def read(def id) {
         def softParam = SoftwareParameter.read(id)
-        //TODO: security?
+        securityACLService.check(softParam.software,Software, READ)
         softParam
+    }
+
+    def list() {
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        SoftwareParameter.list()
     }
 
     def list(Software software, Boolean includeSetByServer = false) {

@@ -35,7 +35,6 @@ class SoftwareUserRepositoryService extends ModelService {
     def transactionService
     def securityACLService
     def amqpQueueService
-    def softwareService
 
     @Override
     def currentDomain() {
@@ -43,10 +42,12 @@ class SoftwareUserRepositoryService extends ModelService {
     }
 
     SoftwareUserRepository get(def id) {
+        securityACLService.checkGuest(cytomineService.currentUser)
         return SoftwareUserRepository.get(id)
     }
 
     SoftwareUserRepository read(def id) {
+        securityACLService.checkGuest(cytomineService.currentUser)
         return SoftwareUserRepository.read(id)
     }
 

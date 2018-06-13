@@ -43,19 +43,19 @@ class ProcessingServerService extends ModelService {
 
     ProcessingServer get(def id) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.checkAdmin(currentUser)
+        securityACLService.checkUser(currentUser)
         return ProcessingServer.get(id)
     }
 
     ProcessingServer read(def id) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.checkAdmin(currentUser)
+        securityACLService.checkUser(currentUser)
         return ProcessingServer.read(id)
     }
 
     def list() {
-//        SecUser currentUser = cytomineService.getCurrentUser()
-//        securityACLService.checkAdmin(currentUser)
+        SecUser currentUser = cytomineService.getCurrentUser()
+        securityACLService.checkUser(currentUser)
         return ProcessingServer.list()
     }
 

@@ -20,7 +20,7 @@ class ImagingServerUrlMappings {
         "/api/imaging_server.$format"(controller: "restImagingServer") {
             action = [GET: "list", POST: "add"]
         }
-        "/api/imaging_server.$format"(controller: "restImagingServer") {
+        "/api/imaging_server/$id.$format"(controller: "restImagingServer") {
             action = [GET: "show", DELETE: "delete"]
         }
     }
