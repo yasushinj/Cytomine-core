@@ -80,15 +80,20 @@ class BootstrapOldVersionService {
     }
 
     void init20180613() {
-        new Sql(dataSource).executeUpdate("UPDATE image_filter SET processing_server_id = NULL;")
-        new Sql(dataSource).executeUpdate("ALTER TABLE image_filter DROP COLUMN IF EXISTS processing_server_id;")
-        def imagingServer = new ImagingServer(url: grailsApplication.config.grails.imageServerURL[0]).save(flush: true, failOnError: true)
+        boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'image_filter' and COLUMN_NAME = 'processing_server_id';").size() == 1
+        if (exists) {
+            new Sql(dataSource).executeUpdate("UPDATE image_filter SET processing_server_id = NULL;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE image_filter DROP COLUMN IF EXISTS processing_server_id;")
+        }
+        def imagingServer = bootstrapUtilsService.createNewImagingServer()
         ImageFilter.findAll().each {
             it.imagingServer = imagingServer
             it.save(flush: true)
         }
 
-        boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+        exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
                 "WHERE TABLE_NAME = 'processing_server' and COLUMN_NAME = 'url';").size() == 1
         if (exists) {

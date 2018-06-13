@@ -28,6 +28,8 @@ import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
+import be.cytomine.processing.ImageFilter
+import be.cytomine.processing.ImagingServer
 import be.cytomine.processing.ParameterConstraint
 import be.cytomine.processing.ProcessingServer
 import be.cytomine.security.*
@@ -140,6 +142,21 @@ class BootstrapUtilsService {
                     err -> log.info err
                 }
 
+            }
+        }
+    }
+    
+    def createFilters(def filters) {
+        filters.each {
+            if (!ImageFilter.findByName(it.name)) {
+                ImageFilter filter = new ImageFilter(name: it.name, baseUrl: it.baseUrl, imagingServer: it.imagingServer)
+                if (filter.validate()) {
+                    filter.save(flush:true)
+                } else {
+                    filter.errors?.each {
+                        log.info it
+                    }
+                }
             }
         }
     }
@@ -394,6 +411,17 @@ class BootstrapUtilsService {
                 ).save()
             }
         }
+    }
+
+    def createNewImagingServer() {
+        def url = grailsApplication.config.grails.imageServerURL[0]
+        def imagingServer = ImagingServer.findByUrl(url)
+        if(!imagingServer) {
+            return new ImagingServer(url: grailsApplication.config.grails.imageServerURL[0]).save(flush: true,
+                    failOnError: true)
+        }
+
+        return imagingServer
     }
 
     def transfertProperty() {
