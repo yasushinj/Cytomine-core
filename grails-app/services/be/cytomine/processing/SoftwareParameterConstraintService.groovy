@@ -41,18 +41,18 @@ class SoftwareParameterConstraintService extends ModelService {
         return SoftwareParameterConstraint
     }
 
-    def list() {
-//        securityACLService.checkAdmin(cytomineService.getCurrentUser())
-        return SoftwareParameterConstraint.list()
+    def list(SoftwareParameter softwareParameter) {
+        securityACLService.checkUser(cytomineService.getCurrentUser())
+        return SoftwareParameterConstraint.findAllBySoftwareParameter(softwareParameter)
     }
 
-    ParameterConstraint get(def id) {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser()) //TODO: security
+    SoftwareParameterConstraint get(def id) {
+        securityACLService.checkUser(cytomineService.getCurrentUser()) //TODO: security
         return SoftwareParameterConstraint.get(id)
     }
 
-    ParameterConstraint read(def id) {
-        securityACLService.checkAdmin(cytomineService.getCurrentUser()) //TODO: security
+    SoftwareParameterConstraint read(def id) {
+        securityACLService.checkUser(cytomineService.getCurrentUser()) //TODO: security
         return SoftwareParameterConstraint.read(id)
     }
 

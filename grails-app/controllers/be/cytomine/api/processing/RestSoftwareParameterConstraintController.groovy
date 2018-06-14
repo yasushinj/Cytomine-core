@@ -17,6 +17,7 @@ package be.cytomine.api.processing
  */
 
 import be.cytomine.api.RestController
+import be.cytomine.processing.SoftwareParameter
 import be.cytomine.processing.SoftwareParameterConstraint
 import com.mongodb.util.JSON
 import org.restapidoc.annotation.RestApiMethod
@@ -29,10 +30,19 @@ import org.restapidoc.pojo.RestApiParamType
 class RestSoftwareParameterConstraintController extends RestController {
 
     def softwareParameterConstraintService
+    def softwareParameterService
 
-    @RestApiMethod(description = "Get all the software parameter constraints")
-    def list() {
-        responseSuccess(softwareParameterConstraintService.list())
+    @RestApiMethod(description = "Get all the constraints for a given software parameter")
+    @RestApiParams(params = [
+            @RestApiParam(name = "idParameter", type = "long", paramType = RestApiParamType.PATH, description = "The software parameter id")
+    ])
+    def listBySoftwareParameter() {
+        SoftwareParameter softwareParameter = softwareParameterService.read(params.get('idParameter'))
+        if (!softwareParameter) {
+            responseNotFound("Software Parameter Constraint", "SoftwareParameter", params.idParameter)
+        }
+
+        responseSuccess(softwareParameterConstraintService.list(softwareParameter))
     }
 
     @RestApiMethod(description = "Get a specific software parameter constraint")

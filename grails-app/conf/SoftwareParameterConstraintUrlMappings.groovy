@@ -17,8 +17,11 @@
 class SoftwareParameterConstraintUrlMappings {
 
     static mappings = {
+        "/api/softwareparameter/$idParameter/constraint.$format"(controller: "restSoftwareParameterConstraint") {
+            action = [GET: "listBySoftwareParameter"]
+        }
         "/api/software_parameter_constraint.$format"(controller: "restSoftwareParameterConstraint") {
-            action = [GET: "list", POST: "add"]
+            action = [POST: "add"]
         }
         "/api/software_parameter_constraint/$id.$format"(controller: "restSoftwareParameterConstraint") {
             action = [GET: "show", PUT: "update", DELETE: "delete"]
