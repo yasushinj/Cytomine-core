@@ -133,7 +133,7 @@ class JobRuntimeService {
     def execute(Job job, UserJob userJob, ProcessingServer processingServer = null) {
         initJob(job, userJob)
 
-        if (!job.software.executeCommand)
+        if (!job.software.executable())
             throw new MiddlewareException("No command found for this job, the execution is aborted !")
 
         ProcessingServer currentProcessingServer = processingServer == null ? job.software.defaultProcessingServer : processingServer

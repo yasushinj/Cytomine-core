@@ -110,7 +110,10 @@ var ProjectDashboardAlgos = Backbone.View.extend({
     initProjectSoftwareList: function () {
         var self = this;
         self.softwares.each(function (software) {
-            $("#projectSoftwareListUl").append('<li class="list-group-item" id="consultSoftware-' + software.id + '"><a href="#tabs-algos-' + self.model.id + '-' + software.id + '-">' + software.get('name') + '</a></li>');
+            var executable = (!software.executable) ? '<span class="label label-default">Not executable</span>' : '';
+            var del = (software.deprecrecated) ? '<del>' : '';
+            $("#projectSoftwareListUl").append('<a class="list-group-item" id="consultSoftware-' + software.id +'" href="#tabs-algos-' + self.model.id + '-' + software.id + '-">'
+              + del + software.get('name') + " " + executable + del +'</a>');
             $("#projectSoftwareListUl").children().removeClass("active");
             if (software.id == self.idSoftware) {
                 $("#consultSoftware-" + software.id).addClass("active");
@@ -131,6 +134,11 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         $("#panelJobResultsDiv").empty();
         //load result
         self.fillJobSelectView();
+
+        if (self.software.executable)
+            $("#softwareLaunchJobButton").show();
+        else
+            $("#softwareLaunchJobButton").hide();
 
         self.printSoftwareButton();
     },

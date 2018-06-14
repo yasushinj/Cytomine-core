@@ -136,7 +136,8 @@ class Software extends CytomineDomain {
     static Software insertDataIntoDomain(def json, def domain = new Software()) {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
-        domain.softwareUserRepository = JSONUtils.getJSONAttrDomain(json, "softwareUserRepository", new SoftwareUserRepository(), true)
+        domain.softwareUserRepository = JSONUtils.getJSONAttrDomain(json, "softwareUserRepository", new
+                SoftwareUserRepository(), false)
         domain.defaultProcessingServer = JSONUtils.getJSONAttrDomain(json, "defaultProcessingServer", new ProcessingServer(), false)
         domain.description = JSONUtils.getJSONAttrStr(json, 'description')
         domain.resultName = JSONUtils.getJSONAttrStr(json, 'resultName')
@@ -163,6 +164,7 @@ class Software extends CytomineDomain {
         returnArray['pullingCommand'] = domain?.pullingCommand
         returnArray['deprecated'] = domain?.deprecated
         returnArray['softwareVersion'] = domain?.softwareVersion
+        returnArray['executable'] = domain?.executable()
         try {
             returnArray['parameters'] = SoftwareParameter.findAllBySoftwareAndSetByServer(domain, false, [sort : "index", order : "asc"])
             returnArray['numberOfJob'] = Job.countBySoftware(domain)
@@ -183,6 +185,10 @@ class Software extends CytomineDomain {
      */
     public CytomineDomain container() {
         return this;
+    }
+
+    def executable() {
+        return !this.executeCommand?.trim() && !this.pullingCommand?.trim()
     }
 
 }
