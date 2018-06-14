@@ -102,13 +102,15 @@ class DataTablesService {
                     SELECT DISTINCT ai.id, ai.original_filename, ai.created as created, true
                     FROM abstract_image ai LEFT OUTER JOIN image_instance ii ON ii.base_image_id = ai.id ${getAclTable()}
                     WHERE project_id = ${project.id}
+                    AND ai.deleted IS NULL
                     AND ii.deleted IS NULL
                     AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
                     ${getAclWhere()}
                     UNION
                     SELECT DISTINCT ai.id, ai.original_filename, ai.created as created, false
                     FROM abstract_image ai ${getAclTable()}
-                    WHERE ai.id NOT IN (SELECT ai.id
+                    WHERE ai.deleted IS NULL
+                    AND ai.id NOT IN (SELECT ai.id
                                      FROM abstract_image ai LEFT OUTER JOIN image_instance ii ON ii.base_image_id = ai.id
                                      WHERE project_id = ${project.id}
                                      AND ii.deleted IS NULL)
