@@ -62,6 +62,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
                 self.software = collection.get(self.idSoftware);
                 self.softwares = collection;
                 self.initProjectSoftwareList();
+                self.changeSoftware();
                 self.printProjectSoftwareInfo();
                 self.printSoftwareButton();
                 new JobCollection({ project: self.model.id, software: self.idSoftware, light: true}).fetch({
@@ -110,8 +111,8 @@ var ProjectDashboardAlgos = Backbone.View.extend({
     initProjectSoftwareList: function () {
         var self = this;
         self.softwares.each(function (software) {
-            var executable = (!software.executable) ? '<span class="label label-default">Not executable</span>' : '';
-            var del = (software.deprecrecated) ? '<del>' : '';
+            var executable = (!software.get('executable')) ? '<span class="label label-default">Not executable</span>' : '';
+            var del = (software.get('deprecated')) ? '<del>' : '';
             $("#projectSoftwareListUl").append('<a class="list-group-item" id="consultSoftware-' + software.id +'" href="#tabs-algos-' + self.model.id + '-' + software.id + '-">'
               + del + software.get('name') + " " + executable + del +'</a>');
             $("#projectSoftwareListUl").children().removeClass("active");
@@ -135,7 +136,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         //load result
         self.fillJobSelectView();
 
-        if (self.software.executable)
+        if (self.software.get('executable'))
             $("#softwareLaunchJobButton").show();
         else
             $("#softwareLaunchJobButton").hide();

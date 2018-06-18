@@ -226,7 +226,7 @@ class AmqpQueueService extends ModelService {
         Channel channel = rabbitConnectionService.getRabbitChannel(domain.name, mbs)
 
         try {
-            log.info "Exchange : " + domain.exchange
+            log.info "Exchange : " + domain.exchange + " " + messageBody
             channel.basicPublish(domain.exchange, "", MessageProperties.PERSISTENT_TEXT_PLAIN, messageBody.getBytes())
         } catch(IOException e) {
             throw new MiddlewareException(("Cannot publish message : " + e.toString()))

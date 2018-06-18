@@ -188,7 +188,7 @@ class Software extends CytomineDomain {
     }
 
     def executable() {
-        return !this.executeCommand?.trim() && !this.pullingCommand?.trim()
+        return this.executeCommand?.trim() && this.pullingCommand?.trim()
     }
 
 }

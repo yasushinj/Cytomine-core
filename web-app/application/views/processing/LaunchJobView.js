@@ -452,6 +452,7 @@ var InputDateView = Backbone.View.extend({
         });
     },
     getHtmlElem: function () {
+        var self = this;
         return _.template('<div class="control-group success"><div class="controls"><input type="text" class="col-md-3" value="" <%= required %>></div></div>', {
             required: (self.param.required) ? "required" : ""
         });
