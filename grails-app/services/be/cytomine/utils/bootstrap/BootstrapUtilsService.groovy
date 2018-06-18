@@ -726,8 +726,10 @@ class BootstrapUtilsService {
                         host: "slurm",
                         username: "cytomine",
                         port: 22,
-                        type: "slurm",
-                        processingMethodName: "SlurmProcessingMethod"
+                        type: "cpu",
+                        processingMethodName: "SlurmProcessingMethod",
+                        persistentDirectory: grailsApplication.config.cytomine.software.path.softwareImages,
+                        index: 1
                 )
 
                 String processingServerName = processingServer.name.capitalize()

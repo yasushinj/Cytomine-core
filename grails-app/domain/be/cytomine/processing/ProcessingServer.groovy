@@ -38,7 +38,7 @@ class ProcessingServer extends CytomineDomain {
     @RestApiObjectField(description = "The port of the processing server")
     Integer port
 
-    @RestApiObjectField(description = "The type of the processing server")
+    @RestApiObjectField(description = "The type of the processing server (cpu, gpu, ...)")
     String type
 
     @RestApiObjectField(description = "The processing method name of the processing server")
@@ -46,6 +46,15 @@ class ProcessingServer extends CytomineDomain {
 
     @RestApiObjectField(description = "The amqp queue associated to a given processing server")
     AmqpQueue amqpQueue
+
+    @RestApiObjectField(description = "The absolute directory path for persistent data, on the processing server")
+    String persistentDirectory
+
+    @RestApiObjectField(description = "The absolute directory path for temporary data, on the processing server")
+    String workingDirectory = ""
+
+    @RestApiObjectField(description = "The index in the default processing server table. Lowest is the default processing server")
+    Integer index
 
     // Most of parameters must be nullable to accept rename of old ProcessingServer to ImagingServer
     static constraints = {
@@ -56,13 +65,16 @@ class ProcessingServer extends CytomineDomain {
         processingMethodName(blank: false, nullable: true)
         amqpQueue(nullable: true)
         type(nullable: true)
+        persistentDirectory(blank: true, nullable: true)
+        workingDirectory(blank: true, nullable: true)
     }
 
     static mapping = {
         id(generator: "assigned")
-        sort("id")
+        sort("index")
         host(defaultValue: "'localhost'")
         port(defaultValue: "22")
+//        index(defaultValue: "10")
     }
 
     @Override
@@ -92,6 +104,9 @@ class ProcessingServer extends CytomineDomain {
         domain.type = JSONUtils.getJSONAttrStr(json, 'type', true)
         domain.processingMethodName = JSONUtils.getJSONAttrStr(json, 'processingMethodName', true)
         domain.amqpQueue = JSONUtils.getJSONAttrDomain(json, 'amqpQueue', new AmqpQueue(), false)
+        domain.type = JSONUtils.getJSONAttrStr(json, 'persistentDirectory', false)
+        domain.type = JSONUtils.getJSONAttrStr(json, 'workingDirectory', false)
+        domain.type = JSONUtils.getJSONAttrInteger(json, 'index', 10)
         return domain
     }
 
@@ -109,6 +124,9 @@ class ProcessingServer extends CytomineDomain {
         returnArray['type'] = domain?.type
         returnArray['processingMethodName'] = domain?.processingMethodName
         returnArray['amqpQueue'] = domain?.amqpQueue
+        returnArray['persistentDirectory'] = domain?.persistentDirectory
+        returnArray['workingDirectory'] = domain?.workingDirectory
+        returnArray['index'] = domain?.index
         return returnArray
     }
 
