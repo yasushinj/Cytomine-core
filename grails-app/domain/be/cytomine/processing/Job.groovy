@@ -109,7 +109,7 @@ class Job extends CytomineDomain  {
         progress(min: 0, max: 100)
         project(nullable:true)
         statusComment(nullable:true)
-        status(range: 0..7)
+        status(range: 0..8)
         rate(nullable: true)
         processingServer(nullable: true)
     }
