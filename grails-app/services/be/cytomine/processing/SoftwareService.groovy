@@ -117,13 +117,24 @@ class SoftwareService extends ModelService {
     def afterAdd(def domain, def response) {
         aclUtilService.addPermission(domain, cytomineService.currentUser.username, BasePermission.ADMINISTRATION)
 
-        // add 'defaults' software parameters
+        // Add mandatory software parameters
         SoftwareParameter softParam = new SoftwareParameter(software: domain as Software, name: "host", type: "String", required: true, index: 100, setByServer: true)
         softParam.save(failOnError: true)
         softParam = new SoftwareParameter(software: domain as Software, name: "publicKey", type: "String", required: true, index: 200, setByServer: true)
         softParam.save(failOnError: true)
         softParam = new SoftwareParameter(software: domain as Software, name: "privateKey", type: "String", required: true, index: 300, setByServer: true)
         softParam.save(failOnError: true)
+
+        // Add this software in all projects that have the previous version
+        List<Project> projects = Project.executeQuery("select distinct p from SoftwareProject as sp " +
+                "inner join sp.project as p " +
+                "inner join sp.software as s " +
+                "where s.name = ? and s.softwareVersion != ?", [domain.name, domain.softwareVersion])
+        projects.each {
+            SoftwareProject sp = new SoftwareProject(software: domain, project: it)
+            sp.save(failOnError: true)
+        }
+
     }
 
     def afterDelete(def domain, def response) {
