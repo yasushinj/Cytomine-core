@@ -78,11 +78,11 @@ var SoftwareDetailsView = Backbone.View.extend({
             bar : true,
             values : [
                 {
-                    label : 'Not Launch',
+                    label : 'Not Launched',
                     value : software.get('numberOfNotLaunch')
                 },
                 {
-                    label : 'Wait',
+                    label : 'Waiting',
                     value : software.get('numberOfWait')
                 },
                 {

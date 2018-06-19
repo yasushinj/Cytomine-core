@@ -210,7 +210,7 @@ var JobTableView = Backbone.View.extend({
 
     getStateElement: function (job) {
         if (job.isNotLaunch()) {
-            return '<span class="label label-default">Not Launch</span> ';
+            return '<span class="label label-default">Not Launched</span> ';
         }
         else if (job.isInQueue()) {
             return '<span class="label label-info">In queue</span> ';

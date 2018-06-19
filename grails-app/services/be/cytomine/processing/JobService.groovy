@@ -69,14 +69,14 @@ class JobService extends ModelService {
         def jobs = Job.findAllBySoftwareInListAndProjectInList(softwares, projects, [sort : "created", order : "desc"])
 
         if(!light) {
-            jobs.each {
-                //compute success rate if not yet done
-                //TODO: this may be heavy...computeRate just after job running?
-                if(it.rate==-1 && it.status==Job.SUCCESS) {
-                    it.rate = it.software?.service?.computeRate(it)
-                    it.save(flush: true)
-                }
-            }
+//            jobs.each {
+//                //compute success rate if not yet done
+//                //TODO: this may be heavy...computeRate just after job running?
+//                if(it.rate==-1 && it.status==Job.SUCCESS) {
+//                    it.rate = it.software?.service?.computeRate(it)
+//                    it.save(flush: true)
+//                }
+//            }
             jobs
         } else {
             getJOBResponseList(jobs)
