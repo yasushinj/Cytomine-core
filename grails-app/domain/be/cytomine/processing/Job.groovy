@@ -43,6 +43,7 @@ class Job extends CytomineDomain  {
     public static int INDETERMINATE = 5
     public static int WAIT = 6
     public static int PREVIEWED = 7
+    public static int KILLED = 8
 
     /**
      * Job progression
@@ -53,7 +54,7 @@ class Job extends CytomineDomain  {
     /**
      * Job status (see static int)
      */
-    @RestApiObjectField(description = "The algo status (NOTLAUNCH = 0, INQUEUE = 1, RUNNING = 2,SUCCESS = 3,FAILED = 4,INDETERMINATE = 5,WAIT = 6,PREVIEWED = 7)",mandatory = false)
+    @RestApiObjectField(description = "The algo status (NOTLAUNCH = 0, INQUEUE = 1, RUNNING = 2,SUCCESS = 3,FAILED = 4,INDETERMINATE = 5,WAIT = 6,PREVIEWED = 7, KILLED=8)",mandatory = false)
     int status = 0
 
     /**
@@ -240,4 +241,7 @@ class Job extends CytomineDomain  {
         return status == PREVIEWED
     }
 
+    public isKilled () {
+        return status == KILLED
+    }
 }

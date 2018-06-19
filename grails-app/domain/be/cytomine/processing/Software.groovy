@@ -76,7 +76,7 @@ class Software extends CytomineDomain {
     @RestApiObjectFields(params=[
         @RestApiObjectField(apiFieldName = "parameters", description = "List of 'software parameter' for this software (sort by index asc)",allowedType = "list",useForCreation = false),
         @RestApiObjectField(apiFieldName = "numberOfJob", description = "The number of job for this software",allowedType = "long",useForCreation = false),
-        @RestApiObjectField(apiFieldName = "numberOfNotLaunch", description = "The number of job not launch for this software",allowedType = "long",useForCreation = false),
+        @RestApiObjectField(apiFieldName = "numberOfKilled", description = "The number of job killed for this software",allowedType = "long",useForCreation = false),
         @RestApiObjectField(apiFieldName = "numberOfNotLaunch", description = "The number of job not launch for this software",allowedType = "long",useForCreation = false),
         @RestApiObjectField(apiFieldName = "numberOfInQueue", description = "The number of job in queue for this software",allowedType = "long",useForCreation = false),
         @RestApiObjectField(apiFieldName = "numberOfRunning", description = "The number of job currently running for this software",allowedType = "long",useForCreation = false),
@@ -175,6 +175,7 @@ class Software extends CytomineDomain {
             returnArray['numberOfFailed'] = Job.countBySoftwareAndStatus(domain,Job.FAILED)
             returnArray['numberOfIndeterminate'] = Job.countBySoftwareAndStatus(domain,Job.INDETERMINATE)
             returnArray['numberOfWait'] = Job.countBySoftwareAndStatus(domain,Job.WAIT)
+            returnArray['numberOfKilled'] = Job.countBySoftwareAndStatus(domain,Job.KILLED)
         } catch(Exception e) { }
         return returnArray
     }

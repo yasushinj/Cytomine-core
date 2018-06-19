@@ -210,28 +210,31 @@ var JobTableView = Backbone.View.extend({
 
     getStateElement: function (job) {
         if (job.isNotLaunch()) {
-            return '<span class="label btn-inverse">Not Launch</span> ';
+            return '<span class="label label-default">Not Launch</span> ';
         }
         else if (job.isInQueue()) {
-            return '<span class="label btn-info">In queue</span> ';
+            return '<span class="label label-info">In queue</span> ';
         }
         else if (job.isRunning()) {
-            return '<span class="label btn-primary">Running</span> ';
+            return '<span class="label label-primary">Running</span> ';
         }
         else if (job.isSuccess()) {
-            return '<span class="label btn-success">Success</span> ';
+            return '<span class="label label-success">Success</span> ';
         }
         else if (job.isFailed()) {
-            return '<span class="label btn-danger">Failed</span> ';
+            return '<span class="label label-danger">Failed</span> ';
         }
         else if (job.isIndeterminate()) {
-            return '<span class="label btn-inverse">Indetereminate</span> ';
+            return '<span class="label label-default">Indetereminate</span> ';
         }
         else if (job.isWait()) {
-            return '<span class="label btn-warning">Wait</span> ';
+            return '<span class="label label-warning">Wait</span> ';
         }
         else if (job.isPreviewed()) {
-            return '<span class="label btn-info">Previewed</span> ';
+            return '<span class="label label-info">Previewed</span> ';
+        }
+        else if (job.isKilled()) {
+            return '<span class="label" style="background: black;">Killed</span> ';
         }
         else {
             return "no supported";

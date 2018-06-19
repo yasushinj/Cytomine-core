@@ -82,6 +82,10 @@ var SoftwareDetailsView = Backbone.View.extend({
                     value : software.get('numberOfNotLaunch')
                 },
                 {
+                    label : 'Wait',
+                    value : software.get('numberOfWait')
+                },
+                {
                     label : 'In Queue',
                     value : software.get('numberOfInQueue')
                 },
@@ -102,8 +106,8 @@ var SoftwareDetailsView = Backbone.View.extend({
                     value : software.get('numberOfIndeterminate')
                 },
                 {
-                    label : 'Wait',
-                    value : software.get('numberOfWait')
+                    label : 'Killed',
+                    value : software.get('numberOfKilled')
                 }
             ]
         }];
@@ -116,7 +120,7 @@ var SoftwareDetailsView = Backbone.View.extend({
                 var chart = nv.models.discreteBarChart()
                     .x(function(d) { return d.label })
                     .y(function(d) { return d.value })
-                    .color(["#434141", "#65d7f8", "#005ccc", "#52a652", "#c43c35", "#434343", "#faaa38"]);
+                    .color(["#777777", "#f0ad4e", "#5bc0de", "#337AB7", "#5cb85c", "#d9534f", "#777777", "#000000"]);
 
 
                 d3.select("#softwareInfoChart svg")

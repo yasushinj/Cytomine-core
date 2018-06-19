@@ -53,18 +53,21 @@
                 <dd><%= numberOfJob %></dd>
                 <dt>Not Launch</dt>
                 <dd><span class="label label-default"><%= numberOfNotLaunch %></span></dd>
-                <dt>In Queue</dt>
-                <dd><span class="label label-default"><%= numberOfInQueue %></span></dd>
-                <dt>Running</dt>
-                <dd><span class="label label-info"><%= numberOfRunning %></span></dd>
-                <dt>Success</dt>
-                <dd><span class="label label-success"><%= numberOfSuccess %></span></dd>
-                <dt>Indeterminate</dt>
-                <dd><span class="label label-default"><%= numberOfIndeterminate %></span></dd>
                 <dt>Wait</dt>
                 <dd><span class="label label-warning"><%= numberOfWait %></span></dd>
+                <dt>In Queue</dt>
+                <dd><span class="label label-info"><%= numberOfInQueue %></span></dd>
+                <dt>Running</dt>
+                <dd><span class="label label-primary"><%= numberOfRunning %></span></dd>
+                <dt>Success</dt>
+                <dd><span class="label label-success"><%= numberOfSuccess %></span></dd>
                 <dt>Failed</dt>
                 <dd><span class="label label-danger"><%= numberOfFailed %></span></dd>
+                <dt>Indeterminate</dt>
+                <dd><span class="label label-default"><%= numberOfIndeterminate %></span></dd>
+                <dt>Killed</dt>
+                <dd><span class="label" style="background: black;"><%= numberOfKilled %></span></dd>
+
             </dl>
         </div>
         <div id="softwareInfoChart"></div>
