@@ -772,8 +772,9 @@ class BootstrapUtilsService {
             
             // "Number" dataType
             log.info("Add Number constraints")
-            constraints.add(new ParameterConstraint(name: "minimum", expression: '(Double.valueOf("[parameterValue]") as Number) < (Double.valueOf("[value]") as Number)', dataType: "Number"))
-            constraints.add(new ParameterConstraint(name: "maximum", expression: '(Double.valueOf("[parameterValue]") as Number) > (Double.valueOf("[value]") as Number)', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "integer", expression: '("[value]".isInteger()', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "minimum", expression: '(Double.valueOf("[parameterValue]") as Number) <= (Double.valueOf("[value]") as Number)', dataType: "Number"))
+            constraints.add(new ParameterConstraint(name: "maximum", expression: '(Double.valueOf("[parameterValue]") as Number) >= (Double.valueOf("[value]") as Number)', dataType: "Number"))
             constraints.add(new ParameterConstraint(name: "equals", expression: '(Double.valueOf("[parameterValue]") as Number) == (Double.valueOf("[value]") as Number)', dataType: "Number"))
             constraints.add(new ParameterConstraint(name: "in", expression: '"[value]".tokenize("[separator]").find { elem -> (Double.valueOf(elem) as Number) == (Double.valueOf("[parameterValue]") as Number) } != null', dataType: "Number"))
 
