@@ -188,7 +188,9 @@ class Job extends CytomineDomain  {
             List<JobParameter> parameters = JobParameter.findAllByJob(this,[sort: 'created'])
             parameters.each {
                 def values = JobParameter.getDataFromDomain(it)
-                if(values['name'].equals("privateKey")) values['value']= "*********************"
+                if (["PUBLICKEY", "CYTOMINEPUBLICKEY", "PRIVATEKEY", "CYTOMINEPRIVATEKEY"].contains(values['name'].toUpperCase().replace('_', '')))
+                    values['value']= "*********************"
+
                 result << values
             }
             return result

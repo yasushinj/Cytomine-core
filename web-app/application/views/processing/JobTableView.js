@@ -185,10 +185,10 @@ var JobTableView = Backbone.View.extend({
             return '<td>' + param.value + '</td>';
         } else if (param.type == "Boolean") {
             if (param.value) {
-                return '<td><input type="checkbox" name="checkbox" value="checkbox" checked="checked"></td>'
+                return '<td><input type="checkbox" name="checkbox" value="checkbox" checked="checked" disabled></td>'
             }
             else {
-                return '<td><input type="checkbox" name="checkbox" value="checkbox" checked="checked"></td>'
+                return '<td><input type="checkbox" name="checkbox" value="checkbox" checked="checked" disabled></td>'
             }
         } else if (param.type == "List") {
             return '<td>' + param.value + '</td>';
@@ -268,7 +268,7 @@ var JobTableView = Backbone.View.extend({
                     success: function (model, response) {
                         var tableParam = $(self.el).find('#searchJobTable').find('table[id=' + aData[1] + ']');
                         _.each(model.get('jobParameters'), function (param) {
-                            tableParam.append('<tr><td>' + param.name + '</td><td>' + param.value + '</td><td>' + param.type + '</td></tr>');
+                            tableParam.append('<tr><td>' + param.humanName + '</td><td>' + param.value + '</td><td>' + param.type + '</td></tr>');
                         });
                     }
                 });

@@ -304,7 +304,7 @@ var JobSelectionView = Backbone.View.extend({
                                 value = value.substring(0, 50) + "..."
                             }
 
-                            tableParam.append('<tr><td>' + param.name + '</td><td>' + value + '</td><td>' + param.type + '</td></tr>');
+                            tableParam.append('<tr><td>' + param.humanName + '</td><td>' + value + '</td><td>' + param.type + '</td></tr>');
                         });
                     }
                 });

@@ -86,20 +86,8 @@ class JobRuntimeService {
         values.each {
             SoftwareParameter softwareParameter = it.key as SoftwareParameter
 
-            String regex = "\\[${softwareParameter.name.toUpperCase()}\\]"
-            String replacement = "--${softwareParameter.name} ${it.value as String}"
-
-            if (softwareParameter.name.toUpperCase() == "HOST") {
-                regex = "\\[CYTOMINE_HOST\\]"
-                replacement = "--cytomine_host ${it.value as String}"
-            } else if (softwareParameter.name.toUpperCase() == "PUBLICKEY") {
-                regex = "\\[CYTOMINE_PUBLIC_KEY\\]"
-                replacement = "--cytomine_public_key ${it.value as String}"
-            } else if (softwareParameter.name.toUpperCase() == "PRIVATEKEY") {
-                regex = "\\[CYTOMINE_PRIVATE_KEY\\]"
-                replacement = "--cytomine_private_key ${it.value as String}"
-            }
-
+            String regex = "${softwareParameter.valueKey.replace("[", "\\[").replace("]", "\\]")}"
+            String replacement = softwareParameter.commandLineFlag + ((softwareParameter.commandLineFlag.length() > 0) ? " " : "") + it.value as String
             command = command.replaceAll(regex, replacement)
         }
 
@@ -116,18 +104,33 @@ class JobRuntimeService {
     }
 
     def initJob(Job job, UserJob userJob) {
-        jobParameterService.add(JSON.parse(createJobParameter("host", job, Holders.getGrailsApplication().config.grails.serverURL).encodeAsJSON()))
-        jobParameterService.add(JSON.parse(createJobParameter("publicKey", job, userJob.publicKey).encodeAsJSON()))
-        jobParameterService.add(JSON.parse(createJobParameter("privateKey", job, userJob.privateKey).encodeAsJSON()))
-
         // Get all the parameters set by the server
         def softwareParameters = softwareParameterService.list(job.software, true)
 
-        // Set all the parameters if they exist
-        if (softwareParameters.find { it.name == "cytomine_id_software" })
-            jobParameterService.add(JSON.parse(createJobParameter("cytomine_id_software", job, job.software.id.toString()).encodeAsJSON()))
-        if (softwareParameters.find { it.name == "cytomine_id_project" })
-            jobParameterService.add(JSON.parse(createJobParameter("cytomine_id_project", job, job.project.id.toString()).encodeAsJSON()))
+        def sp = softwareParameters.find { ["HOST", "CYTOMINEHOST"].contains(it.name.toUpperCase().replace('_', '')) }
+        if (sp) {
+            jobParameterService.add(JSON.parse(new JobParameter(value: Holders.getGrailsApplication().config.grails.serverURL, job: job, softwareParameter: sp).encodeAsJSON()))
+        }
+
+        sp = softwareParameters.find { ["PUBLICKEY", "CYTOMINEPUBLICKEY"].contains(it.name.toUpperCase().replace('_', '')) }
+        if (sp) {
+            jobParameterService.add(JSON.parse(new JobParameter(value: userJob.publicKey, job: job, softwareParameter: sp).encodeAsJSON()))
+        }
+
+        sp = softwareParameters.find { ["PRIVATEKEY", "CYTOMINEPRIVATEKEY"].contains(it.name.toUpperCase().replace('_', '')) }
+        if (sp) {
+            jobParameterService.add(JSON.parse(new JobParameter(value: userJob.privateKey, job: job, softwareParameter: sp).encodeAsJSON()))
+        }
+
+        sp = softwareParameters.find { ["IDSOFTWARE", "CYTOMINEIDSOFTWARE"].contains(it.name.toUpperCase().replace('_', '')) }
+        if (sp) {
+            jobParameterService.add(JSON.parse(new JobParameter(value: job.software.id.toString(), job: job, softwareParameter: sp).encodeAsJSON()))
+        }
+
+        sp = softwareParameters.find { ["IDPROJECT", "CYTOMINEIDPROJECT"].contains(it.name.toUpperCase().replace('_', '')) }
+        if (sp) {
+            jobParameterService.add(JSON.parse(new JobParameter(value: job.project.id.toString(), job: job, softwareParameter: sp).encodeAsJSON()))
+        }
     }
 
     def execute(Job job, UserJob userJob, ProcessingServer processingServer = null) {

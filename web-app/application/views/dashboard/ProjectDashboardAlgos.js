@@ -381,10 +381,10 @@ var ProjectDashboardAlgos = Backbone.View.extend({
                         setTimeout(function() {
                             self.buildJobAttachedFilesElem(job);
                         }, 3000);
-
-                        if (status == 3)
-                            self.clearIntervalRefresh();
                     }
+
+                    if (status >= 3)
+                        self.clearIntervalRefresh();
                 }
             });
         };
@@ -472,7 +472,7 @@ var ProjectDashboardAlgos = Backbone.View.extend({
 
         var data = [];
         _.each(job.get('jobParameters'), function (param) {
-            data.push([param.name,
+            data.push([param.humanName,
                 '<div id=' + param.id + '><div class="alert alert-info" style="margin-left : 10px;margin-right: 10px;"><i class="icon-refresh" /> Loading...</div></div>',
                 param.type
             ]);
@@ -600,7 +600,8 @@ var ProjectDashboardAlgos = Backbone.View.extend({
                 }
             } else {
                 var computeValue = param.value;
-                if (param.name.toLowerCase() == "privatekey" || param.name.toLowerCase() == "publickey") {
+                if (param.name.toLowerCase().replace(new RegExp("_", 'g'), "").indexOf("privatekey") !== -1
+                    || param.name.toLowerCase().replace(new RegExp("_", 'g'), "").indexOf("publickey") !== -1) {
                     computeValue = "************************************";
                 }
                 cell.html(computeValue);
@@ -608,7 +609,8 @@ var ProjectDashboardAlgos = Backbone.View.extend({
         }
         else {
             var computeValue = param.value;
-            if (param.name.toLowerCase() == "privatekey" || param.name.toLowerCase() == "publickey") {
+            if (param.name.toLowerCase().replace(new RegExp("_", 'g'), "").indexOf("privatekey") !== -1
+                || param.name.toLowerCase().replace(new RegExp("_", 'g'), "").indexOf("publickey") !== -1) {
                 computeValue = "************************************";
             }
             cell.html(computeValue);
