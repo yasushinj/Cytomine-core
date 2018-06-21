@@ -53,12 +53,6 @@ class Software extends CytomineDomain {
     String resultName
 
     /**
-     * Software info
-     */
-    @RestApiObjectField(description = "Software info", mandatory = false)
-    String description
-
-    /**
      * Command to execute software
      */
     @RestApiObjectField(description = "The command used to execute the piece of software")
@@ -93,7 +87,6 @@ class Software extends CytomineDomain {
         name(nullable: false, unique: false)
         softwareVersion(nullable: true, unique: false)
         resultName(nullable:true)
-        description(nullable:true, blank : false, maxSize: 65560)
         executeCommand(nullable: true, maxSize: 5000)
         defaultProcessingServer(nullable: true)
         deprecated(nullable: true)
@@ -103,7 +96,6 @@ class Software extends CytomineDomain {
 
     static mapping = {
         id generator: "assigned"
-        description type: 'text'
         sort "id"
     }
 
@@ -139,7 +131,6 @@ class Software extends CytomineDomain {
         domain.softwareUserRepository = JSONUtils.getJSONAttrDomain(json, "softwareUserRepository", new
                 SoftwareUserRepository(), false)
         domain.defaultProcessingServer = JSONUtils.getJSONAttrDomain(json, "defaultProcessingServer", new ProcessingServer(), false)
-        domain.description = JSONUtils.getJSONAttrStr(json, 'description')
         domain.resultName = JSONUtils.getJSONAttrStr(json, 'resultName')
         domain.executeCommand = JSONUtils.getJSONAttrStr(json, 'executeCommand')
         domain.pullingCommand = JSONUtils.getJSONAttrStr(json, 'pullingCommand')
@@ -159,7 +150,6 @@ class Software extends CytomineDomain {
         returnArray['softwareUserRepository'] = domain?.softwareUserRepository?.id
         returnArray['defaultProcessingServer'] = domain?.defaultProcessingServer?.id
         returnArray['resultName'] = domain?.resultName
-        returnArray['description'] = domain?.description
         returnArray['executeCommand'] = domain?.executeCommand
         returnArray['pullingCommand'] = domain?.pullingCommand
         returnArray['deprecated'] = domain?.deprecated
