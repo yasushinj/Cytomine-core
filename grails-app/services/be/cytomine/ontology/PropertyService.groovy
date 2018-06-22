@@ -133,7 +133,7 @@ class PropertyService extends ModelService {
         property
     }
 
-    def add(def json) {
+    def add(def json, def transaction = null) {
         def domainClass = json.domainClassName
         CytomineDomain domain
 
@@ -153,7 +153,7 @@ class PropertyService extends ModelService {
         }
 
         SecUser currentUser = cytomineService.getCurrentUser()
-        Command command = new AddCommand(user: currentUser)
+        Command command = new AddCommand(user: currentUser, transaction: transaction)
         return executeCommand(command,null,json)
     }
 
