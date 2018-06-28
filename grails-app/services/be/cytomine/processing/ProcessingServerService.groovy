@@ -17,6 +17,7 @@ package be.cytomine.processing
  */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.MiddlewareException
 import be.cytomine.command.*
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.MessageBrokerServer
@@ -113,6 +114,22 @@ class ProcessingServerService extends ModelService {
 
             amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
         }
+    }
+
+    def afterUpdate(Object domain, Object response) {
+        String queueName = amqpQueueService.queuePrefixProcessingServer + domain.name.capitalize()
+
+        MessageBrokerServer messageBrokerServer = MessageBrokerServer.findByName("MessageBrokerServer")
+        if (!amqpQueueService.checkRabbitQueueExists(queueName, messageBrokerServer)) {
+            throw new MiddlewareException("The amqp queue doesn't exist, the execution is aborded !")
+        }
+
+        def message = [requestType: "updateProcessingServer", processingServerId: (domain as ProcessingServer).id]
+
+        JsonBuilder jsonBuilder = new JsonBuilder()
+        jsonBuilder(message)
+
+        amqpQueueService.publishMessage(AmqpQueue.findByName(queueName), jsonBuilder.toString())
     }
 
 }
