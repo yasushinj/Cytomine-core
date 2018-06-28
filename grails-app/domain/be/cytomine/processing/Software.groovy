@@ -110,7 +110,12 @@ class Software extends CytomineDomain {
                 if (softwareSameNameAndVersion && softwareSameNameAndVersion.id != id) {
                     throw new AlreadyExistException("Software " + softwareSameNameAndVersion.name + " " + softwareSameNameAndVersion.softwareVersion + " already exist !")
                 }
-
+            }
+            else if(name) {
+                Software softwareSameName = Software.findByName(name)
+                if(softwareSameName && (softwareSameName.id!=id))  {
+                    throw new AlreadyExistException("Software "+softwareSameName.name + " already exist!")
+                }
             }
         }
     }

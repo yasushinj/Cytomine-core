@@ -118,14 +118,17 @@ class SoftwareService extends ModelService {
         aclUtilService.addPermission(domain, cytomineService.currentUser.username, BasePermission.ADMINISTRATION)
 
         // Add this software in all projects that have the previous version
-        List<Project> projects = Project.executeQuery("select distinct p from SoftwareProject as sp " +
-                "inner join sp.project as p " +
-                "inner join sp.software as s " +
-                "where s.name = ? and s.softwareVersion != ?", [domain.name, domain.softwareVersion])
-        projects.each {
-            SoftwareProject sp = new SoftwareProject(software: domain, project: it)
-            sp.save(failOnError: true)
+        if (domain.softwareVersion) {
+            List<Project> projects = Project.executeQuery("select distinct p from SoftwareProject as sp " +
+                    "inner join sp.project as p " +
+                    "inner join sp.software as s " +
+                    "where s.name = ? and s.softwareVersion != ?", [domain.name, domain.softwareVersion])
+            projects.each {
+                SoftwareProject sp = new SoftwareProject(software: domain, project: it)
+                sp.save(failOnError: true)
+            }
         }
+
 
     }
 
