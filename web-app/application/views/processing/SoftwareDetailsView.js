@@ -55,14 +55,15 @@ var SoftwareDetailsView = Backbone.View.extend({
         var tbody = $('#softwareParamsTable').find("tbody");
         tbody.empty();
         _.each(self.model.get('parameters'), function (param) {
-            var tpl = "<tr><td><%= name %></td><td><%= type %></td><td><%= defaultParamValue %></td><td><input type='checkbox' <%= checked %> disabled /></td><td><%= index %></td></tr>";
+            var tpl = "<tr><td><%= name %></td><td><%= type %></td><td><%= defaultParamValue %></td><td><input type='checkbox' <%= checked %> disabled /></td><td><%= variable %></td></tr>";
             var rowHtml = _.template(tpl, {
-                name : param.name,
+                name : param.humanName,
                 type : param.type,
                 defaultParamValue : param.defaultParamValue,
                 checked : (param.required ? "checked" : ""),
-                index : param.index
+                variable : param.name
             });
+
             tbody.append(rowHtml);
         });
 
