@@ -43,6 +43,14 @@ class UploadedFileService extends ModelService {
         return UploadedFile
     }
 
+    def list() {
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
+            isNull("deleted")
+        }
+        return uploadedFiles
+    }
+
     def list(User user) {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {

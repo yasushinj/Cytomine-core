@@ -75,8 +75,11 @@ class RestUploadedFileController extends RestController {
             if(params.parent){
                 parent = Long.parseLong(params.parent)
             }
-
-            uploadedFiles = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
+            if(params.all){
+                uploadedFiles = uploadedFileService.list()
+            } else {
+                uploadedFiles = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
+            }
         }
 
 
