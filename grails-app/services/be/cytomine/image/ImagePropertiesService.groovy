@@ -48,12 +48,14 @@ class ImagePropertiesService implements Serializable{
         println properties
         properties.each {
             String value = it.value
-            if (value.size() < 256) {
-                def property = new Property(key: it.key, value: it.value, domainIdent: abstractImage.id,domainClassName: abstractImage.class.name)
-                log.info("new property, $it.key => $it.value")
-                property.save()
+            if (it.value && value.size() < 256) {
+                def property = Property.findByDomainIdentAndKey(abstractImage.id, it.key)
+                if (!property) {
+                    property = new Property(key: it.key, value: it.value, domainIdent: abstractImage.id,domainClassName: abstractImage.class.name)
+                    log.info("new property, $it.key => $it.value")
+                    property.save(failOnError: true)
+                }
             }
-
         }
         abstractImage.save()
     }

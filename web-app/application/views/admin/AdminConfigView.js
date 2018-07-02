@@ -15,7 +15,6 @@
  */
 
 var AdminConfigView = Backbone.View.extend({
-
     allConfigs : {},
 
     render: function () {
@@ -38,7 +37,10 @@ var AdminConfigView = Backbone.View.extend({
         var view = _.template(tpl, {});
         $(this.el).append(view);
 
-        $(self.el).find("#adminWelcomeMessageEditor").html(self.allConfigs["WELCOME"]);
+        if (self.allConfigs["WELCOME"]) {
+            $(self.el).find("#adminWelcomeMessageEditor").html(self.allConfigs["WELCOME"].value);
+        }
+
 
         $("#adminWelcomeMessageEditor").trumbowyg({
             btnsGrps: {
@@ -78,7 +80,7 @@ var AdminConfigView = Backbone.View.extend({
                 data: JSON.stringify(data),
                 contentType:"application/json; charset=utf-8",
                 success : function(){
-                    self.allConfigs["WELCOME"] = text;
+                    self.allConfigs["WELCOME"].value = text;
                     window.app.view.message("Success", "Welcome message has been updated", "success");
                 }, error: function (response) {
                     var json = $.parseJSON(response.responseText);
@@ -95,7 +97,7 @@ var AdminConfigView = Backbone.View.extend({
                     url: "api/configuration/key/"+"WELCOME"+".json",
                     contentType:"application/json; charset=utf-8",
                     success : function(){
-                        self.allConfigs["WELCOME"] = "";
+                        self.allConfigs["WELCOME"].value = "";
                         $("#adminWelcomeMessageEditor").trumbowyg('html','');
                         window.app.view.message("Success", "Welcome message has been cleared", "success");
                     }, error: function (response) {
@@ -116,7 +118,7 @@ var AdminConfigView = Backbone.View.extend({
         $.get( "api/configuration.json", function( data ) {
             self.allConfigs = {};
             $.each(data.collection, function(index,item){
-                self.allConfigs[item.key] = item.value;
+                self.allConfigs[item.key] = {value: item.value, readingRole: item.readingRole};
             });
 
             callback();

@@ -26,13 +26,14 @@ import be.cytomine.project.Project
 import be.cytomine.utils.GeometryUtils
 import com.vividsolutions.jts.geom.Geometry
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONArray
 import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
-@RestApi(name = "property services", description = "Methods for managing properties")
+@RestApi(name = "Ontology | property services", description = "Methods for managing properties")
 class RestPropertyController extends RestController {
 
     def propertyService
@@ -302,8 +303,14 @@ class RestPropertyController extends RestController {
     ])
     def addPropertyDomain()  {
         def json = request.JSON
-        json.domainClassName = params.get("domainClassName")
-        add(propertyService, request.JSON)
+        if (json instanceof JSONArray) {
+            responseResult(addMultiple(propertyService, json))
+        } else {
+            if (json.domainClassName == null || json.domainClassName == "")
+                json.domainClassName = params.get("domainClassName")
+
+            responseResult(addOne(propertyService, json))
+        }
     }
 
 

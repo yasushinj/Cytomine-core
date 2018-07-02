@@ -14,34 +14,31 @@
  * limitations under the License.
  */
 
-var ImageInstancePropertyModel = Backbone.Model.extend({
+var AttachedFileModel = Backbone.Model.extend({
     initialize: function (options) {
-        this.idImageInstance = options.idImageInstance;
+        this.domainClassName = options.domainClassName;
+        this.domainIdent = options.domainIdent;
     },
     url: function () {
-        var base = 'api/imageinstance/' + this.idImageInstance + '/property';
+        var base = 'api/domain/' + this.domainClassName + '/' + this.domainIdent + '/attachedfile';
         var format = '.json';
         if (this.isNew()) {
             return base + format;
         }
         return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + this.id + format;
-    },
-    parse : function (response, options) {
-        console.log("parse " + response.property);
-        if (response.property) return response.property;
-        else return response;
     }
 });
 
-var ImageInstancePropertyCollection = PaginatedCollection.extend({
-    model: ImageInstancePropertyModel,
+var AttachedFileCollection = PaginatedCollection.extend({
+    model: AttachedFileModel,
     initialize: function (options) {
         this.initPaginator(options);
-        this.idImageInstance = options.idImageInstance;
+        this.domainClassName = options.domainClassName;
+        this.domainIdent = options.domainIdent;
     },
     url: function () {
-        if (this.idImageInstance != undefined) {
-            return "api/imageinstance/" + this.idImageInstance + "/property.json";
+        if (this.domainClassName != undefined && this.domainIdent != undefined) {
+            return 'api/domain/' + this.domainClassName + '/' + this.domainIdent + '/attachedfile.json';
         }
     }
 });

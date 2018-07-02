@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-var ProjectPropertyModel = Backbone.Model.extend({
+var PropertyModel = Backbone.Model.extend({
     initialize: function (options) {
-        this.idProject = options.idProject;
+        this.domainClassName = options.domainClassName;
+        this.domainIdent = options.domainIdent;
     },
     url: function () {
-        var base = 'api/project/' + this.idProject + '/property';
+        var base = 'api/domain/' + this.domainClassName + '/' + this.domainIdent + '/property';
         var format = '.json';
         if (this.isNew()) {
             return base + format;
@@ -33,15 +34,16 @@ var ProjectPropertyModel = Backbone.Model.extend({
     }
 });
 
-var ProjectPropertyCollection = PaginatedCollection.extend({
-    model: ProjectPropertyModel,
+var PropertyCollection = PaginatedCollection.extend({
+    model: PropertyModel,
     initialize: function (options) {
         this.initPaginator(options);
-        this.idProject = options.idProject;
+        this.domainClassName = options.domainClassName;
+        this.domainIdent = options.domainIdent;
     },
     url: function () {
-        if (this.idProject != undefined) {
-            return "api/project/" + this.idProject + "/property.json";
+        if (this.domainClassName != undefined && this.domainIdent != undefined) {
+            return 'api/domain/' + this.domainClassName + '/' + this.domainIdent + '/property.json';
         }
     }
 });

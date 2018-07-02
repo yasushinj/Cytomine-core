@@ -107,19 +107,29 @@ class SharedAnnotationService extends ModelService {
         //create annotation crop (will be send with comment)
         File annnotationCrop = null
         try {
+            params.format = "png"
+            params.alphaMask = true
+
             String cropURL = annotation.toCropURL(params)
             if (cropURL != null) {
                 log.info "Load image from " + annotation.toCropURL(params)
                 def parameters = annotation.toCropParams(params)
-                String url = abstractImageService.crop(parameters, parameters.collect{it.key+"="+it.value}.join("&"))
+
+                String query = parameters.collect { key, value ->
+                    if (value instanceof String)
+                        value = URLEncoder.encode(value, "UTF-8")
+                    "$key=$value"
+                }.join("&")
+
+                String url = abstractImageService.crop(parameters, query)
                 BufferedImage bufferedImage = imageProcessingService.getImageFromURL(url)
 
                 log.info "Image " + bufferedImage
 
                 if (bufferedImage != null) {
-                    annnotationCrop = File.createTempFile("temp", ".jpg")
+                    annnotationCrop = File.createTempFile("temp", ".${params.format}")
                     annnotationCrop.deleteOnExit()
-                    ImageIO.write(bufferedImage, "JPG", annnotationCrop)
+                    ImageIO.write(bufferedImage, params.format as String, annnotationCrop)
                 }
             }
         } catch (FileNotFoundException e) {
@@ -171,21 +181,22 @@ class SharedAnnotationService extends ModelService {
             json.receivers = receivers.collect{it.id}
         }
 
+        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
+        def result =  executeCommand(new AddCommand(user: sender), null,json)
 
-        log.info "send mail to " + receiversEmail
-        try {
-            notificationService.notifyShareAnnotation(sender, receiversEmail, json, attachments, cid)
-        } catch (MiddlewareException e) {
-            if(Environment.getCurrent() == Environment.DEVELOPMENT){
-                e.printStackTrace()
-            } else {
-                throw e
+        if (result) {
+            log.info "send mail to " + receiversEmail
+            try {
+                notificationService.notifyShareAnnotation(sender, receiversEmail, json, attachments, cid)
+            } catch (MiddlewareException e) {
+                if(Environment.getCurrent() == Environment.DEVELOPMENT){
+                    e.printStackTrace()
+                } else {
+                    throw e
+                }
             }
         }
 
-
-        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
-        def result =  executeCommand(new AddCommand(user: sender), null,json)
         return result
     }
 

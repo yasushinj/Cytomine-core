@@ -49,7 +49,7 @@ class UserUrlMappings {
             action = [POST:"createUserJob"]
         }
         "/api/userJob/$id.$format"(controller:"restUserJob"){
-            action = [GET:"showUserJob"]
+            action = [GET:"showUserJob", PUT: "update"]
         }
 
         "/api/group/$id/user.$format"(controller: "restUser"){

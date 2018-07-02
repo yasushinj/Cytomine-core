@@ -215,8 +215,8 @@ body {
     <script type="text/javascript" src="application/models/TaskModel.js" ></script>
     <script type="text/javascript" src="application/models/StorageModel.js" ></script>
     <script type="text/javascript" src="application/models/AnnotationPropertyModel.js" ></script>
-    <script type="text/javascript" src="application/models/ImageInstancePropertyModel.js" ></script>
-    <script type="text/javascript" src="application/models/ProjectPropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/PropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/AttachedFileModel.js" ></script>
     <script type="text/javascript" src="application/models/ImageGroupModel.js" ></script>
     <script type="text/javascript" src="application/models/ImageGroupHDF5Model.js" ></script>
 

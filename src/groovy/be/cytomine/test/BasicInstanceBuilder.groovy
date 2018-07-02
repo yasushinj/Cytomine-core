@@ -696,14 +696,14 @@ class BasicInstanceBuilder {
     static ImageFilter getImageFilter() {
        def imagefilter = ImageFilter.findByName("imagetest")
        if(!imagefilter) {
-           imagefilter = new ImageFilter(name:"imagetest",baseUrl:"baseurl",processingServer:getProcessingServer())
+           imagefilter = new ImageFilter(name:"imagetest",baseUrl:"baseurl",imagingServer:getImagingServer())
            saveDomain(imagefilter)
        }
         imagefilter
     }
 
     static ImageFilter getImageFilterNotExist(boolean save = false) {
-       def imagefilter = new ImageFilter(name:"imagetest"+new Date(),baseUrl:"baseurl",processingServer:getProcessingServer())
+       def imagefilter = new ImageFilter(name:"imagetest"+new Date(),baseUrl:"baseurl",imagingServer:getImagingServer())
         save ? saveDomain(imagefilter) : checkDomain(imagefilter)
     }
 
@@ -761,17 +761,17 @@ class BasicInstanceBuilder {
         sai
     }
 
-    static ProcessingServer getProcessingServer() {
-        def ps = ProcessingServer.findByUrl("processing_server_url")
+    static ImagingServer getImagingServer() {
+        def ps = ImagingServer.findByUrl("processing_server_url")
         if (!ps) {
-            ps = new ProcessingServer(url: "processing_server_url")
+            ps = new ImagingServer(url: "processing_server_url")
             saveDomain(ps)
         }
         ps
     }
 
-    static ProcessingServer getProcessingServerNotExist (boolean save = false) {
-        ProcessingServer ps = new ProcessingServer(url: getRandomString())
+    static ImagingServer getImagingServerNotExist(boolean save = false) {
+        ImagingServer ps = new ImagingServer(url: getRandomString())
         if(save) {
             saveDomain(ps)
         } else {
@@ -1314,8 +1314,26 @@ class BasicInstanceBuilder {
         } else {
             checkDomain(parameter)
         }
-
     }
+
+    static SoftwareUserRepository getSoftwareUserRepository() {
+        def repo = SoftwareUserRepository.findByProvider("github")
+        if (!repo) {
+            repo = new SoftwareUserRepository(provider: "github", username:getRandomString(),dockerUsername:getRandomString())
+            saveDomain(repo)
+        }
+        repo
+    }
+
+    static SoftwareUserRepository getSoftwareUserRepositoryNotExist(boolean save = false) {
+        def repo = new SoftwareUserRepository(provider: getRandomString(), username:getRandomString(),dockerUsername:getRandomString())
+        if(save) {
+            saveDomain(repo)
+        } else {
+            checkDomain(repo)
+        }
+    }
+
 
     static Description getDescriptionNotExist(CytomineDomain domain,boolean save = false) {
         Description description = new Description(domainClassName: domain.class.name, domainIdent: domain.id, data: "A description for this domain!")
@@ -1546,11 +1564,11 @@ class BasicInstanceBuilder {
         }
 
 
-        ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.be")
-        if (!processingServer) {
-            processingServer = new ProcessingServer()
-            processingServer.url = "http://image.cytomine.be"
-            BasicInstanceBuilder.saveDomain(processingServer)
+        ImagingServer imagingServer = ImagingServer.findByUrl("http://image.cytomine.be")
+        if (!imagingServer) {
+            imagingServer = new ImagingServer()
+            imagingServer.url = "http://image.cytomine.be"
+            BasicInstanceBuilder.saveDomain(imagingServer)
         }
 
         ReviewedAnnotation.findAllByImage(imageInstance).each {
@@ -1752,32 +1770,27 @@ class BasicInstanceBuilder {
 
     static ImageGroupHDF5 getImageGroupHDF5() {
         def project = getProject()
-        ImageGroup gp = getImageGroupNotExist(project, true)
-        def fn = gp.name
-        ImageGroupHDF5 imageGroupHDF5 = ImageGroupHDF5.findByGroup(gp)
+        ImageGroup group = getImageGroupNotExist(project, true)
+        ImageGroupHDF5 imageGroupHDF5 = ImageGroupHDF5.findByGroup(group)
         if (!imageGroupHDF5) {
-            imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
+            imageGroupHDF5 = new ImageGroupHDF5(group: group, filename: "${group.name}.h5")
             imageGroupHDF5 = saveDomain(imageGroupHDF5)
         }
         imageGroupHDF5
     }
 
-
-//TODO good documentation
     //files is an array of AbstractImages that relies to file that really exist
-    static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false, def files = []) {
+    static ImageGroupHDF5 getImageGroupHDF5NotExist(boolean save = false, def abstractImages = []) {
         def project = getProject()
-        ImageGroup gp = getImageGroupNotExist(project, true)
-        def fn = gp.name
-        files.eachWithIndex{ abstractImage, i ->
+        ImageGroup group = getImageGroupNotExist(project, true)
+
+        abstractImages.eachWithIndex{ abstractImage, i ->
             def imageInstance = getImageInstanceNotExist(project, true)
             imageInstance.baseImage = abstractImage
             saveDomain(imageInstance)
-
-            //ImageSequence seq = getImageSequence(imageInstance, i, 0, 0, 0, gp, true)
         }
 
-        ImageGroupHDF5 imageGroupHDF5 = new ImageGroupHDF5(group: gp, filenames: fn)
+        ImageGroupHDF5 imageGroupHDF5 = new ImageGroupHDF5(group: group, filename: "${group.name}.h5")
         save ? saveDomain(imageGroupHDF5) : checkDomain(imageGroupHDF5)
     }
 }

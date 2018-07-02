@@ -31,7 +31,7 @@ import org.restapidoc.pojo.RestApiParamType
  * A software may have some parameter (thread number, project id,...).
  * When a software is running, a job is created. Each software parameter will produced a job parameter with a specific value.
  */
-@RestApi(name = "software parameter services", description = "Methods for software parameters, a software may have some parameter (thread number, project id,...). When a software is running, a job is created. Each software parameter will produced a job parameter with a specific value.")
+@RestApi(name = "Processing | software parameter services", description = "Methods for software parameters, a software may have some parameter (thread number, project id,...). When a software is running, a job is created. Each software parameter will produced a job parameter with a specific value.")
 class RestSoftwareParameterController extends RestController{
 
     def softwareParameterService
@@ -50,11 +50,11 @@ class RestSoftwareParameterController extends RestController{
     @RestApiMethod(description="Get all software parameters for a software", listing = true)
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The software id"),
-        @RestApiParam(name="setByServer", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Include params set by server"),
+        @RestApiParam(name="withSetByServer", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Include params set by server"),
     ])
     def listBySoftware() {
         Software software = Software.read(params.long('id'))
-        boolean includeSetByServer = params.boolean('setByServer', false)
+        boolean includeSetByServer = params.boolean('withSetByServer', false)
         if(software) {
             responseSuccess(softwareParameterService.list(software, includeSetByServer))
         } else {

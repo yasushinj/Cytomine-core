@@ -27,7 +27,7 @@ import org.restapidoc.annotation.RestApiObjectFields
  * A link between a software and a project
  * We can add a software to many projects
  */
-@RestApiObject(name = "software project", description = "A link between a software and a project. We can add a software to many projects")
+@RestApiObject(name = "Software project", description = "A link between a software and a project. We can add a software to many projects")
 class SoftwareProject extends CytomineDomain implements Serializable{
 
     @RestApiObjectField(description = "The software")
@@ -74,6 +74,7 @@ class SoftwareProject extends CytomineDomain implements Serializable{
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['software'] = domain?.software?.id
         returnArray['name'] = domain?.software?.name
+        returnArray['softwareVersion'] = domain?.software?.softwareVersion
         returnArray['project'] = domain?.project?.id
         return returnArray
     }

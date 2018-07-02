@@ -24,7 +24,7 @@ import org.restapidoc.annotation.RestApiObjectFields
 /**
  * A file to attach to any Cytomine domain
  */
-@RestApiObject(name = "attached file", description = "A file that may be attached to any Cytomine domain. Usefull to include file into description.")
+@RestApiObject(name = "Attached file", description = "A file that may be attached to any Cytomine domain. Usefull to include file into description.")
 class AttachedFile extends CytomineDomain {
 
     /**
@@ -83,7 +83,7 @@ class AttachedFile extends CytomineDomain {
         returnArray['domainIdent'] = domain?.domainIdent
         returnArray['domainClassName'] = domain?.domainClassName
         returnArray['url'] = "/api/attachedfile/${domain?.id}/download"
-        returnArray['filename'] = domain?.domainClassName
+        returnArray['filename'] = domain?.filename
         return returnArray
     }
 }

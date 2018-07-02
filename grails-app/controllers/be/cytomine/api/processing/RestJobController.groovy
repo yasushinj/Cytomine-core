@@ -23,6 +23,7 @@ import be.cytomine.api.RestController
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.processing.Job
 import be.cytomine.processing.JobData
+import be.cytomine.processing.ProcessingServer
 import be.cytomine.processing.Software
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -39,7 +40,7 @@ import static org.springframework.security.acls.domain.BasePermission.READ
  * Controller for job request.
  * A job is a software instance that has been, is or will be running.
  */
-@RestApi(name = "job services", description = "Methods for managing job. A job is a software instance that has been, is or will be running.")
+@RestApi(name = "Processing | job services", description = "Methods for managing job. A job is a software instance that has been, is or will be running.")
 class RestJobController extends RestController {
 
     def jobService
@@ -52,15 +53,16 @@ class RestJobController extends RestController {
     def taskService
     def cytomineService
     def securityACLService
+    def jobRuntimeService
 
     /**
      * List all job
      */
-    @RestApiMethod(description="Get an algo annotation", listing = true)
+    @RestApiMethod(description="Get a list of jobs", listing = true)
     @RestApiParams(params=[
-        @RestApiParam(name="boolean", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) If true, get a light/quick listing (without job parameters,...)"),
-        @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, description = "(Optional, default get all) A list of software id to filter"),
-        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "(Optional, default get all) A list of project id to filter")
+        @RestApiParam(name="boolean", type="boolean", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default false) If true, get a light/quick listing (without job parameters,...)"),
+        @RestApiParam(name="software", type="long", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default get all) A list of software id to filter"),
+        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, required=false, description = "(Optional, default get all) A list of project id to filter")
     ])
     def list() {
         Boolean light = params.boolean('light') ? params.boolean('light') : false;
@@ -141,18 +143,58 @@ class RestJobController extends RestController {
         delete(jobService, JSON.parse("{id : $params.id}"),null)
     }
 
-    @RestApiMethod(description="Execute a job, launch the software")
-    @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The job id")
+    @RestApiMethod(description = "Execute a job, launch the software")
+    @RestApiParams(params = [
+        @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The job id")
     ])
     def execute() {
-        long idJob = params.long("id")
-        Job job = Job.read(idJob)
-        securityACLService.check(job.container(),READ)
+        long jobId = params.long("id")
+        Job job = Job.read(jobId)
+
+        securityACLService.check(job.container(), READ)
         UserJob userJob = UserJob.findByJob(job)
-        job.software.service.init(job, userJob)
-        job.software.service.execute(job, userJob, false)
-        responseSuccess(job)
+
+        jobRuntimeService.execute(job, userJob)
+
+        return responseSuccess(job)
+    }
+
+    @RestApiMethod(description = "Execute a job with a given processing server")
+    @RestApiParams(params = [
+        @RestApiParam(name = "jobId", type = "long", paramType = RestApiParamType.PATH, description = "The job id"),
+        @RestApiParam(name = "processingServerId", type = "long", paramType = RestApiParamType.PATH, description = "The processing server id")
+    ])
+    def executeWithProcessingServer() {
+        long jobId = params.long("jobId")
+        Job job = Job.read(jobId)
+
+        long processingServerId = params.long("processingServerId")
+        ProcessingServer processingServer = ProcessingServer.read(processingServerId)
+
+        securityACLService.check(job.container(), READ)
+        UserJob userJob = UserJob.findByJob(job)
+
+        jobRuntimeService.execute(job, userJob, processingServer)
+
+        return responseSuccess(job)
+    }
+
+    @RestApiMethod(description = "Kill a job")
+    @RestApiParams(params = [
+        @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The job id")
+    ])
+    def kill() {
+        long jobId = params.long("id")
+        Job job = Job.read(jobId)
+
+        log.info("ID : ${jobId}")
+        log.info("JOB : ${job}")
+
+        securityACLService.check(job.container(), READ)
+
+        jobRuntimeService.killJob(job)
+
+        return responseSuccess(job)
     }
 
     //TODO:APIDOC
