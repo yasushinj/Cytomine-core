@@ -34,22 +34,23 @@ class SoftwareUserRepositoryTests {
     }
 
     void testUpdateSoftwareUserRepositoryCorrect() {
-        def repo = BasicInstanceBuilder.getSoftwareUserRepositoryNotExist()
+        def repo = BasicInstanceBuilder.getSoftwareUserRepositoryNotExist(true)
         repo.provider = "test"
         def data = repo.encodeAsJSON()
         def resultBase = SoftwareUserRepositoryAPI.update(repo.id, data, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == resultBase.code
         def json = JSON.parse(resultBase.data)
         assert json instanceof JSONObject
-        int idSoftware = json.software.id
 
-        def showResult = SoftwareUserRepositoryAPI.show(idSoftware, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        int idSoftwareUserRepository = json.softwareuserrepository.id
+
+        def showResult = SoftwareUserRepositoryAPI.show(idSoftwareUserRepository, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         json = JSON.parse(showResult.data)
-        BasicInstanceBuilder.compare(data.mapNew, json)
+        assert json.provider == "test"
     }
 
     void testDeleteSoftwareUserRepository() {
-        def repoToDelete = BasicInstanceBuilder.getSoftwareNotExist(true)
+        def repoToDelete = BasicInstanceBuilder.getSoftwareUserRepositoryNotExist(true)
         def id = repoToDelete.id
         def result = SoftwareUserRepositoryAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

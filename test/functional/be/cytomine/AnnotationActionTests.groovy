@@ -33,8 +33,8 @@ class AnnotationActionTests {
     }
 
     void testList() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def annotation = BasicInstanceBuilder.getUserAnnotation()
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(BasicInstanceBuilder.getProject(),true)
+        def image = annotation.image
         def json = JSON.parse("{image:${image.id}, annotationIdent:${annotation.id}, action:Test}")
 
         def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -56,9 +56,9 @@ class AnnotationActionTests {
     }
 
     void testListAfterThan() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def annotation = BasicInstanceBuilder.getUserAnnotation()
-        def json = JSON.parse("{image:${image.id}, annotation:${annotation.id}, action:Test}")
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(BasicInstanceBuilder.getProject(),true)
+        def image = annotation.image
+        def json = JSON.parse("{image:${image.id}, annotationIdent:${annotation.id}, action:Test}")
 
         def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

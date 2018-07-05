@@ -1659,19 +1659,20 @@ class BasicInstanceBuilder {
     static MessageBrokerServer getMessageBrokerServer() {
         MessageBrokerServer msb = MessageBrokerServer.findByName("BasicMessageBrokerServer")
         if (!msb) {
-            msb = new MessageBrokerServer(host: "localhost", port: getRandomInteger(1024, 65535), name: "BasicMessageBrokerServer")
+            msb = new MessageBrokerServer(host: "localhost", port: 5672, name: "BasicMessageBrokerServer")
             saveDomain(msb)
         }
         msb
     }
 
     static MessageBrokerServer getMessageBrokerServerNotExist(boolean save = false) {
-        MessageBrokerServer messageBrokerServers = new MessageBrokerServer(host: "localhost", port: getRandomInteger(1024, 65535), name: getRandomString())
+        MessageBrokerServer messageBrokerServers = new MessageBrokerServer(host: "localhost", port: 5672, name: getRandomString())
         save ? saveDomain(messageBrokerServers) : checkDomain(messageBrokerServers)
         messageBrokerServers
     }
 
     static AmqpQueue getAmqpQueue() {
+        getMessageBrokerServer()
         AmqpQueue amqpQueue = AmqpQueue.findByName("BasicAmqpQueue")
         if(!amqpQueue) {
             amqpQueue = new AmqpQueue(name: "BasicAmqpQueue", host: "localhost", exchange: "exchange"+getRandomString())
@@ -1681,7 +1682,9 @@ class BasicInstanceBuilder {
     }
 
     static AmqpQueue getAmqpQueueNotExist(boolean save = false){
+        getMessageBrokerServer()
         AmqpQueue amqpQueue = new AmqpQueue(name: getRandomString(), host: "localhost", exchange: "exchange"+getRandomString())
+        amqpQueue.validate(failOnError: true)
         save ? saveDomain(amqpQueue) : checkDomain(amqpQueue)
         amqpQueue
     }
