@@ -251,7 +251,7 @@ class AlgoAnnotationTests  {
         def aa = BasicInstanceBuilder.getAlgoAnnotation()
         def data = UpdateData.createUpdateSet(
                 aa,
-                [location: [new WKTReader().read("POLYGON ((2107 2160, 2047 2074, 1983 2168, 1983 2168, 2107 2160))"),new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168, 1983 2168))")]]
+                [location: [new WKTReader().read("POLYGON ((2107 2160, 2047 2074, 1983 2168, 1983 2168, 2107 2160))"),new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))")]]
         )
         UserJob user = aa.user
 
