@@ -184,7 +184,7 @@ class AlgoAnnotationService extends ModelService {
      */
     def update(AlgoAnnotation annotation, def jsonNewData) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.checkIsCreator(annotation,currentUser)
+        securityACLService.checkFullOrRestrictedForOwner(annotation,annotation.user)
 
         Geometry annotationForm
         try {
