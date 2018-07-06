@@ -727,7 +727,7 @@ class BasicInstanceBuilder {
     static AbstractImage getAbstractImage() {
         AbstractImage image = AbstractImage.findByFilename("filename")
         if (!image) {
-            image = new AbstractImage(filename: "filename", scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath")
+            image = new AbstractImage(filename: "filename", scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 16000, height: 16000)
         }
         image = saveDomain(image)
         saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
@@ -735,7 +735,7 @@ class BasicInstanceBuilder {
     }
 
     static AbstractImage getAbstractImageNotExist(boolean save = false) {
-        def image = new AbstractImage(filename: getRandomString(), scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
+        def image = new AbstractImage(filename: getRandomString(), scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 16000, height: 16000)
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
@@ -746,7 +746,7 @@ class BasicInstanceBuilder {
     }
 
     static AbstractImage getAbstractImageNotExist(String filename, boolean save = false) {
-        def image = new AbstractImage(filename: filename, scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 1600, height: 1200)
+        def image = new AbstractImage(filename: filename, scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 16000, height: 16000)
         save ? saveDomain(image) : checkDomain(image)
     }
 

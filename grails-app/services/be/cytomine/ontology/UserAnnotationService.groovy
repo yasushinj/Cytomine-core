@@ -19,6 +19,7 @@ package be.cytomine.ontology
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.ForbiddenException
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
@@ -34,6 +35,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.io.ParseException
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 import groovy.sql.Sql
@@ -201,8 +203,22 @@ class UserAnnotationService extends ModelService {
             }
         }
 
-        Geometry annotationForm = new WKTReader().read(json.location);
+        Geometry annotationForm
+        try {
+            annotationForm = new WKTReader().read(json.location);
+        } catch (ParseException e){
+            throw new WrongArgumentException("Annotation location not valid")
+        }
+
+        if(!annotationForm.isValid()){
+            throw new WrongArgumentException("Annotation location not valid")
+        }
+
+
         ImageInstance im = imageInstanceService.read(json.image)
+        if(!im){
+            throw new WrongArgumentException("Annotation not associated with a valid image")
+        }
         Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
 
         annotationForm = annotationForm.intersection(imageBounds)
@@ -268,8 +284,19 @@ class UserAnnotationService extends ModelService {
         //securityACLService.checkIsSameUserOrAdminContainer(annotation,annotation.user,currentUser)
         securityACLService.checkFullOrRestrictedForOwner(annotation,annotation.user)
 
-        Geometry annotationForm = new WKTReader().read(jsonNewData.location);
+        Geometry annotationForm
+        try {
+            annotationForm = new WKTReader().read(jsonNewData.location);
+        } catch (ParseException e){
+            throw new WrongArgumentException("Annotation location not valid")
+        }
+        if(!annotationForm.isValid()){
+            throw new WrongArgumentException("Annotation location not valid")
+        }
         ImageInstance im = imageInstanceService.read(jsonNewData.image)
+        if (!im) {
+            throw new WrongArgumentException("Annotation must have a valid image" + json.image)
+        }
         Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
 
         annotationForm = annotationForm.intersection(imageBounds)
