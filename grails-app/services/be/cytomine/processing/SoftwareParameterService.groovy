@@ -41,7 +41,6 @@ class SoftwareParameterService extends ModelService {
 
     def read(def id) {
         def softParam = SoftwareParameter.read(id)
-        if(softParam) securityACLService.check(softParam.software, READ)
         softParam
     }
 
