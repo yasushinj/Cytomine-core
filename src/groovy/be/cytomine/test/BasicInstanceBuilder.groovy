@@ -466,7 +466,7 @@ class BasicInstanceBuilder {
         checkDomain(annotation)
         saveDomain(annotation)
         annotation
-     }
+    }
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(Project project, boolean save = false) {
         def basedAnnotation = saveDomain(getUserAnnotationNotExist())
@@ -1260,6 +1260,26 @@ class BasicInstanceBuilder {
     static Term getTermNotExist(Ontology ontology,boolean save = false) {
         Term term = new Term(name: getRandomString(), ontology: ontology, color: "0F00F0")
         save ? saveDomain(term) :  checkDomain(term)
+    }
+
+    static ProcessingServer getProcessingServer() {
+        def processingServer = ProcessingServer.findByName("TestingProcessingServer")
+
+        if (!processingServer) {
+            processingServer = new ProcessingServer(username : "test", name: "TestingProcessingServer", host: "localhost",port : 10022, index : 0)
+            saveDomain(processingServer)
+        }
+        processingServer
+    }
+
+    static ProcessingServer getProcessingServerNotExist(boolean save = false) {
+        def processingServer = new ProcessingServer(username : "test", name: getRandomString(), host: getRandomString(),port : 10022, index : 0)
+        if(save) {
+            saveDomain(processingServer)
+        } else {
+            checkDomain(processingServer)
+        }
+        processingServer
     }
 
     static Software getSoftware() {

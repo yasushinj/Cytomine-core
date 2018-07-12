@@ -1,5 +1,7 @@
 package be.cytomine.test.http
 
+import be.cytomine.processing.ProcessingServer
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -20,44 +22,34 @@ import be.cytomine.processing.Software
 import be.cytomine.test.Infos
 import grails.converters.JSON
 
-/**
- * User: lrollus
- * Date: 6/12/11
- * This class implement all method to easily get/create/update/delete/manage Software to Cytomine with HTTP request during functional test
- */
-class SoftwareAPI extends DomainAPI {
+class ProcessingServerAPI extends DomainAPI {
 
     static def show(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software/" + id + ".json"
+        String URL = Infos.CYTOMINEURL + "api/processing_server/" + id + ".json"
         return doGET(URL, username, password)
     }
 
     static def list(String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software.json"
+        String URL = Infos.CYTOMINEURL + "api/processing_server.json"
         return doGET(URL, username, password)
     }
 
     static def create(String json, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software.json"
+        String URL = Infos.CYTOMINEURL + "api/processing_server.json"
         def result = doPOST(URL,json,username,password)
-        result.data = Software.get(JSON.parse(result.data)?.software?.id)
+        println "result.data "
+        println result.data
+        result.data = ProcessingServer.get(JSON.parse(result.data)?.processingserver?.id)
         return result
     }
 
-    static def update(def id, def jsonSoftware, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software/" + id + ".json"
-        return doPUT(URL,jsonSoftware,username,password)
+    static def update(def id, def jsonProcessingServer, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/processing_server/" + id + ".json"
+        return doPUT(URL,jsonProcessingServer,username,password)
     }
 
     static def delete(def id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software/" + id + ".json"
+        String URL = Infos.CYTOMINEURL + "api/processing_server/" + id + ".json"
         return doDELETE(URL,username,password)
-    }        "/api/processing_server.$format"(controller: "restProcessingServer") {
-        action = [GET: "list", POST: "add"]
     }
-
-    "/api/processing_server/$id.$format"(controller: "restProcessingServer") {
-        action = [GET: "show", PUT: "update", DELETE: "delete"]
-    }
-
 }
