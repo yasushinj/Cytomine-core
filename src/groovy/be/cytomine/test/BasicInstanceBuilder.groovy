@@ -1265,7 +1265,7 @@ class BasicInstanceBuilder {
     static Software getSoftware() {
         def software = Software.findByName("AnotherBasicSoftware")
         if (!software) {
-            software = new Software(name: "AnotherBasicSoftware", serviceName:"helloWorldJobService")
+            software = new Software(name: "AnotherBasicSoftware")
             saveDomain(software)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,software)
         }
@@ -1273,7 +1273,7 @@ class BasicInstanceBuilder {
     }
 
     static Software getSoftwareNotExist(boolean save = false) {
-        def software = new Software(name: getRandomString(),serviceName:"helloWorldJobService")
+        def software = new Software(name: getRandomString())
         if(save) {
             saveDomain(software)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,software)
@@ -1285,7 +1285,7 @@ class BasicInstanceBuilder {
     }
 
     static Software getSoftwareNotExistForRabbit(boolean save = false) {
-        def software = new Software(name: getRandomString(),serviceName:"createRabbitJobService")
+        def software = new Software(name: getRandomString())
         if(save) {
             saveDomain(software)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,software)
