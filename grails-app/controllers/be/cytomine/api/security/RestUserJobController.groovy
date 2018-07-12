@@ -92,7 +92,7 @@ class RestUserJobController extends RestController {
 
             //get job for this user
             Job job
-            if (json.job.toString().equals("null")) {
+            if (json.job == null || json.job.toString().equals("null")) {
                 if(json.software && json.project){
                     //Job is not defined, create a new one
                     log.debug "create new job:" + json

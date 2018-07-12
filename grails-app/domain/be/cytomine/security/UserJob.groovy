@@ -18,6 +18,7 @@ package be.cytomine.security
 
 import be.cytomine.processing.Job
 import be.cytomine.utils.JSONUtils
+import be.cytomine.Exception.AlreadyExistException
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 import org.restapidoc.annotation.RestApiObjectFields
@@ -56,6 +57,16 @@ class UserJob extends SecUser {
     def beforeUpdate() {
         super.beforeUpdate()
     }
+
+    void checkAlreadyExist() {
+        UserJob.withNewSession {
+            UserJob userJob = UserJob.findByJob(job)
+            if(userJob && (userJob.id!=id)) {
+                throw new AlreadyExistException("UserJob "+username + " already exist!")
+            }
+        }
+    }
+
 
     String toString() {
         "Job"+ id + " ( " + user.toString() + " )"
