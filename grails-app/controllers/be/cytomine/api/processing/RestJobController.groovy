@@ -197,46 +197,6 @@ class RestJobController extends RestController {
         return responseSuccess(job)
     }
 
-    //TODO:APIDOC
-    def preview() {
-        long idJob = params.long("id")
-        Job job = Job.read(idJob)
-        if (!job.software.service.previewAvailable()) {
-            throw new CytomineMethodNotYetImplementedException("Preview is not available for $job.software" )
-        }
-        securityACLService.check(job.container(),READ)
-        UserJob userJob = UserJob.findByJob(job)
-        job.software.service.init(job, userJob)
-        job.software.service.execute(job, userJob, true)
-        responseSuccess(job)
-    }
-
-    //TODO:APIDOC
-    def getPreviewRoi() {
-        Job job = jobService.read(params.long('id'))
-        byte[] data = job.software.service.getPreviewROI(job)
-        if (data) {
-            response.setHeader "Content-disposition", "inline"
-            response.outputStream << data
-            response.outputStream.flush()
-        } else {
-            responseNotFound("JobData", "getPreviewRoi")
-        }
-    }
-
-    //TODO:APIDOC
-    def getPreview() {
-        Job job = jobService.read(params.long('id'))
-        byte[] data = job.software.service.getPreview(job)
-        if (data) {
-            response.setHeader "Content-disposition", "inline"
-            response.outputStream << data
-            response.outputStream.flush()
-        } else {
-            responseNotFound("JobData", "getPreview")
-        }
-    }
-
     /**
      * Delete the full data set build by the job
      * This method will delete: annotation prediction, uploaded files,...

@@ -38,14 +38,13 @@ class SoftwareRabbitQueueTests {
     void testAddSoftwareRabbitQueue() {
         def softwareToAdd = BasicInstanceBuilder.getSoftwareNotExistForRabbit(false)
         softwareToAdd.executeCommand = "groovy -cp algo/computeAnnotationStats/Cytomine-Java-Client.jar:algo/computeAnnotationStats/jts-1.13.jar algo/computeAnnotationStats/computeAnnotationStats.groovy"
-        softwareToAdd.service = "createRabbitJobService"
 
         def result = SoftwareAPI.create(softwareToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         softwareToAdd = result.data as Software
 
         def amqpQueueService = Holders.getGrailsApplication().getMainContext().getBean("amqpQueueService")
 
-        String queueName = amqpQueueService.queuePrefixSoftware + (String) softwareToAdd.name.capitalize()
+        String queueName = amqpQueueService.queuePrefixProcessingServer + (String) softwareToAdd.defaultProcessingServer.name
 
         assert amqpQueueService.checkAmqpQueueDomainExists(queueName)
 
