@@ -62,7 +62,7 @@ class ImageSequenceService extends ModelService {
     }
 
     def get(ImageInstance image) {
-        ImageSequence.findAllByImage(image)
+        ImageSequence.findByImage(image)
     }
 
     def list(ImageGroup imageGroup) {
@@ -176,13 +176,6 @@ class ImageSequenceService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
-    }
-
-    def abstractImageService
-    def deleteDependentImageInstance(ImageSequence domain, Transaction transaction, Task task = null) {
-        imageInstanceService.delete(domain.image,transaction,null,false)
-        abstractImageService.delete(domain.image.baseImage)
-        abstractImageService.deleteFile(domain.image.baseImage)
     }
 
     def getStringParamsI18n(def domain) {
