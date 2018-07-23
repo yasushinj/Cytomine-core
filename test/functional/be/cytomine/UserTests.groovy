@@ -224,7 +224,8 @@ class UserTests  {
     }
   
     void testAddUserAlreadyExist() {
-        def userToAdd = BasicInstanceBuilder.getUser()
+        def userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.username = BasicInstanceBuilder.getUser().username
         def result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 409 == result.code
     }
@@ -361,13 +362,31 @@ class UserTests  {
 
 
 
-    void testAddUserChildCorrect() {
+    void testAddUserJobCorrect() {
         log.info("create user")
         def parent = User.findByUsername(Infos.SUPERADMINLOGIN);
         def json = "{parent:"+ parent.id +", username:"+ Math.random()+", software: ${BasicInstanceBuilder.getSoftware().id}, project: ${BasicInstanceBuilder.getProject().id}}";
 
         log.info("post user child")
         def response = JobAPI.createUserJob(json.toString(), Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+
+        log.info("check response")
+        assert 200==response.code
+    }
+
+    void testAddTwoUserJobAtTheSameTime() {
+        log.info("create user")
+        def parent = User.findByUsername(Infos.SUPERADMINLOGIN);
+        def json = "{parent:"+ parent.id +", username:"+ Math.random()+", software: ${BasicInstanceBuilder.getSoftware().id}, project: ${BasicInstanceBuilder.getProject().id}}";
+
+        log.info("post user child")
+        def response = JobAPI.createUserJob(json.toString(), Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+
+        log.info("check response")
+        assert 200==response.code
+
+        log.info("post user child")
+        response = JobAPI.createUserJob(json.toString(), Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
 
         log.info("check response")
         assert 200==response.code
