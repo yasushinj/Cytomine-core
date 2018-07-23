@@ -48,6 +48,7 @@ class RestUserJobController extends RestController {
     def dataSource
     def currentRoleServiceProxy
     def userJobService
+    def securityACLService
 
     /**
      * Get a user job
