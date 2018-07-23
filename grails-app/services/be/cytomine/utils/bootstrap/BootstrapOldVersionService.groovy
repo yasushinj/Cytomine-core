@@ -1,7 +1,5 @@
 package be.cytomine.utils.bootstrap
 
-import be.cytomine.image.UploadedFile
-
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -20,8 +18,10 @@ import be.cytomine.image.UploadedFile
 
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
+import be.cytomine.image.UploadedFile
 import be.cytomine.ontology.Property
 import be.cytomine.project.Project
+import be.cytomine.security.SecRole
 import be.cytomine.security.User
 import be.cytomine.utils.Version
 import grails.converters.JSON
@@ -70,6 +70,38 @@ class BootstrapOldVersionService {
         }
 
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
+    }
+
+    void init20180701() {
+        log.info "20180701"
+
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='configuration' and column_name='reading_role';").size() == 1;
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE configuration ADD COLUMN reading_role varchar(255) NOT NULL DEFAULT 'ADMIN';")
+
+            String request = "SELECT id FROM configuration;"
+            def sql = new Sql(dataSource)
+            def data = []
+            sql.eachRow(request) {
+                data << it[0]
+            }
+            sql.close()
+            if(data.size() > 0) new Sql(dataSource).executeUpdate("UPDATE configuration SET reading_role = 'ADMIN' WHERE id IN (" + data.join(",") + ");")
+
+            request = "SELECT id FROM configuration WHERE reading_role_id = "+SecRole.findByAuthority("ROLE_USER").id+";"
+            sql = new Sql(dataSource)
+            data = []
+            sql.eachRow(request) {
+                data << it[0]
+            }
+            sql.close()
+            if(data.size() > 0) new Sql(dataSource).executeUpdate("UPDATE configuration SET reading_role = 'USER' WHERE id IN (" + data.join(",") + ");")
+
+
+            new Sql(dataSource).executeUpdate("ALTER TABLE configuration DROP COLUMN reading_role_id;")
+        }
     }
 
     void init20180409() {

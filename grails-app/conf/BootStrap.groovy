@@ -193,12 +193,12 @@ class BootStrap {
         // Initialize RabbitMQ server
         bootstrapUtilsService.initRabbitMq()
 
+        log.info "init change for old version..."
+        bootstrapOldVersionService.execChangeForOldVersion()
+
         log.info "create multiple IS and Retrieval..."
         bootstrapUtilsService.createMultipleIS()
         bootstrapUtilsService.createMultipleRetrieval()
-
-        log.info "init change for old version..."
-        bootstrapOldVersionService.execChangeForOldVersion()
 
         if(grailsApplication.config.grails.client=="AURORA") {
             if(Environment.getCurrent() != Environment.TEST) {
