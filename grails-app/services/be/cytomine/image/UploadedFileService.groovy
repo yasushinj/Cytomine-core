@@ -1,14 +1,18 @@
 package be.cytomine.image
 
+import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.security.UserJob
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import groovy.sql.Sql
 
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
@@ -39,18 +43,70 @@ class UploadedFileService extends ModelService {
         return UploadedFile
     }
 
-    def list(User user) {
-        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+    def list() {
+        securityACLService.checkAdmin(cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
-            eq("user.id", user.id)
-            isNull("parent.id")
             isNull("deleted")
         }
         return uploadedFiles
     }
 
-    UploadedFile read(def id) {
-        UploadedFile.read(id)
+    def list(User user) {
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
+            eq("user.id", user.id)
+            isNull("deleted")
+        }
+        return uploadedFiles
+    }
+
+    def list(User user, Long parentId, Boolean onlyRoot) {
+
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
+            eq("user.id", user.id)
+            if(onlyRoot) {
+                isNull("parent.id")
+            } else if(parentId != null){
+                eq("parent.id", parentId)
+            }
+            isNull("deleted")
+        }
+        return uploadedFiles
+    }
+
+    def listHierarchicalTree(User user, Long rootId){
+        UploadedFile root = UploadedFile.get(rootId)
+
+        securityACLService.checkIsSameUser(root.user, cytomineService.currentUser)
+        String request =
+                "SELECT uf.id, uf.created, uf.original_filename, uf.l_tree, uf.parent_id, uf.size, uf.status, uf.image_id \n" +
+                        "FROM uploaded_file uf\n" +
+                        "WHERE uf.l_tree <@ '"+root.lTree+"'::text::ltree \n" +
+                        "AND uf.user_id = "+user.id+" \n" +
+                        "ORDER BY uf.l_tree ASC "
+
+        def data = []
+        def sql = new Sql(dataSource)
+        sql.eachRow(request) {
+            def row = [:]
+            int i = 0
+            row.id = it[i++]
+            row.created = it[i++]
+            row.originalFilename = it[i++]
+            row.lTree = it[i++].value
+            row.parentId = it[i++]
+            row.size = it[i++]
+            row.status = it[i++]
+
+            Long imageId = it[i++]
+            row.image = imageId
+            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAssociatedImage(imageId, "macro") : null
+            data << row
+        }
+        sql.close()
+
+        return data
     }
 
     UploadedFile get(def id) {
@@ -65,6 +121,8 @@ class UploadedFileService extends ModelService {
      */
     def add(def json) {
         SecUser currentUser = cytomineService.getCurrentUser()
+        if(currentUser instanceof UserJob) currentUser = ((UserJob)currentUser).user
+        securityACLService.checkUser(currentUser)
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
 
@@ -74,9 +132,11 @@ class UploadedFileService extends ModelService {
      * @param jsonNewData New domain datas
      * @return  Response structure (new domain data, old domain data..)
      */
-    def update(UploadedFile uploadedFile, def jsonNewData) {
+    def update(UploadedFile uploadedFile, def jsonNewData, Transaction transaction = null) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        return executeCommand(new EditCommand(user: currentUser), uploadedFile,jsonNewData)
+        securityACLService.checkUser(currentUser)
+        securityACLService.checkIsSameUser(uploadedFile.user, currentUser)
+        return executeCommand(new EditCommand(user: currentUser, transaction : transaction), uploadedFile,jsonNewData)
     }
 
     /**
@@ -88,13 +148,10 @@ class UploadedFileService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(UploadedFile domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        //We don't delete domain, we juste change a flag
         SecUser currentUser = cytomineService.getCurrentUser()
-        def jsonNewData = JSON.parse(domain.encodeAsJSON())
-        jsonNewData.deleted = new Date().time
-        Command c = new EditCommand(user: currentUser)
-        c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+        securityACLService.checkIsSameUser(domain.user, currentUser)
+        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+        return executeCommand(c,domain,null)
     }
 
     def getStringParamsI18n(def domain) {
@@ -102,12 +159,20 @@ class UploadedFileService extends ModelService {
     }
 
 
+    def abstractImageService
+
+    def deleteDependentAbstractImage(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
+        if(uploadedFile.image) abstractImageService.delete(uploadedFile.image,transaction,null,false)
+    }
+
     def deleteDependentUploadedFile(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
 
-        taskService.updateTask(task,task? "Delete ${UploadedFile.countByParent(uploadedFile)} uploadedFile parents":"")
+
+        taskService.updateTask(task,task? "Update ${UploadedFile.countByParent(uploadedFile)} uploadedFile childs":"")
 
         UploadedFile.findAllByParent(uploadedFile).each {
-            this.delete(it,transaction,null, false)
+            it.parent = uploadedFile.parent
+            this.update(it,JSON.parse(it.encodeAsJSON()), transaction)
         }
     }
 }

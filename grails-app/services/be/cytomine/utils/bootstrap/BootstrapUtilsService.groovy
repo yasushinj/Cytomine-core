@@ -158,34 +158,15 @@ class BootstrapUtilsService {
         }
     }
 
-    public def createMimeImageServers(def imageServerCollection, def mimeCollection) {
-        log.info imageServerCollection
-        log.info ImageServer.list().collect {it.url}
-        imageServerCollection.each {
-            ImageServer imageServer = ImageServer.findByName(it.name)
-            if (imageServer) {
-                mimeCollection.each {
-                    Mime mime = Mime.findByMimeType(it.mimeType)
-                    if (mime) {
-                        new MimeImageServer(
-                                mime : mime,
-                                imageServer: imageServer
-                        ).save()
-                    }
-                }
-            }
-        }
-    }
-
     def createConfigurations(){
-        SecRole adminRole = SecRole.findByAuthority("ROLE_ADMIN")
-        SecRole guestRole = SecRole.findByAuthority("ROLE_GUEST")
+        Configuration.Role adminRole = Configuration.Role.ADMIN
+        Configuration.Role allUsers = Configuration.Role.ALL
 
         def configs = []
 
-        configs << new Configuration(key: "welcome", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: guestRole)
+        configs << new Configuration(key: "welcome", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
 
-        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: guestRole)
+        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: allUsers)
 
         configs << new Configuration(key: "admin.email", value: grailsApplication.config.grails.admin.email, readingRole: adminRole)
 
@@ -200,7 +181,7 @@ class BootstrapUtilsService {
         //configs << new Configuration(key: , value: , readingRole: )
 
         //LDAP values
-        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: guestRole)
+        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: allUsers)
         configs << new Configuration(key: "ldap.context.server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
         configs << new Configuration(key: "ldap.search.base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
         configs << new Configuration(key: "ldap.context.managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
@@ -233,30 +214,6 @@ class BootstrapUtilsService {
         if (!newObject.save(flush: flush)) {
             throw new InvalidRequestException(newObject.retrieveErrors().toString())
         }
-    }
-
-    def addMimePyrTiff() {
-        def mimeSamples = [
-                [extension : 'tif', mimeType : 'image/pyrtiff']
-        ]
-        createMimes(mimeSamples)
-        createMimeImageServers(ImageServer.findAll(), mimeSamples)
-    }
-
-    def addMimeVentanaTiff() {
-        def mimeSamples = [
-                [extension : 'tif', mimeType : 'openslide/ventana']
-        ]
-        createMimes(mimeSamples)
-        createMimeImageServers(ImageServer.findAll(), mimeSamples)
-    }
-
-    def addMimePhilipsTiff() {
-        def mimeSamples = [
-                [extension : 'tif', mimeType : 'philips/tif']
-        ]
-        createMimes(mimeSamples)
-        createMimeImageServers(ImageServer.findAll(), mimeSamples)
     }
 
     def createMultipleRetrieval() {
@@ -394,22 +351,6 @@ class BootstrapUtilsService {
         }
     }
 
-    def transfertProperty() {
-        SpringSecurityUtils.doWithAuth("admin", {
-            def ips = ImageProperty.list()
-            ips.eachWithIndex { ip,index ->
-                ip.attach()
-                Property property = new Property(domainIdent: ip.image.id, domainClassName: AbstractImage.class.name,key:ip.key,value:ip.value)
-                property.save(failOnError: true)
-                ip.delete()
-                if(index%500==0) {
-                    log.info "Image property ${(index/ips.size())*100}"
-                    cleanUpGorm()
-                }
-            }
-        })
-    }
-
     def checkImages2() {
         SpringSecurityUtils.doWithAuth("admin", {
             def uploadedFiles = UploadedFile.findAllByPathLike("notfound").plus(UploadedFile.findAllByPathLike("/tmp/cytomine_buffer/")).plus(UploadedFile.findAllByPathLike("/tmp/imageserver_buffer"))
@@ -448,6 +389,7 @@ class BootstrapUtilsService {
 
     }
 
+    // voir comme exemple pour mon propre changement de hierarchie des uf
     def checkImages() {
         SpringSecurityUtils.doWithAuth("admin", {
             def currentUser = cytomineService.getCurrentUser()

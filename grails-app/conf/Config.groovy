@@ -94,13 +94,13 @@ environments {
         grails.retrievalServerURL = ["http://localhost:9097"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*']
     }
     production {
         grails.serverURL = "http://localhost:8086"
         grails.uploadURL = "http://localhost:9090"
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/jsondoc/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*']
         grails.retrievalServerURL = []
     }
     development {
@@ -110,7 +110,7 @@ environments {
         grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/jsondoc/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
         grails.ImageServerPrivateKey=""

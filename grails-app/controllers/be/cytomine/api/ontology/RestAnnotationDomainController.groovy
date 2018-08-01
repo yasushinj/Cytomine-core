@@ -23,6 +23,7 @@ import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.RestController
 import be.cytomine.api.UrlApi
+import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.ReviewedAnnotation
@@ -162,6 +163,19 @@ class RestAnnotationDomainController extends RestController {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
         }
+    }
+
+    def abstractImageService
+    def cropParameters() {
+        def annotation = AnnotationDomain.getAnnotationDomain(params.long("id"))
+        def parameters = annotation.toCropParams(params)
+        AbstractImage abstractImage = abstractImageService.read(parameters.id)
+        parameters.remove("id")
+        parameters.fif = abstractImage.absolutePath//URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
+        parameters.mimeType = abstractImage.mimeType
+        parameters.resolution = abstractImage.resolution
+
+        responseSuccess(parameters)
     }
 
     /**

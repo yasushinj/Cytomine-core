@@ -322,6 +322,7 @@ body {
 
 
     <script type="text/javascript" src="application/views/upload/UploadFormView.js" ></script>
+    <script type="text/javascript" src="application/views/upload/DetailedUploadedFileTreeDialog.js"></script>
 
     <script type="text/javascript" src="application/views/image/ImageReviewAction.js" ></script>
     <script type="text/javascript" src="application/views/image/ImageThumbView.js" ></script>
