@@ -179,6 +179,7 @@ body {
     <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
     <script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
     <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
+    <script type="text/javascript" src="application/controllers/SoftwareController.js" ></script>
     <script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
 
@@ -377,6 +378,8 @@ body {
     <script type="text/javascript" src="application/utils/processing/image/Outline.js" ></script>
     <script type="text/javascript" src="application/utils/processing/image/Threshold.js" ></script>
     <script type="text/javascript" src="application/utils/processing/image/ColorChannel.js" ></script>
+
+    <script type="text/javascript" src="application/views/software/SoftwareListView.js" ></script>
 </g:if>
 
 
