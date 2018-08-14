@@ -6,6 +6,7 @@ import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
+import be.cytomine.image.server.ImageServer
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.security.UserJob
@@ -158,6 +159,22 @@ class UploadedFileService extends ModelService {
         return [domain.id, domain.filename]
     }
 
+
+    def downloadURI(UploadedFile uploadedFile) {
+        securityACLService.checkIsSameUser(uploadedFile.user, cytomineService.currentUser)
+
+        String fif = uploadedFile.absolutePath
+
+        if (fif) {
+            String downloadURL = ImageServer.list().get(0).url
+            downloadURL += "/image/download?fif=$fif"
+            if(uploadedFile.image) downloadURL += "&mimeType=${uploadedFile.image.mimeType}"
+            return downloadURL
+        } else {
+            return null
+        }
+
+    }
 
     def abstractImageService
 

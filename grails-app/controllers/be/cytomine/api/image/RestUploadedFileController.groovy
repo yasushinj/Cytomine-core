@@ -186,6 +186,21 @@ class RestUploadedFileController extends RestController {
         redirect(url: "http://localhost:9090/upload")
     }
 
+    @RestApiMethod(description="Download the uploaded file")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
+    ])
+    def downloadUploadedFile(){
+        UploadedFile up = uploadedFileService.get(params.long('id'));
+        if (up) {
+            String url = uploadedFileService.downloadURI(up)
+            log.info "redirect url"
+            redirect (url : url)
+        } else {
+            responseNotFound("UploadedFile", params.id)
+        }
+    }
+
     @RestApiMethod(description="Create an image thanks to an uploaded file domain. THis add the image in the good storage and the project (if needed). This send too an email at the end to the uploader and the project managers.")
     @RestApiParams(params=[
     @RestApiParam(name="uploadedFile", type="long", paramType = RestApiParamType.PATH,description = "The uploaded file id")

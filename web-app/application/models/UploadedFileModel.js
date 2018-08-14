@@ -55,6 +55,13 @@ var UploadedFileModel = Backbone.Model.extend({
         }
         return result;
     },
+    downloadUrl : function() {
+        if (this.get('id')) {
+            return 'api/uploadedfile/' + this.get('id') + "/download";
+        } else {
+            return null;
+        }
+    },
     url: function () {
         var base = 'api/uploadedfile';
         var format = '.json';
