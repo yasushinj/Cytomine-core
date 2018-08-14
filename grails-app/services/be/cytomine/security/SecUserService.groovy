@@ -18,6 +18,7 @@ package be.cytomine.security
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ConstraintException
+import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
@@ -129,6 +130,19 @@ class SecUserService extends ModelService {
     def list() {
         securityACLService.checkGuest(cytomineService.currentUser)
         User.list(sort: "username", order: "asc")
+    }
+
+    def lock(SecUser user){
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        if(!user.enabled) throw new InvalidRequestException("User already locked !")
+        user.enabled = false
+        user.save()
+    }
+    def unlock(SecUser user){
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        if(user.enabled) throw new InvalidRequestException("User already unlocked !")
+        user.enabled = true
+        user.save()
     }
 
     def listWithRoles() {

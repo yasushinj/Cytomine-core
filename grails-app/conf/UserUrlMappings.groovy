@@ -113,6 +113,10 @@ class UserUrlMappings {
             action = [GET:"listDomain"]
         }
 
+        "/api/user/$id/lock"(controller:"restUser"){
+            action = [POST:"lock", DELETE:"unlock"]
+        }
+
         "/api/user/$id/password.$format"(controller:"restUser"){
             action = [PUT:"resetPassword"]
         }

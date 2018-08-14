@@ -601,4 +601,36 @@ class UserTests  {
         assert json.collection instanceof JSONArray
     }
 
+    void testLockUser() {
+        User user = BasicInstanceBuilder.getUserNotExist(true);
+        def result = UserAPI.lock(user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = UserAPI.show(user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.enabled == false
+
+        result = UserAPI.lock(user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+
+        result = UserAPI.unlock(user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        result = UserAPI.show(user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.enabled == true
+
+        result = UserAPI.unlock(user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+    }
+
 }

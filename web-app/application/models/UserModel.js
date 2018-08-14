@@ -242,3 +242,12 @@ var UserJobCollection = PaginatedCollection.extend({
 
     }
 });
+
+var UserLockModel = Backbone.Model.extend({
+    initialize: function (options) {
+        this.userId = options.userId;
+    },
+    url: function () {
+        return "/api/user/"+ this.userId +"/lock";
+    }
+});
