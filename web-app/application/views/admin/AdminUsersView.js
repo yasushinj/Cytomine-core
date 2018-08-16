@@ -144,13 +144,13 @@ var AdminUsersView = Backbone.View.extend({
             { data: "email", targets: [5]},
             { data: "created", render : function ( data, type ) {
                 if(type === "display"){
-                    return window.app.convertLongToPrettyDate(data);
+                    return window.app.convertLongToDate(data);
                 } else {
                     return data
                 }
             }, targets: [6]},
             { data: "updated", defaultContent: "No record", orderable: false, render : function (data) {
-                return window.app.convertLongToPrettyDate(data);
+                return window.app.convertLongToDate(data);
             }, targets: [7]},
             { data: "id", orderable: false, render : function( data, type, row ) {
                 var buttons = "";
