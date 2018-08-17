@@ -80,9 +80,6 @@ class UserUrlMappings {
         "/api/ontology/$id/user.$format"(controller: "restUser"){
             action = [GET:"showUserByOntology"]
         }
-        "/api/ontology/$id/creator.$format"(controller: "restUser"){
-            action = [GET:"showCreatorByOntology"]
-        }
         "/api/project/$id/userlayer.$format"(controller: "restUser"){
             action = [GET:"showLayerByProject"]
         }

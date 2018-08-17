@@ -333,7 +333,6 @@ body {
 
     <script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
 
-    <script type="text/javascript" src="application/views/ontology/OntologyUsersDialog.js" ></script>
     <script type="text/javascript" src="application/views/ontology/OntologyPanelView.js" ></script>
     <script type="text/javascript" src="application/views/ontology/OntologyView.js" ></script>
     <script type="text/javascript" src="application/views/ontology/OntologyAddOrEditTermView.js" ></script>
