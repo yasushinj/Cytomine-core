@@ -101,6 +101,7 @@ class SharedAnnotationService extends ModelService {
         }
 
         json.annotationIdent = annotation.id
+        json.annotationClassName = annotation.getClass().getName()
 
         String cid = UUID.randomUUID().toString()
 
