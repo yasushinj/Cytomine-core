@@ -246,7 +246,6 @@ body {
     <script type="text/javascript" src="application/views/search/SearchView.js" ></script>
     <script type="text/javascript" src="application/views/search/SearchResultView.js" ></script>
 
-    <script type="text/javascript" src="application/views/phono/PhonoMenu.js" ></script>
     <script type="text/javascript" src="application/views/account/AccountDetails.js" ></script>
 
     <script type="text/javascript" src="application/views/auth/LoginDialogView.js" ></script>
@@ -422,7 +421,6 @@ body {
 <div id='dialogs'>
 </div>
 <div id="alerts"></div>
-<div id="phono-messages"></div>
 
 
 
