@@ -43,7 +43,8 @@ class RestProjectConnectionController extends RestController {
     def exportService
     def securityACLService
 
-    def add = {
+    @RestApiMethod(description="Add a ProjectConnection object associated to the current user")
+    def add() {
         try {
             responseSuccess(projectConnectionService.add(request.JSON))
         } catch (CytomineException e) {
@@ -52,13 +53,14 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
-    def lastConnectionInProject = {
+    def lastConnectionInProject() {
         Project project = projectService.read(params.project)
         Long userId = params.user ? Long.parseLong(params.user): null
         responseSuccess(projectConnectionService.lastConnectionInProject(project, userId));
     }
 
-    def getConnectionByUserAndProject = {
+    @RestApiMethod(description="Get the project connections by user and project", listing=true)
+    def getConnectionByUserAndProject() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
         Integer offset = params.offset != null ? params.getInt('offset') : 0
@@ -69,7 +71,7 @@ class RestProjectConnectionController extends RestController {
         responseSuccess(results)
     }
 
-    def numberOfConnectionsByProjectAndUser = {
+    def numberOfConnectionsByProjectAndUser() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
         Long afterThan = params.long("afterThan");

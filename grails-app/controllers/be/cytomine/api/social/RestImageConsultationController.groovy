@@ -18,6 +18,7 @@ package be.cytomine.api.social
 import be.cytomine.project.Project
 import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
+import org.restapidoc.annotation.RestApiMethod
 
 import java.text.SimpleDateFormat
 
@@ -32,7 +33,8 @@ class RestImageConsultationController extends RestController {
     def imageConsultationService
     def exportService
 
-    def add = {
+    @RestApiMethod(description="Add a new image consultation object")
+    def add() {
         try {
             responseSuccess(imageConsultationService.add(request.JSON))
         } catch (CytomineException e) {
@@ -46,7 +48,8 @@ class RestImageConsultationController extends RestController {
         responseSuccess(imageConsultationService.lastImageOfUsersByProject(project))
     }
 
-    def resumeByUserAndProject = {
+    @RestApiMethod(description="Get a summary of the consultations on an image for an user and a project")
+    def resumeByUserAndProject() {
         def result = imageConsultationService.resumeByUserAndProject(Long.parseLong(params.user), Long.parseLong(params.project))
 
         if(params.export.equals("csv")) {

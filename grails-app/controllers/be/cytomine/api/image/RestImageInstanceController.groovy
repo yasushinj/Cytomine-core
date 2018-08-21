@@ -152,7 +152,7 @@ class RestImageInstanceController extends RestController {
 
 
 
-    @RestApiMethod(description="Get the next project image (first image created before)", listing = true)
+    @RestApiMethod(description="Get the next project image (first image created before)")
     @RestApiParams(params=[
     @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The current image instance id"),
     ])
@@ -166,7 +166,7 @@ class RestImageInstanceController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Get the previous project image (first image created after)", listing = true)
+    @RestApiMethod(description="Get the previous project image (first image created after)")
     @RestApiParams(params=[
     @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The current image instance id"),
     ])
@@ -180,7 +180,7 @@ class RestImageInstanceController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Add a new image in a project")
+    @RestApiMethod(description="Add a new image instance in a project. If we add an image previously deleted, all previous information will be restored.")
     def add() {
         try {
             responseResult(imageInstanceService.add(request.JSON))
