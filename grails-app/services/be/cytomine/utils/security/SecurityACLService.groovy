@@ -295,7 +295,10 @@ class SecurityACLService {
     }
 
     public def checkIsSameUser(SecUser user,SecUser currentUser) {
-        if (!currentRoleServiceProxy.isAdminByNow(currentUser) && (user.id!=currentUser.id) && (currentUser instanceof UserJob && user.id!=((UserJob)currentUser).user.id)) {
+        boolean sameUser = (user.id == currentUser.id)
+        sameUser |= currentRoleServiceProxy.isAdminByNow(currentUser)
+        sameUser |= (currentUser instanceof UserJob && user.id==((UserJob)currentUser).user.id)
+        if (!sameUser) {
             throw new ForbiddenException("You don't have the right to read this resource! You must be the same user!")
         }
     }
