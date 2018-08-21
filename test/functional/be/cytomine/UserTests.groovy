@@ -178,17 +178,6 @@ class UserTests  {
         assert 404 == result.code
     }
 
-    void testListOntologyUser() {
-        def project = BasicInstanceBuilder.getProject()
-        def result = UserAPI.list(project.ontology.id,"ontology","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.collection instanceof JSONArray
-
-        result = UserAPI.list(-99,"ontology","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 404 == result.code
-    }
-
     void testListOntologyCreator() {
         def project = BasicInstanceBuilder.getProject()
         def result = UserAPI.list(project.ontology.id,"ontology","creator",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
