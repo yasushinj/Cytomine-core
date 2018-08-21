@@ -84,7 +84,11 @@ class CommandService {
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(domain) {
             String serviceName = GrailsNameUtils.getPropertyName(domain) + 'Service'
-            return commandclass.findAllByServiceNameAndCreatedGreaterThan(serviceName, new Date(afterThan))
+
+            if(afterThan){
+                return commandclass.findAllByServiceNameAndCreatedGreaterThan(serviceName, new Date(afterThan))
+            }
+            return commandclass.findAllByServiceName(serviceName)
         }
         return commandclass.findAll()
     }
