@@ -272,7 +272,7 @@ class AbstractImageService extends ModelService {
         int h = params.int('h')
         def parameters = [:]
         parameters.topLeftX = Math.max(x,0)
-        parameters.topLeftY = Math.max(abstractImage.getHeight() - y,0)
+        parameters.topLeftY = Math.max(y,0)
         parameters.width = w
         parameters.height = h
         parameters.imageWidth = abstractImage.getWidth()
@@ -282,10 +282,11 @@ class AbstractImageService extends ModelService {
             //for camera, don't take the part outsite the real image
             parameters.width = width - parameters.topLeftX
         }
-//        if(height && (parameters.height+parameters.topLeftY)>height) {
-//            //for camera, don't take the part outsite the real image
-//            parameters.height = height - parameters.topLeftY
-//        }
+        if(height && (parameters.height+parameters.topLeftY)>height) {
+            //for camera, don't take the part outsite the real image
+            parameters.height = height - parameters.topLeftY
+        }
+        parameters.topLeftY = Math.max(abstractImage.getHeight() - parameters.topLeftY,0)
 
         if (params.zoom) parameters.zoom = params.zoom
         if (params.maxSize) parameters.maxSize = params.maxSize
