@@ -177,7 +177,6 @@ body {
     <script type="text/javascript" src="application/controllers/ActivityController.js" ></script>
     <script type="text/javascript" src="application/controllers/SearchController.js" ></script>
     <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
-    <script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
     <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
     <script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
