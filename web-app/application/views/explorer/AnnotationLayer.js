@@ -949,7 +949,7 @@ AnnotationLayer.prototype = {
         }
         if (this.rotate || this.drag) {
             this.controls.modify.mode &= ~OpenLayers.Control.ModifyFeature.RESHAPE;
-        }0
+        }
         this.controls.regular.handler.sides = this.sides;
         this.controls.regular.handler.irregular = this.irregular;
     },

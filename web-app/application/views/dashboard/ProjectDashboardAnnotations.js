@@ -130,7 +130,7 @@ var ProjectDashboardAnnotations = Backbone.View.extend({
         self.initSelectUser();
 
         self.initSelectJobs();
-        self.initAnnotationsFilter();
+        //self.initAnnotationsFilter();
         $(self.el).find("#uncheckAllTerms").click(function () {
             self.hideAllTerms();
         });
