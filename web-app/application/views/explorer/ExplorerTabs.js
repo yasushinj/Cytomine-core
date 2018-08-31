@@ -359,8 +359,8 @@ var ExplorerTabs = Backbone.View.extend({
             browseImageView = this.getImageView("review-" + idImage);
         }
 
-        browseImageView.view.stopBroadcastingInterval();
-        browseImageView.view.stopWatchOnlineUsersInterval();
+        // browseImageView.view.stopBroadcastingInterval();
+        // browseImageView.view.stopWatchOnlineUsersInterval();
         var indexOf = this.tabs.indexOf(browseImageView);
 
         this.tabs.splice(indexOf, 1);
