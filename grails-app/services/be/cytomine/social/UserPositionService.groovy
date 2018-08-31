@@ -84,7 +84,7 @@ class UserPositionService extends ModelService {
         );
 
         def result= userPositions.results().collect{it["_id"]}
-        return ["users": result.join(",")]
+        return ["users": result]
     }
 
     def list(ImageInstance image, User user, Long afterThan = null, Long beforeThan = null){
