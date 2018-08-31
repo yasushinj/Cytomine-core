@@ -359,14 +359,12 @@ var ExplorerTabs = Backbone.View.extend({
             browseImageView = this.getImageView("review-" + idImage);
         }
 
-        if(browseImageView) {
-            browseImageView.view.stopBroadcastingInterval();
-            browseImageView.view.stopWatchOnlineUsersInterval();
-            var indexOf = this.tabs.indexOf(browseImageView);
+        // browseImageView.view.stopBroadcastingInterval();
+        // browseImageView.view.stopWatchOnlineUsersInterval();
+        var indexOf = this.tabs.indexOf(browseImageView);
 
-            this.tabs.splice(indexOf, 1);
-        }
-
+        this.tabs.splice(indexOf, 1);
+        var tabs = $('#explorer-tab');
         //Remove Tab
         $('#tabs-' + prefix + '-' + idImage).parent().remove();
         //Remove dropdown
