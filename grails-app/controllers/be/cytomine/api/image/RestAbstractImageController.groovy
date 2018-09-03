@@ -310,7 +310,9 @@ class RestAbstractImageController extends RestController {
 
             log.info "Ai=$id Ii=$idImageInstance"
 
-            ImageSequence sequence = imageSequenceService.get(image)
+            def sequences = imageSequenceService.get(image)
+            ImageSequence sequence
+            if(sequences.size() > 0) sequence = sequences[0]
 
             if(!sequence) {
                 throw new WrongArgumentException("ImageInstance $idImageInstance is not in a sequence!")
