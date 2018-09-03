@@ -18,7 +18,6 @@
 import be.cytomine.image.ImageProcessingService
 import be.cytomine.utils.CytomineMailService
 import be.cytomine.image.multidim.ImageGroupHDF5Service
-import be.cytomine.integration.NotifyAuroraUploadJob
 import be.cytomine.middleware.ImageServerService
 import be.cytomine.processing.ImageRetrievalService
 import be.cytomine.security.SecUser
@@ -199,12 +198,6 @@ class BootStrap {
         log.info "create multiple IS and Retrieval..."
         bootstrapUtilsService.createMultipleIS()
         bootstrapUtilsService.createMultipleRetrieval()
-
-        if(grailsApplication.config.grails.client=="AURORA") {
-            if(Environment.getCurrent() != Environment.TEST) {
-                NotifyAuroraUploadJob.schedule(grailsApplication.config.grails.integration.aurora.interval,-1, [:])
-            }
-        }
 
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
