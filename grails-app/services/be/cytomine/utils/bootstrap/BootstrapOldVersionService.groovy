@@ -51,7 +51,6 @@ class BootstrapOldVersionService {
     def storageService
     def tableService
 
-    // TODO check que tout ici est bien fait comme il faut dans le bootstrap et pas des trucs qui manque genre le superadmin d'ims !!!
 
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
@@ -69,7 +68,20 @@ class BootstrapOldVersionService {
             }
         }
 
-        Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.version'))
+        Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'))
+    }
+
+    void init20180904() {
+        log.info "20180904"
+
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='version' and column_name='major';").size() == 1;
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN major integer;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN minor integer;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN patch integer;")
+        }
     }
 
     void init20180701() {
