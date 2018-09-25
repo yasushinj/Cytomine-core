@@ -43,10 +43,15 @@ class SimplifyGeometryService {
         int numOfGeometry = 0
         if (annotationFull instanceof MultiPolygon) {
             for (int i = 0; i < annotationFull.getNumGeometries(); i++) {
-                numOfGeometry = numOfGeometry + (annotationFull.getGeometryN(i).getNumGeometries() * annotationFull.getGeometryN(i).getNumInteriorRing())
+                Geometry geom = annotationFull.getGeometryN(i)
+                int nbInteriorRing = 1
+                if(geom instanceof Polygon) nbInteriorRing = geom.getNumInteriorRing()
+                numOfGeometry +=  geom.getNumGeometries() * nbInteriorRing
             }
         } else {
-            numOfGeometry = annotationFull.getNumGeometries() * annotationFull.getNumInteriorRing()
+            int nbInteriorRing = 1
+            if(annotationFull instanceof Polygon) nbInteriorRing = annotationFull.getNumInteriorRing()
+            numOfGeometry = annotationFull.getNumGeometries() * nbInteriorRing
         }
         numOfGeometry = Math.max(1, numOfGeometry)
 
