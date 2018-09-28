@@ -21,7 +21,10 @@ import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
+import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.Ontology
+import be.cytomine.ontology.ReviewedAnnotation
+import be.cytomine.ontology.UserAnnotation
 import be.cytomine.processing.Software
 import be.cytomine.security.ForgotPasswordToken
 import be.cytomine.security.SecRole
@@ -478,6 +481,13 @@ class ProjectService extends ModelService {
 
 
 
+
+    protected def beforeUpdate(Project domain) {
+        domain.countAnnotations = UserAnnotation.countByProject(domain)
+        domain.countImages = ImageInstance.countByProject(domain)
+        domain.countJobAnnotations = AlgoAnnotation.countByProject(domain)
+        domain.countReviewedAnnotations = ReviewedAnnotation.countByProject(domain)
+    }
 
     protected def beforeDelete(Project domain) {
         CommandHistory.findAllByProject(domain).each { it.delete() }
