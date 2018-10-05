@@ -90,6 +90,9 @@ BrowseImageView = Backbone.View.extend({
             self.changeValidateColor(false);
         }
 
+        // [VUEJS - Create new Explore instance]
+        window.addExploreInstance(this.model.id);
+
         // this.initToolbar();
 
         // var sidebarRightMini = $(".sidebar-map-right-mini");

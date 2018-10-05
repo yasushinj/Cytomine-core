@@ -350,6 +350,8 @@ var ExplorerTabs = Backbone.View.extend({
      */
     removeImageTab: function (idImage, prefix) {
 
+        window.removeExploreInstance(idImage);
+
         var browseImageView = null
 
         if (prefix != "review") {

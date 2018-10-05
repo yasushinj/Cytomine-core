@@ -44,6 +44,8 @@ body {
 
 <script type="text/javascript" src="lib/mousetrap.min.js"></script>
 
+<script type="text/javascript" src="application/views/v2.0/dist/Explorer.bundle.js" ></script>
+
 <wthr:isOldMsie>
     <script src="lib/jquery/jquery.min.js"></script>-
     <script src="/lib/r2d3/r2d3.js" charset="utf-8"></script>
