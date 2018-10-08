@@ -691,9 +691,9 @@ var UploadFormView = Backbone.View.extend({
                 },targets: [ 3 ]},
                 {data: "contentType", targets: [ 4 ]},
                 {data: "globalSize", orderable: true, render : function (data) {
-                    var mbSize = (data / (1024 * 1024)).toFixed(2);
-                    if(mbSize < 1024 ) return mbSize + "Mo";
-                    else return (mbSize/1024) + "Go";
+                    var mbSize = (data / (1024 * 1024));
+                    if(mbSize < 1024 ) return mbSize.toFixed(2) + "Mo";
+                    else return (mbSize/1024).toFixed(2) + "Go";
                 },targets: [ 5 ]},
                 {render: function (data, type, row) {
                     var text =  self.getStatusLabel(row);
