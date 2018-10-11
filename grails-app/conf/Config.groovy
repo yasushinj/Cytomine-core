@@ -45,8 +45,8 @@ grails.mime.types = [
         multipartForm: 'multipart/form-data'
 ]
 cytomine.maxRequestSize = 10485760
-storage_path="/data" //default path for image locations
-fast_data_path="/data" //default path for HDF5 files location (for ex: a SSD)
+storage_path="/data/images" //default path for image locations
+fast_data_path="/data/images" //default path for HDF5 files location (for ex: a SSD)
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "none" // none, html, base64
@@ -114,12 +114,12 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/css/jsondoc/*', '/js/*', '/plugins/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey="6772e58e-7ea8-4693-87b0-c2aca8e1eb80"
-        grails.ImageServerPublicKey="1365da9e-133d-4ea1-9f48-99b0ea333ee7"
-        grails.adminPrivateKey="8e5deaa8-610d-442b-b652-0853619b7376"
-        grails.adminPublicKey="9ab59fdf-e381-4d3f-a8ae-37927b39e570"
-        grails.superAdminPrivateKey="944bb2d2-0d63-46f5-aae5-078a87baee2e"
-        grails.superAdminPublicKey="128290dc-2e10-4885-8c87-3be1e6dc3764"
+        grails.ImageServerPrivateKey="ABC"
+        grails.ImageServerPublicKey="DEF"
+        grails.adminPrivateKey="GHI"
+        grails.adminPublicKey="JKL"
+        grails.superAdminPrivateKey="MNO"
+        grails.superAdminPublicKey="PQR"
     }
     test {
         grails.serverURL = "http://localhost:8090"
