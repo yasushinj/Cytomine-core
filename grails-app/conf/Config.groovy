@@ -45,8 +45,8 @@ grails.mime.types = [
         multipartForm: 'multipart/form-data'
 ]
 cytomine.maxRequestSize = 10485760
-storage_path="/data" //default path for image locations
-fast_data_path="/data" //default path for HDF5 files location (for ex: a SSD)
+storage_path="/data/images" //default path for image locations
+fast_data_path="/data/images" //default path for HDF5 files location (for ex: a SSD)
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "none" // none, html, base64
@@ -105,7 +105,7 @@ environments {
         grails.retrievalServerURL = []
     }
     development {
-        grails.serverURL = "http://localhost:8080"
+        grails.serverURL = "http://localhost-core:8080"
         grails.uploadURL = "http://localhost-upload"
         grails.imageServerURL = ["http://localhost-ims"]
         grails.retrievalServerURL = ["http://localhost-retrieval"]
@@ -114,14 +114,12 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/js/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
-        grails.ImageServerPrivateKey="XXX"
-        grails.ImageServerPublicKey="XXX"
-        grails.adminPrivateKey="XXX"
-        grails.adminPublicKey="XXX"
-        grails.superAdminPrivateKey="XXX"
-        grails.superAdminPublicKey="XXX"
-        grails.rabbitMQPrivateKey="XXX"
-        grails.rabbitMQPublicKey="XXX"
+        grails.ImageServerPrivateKey="ABC"
+        grails.ImageServerPublicKey="DEF"
+        grails.adminPrivateKey="GHI"
+        grails.adminPublicKey="JKL"
+        grails.superAdminPrivateKey="MNO"
+        grails.superAdminPublicKey="PQR"
     }
     test {
         grails.serverURL = "http://localhost:8090"
@@ -331,7 +329,7 @@ grails.plugins.dynamicController.mixins = [
 
 // Rest API Doc plugin
 grails.plugins.restapidoc.docVersion = "0.1"
-grails.plugins.restapidoc.basePath = "http://demo.cytomine.be"
+grails.plugins.restapidoc.basePath = "http://demo.cytomine.coop"
 grails.plugins.restapidoc.customClassName = "be.cytomine.api.doc.CustomResponseDoc"
 grails.plugins.restapidoc.controllerPrefix = "Rest"
 grails.plugins.restapidoc.grailsDomainDefaultType = "long"
@@ -402,7 +400,7 @@ environments {
 }
 
 
-grails.admin.email = "info@cytomine.be"
+grails.admin.email = "info@cytomine.org"
 grails.notification.email = ""
 grails.notification.password = ""
 grails.notification.smtp.host = "smtp.gmail.com"
