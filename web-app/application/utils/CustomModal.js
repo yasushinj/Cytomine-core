@@ -186,6 +186,7 @@ var DescriptionModal = {
                             ico: 'insertImage'
                         }
                     },
+                    tagsToRemove: ['script'],
                     btns: [
                         ['formatting'],
                         'btnGrp-semantic2',
@@ -216,6 +217,7 @@ var DescriptionModal = {
                     // remove the host url for images
 
                     text = rte.trumbowyg('html').split(window.location.protocol + "//" + window.location.host + '/api/attachedfile').join('/api/attachedfile');
+                    text = text.replace("<script>","").replace("</script>","");
                     new DescriptionModel({id: idDescription, domainIdent: domainIdent, domainClassName: domainClassName}).save({
                         domainIdent: domainIdent,
                         domainClassName: domainClassName,
