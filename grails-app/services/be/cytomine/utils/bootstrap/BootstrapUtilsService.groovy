@@ -164,7 +164,7 @@ class BootstrapUtilsService {
 
         def configs = []
 
-        configs << new Configuration(key: "welcome", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
+        configs << new Configuration(key: "WELCOME", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
 
         configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: allUsers)
 
