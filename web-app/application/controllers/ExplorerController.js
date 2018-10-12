@@ -103,7 +103,8 @@ var ExplorerController = Backbone.Router.extend({
         var callBack = function (){
             var zStack = imageGroup.zstack;
             var zMean = zStack[Math.floor(zStack.length/2)];
-            var imageSeq = new ImageSequenceModel({group: idGroup, zstack : zMean, slice : 0, time: 0,channel:0});
+            var imageSeq = new ImageSequenceModel({group: idGroup, zstack : zMean, slice : imageGroup.slice[0],
+                time: imageGroup.time[0], channel: imageGroup.channel[0]});
             imageSeq.fetch({
                 success: function (model) {
                     window.location = '#tabs-image-' + idProject + '-' + model.get("image") + '-0';

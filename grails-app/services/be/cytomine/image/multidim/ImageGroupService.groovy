@@ -142,16 +142,9 @@ class ImageGroupService extends ModelService {
 
     def thumb(Long id, int maxSize) {
         ImageGroup imageGroup = ImageGroup.get(id)
-        def sequences = ImageSequence.findAllByImageGroupAndSliceAndTimeAndChannel(imageGroup,0,0,0)
-        def zs = sequences.collect{it.zStack}
-        def sequence;
-        if (!zs) {
-            sequence = ImageSequence.findByImageGroup(imageGroup)
-        }
-        else {
-            int zMean = (zs.max() - zs.min())/2
-            sequence = sequences.find{it.zStack == zMean}
-        }
+        def characteristics = characteristics(imageGroup)
+        def zMean = characteristics.zStack[(int) Math.floor(characteristics.zStack.size() / 2)]
+        def sequence = imageSequenceService.get(imageGroup, characteristics.channel[0], zMean, characteristics.slice[0], characteristics.time[0])
 
         return abstractImageService.thumb(sequence.image.baseImage.id, maxSize)
     }
