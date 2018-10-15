@@ -1750,6 +1750,16 @@ class BasicInstanceBuilder {
         insert ? insertDomain(consult) : checkDomain(consult)
     }
 
+    static PersistentImageConsultation getImageConsultationNotExist(ImageInstance image, boolean insert = false) {
+        def connection = getProjectConnection()
+        connection.project = image.project.id;
+        insertDomain(connection)
+        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.instanceFilename,
+                imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
+                project: image.project.id)
+        insert ? insertDomain(consult) : checkDomain(consult)
+    }
+
     static ImageGroupHDF5 getImageGroupHDF5() {
         def project = getProject()
         ImageGroup gp = getImageGroupNotExist(project, true)

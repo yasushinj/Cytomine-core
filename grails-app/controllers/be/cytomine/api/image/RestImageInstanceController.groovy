@@ -104,7 +104,8 @@ class RestImageInstanceController extends RestController {
     @RestApiParam(name="tree", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Get a tree (with parent image as node)"),
     @RestApiParam(name="sortColumn", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Column sort (created by default)"),
     @RestApiParam(name="sortDirection", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Sort direction (desc by default)"),
-    @RestApiParam(name="search", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Original filename sreach filter (all by default)")
+    @RestApiParam(name="search", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Original filename search filter (all by default)"),
+    @RestApiParam(name="withLastActivity", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Return the last consultation of current user in each image. Not compatible with tree, excludeimagegroup and datatables parameters ")
     ])
     def listByProject() {
         Project project = projectService.read(params.long('id'))
@@ -139,7 +140,16 @@ class RestImageInstanceController extends RestController {
             String sortColumn = params.sortColumn ? params.sortColumn : "created"
             String sortDirection = params.sortDirection ? params.sortDirection : "desc"
             String search = params.search
-            responseSuccess(imageInstanceService.list(project, sortColumn, sortDirection, search))
+            def extended = [:]
+            if(params.withLastActivity) extended.put("withLastActivity",params.withLastActivity)
+            def imageList
+            if(extended.isEmpty()){
+                imageList = imageInstanceService.list(project, sortColumn, sortDirection, search)
+            } else {
+                imageList = imageInstanceService.listExtended(project, sortColumn, sortDirection, search, extended)
+            }
+
+            responseSuccess(imageList)
         }
         else if (project && params.tree && params.boolean("tree"))  {
             responseSuccess(imageInstanceService.listTree(project))
