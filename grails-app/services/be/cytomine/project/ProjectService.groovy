@@ -35,6 +35,7 @@ import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import be.cytomine.utils.Utils
 import grails.converters.JSON
+import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.security.acls.domain.BasePermission
@@ -136,24 +137,96 @@ class ProjectService extends ModelService {
         return data
     }
 
-    def list() {
-        securityACLService.checkAdmin(cytomineService.currentUser)
-        //list ALL projects,
-        Project.findAllByDeletedIsNull([sort: "name"])
+    def list(SecUser user = null) {
+        if (user) {
+            return Project.executeQuery(
+                    "select distinct project "+
+                            "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Project as project "+
+                            "where aclObjectId.objectId = project.id " +
+                            "and aclEntry.aclObjectIdentity = aclObjectId.id "+
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"' and project.deleted is null")
+        } else {
+            Project.findAllByDeletedIsNull()
+        }
     }
 
-    def list(SecUser user) {
-        securityACLService.checkGuest(cytomineService.currentUser)
-        //faster to get it from database table (getProjectList) than PostFilter
-        securityACLService.getProjectList(user)
+    def listExtended(SecUser user = null, def extended) {
+        if(extended.isEmpty()) return list(user)
+
+        String select, from, where
+        String request
+        //faster method
+        if (user) {
+            select = "SELECT DISTINCT p.* "
+            from = "FROM project p " +
+                    "JOIN acl_object_identity as aclObjectId ON aclObjectId.object_id_identity = p.id " +
+                    "JOIN acl_entry as aclEntry ON aclEntry.acl_object_identity = aclObjectId.id " +
+                    "JOIN acl_sid as aclSid ON aclEntry.sid = aclSid.id "
+            where = "WHERE aclSid.sid like '"+user.username+"' and p.deleted is null"
+        }
+        else {
+            select = "SELECT  p.* "
+            from = "FROM project p "
+            where = "WHERE p.deleted is null"
+        }
+        if(extended.withLastActivity) {
+            select += ", activities.max_date "
+            from += "LEFT OUTER JOIN " +
+                    "( SELECT  project_id, MAX(created) max_date " +
+                    "  FROM command_history " +
+                    "  GROUP BY project_id " +
+                    ") activities ON p.id = activities.project_id "
+        }
+        if(extended.withMembersCount) {
+            select += ", members.member_count "
+            from += "LEFT OUTER JOIN " +
+                    " ( SELECT aclObjectId.object_id_identity as project_id, COUNT(DISTINCT secUser.id) as member_count " +
+                    "   FROM acl_object_identity as aclObjectId, acl_entry as aclEntry, acl_sid as aclSid, sec_user as secUser " +
+                    "   WHERE aclEntry.acl_object_identity = aclObjectId.id and aclEntry.sid = aclSid.id and aclSid.sid = secUser.username and secUser.class = 'be.cytomine.security.User' " +
+                    "   GROUP BY aclObjectId.object_id_identity " +
+                    ") members ON p.id = members.project_id "
+        }
+
+        request = select + from+where
+
+        def sql = new Sql(dataSource)
+        def data = []
+        sql.eachRow(request) {
+            def map = [:]
+
+            for(int i =1;i<=((GroovyResultSet) it).getMetaData().getColumnCount();i++){
+                String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
+                map.putAt(key, it[key])
+            }
+
+            // I mock methods and fields to pass through getDataFromDomain of Project
+            map["class"] = Project.class
+            map.getMetaClass().countSamples = { return 0 }
+            map.getMetaClass().countImageInstance = { return map.count_images }
+            map.getMetaClass().countAnnotations = { return map.count_annotations }
+            map.getMetaClass().countJobAnnotations = { return map.count_job_annotations }
+
+            def line = Project.getDataFromDomain(map)
+            if(extended.withLastActivity) {
+                line.putAt("lastActivity", map.max_date)
+            }
+            if(extended.withMembersCount) {
+                line.putAt("membersCount", map.member_count)
+            }
+            data << line
+
+        }
+        sql.close()
+
+        return data
     }
 
-    def list(Ontology ontology) {
+    def listByOntology(Ontology ontology) {
         //very slow method because it check right access for each project ontology
         securityACLService.getProjectList(cytomineService.currentUser,ontology)
     }
 
-    def list(Software software) {
+    def listBySoftware(Software software) {
         securityACLService.getProjectList(cytomineService.currentUser,software)
     }
 
