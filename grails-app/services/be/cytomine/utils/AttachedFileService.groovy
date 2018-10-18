@@ -55,7 +55,10 @@ class AttachedFileService extends ModelService {
         if(file) {
             if(file.domainClassName.contains("AbstractImage")) {
                 securityACLService.checkAtLeastOne(file.domainIdent, file.domainClassName, "containers", READ)
-            } else {
+            } else if (file.domainClassName.equals("be.cytomine.processing.Software") || file.domainClassName.equals("be.cytomine.processing.SoftwareParameter")) {
+                securityACLService.checkGuest(cytomineService.currentUser)
+            }
+            else {
                 securityACLService.check(file.domainIdent,file.domainClassName,"container",READ)
             }
         }
