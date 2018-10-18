@@ -26,8 +26,8 @@ var SoftwareListView = Backbone.View.extend({
     },
 
     doLayout: function (tpl) {
-        console.log("soft list vie do");
         var self = this;
+        window.setSoftwareTabInstance();
 
         $(this.el).html(_.template(tpl));
     }
