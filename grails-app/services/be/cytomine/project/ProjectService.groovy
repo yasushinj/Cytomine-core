@@ -169,6 +169,11 @@ class ProjectService extends ModelService {
             from = "FROM project p "
             where = "WHERE p.deleted is null"
         }
+        select += ", ontology.name as ontology_name, ontology.id as ontology "
+        from += "LEFT OUTER JOIN ontology ON p.ontology_id = ontology.id "
+        select += ", discipline.name as discipline_name, discipline.id as discipline "
+        from += "LEFT OUTER JOIN discipline ON p.discipline_id = discipline.id "
+
         if(extended.withLastActivity) {
             select += ", activities.max_date "
             from += "LEFT OUTER JOIN " +
@@ -196,22 +201,26 @@ class ProjectService extends ModelService {
 
             for(int i =1;i<=((GroovyResultSet) it).getMetaData().getColumnCount();i++){
                 String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
-                map.putAt(key, it[key])
+                String objectKey = key.replaceAll( "(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() } )
+                map.putAt(objectKey, it[key])
             }
 
             // I mock methods and fields to pass through getDataFromDomain of Project
             map["class"] = Project.class
             map.getMetaClass().countSamples = { return 0 }
-            map.getMetaClass().countImageInstance = { return map.count_images }
-            map.getMetaClass().countAnnotations = { return map.count_annotations }
-            map.getMetaClass().countJobAnnotations = { return map.count_job_annotations }
+            map.getMetaClass().countImageInstance = { return map.countImages }
+            map.getMetaClass().countAnnotations = { return map.countAnnotations }
+            map.getMetaClass().countJobAnnotations = { return map.countJobAnnotations }
+            map['ontology'] = [id : map['ontology'], name : map['ontologyName']]
+            map['discipline'] = [id : map['discipline'], name : map['disciplineName']]
 
             def line = Project.getDataFromDomain(map)
+
             if(extended.withLastActivity) {
-                line.putAt("lastActivity", map.max_date)
+                line.putAt("lastActivity", map.maxDate)
             }
             if(extended.withMembersCount) {
-                line.putAt("membersCount", map.member_count)
+                line.putAt("membersCount", map.memberCount)
             }
             data << line
 
