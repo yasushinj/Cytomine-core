@@ -33,6 +33,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier
 class SimplifyGeometryService {
 
     def transactional = false
+    def grailsApplication
 
     /**
      * Simplify form (limit point number)
@@ -69,7 +70,7 @@ class SimplifyGeometryService {
         double numberOfPoint = annotationFull.getNumPoints()
 
         /* Maximum number of point that we would have (500/5 (max 150)=max 100 points)*/
-        double rateLimitMax = Math.max(numberOfPoint / ratioMax, numOfGeometry * 200)
+        double rateLimitMax = Math.max(numberOfPoint / ratioMax, numOfGeometry * grailsApplication.config.cytomine.annotation.maxNumberOfPoint)
         if (maxPoint) {
             //overide if max/minpoint is in argument
             rateLimitMax = maxPoint * numOfGeometry

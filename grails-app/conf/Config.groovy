@@ -412,3 +412,7 @@ grails.plugin.springsecurity.password.hash.iterations = 1
 
 cytomine.middleware.rabbitmq.user = "router"
 cytomine.middleware.rabbitmq.password = "router"
+
+
+//limitations
+cytomine.annotation.maxNumberOfPoint = 200
