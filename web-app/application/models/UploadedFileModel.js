@@ -50,6 +50,9 @@ var UploadedFileModel = Backbone.Model.extend({
                 result = "TO CONVERT";
                 break;
             case 8:
+                result = "ERROR CONVERSION";
+                break;
+            case 9:
                 result = "ERROR DEPLOYMENT";
                 break;
         }
