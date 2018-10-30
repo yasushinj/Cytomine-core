@@ -49,6 +49,10 @@ class ImageConsultationService extends ModelService {
         return consultation
     }
 
+    def listImageConsultationByProjectAndUser(Long project, Long user) {
+        return PersistentImageConsultation.findAllByProjectAndUser(project, user, [sort: 'created', order: 'desc', max: 3])
+    }
+
     def lastImageOfUsersByProject(Project project){
 
         securityACLService.check(project,READ)

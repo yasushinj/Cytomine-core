@@ -412,6 +412,41 @@ abstract class AnnotationListing {
             return ""
         }
     }
+
+    @Override
+    public String toString(){
+        return """ AnnotationListing
+columnToPrint : $columnToPrint
+project = $project
+user = $user
+term = $term
+image = $image
+suggestedTerm = $suggestedTerm
+userForTermAlgo = $userForTermAlgo
+users = $users
+usersForTerm = $usersForTerm
+usersForTermAlgo = $usersForTermAlgo
+reviewUsers = $reviewUsers
+terms = $terms
+images = $images
+afterThan = $afterThan
+beforeThan = $beforeThan
+suggestedTerms = $suggestedTerms
+notReviewedOnly = $notReviewedOnly
+noTerm = $noTerm
+noAlgoTerm = $noAlgoTerm
+multipleTerm = $multipleTerm
+bboxAnnotation = $bboxAnnotation
+baseAnnotation = $baseAnnotation
+maxDistanceBaseAnnotation = $maxDistanceBaseAnnotation
+bbox = $bbox
+parents=$parents
+avoidEmptyCentroid = $avoidEmptyCentroid
+excludedAnnotation = $excludedAnnotation
+kmeans = $kmeans
+"""
+
+    }
 }
 
 class UserAnnotationListing extends AnnotationListing {

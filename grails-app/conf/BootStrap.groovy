@@ -18,7 +18,6 @@
 import be.cytomine.image.ImageProcessingService
 import be.cytomine.utils.CytomineMailService
 import be.cytomine.image.multidim.ImageGroupHDF5Service
-import be.cytomine.integration.NotifyAuroraUploadJob
 import be.cytomine.middleware.ImageServerService
 import be.cytomine.processing.ImageRetrievalService
 import be.cytomine.security.SecUser
@@ -106,8 +105,8 @@ class BootStrap {
         log.info "#############################################################################"
 
         if(Version.count()==0) {
-            log.info "Version was not set, set to 0"
-            Version.setCurrentVersion(0)
+            log.info "Version was not set, set to last version"
+            Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'))
         }
 
         //Initialize marshallers and services
@@ -134,9 +133,6 @@ class BootStrap {
 
         log.info "init retrieve errors hack..."
         retrieveErrorsService.initMethods()
-
-        // Initialize RabbitMQ server
-        bootstrapUtilsService.initRabbitMq()
 
         /* Fill data just in test environment*/
         log.info "fill with data..."
@@ -193,18 +189,15 @@ class BootStrap {
             }
         }
 
-        log.info "create multiple IS and Retrieval..."
-        bootstrapUtilsService.createMultipleIS()
-        bootstrapUtilsService.createMultipleRetrieval()
+        // Initialize RabbitMQ server
+        bootstrapUtilsService.initRabbitMq()
 
         log.info "init change for old version..."
         bootstrapOldVersionService.execChangeForOldVersion()
 
-        if(grailsApplication.config.grails.client=="AURORA") {
-            if(Environment.getCurrent() != Environment.TEST) {
-                NotifyAuroraUploadJob.schedule(grailsApplication.config.grails.integration.aurora.interval,-1, [:])
-            }
-        }
+        log.info "create multiple IS and Retrieval..."
+        bootstrapUtilsService.createMultipleIS()
+        bootstrapUtilsService.createMultipleRetrieval()
 
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();

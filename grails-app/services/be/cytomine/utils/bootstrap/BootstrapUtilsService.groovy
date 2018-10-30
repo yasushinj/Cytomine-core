@@ -177,34 +177,15 @@ class BootstrapUtilsService {
         }
     }
 
-    public def createMimeImageServers(def imageServerCollection, def mimeCollection) {
-        log.info imageServerCollection
-        log.info ImageServer.list().collect {it.url}
-        imageServerCollection.each {
-            ImageServer imageServer = ImageServer.findByName(it.name)
-            if (imageServer) {
-                mimeCollection.each {
-                    Mime mime = Mime.findByMimeType(it.mimeType)
-                    if (mime) {
-                        new MimeImageServer(
-                                mime : mime,
-                                imageServer: imageServer
-                        ).save()
-                    }
-                }
-            }
-        }
-    }
-
     def createConfigurations(){
-        SecRole adminRole = SecRole.findByAuthority("ROLE_ADMIN")
-        SecRole guestRole = SecRole.findByAuthority("ROLE_GUEST")
+        Configuration.Role adminRole = Configuration.Role.ADMIN
+        Configuration.Role allUsers = Configuration.Role.ALL
 
         def configs = []
 
-        configs << new Configuration(key: "welcome", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: guestRole)
+        configs << new Configuration(key: "WELCOME", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
 
-        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: guestRole)
+        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: allUsers)
 
         configs << new Configuration(key: "admin.email", value: grailsApplication.config.grails.admin.email, readingRole: adminRole)
 
@@ -219,12 +200,14 @@ class BootstrapUtilsService {
         //configs << new Configuration(key: , value: , readingRole: )
 
         //LDAP values
-        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: guestRole)
-        configs << new Configuration(key: "ldap.context.server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
-        configs << new Configuration(key: "ldap.search.base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
-        configs << new Configuration(key: "ldap.context.managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
-        configs << new Configuration(key: "ldap.context.managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
-        //grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
+        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: allUsers)
+        if(grailsApplication.config.grails.plugin.springsecurity.ldap.active) {
+            configs << new Configuration(key: "ldap.context.server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
+            configs << new Configuration(key: "ldap.search.base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
+            configs << new Configuration(key: "ldap.context.managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
+            configs << new Configuration(key: "ldap.context.managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
+            //grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
+        }
 
         //LTI values
         //grailsApplication.config.grails.LTIConsumer.each{}
@@ -252,30 +235,6 @@ class BootstrapUtilsService {
         if (!newObject.save(flush: flush)) {
             throw new InvalidRequestException(newObject.retrieveErrors().toString())
         }
-    }
-
-    def addMimePyrTiff() {
-        def mimeSamples = [
-                [extension : 'tif', mimeType : 'image/pyrtiff']
-        ]
-        createMimes(mimeSamples)
-        createMimeImageServers(ImageServer.findAll(), mimeSamples)
-    }
-
-    def addMimeVentanaTiff() {
-        def mimeSamples = [
-                [extension : 'tif', mimeType : 'openslide/ventana']
-        ]
-        createMimes(mimeSamples)
-        createMimeImageServers(ImageServer.findAll(), mimeSamples)
-    }
-
-    def addMimePhilipsTiff() {
-        def mimeSamples = [
-                [extension : 'tif', mimeType : 'philips/tif']
-        ]
-        createMimes(mimeSamples)
-        createMimeImageServers(ImageServer.findAll(), mimeSamples)
     }
 
     def createMultipleRetrieval() {
@@ -422,118 +381,6 @@ class BootstrapUtilsService {
         }
 
         return imagingServer
-    }
-
-    def transfertProperty() {
-        SpringSecurityUtils.doWithAuth("admin", {
-            def ips = ImageProperty.list()
-            ips.eachWithIndex { ip,index ->
-                ip.attach()
-                Property property = new Property(domainIdent: ip.image.id, domainClassName: AbstractImage.class.name,key:ip.key,value:ip.value)
-                property.save(failOnError: true)
-                ip.delete()
-                if(index%500==0) {
-                    log.info "Image property ${(index/ips.size())*100}"
-                    cleanUpGorm()
-                }
-            }
-        })
-    }
-
-    def checkImages2() {
-        SpringSecurityUtils.doWithAuth("admin", {
-            def uploadedFiles = UploadedFile.findAllByPathLike("notfound").plus(UploadedFile.findAllByPathLike("/tmp/cytomine_buffer/")).plus(UploadedFile.findAllByPathLike("/tmp/imageserver_buffer"))
-
-            uploadedFiles.eachWithIndex { uploadedFile,index->
-                if(index%1==0) {
-                    log.info "Check ${(index/uploadedFiles.size())*100}"
-                    cleanUpGorm()
-                }
-
-                uploadedFile.attach()
-                AbstractImage abstractImage = uploadedFile.image
-                if (!abstractImage) { //
-                    UploadedFile parentUploadedFile = uploadedFile
-                    int max = 10
-                    while (parentUploadedFile.parent && !abstractImage && max <10) {
-                        parentUploadedFile.attach()
-                        parentUploadedFile.parent.attach()
-                        parentUploadedFile = parentUploadedFile.parent
-                        abstractImage = parentUploadedFile.image
-                        max++
-                    }
-                }
-                if (abstractImage) {
-                    def data = StorageAbstractImage.findByAbstractImage(abstractImage)
-                    if(data) {
-                        Storage storage = data.storage
-                        uploadedFile.path = storage.getBasePath()
-                        uploadedFile = uploadedFile.save()
-                    }
-                } else {
-                    log.error "DID NOT FIND AN ABSTRACT_IMAGE for uploadedFile $uploadedFile"
-                }
-            }
-        })
-
-    }
-
-    def checkImages() {
-        SpringSecurityUtils.doWithAuth("admin", {
-            def currentUser = cytomineService.getCurrentUser()
-
-            List<AbstractImage> ok = []
-            List<AbstractImage> notok = []
-            def list = AbstractImage.findAll()
-            list.eachWithIndex { abstractImage,index->
-                if(index%500==0) {
-                    log.info "Check ${(index/list.size())*100}"
-                    cleanUpGorm()
-                }
-
-                if (UploadedFile.findByImage(abstractImage)) {
-                    ok << abstractImage
-                } else {
-                    notok << abstractImage
-                }
-            }
-
-            notok.eachWithIndex { abstractImage, index ->
-                abstractImage.attach()
-                UploadedFile uploadedFile = UploadedFile.findByFilename(abstractImage.filename)
-                SecUser user = abstractImage.user ? abstractImage.user : currentUser
-                if (!uploadedFile) {
-                    def imageServerStorage = abstractImage.imageServersStorage
-                    uploadedFile = new UploadedFile(
-                            user : user,
-                            filename : abstractImage.getPath(),
-                            projects: ImageInstance.findAllByBaseImage(abstractImage).collect { it.project.id}.unique(),
-                            storages : abstractImage.getImageServersStorage().collect { it.storage.id},
-                            originalFilename: abstractImage.getOriginalFilename(),
-                            ext: abstractImage.mime.extension,
-                            size : 0,
-                            path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),
-                            contentType: abstractImage.mimeType)
-
-                    if (uploadedFile.validate()) {
-                        uploadedFile = uploadedFile.save()
-                    } else {
-                        uploadedFile.errors.each {
-                            log.info it
-                        }
-                    }
-
-                }
-
-                uploadedFile.image = abstractImage
-                uploadedFile.save()
-                if(index%100==0) {
-                    log.info "Create upload ${(index/notok.size())*100}"
-                    cleanUpGorm()
-                }
-            }
-
-        })
     }
 
     void convertMimeTypes(){

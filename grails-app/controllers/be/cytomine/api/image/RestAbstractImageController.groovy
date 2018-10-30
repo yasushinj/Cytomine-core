@@ -128,7 +128,7 @@ class RestAbstractImageController extends RestController {
      * Delete a new image
      * TODO:: how to manage security here?
      */
-    @RestApiMethod(description="Delete an image instance)")
+    @RestApiMethod(description="Delete an abstract image)")
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image sequence id")
     ])
@@ -137,7 +137,7 @@ class RestAbstractImageController extends RestController {
     }
 
 
-    @RestApiMethod(description="Check if an abstract image is used", listing = true)
+    @RestApiMethod(description="Get all unused images available for the current user", listing = true)
     @RestApiParams(params=[
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.QUERY, description = "The id of abstract image"),
     ])
@@ -311,7 +311,9 @@ class RestAbstractImageController extends RestController {
 
             log.info "Ai=$id Ii=$idImageInstance"
 
-            ImageSequence sequence = imageSequenceService.get(image)
+            def sequences = imageSequenceService.get(image)
+            ImageSequence sequence
+            if(sequences.size() > 0) sequence = sequences[0]
 
             if(!sequence) {
                 throw new WrongArgumentException("ImageInstance $idImageInstance is not in a sequence!")

@@ -42,7 +42,7 @@ class RestProjectConnectionController extends RestController {
     def exportService
     def securityACLService
 
-    @RestApiMethod(description = "Add a new user connection record to a project")
+    @RestApiMethod(description="Add a ProjectConnection object associated to the current user")
     def add() {
         try {
             responseSuccess(projectConnectionService.add(request.JSON))
@@ -61,7 +61,7 @@ class RestProjectConnectionController extends RestController {
         responseSuccess(projectConnectionService.lastConnectionInProject(project, null));
     }
 
-    @RestApiMethod(description = "List the last user connections in a project for a given user")
+    @RestApiMethod(description = "Get the last user connections in a project for a given user")
     @RestApiParams(params=[
             @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
             @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
@@ -72,7 +72,7 @@ class RestProjectConnectionController extends RestController {
         responseSuccess(projectConnectionService.lastConnectionInProject(project, userId));
     }
 
-    @RestApiMethod(description = "Get user connections in a project", listing=true)
+    @RestApiMethod(description="Get the project connections by user and project", listing=true)
     @RestApiParams(params=[
             @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
             @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
@@ -108,7 +108,7 @@ class RestProjectConnectionController extends RestController {
         }
     }
 
-    @RestApiMethod(description = "Get the number of connection by project")
+    @RestApiMethod(description = "Get the number of connection by project and user")
     @RestApiParams(params=[
             @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
             @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id"),

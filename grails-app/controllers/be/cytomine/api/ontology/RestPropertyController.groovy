@@ -93,7 +93,7 @@ class RestPropertyController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Get all properties for an abstract image", listing=true)
+    @RestApiMethod(description="Get all properties for a cytomine domain", listing=true)
     @RestApiParams(params=[
     @RestApiParam(name="idDomain", type="long", paramType = RestApiParamType.PATH,description = "The abstract image id")
     ])

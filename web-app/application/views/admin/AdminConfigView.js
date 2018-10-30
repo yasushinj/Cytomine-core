@@ -53,6 +53,7 @@ var AdminConfigView = Backbone.View.extend({
                     ico: 'justifyLeft'
                 }
             },
+            tagsToRemove: ['script'],
             btns: [
                 ['formatting'],
                 'btnGrp-semantic2',
@@ -71,6 +72,7 @@ var AdminConfigView = Backbone.View.extend({
 
         $(self.el).find("#saveWelcomeMessageButton").on("click", function(){
             var text = $("#adminWelcomeMessageEditor").trumbowyg('html');
+            text = text.replace("<script>","").replace("</script>","");
 
             var data = {key: "WELCOME", value: text, readingRole: "all"};
 

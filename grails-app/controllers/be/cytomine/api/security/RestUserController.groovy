@@ -332,7 +332,7 @@ class RestUserController extends RestController {
      */
     @RestApiMethod(description="Edit a user")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id")
     ])
     def update() {
         update(secUserService, request.JSON)
@@ -347,6 +347,24 @@ class RestUserController extends RestController {
     ])
     def delete() {
         delete(secUserService, JSON.parse("{id : $params.id}"),null)
+    }
+
+    @RestApiMethod(description="Lock an user")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+    ])
+    def lock() {
+        SecUser user = SecUser.get(params.id)
+        response(secUserService.lock(user))
+    }
+
+    @RestApiMethod(description="Unlock an user")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+    ])
+    def unlock() {
+        SecUser user = SecUser.get(params.id)
+        response(secUserService.unlock(user))
     }
 
     /**

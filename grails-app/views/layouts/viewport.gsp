@@ -177,7 +177,6 @@ body {
     <script type="text/javascript" src="application/controllers/ActivityController.js" ></script>
     <script type="text/javascript" src="application/controllers/SearchController.js" ></script>
     <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
-    <script type="text/javascript" src="application/controllers/PhonoController.js" ></script>
     <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
     <script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
@@ -246,7 +245,6 @@ body {
     <script type="text/javascript" src="application/views/search/SearchView.js" ></script>
     <script type="text/javascript" src="application/views/search/SearchResultView.js" ></script>
 
-    <script type="text/javascript" src="application/views/phono/PhonoMenu.js" ></script>
     <script type="text/javascript" src="application/views/account/AccountDetails.js" ></script>
 
     <script type="text/javascript" src="application/views/auth/LoginDialogView.js" ></script>
@@ -322,6 +320,7 @@ body {
 
 
     <script type="text/javascript" src="application/views/upload/UploadFormView.js" ></script>
+    <script type="text/javascript" src="application/views/upload/DetailedUploadedFileTreeDialog.js"></script>
 
     <script type="text/javascript" src="application/views/image/ImageReviewAction.js" ></script>
     <script type="text/javascript" src="application/views/image/ImageThumbView.js" ></script>
@@ -332,7 +331,6 @@ body {
 
     <script type="text/javascript" src="application/views/image/ImagePropertiesView.js" ></script>
 
-    <script type="text/javascript" src="application/views/ontology/OntologyUsersDialog.js" ></script>
     <script type="text/javascript" src="application/views/ontology/OntologyPanelView.js" ></script>
     <script type="text/javascript" src="application/views/ontology/OntologyView.js" ></script>
     <script type="text/javascript" src="application/views/ontology/OntologyAddOrEditTermView.js" ></script>
@@ -422,7 +420,6 @@ body {
 <div id='dialogs'>
 </div>
 <div id="alerts"></div>
-<div id="phono-messages"></div>
 
 
 

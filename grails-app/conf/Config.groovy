@@ -96,13 +96,13 @@ environments {
         grails.retrievalServerURL = ["http://localhost:9097"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*']
     }
     production {
         grails.serverURL = "http://localhost:8086"
         grails.uploadURL = "http://localhost:9090"
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/jsondoc/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*']
         grails.retrievalServerURL = []
     }
     development {
@@ -112,7 +112,7 @@ environments {
         grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
-        grails.resources.adhoc.patterns = ['/images/*', '/css/jsondoc/*', '/js/*', '/plugins/*']
+        grails.resources.adhoc.patterns = ['/images/*', '/js/*']
         grails.readOnlyProjectsByDefault = true
         grails.adminPassword="admin"
         grails.ImageServerPrivateKey="ABC"
@@ -409,15 +409,14 @@ grails.notification.password = ""
 grails.notification.smtp.host = "smtp.gmail.com"
 grails.notification.smtp.port = "587"
 
-grails.client = "NO"//"AURORA"
-
-grails.integration.aurora.url = "http://localhost:8000/api/image/notify.json?test=true"
-grails.integration.aurora.username = "xxx"
-grails.integration.aurora.password = "xxx"
-grails.integration.aurora.interval = 60000
+grails.client = "NO"
 
 grails.plugin.springsecurity.password.algorithm = 'SHA-256'
 grails.plugin.springsecurity.password.hash.iterations = 1
 
 cytomine.middleware.rabbitmq.user = "router"
 cytomine.middleware.rabbitmq.password = "router"
+
+
+//limitations
+cytomine.annotation.maxNumberOfPoint = 200
