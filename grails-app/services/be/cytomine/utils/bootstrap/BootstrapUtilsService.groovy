@@ -281,32 +281,6 @@ class BootstrapUtilsService {
         }
     }
 
-    def createMessageBrokerServer() {
-        MessageBrokerServer.list().each { messageBroker ->
-            if(!grailsApplication.config.grails.messageBrokerServerURL.contains(messageBroker.host)) {
-                log.info messageBroker.host + "is not in config, drop it"
-                log.info "delete Message Broker Server " + messageBroker
-                AmqpQueue.findAllByHost(messageBroker.host).each {it.delete(failOnError:true)}
-                messageBroker.delete()
-            }
-        }
-
-        String messageBrokerURL = grailsApplication.config.grails.messageBrokerServerURL
-        def splittedURL = messageBrokerURL.split(':')
-
-        if(!MessageBrokerServer.findByHost(splittedURL[0])) {
-            MessageBrokerServer mbs = new MessageBrokerServer(name: "MessageBrokerServer", host: splittedURL[0], port: splittedURL[1].toInteger())
-            if (mbs.validate()) {
-                mbs.save()
-            } else {
-                mbs.errors?.each {
-                    log.info it
-                }
-            }
-        }
-        MessageBrokerServer.findByHost(splittedURL[0])
-    }
-
     def createMultipleIS() {
 
         ImageServer.list().each { server ->
@@ -402,7 +376,42 @@ class BootstrapUtilsService {
 
     void initRabbitMq() {
         log.info "init RabbitMQ connection..."
-        MessageBrokerServer mbs = createMessageBrokerServer()
+        MessageBrokerServer mbs = MessageBrokerServer.first()
+        boolean toUpdate = false
+
+        MessageBrokerServer.list().each { messageBroker ->
+            if(!grailsApplication.config.grails.messageBrokerServerURL.equals(messageBroker.host+":"+messageBroker.port)) {
+                toUpdate = true
+                log.info messageBroker.host + "is not in config, drop it"
+                log.info "delete Message Broker Server " + messageBroker
+                messageBroker.delete(flush: true)
+            }
+        }
+
+        String messageBrokerURL = grailsApplication.config.grails.messageBrokerServerURL
+        def splittedURL = messageBrokerURL.split(':')
+        if(toUpdate || (mbs == null)) {
+            // create MBS
+            mbs = new MessageBrokerServer(name: "MessageBrokerServer", host: splittedURL[0], port: splittedURL[1].toInteger())
+            if (mbs.validate()) {
+                mbs.save()
+            } else {
+                mbs.errors?.each {
+                    log.info it
+                }
+            }
+
+            // Update the queues
+            AmqpQueue.findAll().each {
+                it.host = mbs.host
+                it.save(failOnError:true)
+                if(!amqpQueueService.checkRabbitQueueExists("queueCommunication",mbs)) {
+                    AmqpQueue queueCommunication = amqpQueueService.read("queueCommunication")
+                    amqpQueueService.createAmqpQueueDefault(queueCommunication)
+                }
+            }
+        }
+
         // Initialize default configurations for amqp queues
         amqpQueueConfigService.initAmqpQueueConfigDefaultValues()
 
@@ -415,29 +424,6 @@ class BootstrapUtilsService {
         else if(!amqpQueueService.checkRabbitQueueExists("queueCommunication",mbs)) {
             AmqpQueue queueCommunication = amqpQueueService.read("queueCommunication")
             amqpQueueService.createAmqpQueueDefault(queueCommunication)
-        }
-        ProcessingServer.list().each {
-            if (it.name != null) {
-                String queueName = amqpQueueService.queuePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
-                if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
-                    String exchangeName = amqpQueueService.exchangePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
-                    String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
-                    AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
-                    aq.save(failOnError: true)
-                }
-                if(!amqpQueueService.checkRabbitQueueExists(queueName,mbs)) {
-                    AmqpQueue aq = amqpQueueService.read(queueName)
-
-                    // Creates the queue on the rabbit server
-                    amqpQueueService.createAmqpQueueDefault(aq)
-
-                    // Notify the queueCommunication that a software has been added
-                    def mapInfosQueue = [name: aq.name, host: aq.host, exchange: aq.exchange]
-                    JsonBuilder builder = new JsonBuilder()
-                    builder(mapInfosQueue)
-                    amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), builder.toString())
-                }
-            }
         }
 
         //Inserting a MessageBrokerServer for testing purpose

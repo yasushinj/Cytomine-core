@@ -19,6 +19,7 @@ package be.cytomine.utils.bootstrap
 import be.cytomine.security.SecUser
 import groovy.sql.Sql
 import org.apache.commons.lang.RandomStringUtils
+import be.cytomine.processing.SoftwareUserRepository
 
 /**
  * Cytomine @ ULG
@@ -136,6 +137,10 @@ class BootstrapDataService {
         rabbitMQUser.setPrivateKey(grailsApplication.config.grails.rabbitMQPrivateKey)
         rabbitMQUser.setPublicKey(grailsApplication.config.grails.rabbitMQPublicKey)
         rabbitMQUser.save(flush : true)
+
+        //TODO tests
+        SoftwareUserRepository sur = new SoftwareUserRepository(provider : "GitHub", username: "Cytomine-ULiege", dockerUsername : "cytomineuliege", prefix : "S_")
+        //sur.save(failOnError: true)
     }
 
     public void recreateTableFromNotDomainClass() {
