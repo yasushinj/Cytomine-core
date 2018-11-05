@@ -401,15 +401,12 @@ class BootstrapUtilsService {
     }
 
     void initRabbitMq() {
-        log.info "init amqp service..."
-        amqpQueueService.initialize()
-
         log.info "init RabbitMQ connection..."
         MessageBrokerServer mbs = createMessageBrokerServer()
         // Initialize default configurations for amqp queues
         amqpQueueConfigService.initAmqpQueueConfigDefaultValues()
-        // Initialize RabbitMQ queue to communicate software added
 
+        // Initialize RabbitMQ queue to communicate software added
         if(!AmqpQueue.findByName("queueCommunication")) {
             AmqpQueue queueCommunication = new AmqpQueue(name: "queueCommunication", host: mbs.host, exchange: "exchangeCommunication")
             queueCommunication.save(failOnError: true, flush: true)
