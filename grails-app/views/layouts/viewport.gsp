@@ -182,6 +182,7 @@ body {
     <script type="text/javascript" src="application/controllers/SearchController.js" ></script>
     <script type="text/javascript" src="application/controllers/AccountController.js" ></script>
     <script type="text/javascript" src="application/controllers/UserDashboardController.js" ></script>
+    <script type="text/javascript" src="application/controllers/SoftwareController.js" ></script>
     <script type="text/javascript" src="application/controllers/ImageGroupController.js" ></script>
 
 
@@ -219,6 +220,7 @@ body {
     <script type="text/javascript" src="application/models/StorageModel.js" ></script>
     <script type="text/javascript" src="application/models/AnnotationPropertyModel.js" ></script>
     <script type="text/javascript" src="application/models/PropertyModel.js" ></script>
+    <script type="text/javascript" src="application/models/AttachedFileModel.js" ></script>
     <script type="text/javascript" src="application/models/ImageGroupModel.js" ></script>
     <script type="text/javascript" src="application/models/ImageGroupHDF5Model.js" ></script>
 
@@ -378,6 +380,8 @@ body {
     <script type="text/javascript" src="application/utils/processing/image/Outline.js" ></script>
     <script type="text/javascript" src="application/utils/processing/image/Threshold.js" ></script>
     <script type="text/javascript" src="application/utils/processing/image/ColorChannel.js" ></script>
+
+    <script type="text/javascript" src="application/views/software/SoftwareListView.js" ></script>
 </g:if>
 
 

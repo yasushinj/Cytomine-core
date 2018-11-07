@@ -21,7 +21,10 @@ import be.cytomine.image.AbstractImage
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.image.UploadedFile
+import be.cytomine.middleware.AmqpQueue
 import be.cytomine.ontology.Property
+import be.cytomine.processing.ImageFilter
+import be.cytomine.processing.ImagingServer
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import be.cytomine.security.User
@@ -197,6 +200,48 @@ class BootstrapOldVersionService {
                 it.save()
             }
         }
+    }
+
+    void init20180613() {
+        boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'image_filter' and COLUMN_NAME = 'processing_server_id';").size() == 1
+        if (exists) {
+            new Sql(dataSource).executeUpdate("UPDATE image_filter SET processing_server_id = NULL;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE image_filter DROP COLUMN IF EXISTS processing_server_id;")
+        }
+        def imagingServer = bootstrapUtilsService.createNewImagingServer()
+        ImageFilter.findAll().each {
+            it.imagingServer = imagingServer
+            it.save(flush: true)
+        }
+
+        exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'processing_server' and COLUMN_NAME = 'url';").size() == 1
+        if (exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE processing_server DROP COLUMN IF EXISTS url;")
+            new Sql(dataSource).executeUpdate("DELETE FROM processing_server;")
+        }
+
+        new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN IF EXISTS service_name;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN IF EXISTS result_sample;")
+
+        new Sql(dataSource).executeUpdate("UPDATE software SET deprecated = false WHERE deprecated IS NULL;")
+        new Sql(dataSource).executeUpdate("UPDATE software_parameter SET server_parameter = false WHERE server_parameter IS NULL;")
+
+        if(SecUser.findByUsername("rabbitmq")) {
+            def rabbitmqUser = SecUser.findByUsername("rabbitmq")
+            def superAdmin = SecRole.findByAuthority("ROLE_SUPER_ADMIN")
+            if(!SecUserSecRole.findBySecUserAndSecRole(rabbitmqUser,superAdmin)) {
+                new SecUserSecRole(secUser: rabbitmqUser,secRole: superAdmin).save(flush:true)
+            }
+        }
+
+        AmqpQueue.findAllByNameLike("queueSoftware%").each {it.delete(flush: true)}
+
+        bootstrapUtilsService.addDefaultProcessingServer()
+        bootstrapUtilsService.addDefaultConstraints()
     }
 
     void init20180301() {

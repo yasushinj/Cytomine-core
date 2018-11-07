@@ -40,7 +40,7 @@ class Configuration extends CytomineDomain implements Serializable {
     static constraints = {
         key(blank: false, unique: true)
         value(blank: false)
-        readingRole(blank: false)
+        readingRole(nullable: false)
     }
     static mapping = {
         id(generator: 'assigned', unique: true)

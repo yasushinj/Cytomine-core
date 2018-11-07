@@ -139,6 +139,9 @@ class BootStrap {
         log.info "init retrieve errors hack..."
         retrieveErrorsService.initMethods()
 
+        // Initialize RabbitMQ server
+        bootstrapUtilsService.initRabbitMq()
+
         /* Fill data just in test environment*/
         log.info "fill with data..."
         if (Environment.getCurrent() == Environment.TEST) {
