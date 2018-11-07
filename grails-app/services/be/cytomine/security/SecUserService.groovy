@@ -18,6 +18,7 @@ package be.cytomine.security
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ConstraintException
+import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
@@ -80,6 +81,13 @@ class SecUserService extends ModelService {
         SecUser.get(id)
     }
 
+    User getUser(def id) {
+        securityACLService.checkGuest(cytomineService.currentUser)
+        SecUser user = SecUser.get(id)
+        if(user instanceof UserJob) user = ((UserJob)user).user
+        return ((User) user)
+    }
+
     def findByUsername(def username) {
         if(!username) return null
         securityACLService.checkGuest(cytomineService.currentUser)
@@ -111,9 +119,6 @@ class SecUserService extends ModelService {
         data['adminByNow'] = currentRoleServiceProxy.isAdminByNow(user)
         data['userByNow'] = !data['adminByNow'] && currentRoleServiceProxy.isUserByNow(user)
         data['guestByNow'] = !data['adminByNow'] && !data['userByNow'] && currentRoleServiceProxy.isGuestByNow(user)
-//        data['admin'] = false
-//        data['user'] = false
-//        data['ghest'] = true
         return data
     }
 
@@ -125,6 +130,19 @@ class SecUserService extends ModelService {
     def list() {
         securityACLService.checkGuest(cytomineService.currentUser)
         User.list(sort: "username", order: "asc")
+    }
+
+    def lock(SecUser user){
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        if(!user.enabled) throw new InvalidRequestException("User already locked !")
+        user.enabled = false
+        user.save()
+    }
+    def unlock(SecUser user){
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        if(user.enabled) throw new InvalidRequestException("User already unlocked !")
+        user.enabled = true
+        user.save()
     }
 
     def listWithRoles() {

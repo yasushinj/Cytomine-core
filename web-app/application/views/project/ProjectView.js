@@ -27,7 +27,6 @@ var ProjectView = Backbone.View.extend({
         this.searchProjectPanel = null;
         this.addProjectDialog = null;
         this.ontologies = this.getOntologiesChoice();
-        this.disciplines = this.getDisciplinesChoice();
     },
     render: function () {
         var self = this;
@@ -71,8 +70,7 @@ var ProjectView = Backbone.View.extend({
         self.addProjectDialog = new AddProjectDialog({
             projectsPanel: self,
             el: self.el,
-            ontologies: self.ontologies,
-            disciplines: self.disciplines
+            ontologies: self.ontologies
         }).render();
     },
     /**
@@ -121,7 +119,6 @@ var ProjectView = Backbone.View.extend({
         self.searchProjectPanel = new ProjectSearchPanel({
             model: self.model,
             ontologies: self.ontologies,
-            disciplines: self.disciplines,
             el: $("#projectViewNorth"),
             container: self,
             projectsPanel: self
@@ -140,18 +137,6 @@ var ProjectView = Backbone.View.extend({
         });
         return ontologies;
 
-    },
-    getDisciplinesChoice: function () {
-        var disciplines = new Backbone.Collection;
-        disciplines.comparator = function (item) {
-            return item.get("name");
-        };
-        _.each(this.model.models, function (project) {
-            if (disciplines.get(project.get("discipline")) == undefined && project.get("discipline") != null) {
-                disciplines.add({id: project.get("discipline"), name: project.get("disciplineName")});
-            }
-        });
-        return disciplines;
     },
 
     /**

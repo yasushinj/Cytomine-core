@@ -47,6 +47,7 @@ class RestUserJobController extends RestController {
     def jobService
     def dataSource
     def currentRoleServiceProxy
+    def securityACLService
     def userJobService
 
     /**
@@ -84,15 +85,15 @@ class RestUserJobController extends RestController {
             //get user job parent
             User user
             if (json.parent.toString().equals("null")) {
-                user = User.read(springSecurityService.currentUser.id)
+                user = secUserService.getUser(springSecurityService.currentUser.id)
             } else {
                 securityACLService.checkAdmin(springSecurityService.currentUser)
-                user = User.read(json.parent.toString())
+                user = secUserService.getUser(json.parent.toString())
             }
 
             //get job for this user
             Job job
-            if (json.job.toString().equals("null")) {
+            if (json.job == null || json.job.toString().equals("null")) {
                 if(json.software && json.project){
                     //Job is not defined, create a new one
                     log.debug "create new job:" + json
