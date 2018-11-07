@@ -654,6 +654,7 @@ var UploadFormView = Backbone.View.extend({
             case 4:
             case 5:
             case 8:
+            case 9:
                 result += "label-danger";
                 break;
         }
