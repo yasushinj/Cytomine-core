@@ -266,7 +266,7 @@ class UserAnnotationService extends ModelService {
                 }
             }
 
-            def properties = JSONUtils.getJSONList(json.property)
+            def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
             if (properties) {
                 properties.each {
                     def key = it.key as String
