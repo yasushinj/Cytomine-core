@@ -203,7 +203,7 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20181110() {
+    void init20180618() {
         boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
                 "WHERE TABLE_NAME = 'image_filter' and COLUMN_NAME = 'processing_server_id';").size() == 1
