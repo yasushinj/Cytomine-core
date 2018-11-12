@@ -177,9 +177,6 @@ class BootStrap {
             }
         }
 
-        // Initialize RabbitMQ server
-        bootstrapUtilsService.initRabbitMq()
-
         log.info "init change for old version..."
         bootstrapOldVersionService.execChangeForOldVersion()
 

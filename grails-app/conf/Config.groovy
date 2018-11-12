@@ -106,14 +106,16 @@ environments {
         grails.retrievalServerURL = []
     }
     development {
-        grails.serverURL = "http://localhost-core:8080"
+        grails.serverURL = "http://localhost-core"
         grails.uploadURL = "http://localhost-upload"
         grails.imageServerURL = ["http://localhost-ims"]
         grails.retrievalServerURL = ["http://localhost-retrieval"]
         grails.converters.default.pretty.print = true
         grails.plugin.springsecurity.useBasicAuth = false
         grails.resources.adhoc.patterns = ['/images/*', '/js/*','/css/jsondoc/*']
-        grails.readOnlyProjectsByDefault = true
+        grails.readOnlyProjectsByDefault = false
+        grails.retrievalUsername = 'cytomine'
+        grails.retrievalPassword = 'retrieval_default'
         grails.adminPassword="admin"
         grails.ImageServerPrivateKey="ABC"
         grails.ImageServerPublicKey="DEF"
@@ -132,7 +134,7 @@ environments {
         grails.plugin.springsecurity.useBasicAuth = true
         grails.plugin.springsecurity.basic.realmName = "Cytomine log"
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
-        grails.readOnlyProjectsByDefault = true
+        grails.readOnlyProjectsByDefault = false
 
         grails.adminPassword = "password"
         grails.ImageServerPrivateKey=""

@@ -62,7 +62,6 @@ class BootstrapUtilsService {
     def processingServerService
     def configurationService
 
-
     public def createUsers(def usersSamples) {
 
         SecRole.findByAuthority("ROLE_USER") ?: new SecRole(authority: "ROLE_USER").save(flush: true)
@@ -178,25 +177,6 @@ class BootstrapUtilsService {
         }
     }
 
-    public def createMimeImageServers(def imageServerCollection, def mimeCollection) {
-        log.info imageServerCollection
-        log.info ImageServer.list().collect {it.url}
-        imageServerCollection.each {
-            ImageServer imageServer = ImageServer.findByName(it.name)
-            if (imageServer) {
-                mimeCollection.each {
-                    Mime mime = Mime.findByMimeType(it.mimeType)
-                    if (mime) {
-                        new MimeImageServer(
-                                mime : mime,
-                                imageServer: imageServer
-                        ).save()
-                    }
-                }
-            }
-        }
-    }
-
     def createConfigurations(){
         Configuration.Role adminRole = Configuration.Role.ADMIN
         Configuration.Role allUsers = Configuration.Role.ALL
@@ -301,32 +281,6 @@ class BootstrapUtilsService {
         }
     }
 
-    def createMessageBrokerServer() {
-        MessageBrokerServer.list().each { messageBroker ->
-            if(!grailsApplication.config.grails.messageBrokerServerURL.contains(messageBroker.host)) {
-                log.info messageBroker.host + "is not in config, drop it"
-                log.info "delete Message Broker Server " + messageBroker
-                AmqpQueue.findAllByHost(messageBroker.host).each {it.delete(failOnError:true)}
-                messageBroker.delete()
-            }
-        }
-
-        String messageBrokerURL = grailsApplication.config.grails.messageBrokerServerURL
-        def splittedURL = messageBrokerURL.split(':')
-
-        if(!MessageBrokerServer.findByHost(splittedURL[0])) {
-            MessageBrokerServer mbs = new MessageBrokerServer(name: "MessageBrokerServer", host: splittedURL[0], port: splittedURL[1].toInteger())
-            if (mbs.validate()) {
-                mbs.save()
-            } else {
-                mbs.errors?.each {
-                    log.info it
-                }
-            }
-        }
-        MessageBrokerServer.findByHost(splittedURL[0])
-    }
-
     def createMultipleIS() {
 
         ImageServer.list().each { server ->
@@ -403,102 +357,6 @@ class BootstrapUtilsService {
         return imagingServer
     }
 
-    def checkImages2() {
-        SpringSecurityUtils.doWithAuth("admin", {
-            def uploadedFiles = UploadedFile.findAllByPathLike("notfound").plus(UploadedFile.findAllByPathLike("/tmp/cytomine_buffer/")).plus(UploadedFile.findAllByPathLike("/tmp/imageserver_buffer"))
-
-            uploadedFiles.eachWithIndex { uploadedFile,index->
-                if(index%1==0) {
-                    log.info "Check ${(index/uploadedFiles.size())*100}"
-                    cleanUpGorm()
-                }
-
-                uploadedFile.attach()
-                AbstractImage abstractImage = uploadedFile.image
-                if (!abstractImage) { //
-                    UploadedFile parentUploadedFile = uploadedFile
-                    int max = 10
-                    while (parentUploadedFile.parent && !abstractImage && max <10) {
-                        parentUploadedFile.attach()
-                        parentUploadedFile.parent.attach()
-                        parentUploadedFile = parentUploadedFile.parent
-                        abstractImage = parentUploadedFile.image
-                        max++
-                    }
-                }
-                if (abstractImage) {
-                    def data = StorageAbstractImage.findByAbstractImage(abstractImage)
-                    if(data) {
-                        Storage storage = data.storage
-                        uploadedFile.path = storage.getBasePath()
-                        uploadedFile = uploadedFile.save()
-                    }
-                } else {
-                    log.error "DID NOT FIND AN ABSTRACT_IMAGE for uploadedFile $uploadedFile"
-                }
-            }
-        })
-
-    }
-
-    def checkImages() {
-        SpringSecurityUtils.doWithAuth("admin", {
-            def currentUser = cytomineService.getCurrentUser()
-
-            List<AbstractImage> ok = []
-            List<AbstractImage> notok = []
-            def list = AbstractImage.findAll()
-            list.eachWithIndex { abstractImage,index->
-                if(index%500==0) {
-                    log.info "Check ${(index/list.size())*100}"
-                    cleanUpGorm()
-                }
-
-                if (UploadedFile.findByImage(abstractImage)) {
-                    ok << abstractImage
-                } else {
-                    notok << abstractImage
-                }
-            }
-
-            notok.eachWithIndex { abstractImage, index ->
-                abstractImage.attach()
-                UploadedFile uploadedFile = UploadedFile.findByFilename(abstractImage.filename)
-                SecUser user = abstractImage.user ? abstractImage.user : currentUser
-                if (!uploadedFile) {
-                    def imageServerStorage = abstractImage.imageServersStorage
-                    uploadedFile = new UploadedFile(
-                            user : user,
-                            filename : abstractImage.getPath(),
-                            projects: ImageInstance.findAllByBaseImage(abstractImage).collect { it.project.id}.unique(),
-                            storages : abstractImage.getImageServersStorage().collect { it.storage.id},
-                            originalFilename: abstractImage.getOriginalFilename(),
-                            ext: abstractImage.mime.extension,
-                            size : 0,
-                            path : (imageServerStorage.isEmpty()? "notfound" : imageServerStorage.first().storage.getBasePath()),
-                            contentType: abstractImage.mimeType)
-
-                    if (uploadedFile.validate()) {
-                        uploadedFile = uploadedFile.save()
-                    } else {
-                        uploadedFile.errors.each {
-                            log.info it
-                        }
-                    }
-
-                }
-
-                uploadedFile.image = abstractImage
-                uploadedFile.save()
-                if(index%100==0) {
-                    log.info "Create upload ${(index/notok.size())*100}"
-                    cleanUpGorm()
-                }
-            }
-
-        })
-    }
-
     void convertMimeTypes(){
         SpringSecurityUtils.doWithAuth("admin", {
 
@@ -517,15 +375,47 @@ class BootstrapUtilsService {
     }
 
     void initRabbitMq() {
-        log.info "init amqp service..."
-        amqpQueueService.initialize()
-
         log.info "init RabbitMQ connection..."
-        MessageBrokerServer mbs = createMessageBrokerServer()
+        MessageBrokerServer mbs = MessageBrokerServer.first()
+        boolean toUpdate = false
+
+        MessageBrokerServer.list().each { messageBroker ->
+            if(!grailsApplication.config.grails.messageBrokerServerURL.equals(messageBroker.host+":"+messageBroker.port)) {
+                toUpdate = true
+                log.info messageBroker.host + "is not in config, drop it"
+                log.info "delete Message Broker Server " + messageBroker
+                messageBroker.delete(flush: true)
+            }
+        }
+
+        String messageBrokerURL = grailsApplication.config.grails.messageBrokerServerURL
+        def splittedURL = messageBrokerURL.split(':')
+        if(toUpdate || (mbs == null)) {
+            // create MBS
+            mbs = new MessageBrokerServer(name: "MessageBrokerServer", host: splittedURL[0], port: splittedURL[1].toInteger())
+            if (mbs.validate()) {
+                mbs.save()
+            } else {
+                mbs.errors?.each {
+                    log.info it
+                }
+            }
+
+            // Update the queues
+            AmqpQueue.findAll().each {
+                it.host = mbs.host
+                it.save(failOnError:true)
+                if(!amqpQueueService.checkRabbitQueueExists("queueCommunication",mbs)) {
+                    AmqpQueue queueCommunication = amqpQueueService.read("queueCommunication")
+                    amqpQueueService.createAmqpQueueDefault(queueCommunication)
+                }
+            }
+        }
+
         // Initialize default configurations for amqp queues
         amqpQueueConfigService.initAmqpQueueConfigDefaultValues()
-        // Initialize RabbitMQ queue to communicate software added
 
+        // Initialize RabbitMQ queue to communicate software added
         if(!AmqpQueue.findByName("queueCommunication")) {
             AmqpQueue queueCommunication = new AmqpQueue(name: "queueCommunication", host: mbs.host, exchange: "exchangeCommunication")
             queueCommunication.save(failOnError: true, flush: true)
@@ -534,29 +424,6 @@ class BootstrapUtilsService {
         else if(!amqpQueueService.checkRabbitQueueExists("queueCommunication",mbs)) {
             AmqpQueue queueCommunication = amqpQueueService.read("queueCommunication")
             amqpQueueService.createAmqpQueueDefault(queueCommunication)
-        }
-        ProcessingServer.list().each {
-            if (it.name != null) {
-                String queueName = amqpQueueService.queuePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
-                if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
-                    String exchangeName = amqpQueueService.exchangePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
-                    String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
-                    AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
-                    aq.save(failOnError: true)
-                }
-                if(!amqpQueueService.checkRabbitQueueExists(queueName,mbs)) {
-                    AmqpQueue aq = amqpQueueService.read(queueName)
-
-                    // Creates the queue on the rabbit server
-                    amqpQueueService.createAmqpQueueDefault(aq)
-
-                    // Notify the queueCommunication that a software has been added
-                    def mapInfosQueue = [name: aq.name, host: aq.host, exchange: aq.exchange]
-                    JsonBuilder builder = new JsonBuilder()
-                    builder(mapInfosQueue)
-                    amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), builder.toString())
-                }
-            }
         }
 
         //Inserting a MessageBrokerServer for testing purpose

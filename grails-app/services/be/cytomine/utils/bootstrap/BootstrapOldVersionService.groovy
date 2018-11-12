@@ -27,6 +27,8 @@ import be.cytomine.processing.ImageFilter
 import be.cytomine.processing.ImagingServer
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
+import be.cytomine.security.SecUser
+import be.cytomine.security.SecUserSecRole
 import be.cytomine.security.User
 import be.cytomine.utils.Version
 import grails.converters.JSON
@@ -57,7 +59,6 @@ class BootstrapOldVersionService {
     def tableService
     def mongo
     def noSQLCollectionService
-    def imagePropertiesService
 
 
     void execChangeForOldVersion() {
@@ -202,7 +203,7 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20180613() {
+    void init20181110() {
         boolean exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
                 "WHERE TABLE_NAME = 'image_filter' and COLUMN_NAME = 'processing_server_id';").size() == 1
@@ -227,7 +228,7 @@ class BootstrapOldVersionService {
         new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN IF EXISTS service_name;")
         new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN IF EXISTS result_sample;")
 
-        new Sql(dataSource).executeUpdate("UPDATE software SET deprecated = false WHERE deprecated IS NULL;")
+        new Sql(dataSource).executeUpdate("UPDATE software SET deprecated = true WHERE deprecated IS NULL;")
         new Sql(dataSource).executeUpdate("UPDATE software_parameter SET server_parameter = false WHERE server_parameter IS NULL;")
 
         if(SecUser.findByUsername("rabbitmq")) {
