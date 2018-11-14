@@ -593,6 +593,10 @@ class RestUserController extends RestController {
 
         }
 
+        if(field == null || field == "null") {
+            field = "id"
+        }
+
         Project project = projectService.read(params.long('id'))
 
         boolean online = params.boolean('onlineOnly');
@@ -625,12 +629,14 @@ class RestUserController extends RestController {
         Integer max = (params.max != null && params.getInt('max')!=0) ? params.getInt('max') : Integer.MAX_VALUE
         def maxForCollection = Math.min(users.size() - offset, max)
 
-        if(field && ["email","username"].contains(field)) {
+        if(field && ["id","email","username"].contains(field)) {
             users.sort { a,b->
                 if(field.equals("email")) {
                     (order)*(a.email <=>b.email)
                 } else if(field.equals("username")) {
                     (order)*(a.username.toLowerCase() <=>b.username.toLowerCase() )
+                } else if(field.equals("id")) {
+                    (order)*(a.id <=>b.id )
                 }
             }
             sorted = true;
