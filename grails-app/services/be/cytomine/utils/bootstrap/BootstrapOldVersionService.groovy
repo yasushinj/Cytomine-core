@@ -125,8 +125,8 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20180409() {
-        log.info "20180409"
+    void init20180630() {
+        log.info "20180630"
         //unused domain
         log.info "drop table"
         new Sql(dataSource).executeUpdate("DROP TABLE image_property;")
@@ -194,7 +194,7 @@ class BootstrapOldVersionService {
                 uf.storages = StorageAbstractImage.findAllByAbstractImage(it.image).collect {it.storage.id}
                 uf.size = 0L
 
-                uf.save(flush: true, failOnError: true)
+            uf.save()
 
                 it.image = null
                 it.status = UploadedFile.CONVERTED
