@@ -47,8 +47,6 @@
       <sourceFolder url="file://$MODULE_DIR$/web-app" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/web-app/css" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/web-app/js" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/images" type="java-resource" />
-      <excludeFolder url="file://$MODULE_DIR$/scripts" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
