@@ -24,7 +24,7 @@ script: true
 
 after_success:
   - git fetch --tags
-  - export VERSION=$(cat application.properties | grep app.version)
+  - export VERSION=$(cat application.properties | grep app.version=)
   - export VERSION=${VERSION#app.version=}
   - export DEPLOY=false
   - >
