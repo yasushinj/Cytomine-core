@@ -63,16 +63,6 @@ var ProjectDashboardConfig = Backbone.View.extend({
         configList.append(this.defaultLayersPanel.el);
 
 
-        // CustomUI
-        idPanel = "customUi";
-        titlePanel = "Custom UI Configuration";
-        configs.push({id: idPanel, title : titlePanel});
-        var uiPanel = new CutomUIPanel({
-            el: _.template(customUIConfigTemplate, {titre : titlePanel, id : idPanel})
-        }).render();
-        configList.append(uiPanel.el);
-
-
         // Image Filters
         idPanel = "imageFilters";
         titlePanel = "Image filters";
@@ -93,6 +83,17 @@ var ProjectDashboardConfig = Backbone.View.extend({
             model: this.model
         }).render();
         configList.append(softwares.el);
+
+
+        // CustomUI
+        idPanel = "customUi";
+        titlePanel = "Custom UI Configuration";
+        configs.push({id: idPanel, title : titlePanel});
+        var uiPanel = new CutomUIPanel({
+            el: _.template(customUIConfigTemplate, {titre : titlePanel, id : idPanel})
+        }).render();
+        configList.append(uiPanel.el);
+
 
         // Annotation tools Config
         idPanel = "annotTools";
@@ -732,7 +733,7 @@ var CutomUIPanel = Backbone.View.extend({
         var customUI = _.template(template,component);
         $(mainElement).append(customUI);
         var tr = $(mainElement).find("#customUI-"+component.componentId+"-roles");
-        tr.append("<td>"+component.componentName+"</td>");
+        tr.append("<td style='width: 40%'>"+component.componentName+"</td>");
         if(!self.obj[component.componentId]) {
             //component is not define in the project config, active by default
             self.obj[component.componentId] = {};
@@ -782,7 +783,7 @@ var CutomUIPanel = Backbone.View.extend({
     },
     createButton : function(role,component, active) {
         var classBtn = active? "btn-success" : "btn-danger";
-        return '<td><button type="radio" data-component="'+component.componentId+'" data-role="'+role.authority+'" id="btn-' + component.componentId +'-'+role.authority+'" class="btn  btn-large btn-block '+classBtn+'">'+role.name+'</button></td>';
+        return '<td style="width: 30%"><button type="radio" data-component="'+component.componentId+'" data-role="'+role.authority+'" id="btn-' + component.componentId +'-'+role.authority+'" class="btn  btn-large btn-block '+classBtn+'">'+role.name+'</button></td>';
     }
 
 });
