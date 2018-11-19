@@ -68,6 +68,7 @@ class PropertySecurityTests extends SecurityTestsAbstract {
         assert (200 == PropertyAPI.show(projectProperty.id, projectProperty.domainIdent, "project" , USERNAME1, PASSWORD1).code)
         assert (true == PropertyAPI.containsInJSONList(projectProperty.id, JSON.parse(PropertyAPI.listByDomain(projectProperty.domainIdent, "project" , USERNAME1, PASSWORD1).data)))
         assert (200 == PropertyAPI.update(projectProperty.id, projectProperty.domainIdent, "project" ,projectProperty.encodeAsJSON(), USERNAME1, PASSWORD1).code)
+        assert (200 == PropertyAPI.delete(projectProperty.id, projectProperty.domainIdent, "project", USERNAME1, PASSWORD1).code)
     }
 
     void testProjectPropertySecurityForProjectUser() {
@@ -89,6 +90,7 @@ class PropertySecurityTests extends SecurityTestsAbstract {
         assert (200 == PropertyAPI.show(projectProperty.id, projectProperty.domainIdent, "project" , USERNAME1, PASSWORD1).code)
         assert (true == PropertyAPI.containsInJSONList(projectProperty.id, JSON.parse(PropertyAPI.listByDomain(projectProperty.domainIdent, "project" , USERNAME1, PASSWORD1).data)))
         assert (403 == PropertyAPI.update(projectProperty.id, projectProperty.domainIdent, "project" ,projectProperty.encodeAsJSON(), USERNAME1, PASSWORD1).code)
+        assert (403 == PropertyAPI.delete(projectProperty.id, projectProperty.domainIdent, "project", USERNAME1, PASSWORD1).code)
     }
 
     void testProjectPropertySecurityForNotContributor() {
@@ -109,6 +111,7 @@ class PropertySecurityTests extends SecurityTestsAbstract {
         assert (403 == PropertyAPI.show(projectProperty.id, projectProperty.domainIdent, "project" , USERNAME1, PASSWORD1).code)
         assert (false == PropertyAPI.containsInJSONList(projectProperty.id, JSON.parse(PropertyAPI.listByDomain(projectProperty.domainIdent, "project" , USERNAME1, PASSWORD1).data)))
         assert (403 == PropertyAPI.update(projectProperty.id, projectProperty.domainIdent, "project" ,projectProperty.encodeAsJSON(), USERNAME1, PASSWORD1).code)
+        assert (403 == PropertyAPI.delete(projectProperty.id, projectProperty.domainIdent, "project", USERNAME1, PASSWORD1).code)
     }
 
     void testProjectPropertySecurityForAnonymous() {
@@ -129,6 +132,7 @@ class PropertySecurityTests extends SecurityTestsAbstract {
         assert (401 == PropertyAPI.show(projectProperty.id, projectProperty.domainIdent, "project" , USERNAMEBAD, PASSWORDBAD).code)
         assert (false == PropertyAPI.containsInJSONList(projectProperty.id, JSON.parse(PropertyAPI.listByDomain(projectProperty.domainIdent, "project" , USERNAMEBAD, PASSWORDBAD).data)))
         assert (401 == PropertyAPI.update(projectProperty.id, projectProperty.domainIdent, "project" ,projectProperty.encodeAsJSON(), USERNAMEBAD, PASSWORDBAD).code)
+        assert (401 == PropertyAPI.delete(projectProperty.id, projectProperty.domainIdent, "project", USERNAMEBAD, PASSWORDBAD).code)
     }
 
     void testAnnotationPropertySecurityForCytomineAdmin() {
