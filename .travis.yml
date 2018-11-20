@@ -15,6 +15,8 @@ env:
 
 before_install:
   - ./grailsw clean
+  - sudo service postgresql stop
+  - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
 
 install:
   - ./grailsw refresh-dependencies
