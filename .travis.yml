@@ -18,6 +18,8 @@ before_install:
 
 install:
   - ./grailsw refresh-dependencies
+  - docker run -d -p 27017:27017 -p 28017:28017 --name mongodb cytomineuliege/mongodb:v1.1.2
+  - docker run -d -p 5432:5432 --name postgresql cytomineuliege/postgis:v1.2.0
 
 script: true
 # - ./grailsw test-app ## Skip tests for now.
