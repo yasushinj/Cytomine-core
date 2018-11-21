@@ -33,6 +33,7 @@ import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.ParseException
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
+import grails.converters.JSON
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -169,6 +170,15 @@ class AlgoAnnotationService extends ModelService {
             if (term) {
                 term.each { idTerm ->
                     algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
+                }
+            }
+
+            def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
+            if (properties) {
+                properties.each {
+                    def key = it.key as String
+                    def value = it.value as String
+                    propertyService.add(JSON.parse("""{"domainClassName": "be.cytomine.ontology.AlgoAnnotation", "domainIdent": "$annotationID", "key": "$key", "value": "$value" }"""), transaction)
                 }
             }
         }

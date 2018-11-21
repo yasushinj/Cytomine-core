@@ -271,21 +271,11 @@ class UserAnnotationService extends ModelService {
                 properties.each {
                     def key = it.key as String
                     def value = it.value as String
-                    log.info(it)
-                    log.info(key)
-                    log.info(value)
                     propertyService.add(JSON.parse("""{"domainClassName": "be.cytomine.ontology.UserAnnotation", "domainIdent": "$annotationID", "key": "$key", "value": "$value" }"""), transaction)
-//            log.info "it.key"
-//            log.info it.key
-//            log.info "it.value"
-//            log.info it.value
-//                    cytomine.addDomainProperties(image.getStr("class"), image.getLong("id"),
-//                            it.key.toString(), it.value.toString())
                 }
             }
 
         }
-
 
             //add annotation on the retrieval
         log.info "annotationID=$annotationID"
