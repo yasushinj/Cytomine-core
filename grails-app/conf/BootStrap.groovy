@@ -187,6 +187,8 @@ class BootStrap {
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
 
+        bootstrapUtilsService.initProcessingServerQueues()
+
         fixPlugins()
     }
 

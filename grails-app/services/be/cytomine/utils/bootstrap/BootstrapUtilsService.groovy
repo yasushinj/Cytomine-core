@@ -432,6 +432,34 @@ class BootstrapUtilsService {
         }
     }
 
+    void initProcessingServerQueues() {
+        log.info "init RabbitMQ connection for processing servers..."
+        MessageBrokerServer mbs = MessageBrokerServer.first()
+        ProcessingServer.list().each {
+            if (it.name != null) {
+                String queueName = amqpQueueService.queuePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
+                if(!amqpQueueService.checkAmqpQueueDomainExists(queueName)) {
+                    String exchangeName = amqpQueueService.exchangePrefixProcessingServer + ((it as ProcessingServer).name).capitalize()
+                    String brokerServerURL = (MessageBrokerServer.findByName("MessageBrokerServer")).host
+                    AmqpQueue aq = new AmqpQueue(name: queueName, host: brokerServerURL, exchange: exchangeName)
+                    aq.save(failOnError: true)
+                }
+                if(!amqpQueueService.checkRabbitQueueExists(queueName,mbs)) {
+                    AmqpQueue aq = amqpQueueService.read(queueName)
+
+                    // Creates the queue on the rabbit server
+                    amqpQueueService.createAmqpQueueDefault(aq)
+
+                    // Notify the queueCommunication that a software has been added
+                    def mapInfosQueue = [name: aq.name, host: aq.host, exchange: aq.exchange]
+                    JsonBuilder builder = new JsonBuilder()
+                    builder(mapInfosQueue)
+                    amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), builder.toString())
+                }
+            }
+        }
+    }
+
     def mongo
     def noSQLCollectionService
     def imageConsultationService
