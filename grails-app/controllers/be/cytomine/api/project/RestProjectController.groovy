@@ -56,6 +56,7 @@ class RestProjectController extends RestController {
         SecUser user = cytomineService.currentUser
         Boolean withMembersCount = params.boolean("withMembersCount")
         Boolean withLastActivity = params.boolean("withLastActivity")
+        Boolean withDescription = params.boolean("withDescription")
 
         def projectList
         if(currentRoleServiceProxy.isAdminByNow(user)) {
@@ -67,6 +68,7 @@ class RestProjectController extends RestController {
         def extended = [:]
         if(withMembersCount) extended.put("withMembersCount",withMembersCount)
         if(withLastActivity) extended.put("withLastActivity",withLastActivity)
+        if (withDescription) extended.put("withDescription", withDescription)
         if(extended.isEmpty()){
             projectList = projectService.list(user)
         } else {

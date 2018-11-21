@@ -191,6 +191,10 @@ class ProjectService extends ModelService {
                     "   GROUP BY aclObjectId.object_id_identity " +
                     ") members ON p.id = members.project_id "
         }
+        if (extended.withDescription) {
+            select += ", d.data as description "
+            from += "LEFT OUTER JOIN description d ON d.domain_ident = p.id "
+        }
 
         request = select + from+where
 
@@ -221,6 +225,9 @@ class ProjectService extends ModelService {
             }
             if(extended.withMembersCount) {
                 line.putAt("membersCount", map.memberCount)
+            }
+            if (extended.withDescription) {
+                line.putAt("description", map.description ?: "")
             }
             data << line
 
