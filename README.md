@@ -4,6 +4,7 @@
 
 [![Build Status](https://travis-ci.com/Cytomine-ULiege/Cytomine-core.svg?branch=master)](https://travis-ci.com/Cytomine-ULiege/Cytomine-core)
 [![GitHub release](https://img.shields.io/github/release/Cytomine-ULiege/Cytomine-core.svg)](https://github.com/Cytomine-ULiege/Cytomine-core/releases)
+[![Docker Build Status](https://img.shields.io/docker/build/cytomineuliege/core.svg)](https://hub.docker.com/r/cytomineuliege/core/tags/)
 [![GitHub](https://img.shields.io/github/license/Cytomine-ULiege/Cytomine-core.svg)](https://github.com/Cytomine-ULiege/Cytomine-core/blob/master/LICENSE)
 
 
