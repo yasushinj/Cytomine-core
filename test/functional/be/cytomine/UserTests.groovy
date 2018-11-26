@@ -68,7 +68,6 @@ class UserTests  {
 
         result = UserAPI.listFriends(user.id,true,project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-
         result = UserAPI.listFriends(user.id,false,null,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
@@ -214,6 +213,21 @@ class UserTests  {
         userToAdd.username = user.username
         def result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 409 == result.code
+
+        userToAdd.username = ""
+        int i = Math.abs(((new Random()).nextInt())%(user.username.size()))
+
+        userToAdd.username += user.username.substring(0,i)
+        if(user.username.charAt(i).toUpperCase() == user.username.charAt(i)) {
+            userToAdd.username += user.username.charAt(i).toLowerCase()
+        } else {
+            userToAdd.username += user.username.charAt(i).toUpperCase()
+        }
+        userToAdd.username += user.username.substring(i+1)
+
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 409 == result.code
+
     }
 
 

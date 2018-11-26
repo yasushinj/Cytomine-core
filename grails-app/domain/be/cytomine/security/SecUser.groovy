@@ -110,7 +110,7 @@ class SecUser extends CytomineDomain implements Serializable {
      */
     void checkAlreadyExist() {
         SecUser.withNewSession {
-            SecUser user = SecUser.findByUsername(username)
+            SecUser user = SecUser.findByUsernameIlike(username)
             if(user && (user.id!=id)) {
                 throw new AlreadyExistException("User "+username + " already exist!")
             }
