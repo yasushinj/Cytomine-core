@@ -1084,6 +1084,7 @@ class RestAnnotationDomainController extends RestController {
 
         def result
         if (remove) {
+            log.info "doCorrectUserAnnotation : remove"
             //diff will be made
             //-remove the new geometry from the based annotation location
             //-remove the new geometry from all other annotation location
@@ -1095,6 +1096,7 @@ class RestAnnotationDomainController extends RestController {
                 userAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
             }
         } else {
+            log.info "doCorrectUserAnnotation : union"
             //union will be made:
             // -add the new geometry to the based annotation location.
             // -add all other annotation geometry to the based annotation location (and delete other annotation)
