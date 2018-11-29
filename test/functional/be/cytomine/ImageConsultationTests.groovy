@@ -81,11 +81,23 @@ class ImageConsultationTests {
         def result = ImageConsultationAPI.listImageConsultationByProjectAndUser(image.project.id, user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
+        BasicInstanceBuilder.getImageConsultationNotExist(image, true)
+        BasicInstanceBuilder.getImageConsultationNotExist(image, true)
         def consultation = BasicInstanceBuilder.getImageConsultationNotExist(image, true)
 
         result = ImageConsultationAPI.listImageConsultationByProjectAndUser(image.project.id, user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         assert JSON.parse(result.data).collection[0].id == consultation.id
+
+        def imageId = JSON.parse(result.data).collection[0].image
+
+        result = ImageConsultationAPI.listDistinctImageConsultationByProjectAndUser(image.project.id, user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        assert JSON.parse(result.data).collection.findAll{it.image == imageId}.size() == 1
+
+        result = ImageConsultationAPI.listImageConsultationByProjectAndUser(image.project.id, user.id, true, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        assert JSON.parse(result.data).collection.size() == 2
     }
 
     void testResumeByUserAndProject() {
