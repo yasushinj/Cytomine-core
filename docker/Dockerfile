@@ -25,7 +25,7 @@ ARG VERSION
 ARG NAMESPACE=Cytomine-ULiege
 ARG RELEASE_PATH=https://github.com/${NAMESPACE}/Cytomine-Core/releases/download/v${VERSION}
 ADD ${RELEASE_PATH}/core.war /var/lib/tomcat7/webapps/ROOT.war
-ADD ${RELEASE_PATH}/restapidoc.json /var/lib/tomcat7/webapps/restapidoc.json
+ADD ${RELEASE_PATH}/restapidoc.json /var/lib/tomcat7/restapidoc.json
 
 RUN touch /tmp/addHosts.sh
 COPY setenv.sh /usr/share/tomcat7/bin/setenv.sh
