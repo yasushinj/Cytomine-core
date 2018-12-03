@@ -78,6 +78,7 @@ class ServerController {
         try {
             LastConnection connection = new LastConnection()
             connection.user = SecUser.read(idUser)
+            connection.date = new Date()
             connection.project = Project.read(idProject)
             connection.insert(flush:true) //don't use save (stateless collection)
 

@@ -59,6 +59,7 @@ class BootstrapOldVersionService {
     def tableService
     def mongo
     def noSQLCollectionService
+    def executorService
 
 
     void execChangeForOldVersion() {
@@ -125,8 +126,8 @@ class BootstrapOldVersionService {
         }
     }
 
-    void init20180630() {
-        log.info "20180630"
+    void init20180409() {
+        log.info "20180409"
         //unused domain
         log.info "drop table"
         new Sql(dataSource).executeUpdate("DROP TABLE image_property;")
@@ -142,11 +143,14 @@ class BootstrapOldVersionService {
         }
 
         // update ltree
-        log.info "update ltree"
+        log.info "update ltree : step 1"
+        log.info "record to update : "+UploadedFile.countByParentIsNullAndLTreeIsNull()
         UploadedFile.findAllByParentIsNullAndLTreeIsNull().each {
             it.save()
         }
         def ufs
+        log.info "update ltree : step 2"
+        log.info "record to update : "+UploadedFile.countByParentIsNotNullAndLTreeIsNull()
         UploadedFile.findAllByParentIsNotNullAndLTreeIsNull().each {
             if(it.lTree == null) {
                 ufs = [it]
@@ -162,45 +166,58 @@ class BootstrapOldVersionService {
             }
         }
 
-        log.info "create new uploadedfile"
-        // recreate uploadedFile from abstractimage
-        // only for converted abstract_image
-        ufs = UploadedFile.createCriteria().list {
-            join("image")
-            createAlias("image", "i")
-            neProperty("filename", "i.path")
+        executorService.execute({
 
-            isNotNull("image")
-        }
+            try {
+                log.info "create new uploadedfile"
+                // recreate uploadedFile from abstractimage
+                // only for converted abstract_image
+                ufs = UploadedFile.createCriteria().list {
+                    join("image")
+                    createAlias("image", "i")
+                    neProperty("filename", "i.path")
 
-        UploadedFile.withTransaction {
-            ufs.each {
-                def uf = new UploadedFile()
+                    isNotNull("image")
+                }
+                log.info "record to update : "+ufs.size()
 
-                uf.contentType = "image/pyrtiff"
-                uf.image = it.image
+                int i = 0;
 
-                String filename = it.image.originalFilename
-                int index = filename.lastIndexOf('.')
-                filename = filename.substring(0,index) + "_pyr"+ filename.substring(index)
+                ufs.each {
+                    def uf = new UploadedFile()
 
-                uf.originalFilename = filename
-                uf.filename = it.image.path
-                uf.parent = it
-                uf.path= it.path
-                uf.ext = FilenameUtils.getExtension(it.image.path)
-                uf.status = UploadedFile.DEPLOYED
-                uf.user = it.user
-                uf.storages = StorageAbstractImage.findAllByAbstractImage(it.image).collect {it.storage.id}
-                uf.size = 0L
+                    uf.contentType = "image/pyrtiff"
+                    uf.image = it.image
 
-            uf.save()
+                    String filename = it.image.originalFilename
+                    int index = filename.lastIndexOf('.')
+                    filename = filename.substring(0, index) + "_pyr" + filename.substring(index)
 
-                it.image = null
-                it.status = UploadedFile.CONVERTED
-                it.save()
+                    uf.originalFilename = filename
+                    uf.filename = it.image.path
+                    uf.parent = it
+                    uf.path = it.path
+                    uf.ext = FilenameUtils.getExtension(it.image.path)
+                    uf.status = UploadedFile.DEPLOYED
+                    uf.user = it.user
+                    uf.storages = StorageAbstractImage.findAllByAbstractImage(it.image).collect { it.storage.id }
+                    uf.size = 0L
+
+                    uf.save(failOnError: true)
+
+                    it.image = null
+                    it.status = UploadedFile.CONVERTED
+                    it.save()
+
+                    if (i % 100 == 0) log.info("done : " + i + "/" + ufs.size())
+                    i++
+                }
+            } catch (Exception e) {
+                log.info "Error during migration. Exit application"
+                e.printStackTrace()
+                System.exit(1)
             }
-        }
+        } as Runnable)
     }
 
     void init20180618() {

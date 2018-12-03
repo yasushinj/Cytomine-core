@@ -284,6 +284,16 @@ class RestUserAnnotationController extends RestController {
 
 
     public Object addOne(def service, def json) {
+        if (!json.project || json.isNull('project')) {
+            ImageInstance image = ImageInstance.read(json.image)
+            if (image) json.project = image.project.id
+        }
+        if (json.isNull('project')) {
+            throw new WrongArgumentException("Annotation must have a valid project:" + json.project)
+        }
+        if (json.isNull('location')) {
+            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
+        }
         def minPoint = params.getLong('minPoint')
         def maxPoint = params.getLong('maxPoint')
 

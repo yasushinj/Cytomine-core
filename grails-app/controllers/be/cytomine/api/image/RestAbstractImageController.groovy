@@ -165,13 +165,16 @@ class RestAbstractImageController extends RestController {
      */
     @RestApiMethod(description="Get a small image (thumb) for a specific image", extensions=["png", "jpg"])
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
+            @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.QUERY,description = "The thumb max size"),
+            @RestApiParam(name="refresh", type="boolean", paramType = RestApiParamType.QUERY,description = "If true, don't take it from cache and regenerate it", required=false)
     ])
     @RestApiResponseObject(objectIdentifier = "image (bytes)")
     def thumb() {
         response.setHeader("max-age", "86400")
         int maxSize = params.int('maxSize',  512)
-        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params))
+        boolean refresh = params.boolean('refresh', false)
+        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params, refresh))
     }
 
     @RestApiMethod(description="Get available associated images", listing = true)
