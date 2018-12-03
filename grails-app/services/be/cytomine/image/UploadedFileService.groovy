@@ -36,6 +36,7 @@ class UploadedFileService extends ModelService {
     static transactional = true
     def cytomineService
     def securityACLService
+    def dataSource
 
 
     def currentDomain() {

@@ -197,10 +197,10 @@ class UserAnnotationService extends ModelService {
             if (image) json.project = image.project.id
         }
         if (json.isNull('project')) {
-            throw new WrongArgumentException("Annotation must have a valide project:" + json.project)
+            throw new WrongArgumentException("Annotation must have a valid project:" + json.project)
         }
         if (json.isNull('location')) {
-            throw new WrongArgumentException("Annotation must have a valide geometry:" + json.location)
+            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
         }
 
         securityACLService.check(json.project, Project,READ)

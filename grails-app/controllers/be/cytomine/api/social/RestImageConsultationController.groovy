@@ -68,7 +68,8 @@ class RestImageConsultationController extends RestController {
         Project project = projectService.read(params.project)
         SecUser user = secUserService.read(params.user)
         securityACLService.checkIsSameUserOrAdminContainer(project, user, cytomineService.currentUser)
-        responseSuccess(imageConsultationService.listImageConsultationByProjectAndUser(Long.parseLong(params.project), Long.parseLong(params.user)))
+
+        responseSuccess(imageConsultationService.listImageConsultationByProjectAndUser(Long.parseLong(params.project), Long.parseLong(params.user), Boolean.parseBoolean(params.distinctImages), params.int("max",0), params.int("offset",0)))
     }
     @RestApiMethod(description="Get a summary of the consultations on an image for an user and a project")
     @RestApiParams(params=[

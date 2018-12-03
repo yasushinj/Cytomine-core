@@ -33,7 +33,10 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
-@RestApi(name = "Ontology | property services", description = "Methods for managing properties")
+import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
+
+@RestApi(name = "property services", description = "Methods for managing properties")
 class RestPropertyController extends RestController {
 
     def propertyService
@@ -41,7 +44,7 @@ class RestPropertyController extends RestController {
     def projectService
     def imageInstanceService
     def secUserService
-    def DomainService
+    def securityACLService
 
     /**
      * List all Property visible for the current user by Project, AnnotationDomain and ImageInstance
@@ -175,6 +178,7 @@ class RestPropertyController extends RestController {
     def showProject() {
         def projectId = params.long('idProject')
         Project project = projectService.read(projectId)
+        securityACLService.check(project,READ)
 
         Property property
         if(params.id != null) {
@@ -273,6 +277,7 @@ class RestPropertyController extends RestController {
     def addPropertyProject() {
         def json = request.JSON
         json.domainClassName = Project.getName()
+        securityACLService.check(json.domainIdent,json.domainClassName,"container",WRITE)
         add(propertyService, request.JSON)
     }
 
@@ -324,6 +329,8 @@ class RestPropertyController extends RestController {
         @RestApiParam(name="idProject", type="long", paramType = RestApiParamType.PATH,description = "(Optional) The project id")
     ])
     def update() {
+        def json = request.JSON
+        if(Project.name == json.domainClassName) securityACLService.check(json.domainIdent,json.domainClassName,"container",WRITE)
         update(propertyService, request.JSON)
     }
 

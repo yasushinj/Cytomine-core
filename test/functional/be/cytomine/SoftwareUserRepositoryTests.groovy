@@ -3,6 +3,7 @@ package be.cytomine
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.SoftwareUserRepositoryAPI
+import be.cytomine.utils.UpdateData
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -35,9 +36,8 @@ class SoftwareUserRepositoryTests {
 
     void testUpdateSoftwareUserRepositoryCorrect() {
         def repo = BasicInstanceBuilder.getSoftwareUserRepositoryNotExist(true)
-        repo.provider = "test"
-        def data = repo.encodeAsJSON()
-        def resultBase = SoftwareUserRepositoryAPI.update(repo.id, data, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def data = UpdateData.createUpdateSet(repo,[provider: ["OLDNAME", "NEWNAME"]])
+        def resultBase = SoftwareUserRepositoryAPI.update(repo.id, data.postData, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == resultBase.code
         def json = JSON.parse(resultBase.data)
         assert json instanceof JSONObject
@@ -46,7 +46,7 @@ class SoftwareUserRepositoryTests {
 
         def showResult = SoftwareUserRepositoryAPI.show(idSoftwareUserRepository, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         json = JSON.parse(showResult.data)
-        assert json.provider == "test"
+        assert json.provider == "NEWNAME"
     }
 
     void testDeleteSoftwareUserRepository() {
