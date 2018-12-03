@@ -266,28 +266,29 @@ class SecUserService extends ModelService {
 
 
     private def getUserJobImage(ImageInstance image) {
-                    //better perf with sql request
-                String request = "SELECT u.id as id, u.username as username, s.name as softwareName, j.created as created \n" +
-                        "FROM annotation_index ai, sec_user u, job j, software s\n" +
-                        "WHERE ai.image_id = ${image.id}\n" +
-                        "AND ai.user_id = u.id\n" +
-                        "AND u.job_id = j.id\n" +
-                        "AND j.software_id = s.id\n" +
-                        "ORDER BY j.created"
-                def data = []
-                def sql = new Sql(dataSource)
-                sql.eachRow(request) {
-                    def item = [:]
-                    item.id = it.id
-                    item.username = it.username
-                    item.softwareName = it.softwareName
-                    item.created = it.created
-                    item.algo = true
-                    data << item
-                }
-                try {
-                    sql.close()
-                }catch (Exception e) {}
+
+        String request = "SELECT u.id as id, u.username as username, s.name as softwareName, s.software_version as softwareVersion, j.created as created \n" +
+                "FROM annotation_index ai, sec_user u, job j, software s\n" +
+                "WHERE ai.image_id = ${image.id}\n" +
+                "AND ai.user_id = u.id\n" +
+                "AND u.job_id = j.id\n" +
+                "AND j.software_id = s.id\n" +
+                "ORDER BY j.created"
+        def data = []
+        def sql = new Sql(dataSource)
+        sql.eachRow(request) {
+            def item = [:]
+            item.id = it.id
+            item.username = it.username
+            item.softwareName = (it.softwareVersion?.trim()) ? "${it.softwareName} (${it.softwareVersion})" : it.softwareName
+
+            item.created = it.created
+            item.algo = true
+            data << item
+        }
+        try {
+            sql.close()
+        }catch (Exception e) {}
         data
     }
 

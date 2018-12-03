@@ -155,8 +155,8 @@ class RestUserJobController extends RestController {
                     Software software = it.software
                     def soft = [:]
                     soft.isFolder = true
-                    soft.name = software.name
-                    soft.title = software.name
+                    soft.name = software.fullName()
+                    soft.title = software.fullName()
                     soft.key = software.id
                     soft.id = software.id
                     soft.hideCheckbox = true
@@ -196,7 +196,7 @@ class RestUserJobController extends RestController {
 
 
                 //better perf with sql request
-                String request = "SELECT sec_user.id as idUser, job.id as idJob, software.id as idSoftware, software.name as softwareName, extract(epoch from job.created)*1000 as created,job.data_deleted as deleted "+
+                String request = "SELECT sec_user.id as idUser, job.id as idJob, software.id as idSoftware, software.name as softwareName, software.software_version as softwareVersion, extract(epoch from job.created)*1000 as created,job.data_deleted as deleted "+
                                  "FROM job, sec_user, software " +
                                  "WHERE job.project_id = ${project.id} " +
                                  "AND job.id = sec_user.job_id " +
@@ -206,15 +206,15 @@ class RestUserJobController extends RestController {
                 def data = []
                 def sql = new Sql(dataSource)
                  sql.eachRow(request) {
-                    def item = [:]
-                    item.id = it.idUser
-                    item.idJob = it.idJob
-                    item.idSoftware = it.idSoftware
-                    item.softwareName = it.softwareName
-                    item.created = it.created
-                    item.algo = true
-                    item.isDeleted = it.deleted
-                    data << item
+                     def item = [:]
+                     item.id = it.idUser
+                     item.idJob = it.idJob
+                     item.idSoftware = it.idSoftware
+                     item.softwareName = (it.softwareVersion?.trim()) ? "${it.softwareName} (${it.softwareVersion})" : it.softwareName
+                     item.created = it.created
+                     item.algo = true
+                     item.isDeleted = it.deleted
+                     data << item
                 }
                 try {
                     sql.close()
@@ -232,7 +232,7 @@ class RestUserJobController extends RestController {
                         item.id = userJob.id
                         item.idJob = job.id
                         item.idSoftware = job.software.id
-                        item.softwareName = job.software.name
+                        item.softwareName = job.software.fullName()
                         item.created = job.created.getTime()
                         item.algo = true
                         item.isDeleted = job.dataDeleted
