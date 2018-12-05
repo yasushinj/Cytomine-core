@@ -173,9 +173,6 @@ var DescriptionModal = {
                 };
 
                 rte.trumbowyg({
-                    btnsGrps: {
-                        semantic2: ['strong', 'em', 'underline', 'del'] // Custom nammed group
-                    },
                     btnsDef: {
                         // Customizables dropdowns
                         align: {
@@ -183,20 +180,19 @@ var DescriptionModal = {
                             ico: 'justifyLeft'
                         },
                         image: {
-                            dropdown: ['insertImage', 'upload'],
+                            dropdown: ['insertImage', 'upload', 'base64'],
                             ico: 'insertImage'
                         }
                     },
                     tagsToRemove: ['script'],
                     btns: [
                         ['formatting'],
-                        'btnGrp-semantic2',
-                        ['link'],
                         ['align'],
-                        'btnGrp-lists',
+                        ['strong', 'em', 'underline', 'del'],
+                        ['foreColor', 'backColor'],
+                        ['link'],
                         ['image'],
                         ['noembed'],
-                        ['foreColor', 'backColor'],
                         ['specialChars'],
                         ['horizontalRule'],
                         ['removeformat'],

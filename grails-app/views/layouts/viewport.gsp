@@ -116,6 +116,7 @@ body {
 <script src="lib/Trumbowyg/plugins/noembed/trumbowyg.noembed.min.js"></script>
 <script src="lib/Trumbowyg/plugins/upload/trumbowyg.upload.min.js"></script>
 <script src="lib/Trumbowyg/plugins/specialchars/trumbowyg.specialchars.min.js"></script>
+<script src="lib/Trumbowyg/plugins/base64/trumbowyg.base64.min.js"></script>
 
 <link href="lib/magicsuggest2/magicsuggest-min.css" rel="stylesheet"/>
 <script type="text/javascript" src="lib/magicsuggest2/magicsuggest-min.js"></script>
