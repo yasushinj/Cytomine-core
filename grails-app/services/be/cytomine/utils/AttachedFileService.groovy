@@ -46,7 +46,7 @@ class AttachedFileService extends ModelService {
 
     def list(Long domainIdent,String domainClassName) {
         if(domainClassName.contains("AbstractImage")) {
-            securityACLService.checkAtLeastOne(domainIdent,domainClassName,"containers",READ)
+//            securityACLService.checkAtLeastOne(domainIdent,domainClassName,"containers",READ)
         } else {
             securityACLService.check(domainIdent,domainClassName,"container",READ)
         }
@@ -58,7 +58,7 @@ class AttachedFileService extends ModelService {
         AttachedFile file = AttachedFile.read(id)
         if(file) {
             if(file.domainClassName.contains("AbstractImage")) {
-                securityACLService.checkAtLeastOne(file.domainIdent, file.domainClassName, "containers", READ)
+//                securityACLService.checkAtLeastOne(file.domainIdent, file.domainClassName, "containers", READ)
             } else if (file.domainClassName.equals("be.cytomine.processing.Software") || file.domainClassName.equals("be.cytomine.processing.SoftwareParameter")) {
                 securityACLService.checkGuest(cytomineService.currentUser)
             }
@@ -72,7 +72,7 @@ class AttachedFileService extends ModelService {
     def add(String filename,byte[] data,Long domainIdent,String domainClassName) {
         //securityACLService.checkAtLeastOne(domainIdent,domainClassName,"containers",READ)
         if(domainClassName.contains("AbstractImage")) {
-            securityACLService.checkAtLeastOne(domainIdent, domainClassName, "containers", READ)
+//            securityACLService.checkAtLeastOne(domainIdent, domainClassName, "containers", READ)
         } else {
             securityACLService.check(domainIdent,domainClassName,"container",READ)
         }
