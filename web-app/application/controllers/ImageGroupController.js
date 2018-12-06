@@ -20,7 +20,7 @@
  */
 
 var ImageGroupController = Backbone.Router.extend({
-
+/*
     currentlySelected: [],
 
     routes: {
@@ -30,11 +30,6 @@ var ImageGroupController = Backbone.Router.extend({
     },
 
     addall: function () {
-
-
-    /*    var ig2 = new ImageGroupModel({name: "stfu", project: window.app.status.currentProject});
-        ig2.save();
-        */
 
 
         var ig = new ImageGroupModel({id:24390});
@@ -85,4 +80,5 @@ var ImageGroupController = Backbone.Router.extend({
         h5group.save();
         $("#tabs-images-"+window.app.status.currentProject).find("#con-"+group).html("Conversion is taking place. You will be notified by mail");
     }
+    */
 });

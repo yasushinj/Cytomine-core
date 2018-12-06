@@ -23,7 +23,6 @@ var AccountDetails = Backbone.View.extend({
             });
         return this;
     },
-
     editProfile: function () {
         var self = this;
         var user = new UserModel(this.model.toJSON());
@@ -41,7 +40,6 @@ var AccountDetails = Backbone.View.extend({
             }
         });
     },
-
     editPassword: function () {
         var user = new UserModel(this.model.toJSON());
         user.save({
@@ -66,13 +64,11 @@ var AccountDetails = Backbone.View.extend({
             }
         });
     },
-
     validatePassword: function () {
         return $("#input_new_password").val() != "" &&
             $("#input_new_password_confirm").val() != "" &&
             ($("#input_new_password").val() == $("#input_new_password_confirm").val());
     },
-
     doLayout: function (tpl) {
         var self = this;
         this.model.set({host: window.location.host});
