@@ -46,7 +46,7 @@ grails.mime.types = [
 ]
 cytomine.maxRequestSize = 10485760
 storage_path="/data/images" //default path for image locations
-fast_data_path="/data/images" //default path for HDF5 files location (for ex: a SSD)
+//fast_data_path="/data/images" //default path for HDF5 files location (for ex: a SSD)
 cytomine.software.path.softwareImages = "/data/softwares/images"
 
 // The default codec used to encode data with ${}
@@ -379,12 +379,12 @@ cytomine.customUI.global = [
 cytomine.customUI.project = [
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
-        "project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
+        //"project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
-        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
-        "project-explore-spectra-panel":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
+        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false]
+        //"project-explore-spectra-panel":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
 ]
 
 environments {

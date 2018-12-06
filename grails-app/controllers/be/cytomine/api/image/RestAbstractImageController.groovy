@@ -218,7 +218,7 @@ class RestAbstractImageController extends RestController {
     def preview() {
         response.setHeader("max-age", "86400")
         int maxSize = params.int('maxSize',  1024)
-        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params))
+        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize))
     }
 
     def download() {
