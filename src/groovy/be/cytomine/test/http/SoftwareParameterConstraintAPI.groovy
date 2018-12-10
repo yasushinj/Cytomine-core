@@ -1,5 +1,7 @@
 package be.cytomine.test.http
 
+import be.cytomine.api.UrlApi
+
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
 *
@@ -16,7 +18,7 @@ package be.cytomine.test.http
 * limitations under the License.
 */
 
-import be.cytomine.processing.SoftwareParameter
+import be.cytomine.processing.SoftwareParameterConstraint
 import be.cytomine.test.Infos
 import grails.converters.JSON
 
@@ -25,37 +27,37 @@ import grails.converters.JSON
  * Date: 6/12/11
  * This class implement all method to easily get/create/update/delete/manage SoftwareParameterAPI to Cytomine with HTTP request during functional test
  */
-class SoftwareParameterAPI extends DomainAPI {
+class SoftwareParameterConstraintAPI extends DomainAPI {
 
     static def show(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software_parameter/" + id + ".json"
+        String URL = Infos.CYTOMINEURL + "api/software_parameter_constraint/" + id + ".json"
         return doGET(URL, username, password)
     }
 
-    static def list(String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software_parameter.json"
-        return doGET(URL, username, password)
-    }
-
-    static def listBySoftware(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software/$id/software_parameter.json"
+    static def listBySoftwareParameter(Long id, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/software_parameter/$id/software_parameter_constraint.json"
         return doGET(URL, username, password)
     }
 
     static def create(String json, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software_parameter.json"
+        String URL = Infos.CYTOMINEURL + "api/software_parameter_constraint.json"
         def result = doPOST(URL,json,username,password)
-        result.data = SoftwareParameter.get(JSON.parse(result.data)?.softwareparameter?.id)
+        result.data = SoftwareParameterConstraint.get(JSON.parse(result.data)?.softwareparameterconstraint?.id)
         return result
     }
 
     static def update(def id, def jsonSoftwareParameter, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software_parameter/" + id + ".json"
+        String URL = Infos.CYTOMINEURL + "api/software_parameter_constraint/" + id + ".json"
         return doPUT(URL,jsonSoftwareParameter,username,password)
     }
 
     static def delete(def id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/software_parameter/" + id + ".json"
+        String URL = Infos.CYTOMINEURL + "api/software_parameter_constraint/" + id + ".json"
         return doDELETE(URL,username,password)
+    }
+
+    static def evaluate(def id, def value, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/software_parameter_constraint/"+id+"/evaluate.json?value="+URLEncoder.encode(value, "UTF-8")
+        return doGET(URL,username,password)
     }
 }
