@@ -1353,6 +1353,31 @@ class BasicInstanceBuilder {
         }
     }
 
+    static SoftwareParameterConstraint getSoftwareParameterConstraint() {
+        SoftwareParameter parameter = getSoftwareParameter()
+        ParameterConstraint parameterConstraint = getParameterConstraint()
+
+        def constraint = SoftwareParameterConstraint.findBySoftwareParameterAndParameterConstraint(parameter, parameterConstraint)
+
+        if (!constraint) {
+            constraint = new SoftwareParameterConstraint(parameterConstraint:parameterConstraint,softwareParameter:parameter, value:"0")
+            saveDomain(constraint)
+        }
+        constraint
+    }
+
+    static SoftwareParameterConstraint getSoftwareParameterConstraintNotExist(boolean save = false) {
+        SoftwareParameter parameter = getSoftwareParameterNotExist(true)
+        ParameterConstraint parameterConstraint = ParameterConstraint.findByNameAndDataType("equals","String")
+        def constraint =   new SoftwareParameterConstraint(parameterConstraint:parameterConstraint,softwareParameter:parameter, value:getRandomString())
+        if(save) {
+            saveDomain(constraint)
+        } else {
+            checkDomain(constraint)
+        }
+    }
+
+
     static SoftwareUserRepository getSoftwareUserRepository() {
         def repo = SoftwareUserRepository.findByProvider("github")
         if (!repo) {
