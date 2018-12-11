@@ -1325,10 +1325,27 @@ class BasicInstanceBuilder {
         }
         parameter
     }
-
     static SoftwareParameter getSoftwareParameterNotExist(boolean save = false) {
         Software software = getSoftware()
         def parameter =   new SoftwareParameter(name: getRandomString(),software:software,type:"String")
+        if(save) {
+            saveDomain(parameter)
+        } else {
+            checkDomain(parameter)
+        }
+    }
+
+    static ParameterConstraint getParameterConstraint() {
+        ParameterConstraint parameter = ParameterConstraint.findByNameAndDataType("equals","Number")
+        if (!parameter) {
+            parameter = new ParameterConstraint(name: "equals", expression: '(Double.valueOf("[parameterValue]") as Number) == (Double.valueOf("[value]") as Number)', dataType: "Number")
+            saveDomain(parameter)
+        }
+        parameter
+    }
+
+    static ParameterConstraint getParameterConstraintNotExist(boolean save = false) {
+        def parameter = new ParameterConstraint(name : getRandomString(), expression: getRandomString(), dataType: "String")
         if(save) {
             saveDomain(parameter)
         } else {
