@@ -40,7 +40,7 @@ class RestSoftwareController extends RestController {
     def list() {
         boolean executableOnly = params.boolean('executableOnly', false)
         String sort = params.sort ?: 'id'
-        if (!['id', 'name', 'fullName', 'softwareVersion', 'created']) sort = 'id'
+        if (!['id', 'name', 'fullName', 'softwareVersion', 'created'].contains(sort)) sort = 'id'
         String order = params.order ?: 'desc'
         if (!['asc', 'desc'].contains(order)) order = 'desc'
         responseSuccess(softwareService.list(executableOnly, sort, order))
