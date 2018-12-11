@@ -304,19 +304,19 @@ class SecUserService extends ModelService {
         def users = []
         def humans = listUsers(project)
 
-        humans.each {
-            users << User.getDataFromDomain(it)
-        }
-
         if(image) {
+            humans.each {
+                users << User.getDataFromDomain(it)
+            }
+
             def jobs = getUserJobImage(image)
             users.addAll(jobs)
-
         }
+        else {
+            users.addAll(humans)
+        }
+
         def  admins = listAdmins(project)
-
-        log.info(humans.contains(currentUser))
-
 
         if(project.checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(currentUser))) {
             return users
