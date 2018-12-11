@@ -16,6 +16,8 @@ package be.cytomine.utils;
 * limitations under the License.
 */
 
+import org.joda.time.DateTime;
+
 import java.util.*;
 
 /**
@@ -26,15 +28,21 @@ import java.util.*;
 public class Utils {
 
     /**
-     * Add seconds to the actual date (seconds may be '-x')
+     * Add seconds to the actual date
      * @param secondes Number of seconds to add
      * @return Date equal to now + secondes
      */
     public static Date getDatePlusSecond(int secondes) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.SECOND, secondes);
-        return cal.getTime();
+        return new DateTime().plusSeconds(secondes).toDate();
+    }
+
+    /**
+     * Substract seconds to the actual date
+     * @param secondes Number of seconds to substract
+     * @return Date equal to now - secondes
+     */
+    public static Date getDateMinusSecond(int secondes) {
+        return new DateTime().minusSeconds(secondes).toDate();
     }
 
     /**

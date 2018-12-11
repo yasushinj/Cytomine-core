@@ -82,6 +82,7 @@ grails.project.dependency.resolution = {
         compile 'commons-beanutils:commons-beanutils:1.8.3'
         compile 'org.imsglobal:basiclti-util:1.1.2'
         compile 'org.json:json:20141113'
+        compile 'joda-time:joda-time:2.10.1'
     }
     plugins {
         compile ":mongodb:3.0.2"
