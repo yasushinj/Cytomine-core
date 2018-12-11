@@ -17,19 +17,10 @@ package be.cytomine.security
 */
 
 import be.cytomine.processing.ParameterConstraint
-import be.cytomine.processing.SoftwareParameterConstraint
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.http.ParameterConstraintAPI
-import be.cytomine.test.http.SoftwareParameterConstraintAPI
 import grails.converters.JSON
 
-/**
- * Created by IntelliJ IDEA.
- * User: lrollus
- * Date: 2/03/11
- * Time: 11:08
- * To change this template use File | Settings | File Templates.
- */
 class ParameterConstraintSecurityTests extends SecurityTestsAbstract {
 
     void testParameterConstraintSecurityForCytomineAdmin() {
