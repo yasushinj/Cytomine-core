@@ -628,6 +628,7 @@ class RestUserController extends RestController {
         Integer offset = params.offset != null ? params.getInt('offset') : 0
         Integer max = (params.max != null && params.getInt('max')!=0) ? params.getInt('max') : Integer.MAX_VALUE
         def maxForCollection = Math.min(users.size() - offset, max)
+        long collectionSize = users.size()
 
         if(field && ["id","email","username"].contains(field)) {
             users.sort { a,b->
@@ -705,6 +706,12 @@ class RestUserController extends RestController {
                 }
             }
             sorted = true;
+        }
+
+        // to fit the pagination system
+        if(collectionSize > results.size()) {
+            def filler = Arrays.asList(new Object[collectionSize-results.size()]);
+            results << filler
         }
 
         responseSuccess(results)
