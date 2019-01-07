@@ -238,6 +238,7 @@ var ApplicationController = Backbone.Router.extend({
         this.navigate("#userdashboard", true);
     },
     convertLongToDate: function (longDate) {
+        if(isNaN(parseFloat(longDate)) || !isFinite(longDate)) return longDate;
         var createdDate = new Date();
         createdDate.setTime(longDate);
 
