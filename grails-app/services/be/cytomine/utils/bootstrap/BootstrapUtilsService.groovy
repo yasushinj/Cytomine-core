@@ -374,6 +374,16 @@ class BootstrapUtilsService {
         })
     }
 
+    private void updateProcessingServerRabbitQueues() {
+        ProcessingServer.list().each {
+
+            String processingServerName = it.name.capitalize()
+            String queueName = amqpQueueService.queuePrefixProcessingServer + processingServerName
+
+            amqpQueueService.createAmqpQueueDefault(it.amqpQueue)
+        }
+    }
+
     void initRabbitMq() {
         log.info "init RabbitMQ connection..."
         MessageBrokerServer mbs = MessageBrokerServer.first()
@@ -425,6 +435,8 @@ class BootstrapUtilsService {
             AmqpQueue queueCommunication = amqpQueueService.read("queueCommunication")
             amqpQueueService.createAmqpQueueDefault(queueCommunication)
         }
+
+        updateProcessingServerRabbitQueues()
 
         //Inserting a MessageBrokerServer for testing purpose
         if (Environment.getCurrent() == Environment.TEST) {
