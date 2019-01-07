@@ -144,7 +144,7 @@ class ProjectService extends ModelService {
                             "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Project as project "+
                             "where aclObjectId.objectId = project.id " +
                             "and aclEntry.aclObjectIdentity = aclObjectId.id "+
-                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"' and project.deleted is null")
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.humanUsername()+"' and project.deleted is null")
         } else {
             Project.findAllByDeletedIsNull()
         }
