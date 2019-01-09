@@ -63,8 +63,6 @@ environments {
     scratch {
         dataSource {
             dbCreate = "update"
-//      url="jdbc:postgresql://139.165.144.107:5432/cytominedev"
-//      password = 'postgres'
             url = "jdbc:postgresql://localhost:5432/cytomineempty"
             password = "postgres"
         }
@@ -72,24 +70,9 @@ environments {
     development {
         dataSource {
             dbCreate = "update"
-//      url="jdbc:postgresql://139.165.144.107:5432/cytominedev"
-//      password = 'postgres'
-            //url = "jdbc:postgresql://localhost:5432/cytomine"
             url = "jdbc:postgresql://localhost:5432/docker"
             username = "docker"
             password = "docker"
-            //password = "postgres"
-
-        }
-    }
-    cluster {
-        dataSource {
-            dbCreate = "update"
-//      url="jdbc:postgresql://139.165.144.107:5432/cytominedev"
-//      password = 'postgres'
-            url = "jdbc:postgresql://localhost:5432/cytomine"
-            password = "postgres"
-
         }
     }
     test {
@@ -99,14 +82,14 @@ environments {
             url = "jdbc:postgresql://localhost:5432/docker"
             username = "docker"
             password = "docker"
-            //password = "postgres"
         }
     }
     production {
         dataSource {
             dbCreate = "update"
-            url = "jdbc:postgresql://localhost:5432/cytomine"
-            password = "postgres"
+            url = "jdbc:postgresql://postgresql:5432/docker"
+            username='docker'
+            password='docker'
         }
     }
     perf {
