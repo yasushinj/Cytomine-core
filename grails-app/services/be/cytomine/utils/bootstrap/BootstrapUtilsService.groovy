@@ -185,7 +185,7 @@ class BootstrapUtilsService {
 
         configs << new Configuration(key: "WELCOME", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
 
-        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: allUsers)
+        configs << new Configuration(key: "retrieval.enabled", value: grailsApplication.config.grails.retrieval.enabled, readingRole: allUsers)
 
         configs << new Configuration(key: "admin.email", value: grailsApplication.config.grails.admin.email, readingRole: adminRole)
 
@@ -238,8 +238,9 @@ class BootstrapUtilsService {
     }
 
     def createMultipleRetrieval() {
-        Configuration retrieval = Configuration.findByKey("retrieval.enabled")
-        if(retrieval && retrieval.value.equals("false")){
+//        Configuration retrieval = Configuration.findByKey("retrieval.enabled")
+//        if(retrieval && retrieval.value.equals("false")){
+        if (!grailsApplication.config.grails.retrieval.enabled) {
             RetrievalServer.list().each { server ->
                 server.delete()
             }

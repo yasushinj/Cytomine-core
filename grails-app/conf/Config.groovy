@@ -390,3 +390,6 @@ cytomine.maxRequestSize = 10485760
 cytomine.jobdata.filesystem = false
 cytomine.jobdata.filesystemPath = "algo/data/"
 grails.readOnlyProjectsByDefault = false
+
+grails.retrieval.enabled=true
+grails.software.enabled=true
