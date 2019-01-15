@@ -623,19 +623,18 @@ class AlgoAnnotationListing extends AnnotationListing {
             if (columnToPrint.contains('term')) {
                 from = "$from LEFT OUTER JOIN algo_annotation_term aat ON a.id = aat.annotation_ident"
             }
+        }
+        if (columnToPrint.contains('image')) {
+            from = "$from, abstract_image ai, image_instance ii "
+            where = "$where AND a.image_id = ii.id \n" +
+                    "AND ii.base_image_id = ai.id\n"
+        }
 
-            if (columnToPrint.contains('image')) {
-                from = "$from, abstract_image ai, image_instance ii "
-                where = "$where AND a.image_id = ii.id \n" +
-                        "AND ii.base_image_id = ai.id\n"
-            }
-
-            if (columnToPrint.contains('user')) {
-                from = "$from, sec_user u, job j, software s "
-                where = "$where AND a.user_id = u.id \n" +
-                        "AND u.job_id = j.id\n" +
-                        "AND j.software_id = s.id\n"
-            }
+        if (columnToPrint.contains('user')) {
+            from = "$from, sec_user u, job j, software s "
+            where = "$where AND a.user_id = u.id \n" +
+                    "AND u.job_id = j.id\n" +
+                    "AND j.software_id = s.id\n"
         }
 
         return from + "\n" + where
