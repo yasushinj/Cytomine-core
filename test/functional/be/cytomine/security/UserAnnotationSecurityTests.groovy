@@ -66,6 +66,16 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
         assert 200 == result.code
         annotation2 = result.data
 
+        //add the two annotations
+        def annotations = []
+        annotations << JSON.parse(annotation1.encodeAsJSON())
+        annotations << JSON.parse(annotation2.encodeAsJSON())
+        result = UserAnnotationAPI.create(JSONUtils.toJSONString(annotations), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        result = UserAnnotationAPI.create(JSONUtils.toJSONString(annotations), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        assert 200 == result.code
+
+
         //Get/List annotation with cytomine admin
         assert (200 == UserAnnotationAPI.show(annotation2.id, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN).code)
         result = UserAnnotationAPI.listByProject(project.id, SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
@@ -106,6 +116,15 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
         def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         annotation = result.data
+
+        //add the two annotations
+        def annotations = []
+        annotations << JSON.parse(annotation.encodeAsJSON())
+        annotations << JSON.parse(annotation.encodeAsJSON())
+        result = UserAnnotationAPI.create(JSONUtils.toJSONString(annotations), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        result = UserAnnotationAPI.create(JSONUtils.toJSONString(annotations), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
 
         //Get/List annotation 1 with user 1
         assert (200 == UserAnnotationAPI.show(annotation.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1).code)
@@ -175,6 +194,15 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
         def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
         annotation = result.data
+
+        //add the two annotations
+        def annotations = []
+        annotations << JSON.parse(annotation.encodeAsJSON())
+        annotations << JSON.parse(annotation.encodeAsJSON())
+        result = UserAnnotationAPI.create(JSONUtils.toJSONString(annotations), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        result = UserAnnotationAPI.create(JSONUtils.toJSONString(annotations), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
 
         //Get/List annotation 1 with user 2
         assert (200 == UserAnnotationAPI.show(annotation.id, SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2).code)

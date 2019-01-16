@@ -248,29 +248,32 @@ class UserAnnotationService extends ModelService {
         if (annotationID) {
             def term = JSONUtils.getJSONList(json.term);
             if (term) {
+                def terms = []
                 term.each { idTerm ->
-                    annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
+                    def annotationTermResult = annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
+                    terms << annotationTermResult.data.annotationterm.term
                 }
+                result.data.annotation.term = terms
             }
         }
 
 
-            //add annotation on the retrieval
+        //add annotation on the retrieval
         log.info "annotationID=$annotationID"
-            if (annotationID && UserAnnotation.read(annotationID).location.getNumPoints() >= 3) {
-                if (!currentUser.algo()) {
-                    try {
-                        log.info "log.addannotation2"
-                        if (annotationID) {
-                            indexRetrievalAnnotation(annotationID)
-                        }
-                    } catch (CytomineException ex) {
-                        log.error "CytomineException index in retrieval:" + ex.toString()
+        if (annotationID && UserAnnotation.read(annotationID).location.getNumPoints() >= 3) {
+            if (!currentUser.algo()) {
+                try {
+                    log.info "log.addannotation2"
+                    if (annotationID) {
+                        indexRetrievalAnnotation(annotationID)
                     }
+                } catch (CytomineException ex) {
+                    log.error "CytomineException index in retrieval:" + ex.toString()
                 }
             }
+        }
 
-            return result
+        return result
     }
 
     /**

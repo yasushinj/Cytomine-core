@@ -567,6 +567,42 @@ class BasicInstanceBuilder {
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
 
+    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
+        UserAnnotation annotation = new UserAnnotation(
+                location: new WKTReader().read(polygon),
+                image:image,
+                user: user,
+                project:image.project
+        )
+        annotation = saveDomain(annotation)
+
+
+        def at = getAnnotationTermNotExist(annotation,true)
+        at.term = term
+        at.user = user
+        saveDomain(at)
+        annotation
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, User user, Term term) {
+        UserAnnotation annotation = new UserAnnotation(
+                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
+                image:image,
+                user: user,
+                project:image.project
+        )
+        annotation = saveDomain(annotation)
+
+        if(term) {
+            def at = getAnnotationTermNotExist(annotation,true)
+            at.term = term
+            at.user = user
+            saveDomain(at)
+        }
+
+        annotation
+    }
+
 
     static RoiAnnotation getRoiAnnotation() {
         def annotation = RoiAnnotation.findOrCreateWhere(
@@ -596,42 +632,6 @@ class BasicInstanceBuilder {
                 project:image.project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
-    }
-
-    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
-        UserAnnotation annotation = new UserAnnotation(
-                location: new WKTReader().read(polygon),
-                image:image,
-                user: user,
-                project:image.project
-        )
-        annotation = saveDomain(annotation)
-
-
-       def at = getAnnotationTermNotExist(annotation,true)
-        at.term = term
-        at.user = user
-        saveDomain(at)
-        annotation
-    }
-
-    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, User user, Term term) {
-        UserAnnotation annotation = new UserAnnotation(
-                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
-                user: user,
-                project:image.project
-        )
-        annotation = saveDomain(annotation)
-
-       if(term) {
-           def at = getAnnotationTermNotExist(annotation,true)
-            at.term = term
-            at.user = user
-            saveDomain(at)
-       }
-
-        annotation
     }
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {

@@ -167,9 +167,12 @@ class AlgoAnnotationService extends ModelService {
         if (annotationID) {
             def term = JSONUtils.getJSONList(json.term);
             if (term) {
+                def terms = []
                 term.each { idTerm ->
-                    algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
+                    def annotationTermResult = algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
+                    terms << annotationTermResult.data.algoannotationterm.term
                 }
+                result.data.annotation.term = terms
             }
         }
 

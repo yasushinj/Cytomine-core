@@ -128,9 +128,10 @@ class UserAnnotationAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/userannotation.json?"+(minPoint? "&minPoint=$minPoint": "")+(maxPoint? "&maxPoint=$maxPoint": "")
         def result = doPOST(URL,jsonAnnotation,username,password)
         def json = JSON.parse(result.data)
-        if(JSON.parse(jsonAnnotation) instanceof JSONArray) return [code: result.code]
+        if(JSON.parse(jsonAnnotation) instanceof JSONArray) return result
         Long idAnnotation = json?.annotation?.id
-        return [data: UserAnnotation.get(idAnnotation), code: result.code]
+        result.data = UserAnnotation.get(idAnnotation)
+        return result
     }
 
     static def update(def id, def jsonAnnotation, String username, String password) {
