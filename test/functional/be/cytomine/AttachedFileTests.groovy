@@ -81,6 +81,16 @@ class AttachedFileTests {
         def attachedFileToAdd = BasicInstanceBuilder.getAttachedFileNotExist(false)
         def result = AttachedFileAPI.upload(attachedFileToAdd.domainClassName,attachedFileToAdd.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.filename == "simpleFile.txt"
+    }
+
+    void testAddAttachedFileCorrectWithOtherName() {
+        def attachedFileToAdd = BasicInstanceBuilder.getAttachedFileNotExist(false)
+        def result = AttachedFileAPI.upload("myTestFile", attachedFileToAdd.domainClassName,attachedFileToAdd.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.filename == "myTestFile"
     }
 
     void testAddAttachedFileIncorrect() {

@@ -693,6 +693,17 @@ class BasicInstanceBuilder {
         save ? saveDomain(attachedFile) : checkDomain(attachedFile)
     }
 
+    static AttachedFile getAttachedFileNotExist(String file, String filename, boolean save = false) {
+        def attachedFile = new AttachedFile()
+        def project = getProjectNotExist(true)
+        attachedFile.domainClassName = project.class.name
+        attachedFile.domainIdent = project.id
+        File f = new File(file)
+        attachedFile.filename = filename
+        attachedFile.data = f.bytes
+        save ? saveDomain(attachedFile) : checkDomain(attachedFile)
+    }
+
     static ImageFilter getImageFilter() {
        def imagefilter = ImageFilter.findByName("imagetest")
        if(!imagefilter) {

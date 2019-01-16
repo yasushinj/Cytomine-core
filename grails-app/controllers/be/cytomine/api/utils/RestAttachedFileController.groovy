@@ -92,8 +92,8 @@ class RestAttachedFileController extends RestController {
         if(request instanceof AbstractMultipartHttpServletRequest) {
             def f = ((AbstractMultipartHttpServletRequest) request).getFile('files[]')
 
-
-            String filename = f.originalFilename
+            String filename = ((AbstractMultipartHttpServletRequest) request).getParameter('filename')
+            if(!filename) filename = f.originalFilename
             log.info "Upload $filename for domain $domainClassName $domainIdent"
             log.info "File size = ${f.size}"
 

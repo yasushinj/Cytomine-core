@@ -46,8 +46,11 @@ class AttachedFileAPI extends DomainAPI {
     }
 
     static def upload(String domainClassName, Long domainIdent, File file, String username, String password) {
+        upload(null, domainClassName, domainIdent, file, username, password)
+    }
+    static def upload(String filename, String domainClassName, Long domainIdent, File file, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/attachedfile.json?domainClassName=$domainClassName&domainIdent=$domainIdent"
-        return doPOSTUpload(URL,file,username,password)
+        return doPOSTUpload(URL,file,filename, username,password)
     }
 
     static def delete(Long id, String username, String password) {

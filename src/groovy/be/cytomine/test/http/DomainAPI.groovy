@@ -22,6 +22,7 @@ import grails.converters.JSON
 import groovy.util.logging.Log
 import org.apache.http.entity.mime.MultipartEntity
 import org.apache.http.entity.mime.content.FileBody
+import org.apache.http.entity.mime.content.StringBody
 import org.codehaus.groovy.grails.web.json.JSONObject
 
 import java.awt.image.BufferedImage
@@ -208,10 +209,14 @@ class DomainAPI {
 
 
 
-    static def doPOSTUpload(String url,File file,String username,String password) throws Exception {
+    static def doPOSTUpload(String url,File file, String username,String password) throws Exception {
+        return doPOSTUpload(url,file, null, username, password)
+    }
+    static def doPOSTUpload(String url,File file,String filename, String username,String password) throws Exception {
 
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("files[]",new FileBody(file)) ;
+        if(filename) entity.addPart("filename",new StringBody(filename)) ;
         HttpClient client = new HttpClient();
         client.connect(url, username, password);
         client.post(entity)
