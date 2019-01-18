@@ -39,32 +39,9 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/previous.$format"(controller: "restImageInstance"){
             action = [GET:"previous"]
         }
-        "/api/imageinstance/$id/window-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
-            action = [GET:"window"]
-        }
-        "/api/imageinstance/$id/window_url-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
-            action = [GET:"windowUrl"]
-        }
-        "/api/imageinstance/$id/download"(controller: "restImageInstance"){
-            action = [GET:"download"]
-        }
-        "/api/imageinstance/$id/associated.$format"(controller: "restImageInstance"){
-            action = [GET:"associated"]
-        }
-        "/api/imageinstance/$id/associated/$label.$format"(controller: "restImageInstance"){
-            action = [GET:"label"]
-        }
         "/api/project/$id/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByProject"]
         }
-
-        "/api/imageinstance/$id/cropgeometry.$format"(controller :"restImageInstance") {
-            action = [GET:"cropGeometry"]
-        }
-        "/api/imageinstance/$id/crop.$format"(controller :"restImageInstance") {
-            action = [GET:"crop"]
-        }
-        
         "/api/imageinstance/method/lastopened.$format"(controller :"restImageInstance") {
             action = [GET:"listLastOpenImage"]
         }
@@ -84,6 +61,46 @@ class ImageInstanceUrlMappings {
         }
         "/api/imageinstance/$idImage/nested/$id.$format"(controller: "restNestedImageInstance"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]
+        }
+
+
+        "/api/imageinstance/$id/download"(controller: "restImageInstance"){
+            action = [GET:"download"]
+        }
+        "/api/imageinstance/$id/thumb.$format"(controller: "restImageInstance"){
+            action = [GET:"thumb", POST:"thumb"]
+        }
+        "/api/imageinstance/$id/preview.$format"(controller: "restImageInstance"){
+            action = [GET:"preview", POST:"preview"]
+        }
+        "/api/imageinstance/$id/associated.$format"(controller: "restImageInstance"){
+            action = [GET:"associated"]
+        }
+        "/api/imageinstance/$id/associated/$label.$format"(controller: "restImageInstance"){
+            action = [GET:"label", POST:"label"]
+        }
+        "/api/imageinstance/$id/crop.$format"(controller: "restImageInstance"){
+            action = [GET:"crop", POST:"crop"]
+        }
+        "/api/imageinstance/$id/window-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
+            action = [GET:"window", POST:"window"]
+        }
+        "/api/imageinstance/$id/window_url-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
+            action = [GET:"windowUrl", POST:"windowUrl"]
+        }
+        "/api/imageinstance/$id/camera.$format"(controller: "restImageInstance"){
+            action = [POST:"camera"]
+        }
+        "/api/imageinstance/$id/camera-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
+            action = [GET:"camera", POST:"camera"]
+        }
+        "/api/imageinstance/$id/camera_url-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
+            action = [GET:"cameraUrl", POST:"cameraUrl"]
+        }
+        
+        // Deprecated
+        "/api/imageinstance/$id/cropgeometry.$format"(controller :"restImageInstance") {
+            action = [GET:"crop", POST:"crop"]
         }
     }
 }

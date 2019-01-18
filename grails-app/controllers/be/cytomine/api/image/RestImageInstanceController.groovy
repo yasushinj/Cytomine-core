@@ -235,12 +235,249 @@ class RestImageInstanceController extends RestController {
         return data
     }
 
+    @RestApiMethod(description="Copy image metadata (description, properties...) from an image to another one")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image that get the data"),
+            @RestApiParam(name="based", type="long", paramType = RestApiParamType.QUERY, description = "The image source for the data")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def copyMetadata() {
+        try {
+            ImageInstance based = imageInstanceService.read(params.long('based'))
+            ImageInstance image = imageInstanceService.read(params.long('id'))
+            if(image && based) {
+                securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
 
-    //TODO:APIDOC
+                Description.findAllByDomainIdent(based.id).each { description ->
+                    def json = JSON.parse(description.encodeAsJSON())
+                    json.domainIdent = image.id
+                    descriptionService.add(json)
+                }
+
+                Property.findAllByDomainIdent(based.id).each { property ->
+                    def json = JSON.parse(property.encodeAsJSON())
+                    json.domainIdent = image.id
+                    propertyService.add(json)
+                }
+
+                responseSuccess([])
+            } else if(!based) {
+                responseNotFound("ImageInstance",params.based)
+            }else if(!image) {
+                responseNotFound("ImageInstance",params.id)
+            }
+        } catch (CytomineException e) {
+            log.error(e)
+            response([success: false, errors: e.msg], e.code)
+        }
+
+    }
+
+    /**
+     * Check if an abstract image is already map with one or more projects
+     * If true, send an array with item {imageinstanceId,layerId,layerName,projectId, projectName, admin}
+     */
+    @RestApiMethod(description="Get, for an image instance, all the project having the same abstract image with the same layer (user)", listing = true)
+    @RestApiResponseObject(objectIdentifier =  "[project_sharing_same_image]")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image that get the data"),
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "The image source for the data")
+    ])
+    def retrieveSameImageOtherProject() {
+        try {
+            ImageInstance image = imageInstanceService.read(params.long('id'))
+            Project project = projectService.read(params.long('project'))
+            if(image) {
+                securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
+                def layers =  imageInstanceService.getLayersFromAbstractImage(image.baseImage,image, projectService.list(cytomineService.currentUser).collect{it.id},secUserService.listUsers(image.project).collect{it.id},project)
+                responseSuccess(layers)
+            } else {
+                responseNotFound("Abstract Image",params.id)
+            }
+        } catch (CytomineException e) {
+            log.error(e)
+            response([success: false, errors: e.msg], e.code)
+        }
+    }
+
+
+    /**
+     * Copy all annotation (and dedepency: term, description, property,..) to the new image
+     * Params must be &layers=IMAGEINSTANCE1_USER1,IMAGE_INSTANCE1_USER2,... which will add annotation
+     * from user/image from another project.
+     */
+    @RestApiMethod(description="Copy all annotation (and term, desc, property,...) from an image to another image", listing = true)
+    @RestApiResponseObject(objectIdentifier = "[copy_annotation_image]")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image that get the data"),
+            @RestApiParam(name="task", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) The id of task that will be update during the request processing"),
+            @RestApiParam(name="giveMe", type="boolean", paramType = RestApiParamType.QUERY, description = "If true, copy all annotation on the current user layer. If false or not mentioned, copy all anotation on the same layer as the source image"),
+            @RestApiParam(name="layers", type="list (x1_y1,x2_y2,...)", paramType = RestApiParamType.QUERY, description = "List of couple 'idimage_iduser'")
+    ])
+    def copyAnnotationFromSameAbstractImage() {
+        try {
+            ImageInstance image = imageInstanceService.read(params.long('id'))
+            securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
+            Task task = taskService.read(params.getLong("task"))
+            Boolean giveMe = params.boolean("giveMe")
+            log.info "task ${task} is find for id = ${params.getLong("task")}"
+            def layers = params.layers? params.layers.split(",") : ""
+            if(image && layers) {
+                responseSuccess(imageInstanceService.copyLayers(image,layers,secUserService.listUsers(image.project).collect{it.id},task,cytomineService.currentUser,giveMe))
+            } else {
+                responseNotFound("Abstract Image",params.id)
+            }
+        } catch (CytomineException e) {
+            log.error(e)
+            response([success: false, errors: e.msg], e.code)
+        }
+    }
+
+    @RestApiMethod(description="Get a small image (thumb) for a specific image", extensions=["png", "jpg"])
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The image id"),
+            @RestApiParam(name="refresh", type="boolean", paramType=RestApiParamType.QUERY, description="If true, don't take it from cache and regenerate it", required=false),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY,description="The thumb max size", required = false),
+            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
+            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
+            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
+            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
+            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
+    ])
+    @RestApiResponseObject(objectIdentifier = "image (bytes)")
+    def thumb() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            def parameters = [:]
+            parameters.format = params.format
+            parameters.maxSize = params.int('maxSize',  512)
+            parameters.colormap = params.colormap
+            parameters.inverse = params.boolean('inverse')
+            parameters.contrast = params.double('contrast')
+            parameters.gamma = params.double('gamma')
+            parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
+            boolean refresh = params.boolean('refresh', false)
+            responseBufferedImage(abstractImageService.thumb(imageInstance.baseImage, parameters, refresh))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get an image (preview) for a specific image", extensions=["png", "jpg"])
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The image id"),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY,description="The thumb max size", required = false),
+            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
+            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
+            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
+            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
+            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
+    ])
+    @RestApiResponseObject(objectIdentifier ="image (bytes)")
+    def preview() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            def parameters = [:]
+            parameters.format = params.format
+            parameters.maxSize = params.int('maxSize',  1024)
+            parameters.colormap = params.colormap
+            parameters.inverse = params.boolean('inverse')
+            parameters.contrast = params.double('contrast')
+            parameters.gamma = params.double('gamma')
+            parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
+            responseBufferedImage(abstractImageService.thumb(imageInstance.baseImage, parameters))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get available associated images", listing = true)
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
+    ])
+    @RestApiResponseObject(objectIdentifier ="associated image labels")
+    def associated() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            def associated = abstractImageService.getAvailableAssociatedImages(imageInstance.baseImage)
+            responseSuccess(associated)
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get an associated image of a abstract image (e.g. label, macro, thumbnail)", extensions=["png", "jpg"])
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
+            @RestApiParam(name="label", type="string", paramType = RestApiParamType.PATH,description = "The associated image label"),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY,description="The thumb max size", required = false),
+    ])
+    @RestApiResponseObject(objectIdentifier = "image (bytes)")
+    def label() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            def parameters = [:]
+            parameters.format = params.format
+            parameters.label = params.label
+            parameters.maxSize = params.int('maxSize', 256)
+            def associatedImage = abstractImageService.getAssociatedImage(imageInstance.baseImage, parameters)
+            responseBufferedImage(associatedImage)
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def crop() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            responseBufferedImage(abstractImageService.crop(imageInstance.baseImage, params))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+
+    }
+
     def windowUrl() {
-        ImageInstance imageInstance = imageInstanceService.read(params.id)
-        params.id = imageInstance.baseImage.id
-        responseSuccess([url : abstractImageService.window(params, request.queryString).url])
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            String url = abstractImageService.window(imageInstance.baseImage, params, true)
+            responseSuccess([url : url])
+        } else {
+            responseNotFound("Image", params.id)
+        }
+
+    }
+
+    def window() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            //        if (params.mask || params.alphaMask)
+//            params.location = getWKTGeometry(imageInstance, params)
+            responseBufferedImage(abstractImageService.window(imageInstance.baseImage, params, false))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def cameraUrl() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            params.withExterior = false
+            String url = abstractImageService.window(imageInstance.baseImage, params, true)
+            responseSuccess([url : url])
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def camera() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            params.withExterior = false
+            responseBufferedImage(abstractImageService.window(imageInstance.baseImage, params, false))
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
     //todo : move into a service
@@ -325,155 +562,6 @@ class RestImageInstanceController extends RestController {
         }
     }
 
-    //TODO:APIDOC
-    def window() {
-        ImageInstance imageInstance = imageInstanceService.read(params.id)
-        params.id = imageInstance.baseImage.id
-        if (params.mask || params.alphaMask)
-            params.location = getWKTGeometry(imageInstance, params)
-        //handle idTerms & idUsers
-        def req = abstractImageService.window(params, request.queryString)
-        log.info "req.url=${req.url}"
-        log.info "req.post=${req.post}"
-
-        def queryString = req.url.split("\\?")
-        log.info "queryString=$queryString"
-//        queryString = queryString.replace("?", "")
-        String imageServerURL = imageInstance.baseImage.getRandomImageServerURL()
-        String fif = URLEncoder.encode(imageInstance.baseImage.absolutePath, "UTF-8")
-        String mimeType = imageInstance.baseImage.mimeType
-        String url
-        if(queryString[1].contains("mask=true")) {
-            url = "$imageServerURL/image/mask.png?fif=$fif&mimeType=$mimeType&${queryString[1]}&resolution=${imageInstance.baseImage.resolution}" //&scale=$scale
-        } else {
-            url = "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType&${queryString[1]}&resolution=${imageInstance.baseImage.resolution}" //&scale=$scale
-        }
-
-
-        BufferedImage image = new HttpClient().readBufferedImageFromPOST(url,req.post)
-//        redirect(url : url)
-        responseBufferedImage(image)
-    }
-
-    //TODO:APIDOC
-    def cropGeometry() {
-        //TODO:: document this method
-        String geometrySTR = params.geometry
-        def geometry = new WKTReader().read(geometrySTR)
-        def annotation = new UserAnnotation(location: geometry)
-        annotation.image = ImageInstance.read(params.long("id"))
-        String url = annotation.toCropURL(params)
-        log.info "redirect $url"
-        redirect (url : url)
-    }
-
-    def crop() {
-        ImageInstance image = ImageInstance.read(params.long('id'))
-        AbstractImage abstractImage = image.getBaseImage()
-        params.id = abstractImage.id
-        String url = abstractImageService.crop(params, request.queryString)
-        log.info "redirect $url"
-        redirect (url : url )
-    }
-
-    @RestApiMethod(description="Copy image metadata (description, properties...) from an image to another one")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image that get the data"),
-    @RestApiParam(name="based", type="long", paramType = RestApiParamType.QUERY, description = "The image source for the data")
-    ])
-    @RestApiResponseObject(objectIdentifier = "empty")
-    def copyMetadata() {
-        try {
-            ImageInstance based = imageInstanceService.read(params.long('based'))
-            ImageInstance image = imageInstanceService.read(params.long('id'))
-            if(image && based) {
-                securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
-
-                Description.findAllByDomainIdent(based.id).each { description ->
-                    def json = JSON.parse(description.encodeAsJSON())
-                    json.domainIdent = image.id
-                    descriptionService.add(json)
-                }
-
-                Property.findAllByDomainIdent(based.id).each { property ->
-                    def json = JSON.parse(property.encodeAsJSON())
-                    json.domainIdent = image.id
-                    propertyService.add(json)
-                }
-
-                responseSuccess([])
-            } else if(!based) {
-                responseNotFound("ImageInstance",params.based)
-            }else if(!image) {
-                responseNotFound("ImageInstance",params.id)
-            }
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
-
-    }
-
-    /**
-     * Check if an abstract image is already map with one or more projects
-     * If true, send an array with item {imageinstanceId,layerId,layerName,projectId, projectName, admin}
-     */
-    @RestApiMethod(description="Get, for an image instance, all the project having the same abstract image with the same layer (user)", listing = true)
-    @RestApiResponseObject(objectIdentifier =  "[project_sharing_same_image]")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image that get the data"),
-    @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "The image source for the data")
-    ])
-    def retrieveSameImageOtherProject() {
-        try {
-            ImageInstance image = imageInstanceService.read(params.long('id'))
-            Project project = projectService.read(params.long('project'))
-            if(image) {
-                securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
-                def layers =  imageInstanceService.getLayersFromAbstractImage(image.baseImage,image, projectService.list(cytomineService.currentUser).collect{it.id},secUserService.listUsers(image.project).collect{it.id},project)
-                responseSuccess(layers)
-            } else {
-                responseNotFound("Abstract Image",params.id)
-            }
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
-    }
-
-
-    /**
-     * Copy all annotation (and dedepency: term, description, property,..) to the new image
-     * Params must be &layers=IMAGEINSTANCE1_USER1,IMAGE_INSTANCE1_USER2,... which will add annotation
-     * from user/image from another project.
-     */
-    @RestApiMethod(description="Copy all annotation (and term, desc, property,...) from an image to another image", listing = true)
-    @RestApiResponseObject(objectIdentifier = "[copy_annotation_image]")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image that get the data"),
-    @RestApiParam(name="task", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) The id of task that will be update during the request processing"),
-    @RestApiParam(name="giveMe", type="boolean", paramType = RestApiParamType.QUERY, description = "If true, copy all annotation on the current user layer. If false or not mentioned, copy all anotation on the same layer as the source image"),
-    @RestApiParam(name="layers", type="list (x1_y1,x2_y2,...)", paramType = RestApiParamType.QUERY, description = "List of couple 'idimage_iduser'")
-    ])
-    def copyAnnotationFromSameAbstractImage() {
-        try {
-            ImageInstance image = imageInstanceService.read(params.long('id'))
-            securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
-            Task task = taskService.read(params.getLong("task"))
-            Boolean giveMe = params.boolean("giveMe")
-            log.info "task ${task} is find for id = ${params.getLong("task")}"
-            def layers = params.layers? params.layers.split(",") : ""
-            if(image && layers) {
-                responseSuccess(imageInstanceService.copyLayers(image,layers,secUserService.listUsers(image.project).collect{it.id},task,cytomineService.currentUser,giveMe))
-            } else {
-                responseNotFound("Abstract Image",params.id)
-            }
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
-    }
-
     def download() {
         Long id = params.long("id")
         Boolean parent = params.boolean("parent", false)
@@ -494,25 +582,7 @@ class RestImageInstanceController extends RestController {
         response(responseData)
     }*/
 
-    def associated() {
-        Long id = params.long("id")
-        ImageInstance imageInstance = imageInstanceService.read(id)
-        def associated = abstractImageService.getAvailableAssociatedImages(imageInstance.baseImage)
-        responseSuccess(associated)
-    }
 
-    def label() {
-        Long id = params.long("id")
-        String label = params.label
-        def maxWidth = 1000
-        if (params.maxWidth) {
-            maxWidth = params.int("maxWidth")
-        }
-        ImageInstance imageInstance = imageInstanceService.read(id)
-        def associatedImage = abstractImageService.getAssociatedImage(imageInstance.baseImage, label, maxWidth)
-        if (associatedImage)
-            responseBufferedImage(associatedImage)
-    }
 
     def imageProperties() {
         Long id = params.long("id")
@@ -521,15 +591,7 @@ class RestImageInstanceController extends RestController {
     }
 
 
-    //TODO:APIDOC
-    def cameraUrl() {
-        ImageInstance image = imageInstanceService.read(params.id)
-        AbstractImage abstractImage = image.baseImage
-        params.id = abstractImage.id
-        def url = abstractImageService.window(params, request.queryString,abstractImage.width,abstractImage.height)
-        log.info "response $url"
-        responseSuccess([url : url.url])
-    }
+
 
 
 }
