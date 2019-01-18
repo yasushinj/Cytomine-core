@@ -126,14 +126,14 @@ class SimplifyGeometryService {
         if (geometry.numPoints < 100)
             return reduceGeometryPrecision(geometry)
 
-        double index = 10d
+        double index = 2d
         int max = 1000
         while (index < max) {
             geometry = TopologyPreservingSimplifier.simplify(geometry, index)
             if (geometry.numPoints < 150) {
                 break
             }
-            index = (index + 10) * 1.1
+            index = (index + 5) * 1.1
         }
 
         return reduceGeometryPrecision(geometry)
