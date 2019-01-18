@@ -360,6 +360,8 @@ class AbstractImageService extends ModelService {
         parameters.gamma = params.double('gamma')
         parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
         parameters.alpha = params.int('alpha')
+        parameters.strokeWidth = params.int('strokeWidth')
+        parameters.strokeColor = params.strokeColor
         return parameters
     }
 
