@@ -55,6 +55,7 @@ class AbstractImageService extends ModelService {
     def currentRoleServiceProxy
     def securityACLService
     def storageAbstractImageService
+    def imageServerProxyService
 
     def currentDomain() {
         return AbstractImage
@@ -235,72 +236,20 @@ class AbstractImageService extends ModelService {
         }
     }
 
+    def uploadedFileService
+    def deleteFile(AbstractImage ai){
+        UploadedFile uf = UploadedFile.findByImage(ai)
+        uploadedFileService.delete(uf)
 
-    def crop(params, queryString) {
-        queryString = queryString.replace("?", "")
-        AbstractImage abstractImage = read(params.id)
-        String imageServerURL = abstractImage.getRandomImageServerURL()
-        String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
-        String mimeType = abstractImage.mimeType
-        return "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType&$queryString&resolution=${abstractImage.resolution}" //&scale=$scale
-    }
-
-    def getCropIMSUrl(params) {
-        AbstractImage abstractImage = read(params.id)
-        params.remove("id")
-        String imageServerURL = abstractImage.getRandomImageServerURL()
-        String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
-        String mimeType = abstractImage.mimeType
-        String url = "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType"
-
-        String query = params.collect { key, value ->
-            if (value instanceof String)
-                value = URLEncoder.encode(value, "UTF-8")
-            "$key=$value"
-        }.join("&")
-        url += "&$query"
-        url += "&resolution=${abstractImage.resolution}"
-        return url
-    }
-
-    def window(def params, String queryString, Long width = null, Long height = null) {
-        Long id = params.long('id')
-        AbstractImage abstractImage = read(id)
-        int x = params.int('x')
-        int y = params.int('y')
-        int w = params.int('w')
-        int h = params.int('h')
-        def parameters = [:]
-        parameters.topLeftX = Math.max(x,0)
-        parameters.topLeftY = Math.max(y,0)
-        parameters.width = w
-        parameters.height = h
-        parameters.imageWidth = abstractImage.getWidth()
-        parameters.imageHeight = abstractImage.getHeight()
-
-        if(width && (parameters.width+parameters.topLeftX)>width) {
-            //for camera, don't take the part outsite the real image
-            parameters.width = width - parameters.topLeftX
+        while(uf.parent){
+            if(UploadedFile.countByParentAndDeletedIsNull(uf.parent) == 0){
+                uploadedFileService.delete(uf.parent)
+                uf = uf.parent
+            } else {
+                break
+            }
         }
-        if(height && (parameters.height+parameters.topLeftY)>height) {
-            //for camera, don't take the part outsite the real image
-            parameters.height = height - parameters.topLeftY
-        }
-        parameters.topLeftY = Math.max(abstractImage.getHeight() - parameters.topLeftY,0)
-
-        if (params.zoom) parameters.zoom = params.zoom
-        if (params.maxSize) parameters.maxSize = params.maxSize
-        if (params.mask) parameters.mask = params.mask
-        if (params.alphaMask) parameters.alphaMask = params.alphaMask
-
-        def post = """
-            {"location": "${params.location}"}
-        """
-
-        return [url:UrlApi.getCropURL(id, parameters, params.format), post: post]
     }
-
-
 
     /**
      * Get all image servers for an image id
@@ -316,53 +265,6 @@ class AbstractImageService extends ModelService {
         return [imageServersURLs : urls]
     }
 
-    /**
-     * Get thumb image URL
-     */
-    def thumb(long id, int maxSize, def params=null, boolean refresh = false) {
-        AbstractImage abstractImage = AbstractImage.read(id)
-
-        def parameters= [:]
-
-        parameters.fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
-        parameters.mimeType = abstractImage.mimeType
-        parameters.maxSize = maxSize
-
-        def format = "jpg"
-        if (params)  {
-            if (params.format) format = params.format
-            if (params.colormap) parameters.colormap = params.colormap
-            if (params.inverse) parameters.inverse = params.inverse
-            if (params.contrast) parameters.contrast = params.contrast
-            if (params.gamma) parameters.gamma = params.gamma
-            if (params.bits) {
-                if (params.bits == "max") parameters.bits = abstractImage.bitDepth ?: 8
-                else parameters.bits = params.bits
-            }
-        }
-
-        String url = "/image/thumb.$format?" + parameters.collect {k, v -> "$k=$v"}.join("&")
-
-        AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(id, url)
-        if (!attachedFile || refresh) {
-            String imageServerURL = abstractImage.getRandomImageServerURL()
-            log.info "$imageServerURL"+url
-            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
-            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageData))
-            attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
-            return bufferedImage
-        } else {
-            return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
-        }
-    }
-
-    /**
-     * Get Preview image URL
-     */
-    def preview(def id, def params=null) {
-        thumb(id, 1024, params)
-    }
-
     def getMainUploadedFile(AbstractImage abstractImage) {
         List<UploadedFile> uploadedfiles = UploadedFile.findAllByImage(abstractImage)
 
@@ -371,9 +273,9 @@ class AbstractImageService extends ModelService {
         } else {
             //get the first uploadedfile...
             return uploadedfiles.find{ main ->
-                 //...that is not present in parent (must be the 'last' child)
-                 uploadedfiles.find{ second -> second.parent?.id==main.id}==null;
-             }
+                //...that is not present in parent (must be the 'last' child)
+                uploadedfiles.find{ second -> second.parent?.id==main.id}==null;
+            }
         }
 
 //
@@ -404,45 +306,98 @@ class AbstractImageService extends ModelService {
 
     }
 
-    def getAvailableAssociatedImages(AbstractImage abstractImage) {
+
+    //TODO: delete
+    def getCropIMSUrl(params) {
+        AbstractImage abstractImage = read(params.id)
+        params.remove("id")
         String imageServerURL = abstractImage.getRandomImageServerURL()
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
-        String url = "$imageServerURL/image/associated.json?fif=$fif&mimeType=$mimeType"
-        return JSON.parse( new URL(url).text )
+        String url = "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType"
+
+        String query = params.collect { key, value ->
+            if (value instanceof String)
+                value = URLEncoder.encode(value, "UTF-8")
+            "$key=$value"
+        }.join("&")
+        url += "&$query"
+        url += "&resolution=${abstractImage.resolution}"
+        return url
     }
 
-    def getAssociatedImage(AbstractImage abstractImage, String label, def maxWidth) {
-        String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
-        String mimeType = abstractImage.mimeType
-        String url = "/image/nested.jpg?fif=$fif&mimeType=$mimeType&label=$label&maxSize=$maxWidth"
+    /**
+     * Get thumb image URL
+     */
+    def thumb(AbstractImage abstractImage, def parameters, boolean refresh = false) {
+        return imageServerProxyService.thumb(abstractImage, parameters)
 
-        AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(abstractImage.id, url)
-        if (attachedFile) {
-            return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
-        } else {
-            String imageServerURL = abstractImage.getRandomImageServerURL()
-            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
-            BufferedImage bufferedImage =  ImageIO.read(new ByteArrayInputStream(imageData))
-            attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
-            return bufferedImage
-        }
-
+//        AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(id, url)
+//        if (!attachedFile || refresh) {
+//            String imageServerURL = abstractImage.getRandomImageServerURL()
+//            log.info "$imageServerURL"+url
+//            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
+//            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageData))
+//            attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
+//            return bufferedImage
+//        } else {
+//            return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
+//        }
     }
 
-    def uploadedFileService
-    def deleteFile(AbstractImage ai){
-        UploadedFile uf = UploadedFile.findByImage(ai)
-        uploadedFileService.delete(uf)
+    def getAvailableAssociatedImages(AbstractImage abstractImage) {
+        return imageServerProxyService.associated(abstractImage)
+    }
 
-        while(uf.parent){
-            if(UploadedFile.countByParentAndDeletedIsNull(uf.parent) == 0){
-                uploadedFileService.delete(uf.parent)
-                uf = uf.parent
-            } else {
-                break
-            }
-        }
+    def getAssociatedImage(AbstractImage abstractImage, def parameters) {
+        return imageServerProxyService.label(abstractImage, parameters)
+
+//        AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(abstractImage.id, url)
+//        if (attachedFile) {
+//            return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
+//        } else {
+//            String imageServerURL = abstractImage.getRandomImageServerURL()
+//            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
+//            BufferedImage bufferedImage =  ImageIO.read(new ByteArrayInputStream(imageData))
+//            attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
+//            return bufferedImage
+//        }
+    }
+
+    def checkCropParameters(params) {
+        def parameters = [:]
+        parameters.format = params.format
+        parameters.location = params.location
+        parameters.geometry = params.geometry
+        parameters.complete = params.boolean('complete')
+        parameters.maxSize = params.int('maxSize')
+        parameters.zoom = params.int('zoom')
+        parameters.increaseArea = params.double('increaseArea')
+        parameters.type = imageServerProxyService.checkType(params)
+        parameters.colormap = params.colormap
+        parameters.inverse = params.boolean('inverse')
+        parameters.contrast = params.double('contrast')
+        parameters.gamma = params.double('gamma')
+        parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
+        return parameters
+    }
+
+    def crop(AbstractImage abstractImage, def params) {
+        def parameters = checkCropParameters(params)
+        return imageServerProxyService.crop(abstractImage, parameters)
+    }
+
+    def window(AbstractImage abstractImage, def params, def urlOnly = false) {
+        def parameters = checkCropParameters(params)
+        parameters.x = params.double('x')
+        parameters.y = params.double('y')
+        parameters.w = params.double('w')
+        parameters.h = params.double('h')
+        parameters.drawScaleBar = params.boolean('drawScaleBar')
+        parameters.resolution = params.double('resolution')
+        parameters.magnification = params.double('magnification')
+        parameters.withExterior = params.boolean('withExterior', false)
+        return imageServerProxyService.window(abstractImage, parameters, urlOnly)
     }
 
     def getStringParamsI18n(def domain) {

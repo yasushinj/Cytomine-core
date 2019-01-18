@@ -160,131 +160,153 @@ class RestAbstractImageController extends RestController {
         }
     }
 
-    /**
-     * Get image thumb URL
-     */
     @RestApiMethod(description="Get a small image (thumb) for a specific image", extensions=["png", "jpg"])
     @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
-            @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.QUERY,description = "The thumb max size"),
-            @RestApiParam(name="refresh", type="boolean", paramType = RestApiParamType.QUERY,description = "If true, don't take it from cache and regenerate it", required=false)
+            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The image id"),
+            @RestApiParam(name="refresh", type="boolean", paramType=RestApiParamType.QUERY, description="If true, don't take it from cache and regenerate it", required=false),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY,description="The thumb max size", required = false),
+            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
+            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
+            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
+            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
+            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
     ])
     @RestApiResponseObject(objectIdentifier = "image (bytes)")
     def thumb() {
-        response.setHeader("max-age", "86400")
-        int maxSize = params.int('maxSize',  512)
-        boolean refresh = params.boolean('refresh', false)
-        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params, refresh))
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            def parameters = [:]
+            parameters.format = params.format
+            parameters.maxSize = params.int('maxSize',  512)
+            parameters.colormap = params.colormap
+            parameters.inverse = params.boolean('inverse')
+            parameters.contrast = params.double('contrast')
+            parameters.gamma = params.double('gamma')
+            parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
+            boolean refresh = params.boolean('refresh', false)
+            responseBufferedImage(abstractImageService.thumb(abstractImage, parameters, refresh))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get an image (preview) for a specific image", extensions=["png", "jpg"])
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The image id"),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY,description="The thumb max size", required = false),
+            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
+            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
+            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
+            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
+            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
+    ])
+    @RestApiResponseObject(objectIdentifier ="image (bytes)")
+    def preview() {
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            def parameters = [:]
+            parameters.format = params.format
+            parameters.maxSize = params.int('maxSize',  1024)
+            parameters.colormap = params.colormap
+            parameters.inverse = params.boolean('inverse')
+            parameters.contrast = params.double('contrast')
+            parameters.gamma = params.double('gamma')
+            parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
+            responseBufferedImage(abstractImageService.thumb(abstractImage, parameters))
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
     @RestApiMethod(description="Get available associated images", listing = true)
     @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
     ])
     @RestApiResponseObject(objectIdentifier ="associated image labels")
     def associated() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        def associated = abstractImageService.getAvailableAssociatedImages(abstractImage)
-        responseSuccess(associated)
+        if (abstractImage) {
+            def associated = abstractImageService.getAvailableAssociatedImages(abstractImage)
+            responseSuccess(associated)
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
-    /**
-     * Get associated image
-     */
     @RestApiMethod(description="Get an associated image of a abstract image (e.g. label, macro, thumbnail)", extensions=["png", "jpg"])
     @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
-    @RestApiParam(name="label", type="string", paramType = RestApiParamType.PATH,description = "The associated image label")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
+            @RestApiParam(name="label", type="string", paramType = RestApiParamType.PATH,description = "The associated image label"),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY,description="The thumb max size", required = false),
     ])
     @RestApiResponseObject(objectIdentifier = "image (bytes)")
     def label() {
-        String label = params.label
-        int maxWidth = params.int('maxWidth', 256)
-        response.setHeader("Max-Age", "86400")
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        def associatedImage = abstractImageService.getAssociatedImage(abstractImage, label , maxWidth)
-        responseBufferedImage(associatedImage)
+        if (abstractImage) {
+            def parameters = [:]
+            parameters.format = params.format
+            parameters.label = params.label
+            parameters.maxSize = params.int('maxSize', 256)
+            def associatedImage = abstractImageService.getAssociatedImage(abstractImage, parameters)
+            responseBufferedImage(associatedImage)
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
-    /**
-     * Get image preview URL
-     */
-    @RestApiMethod(description="Get an image (preview) for a specific image", extensions=["png", "jpg"])
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
-    ])
-    @RestApiResponseObject(objectIdentifier ="image (bytes)")
-    def preview() {
-        response.setHeader("max-age", "86400")
-        int maxSize = params.int('maxSize',  1024)
-        responseBufferedImage(abstractImageService.thumb(params.long('id'), maxSize, params))
+    def crop() {
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            responseBufferedImage(abstractImageService.crop(abstractImage, params))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def windowUrl() {
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            String url = abstractImageService.window(abstractImage, params, true)
+            responseSuccess([url : url])
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def window() {
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            responseBufferedImage(abstractImageService.window(abstractImage, params, false))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def cameraUrl() {
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            params.withExterior = false
+            String url = abstractImageService.window(abstractImage, params, true)
+            responseSuccess([url : url])
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
+    def camera() {
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            params.withExterior = false
+            responseBufferedImage(abstractImageService.window(abstractImage, params, false))
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
     def download() {
         String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")), params.boolean("parent", false))
         log.info "redirect url"
         redirect (url : url)
-    }
-
-
-    //TODO:APIDOC
-    def crop() {
-        log.info params
-        log.info request.queryString
-        log.info params.increaseArea
-        String redirection = abstractImageService.crop(params, request.queryString)
-
-        if(redirection.length()<2000){
-            log.info "redirect $redirection"
-            redirect (url : redirection )
-        } else {
-            URL url = new URL(redirection)
-
-            def postBody = [:]
-            for(String parameter : url.query.split("&")){
-                String[] tmp = parameter.split('=');
-                postBody.put(tmp[0], URLDecoder.decode(tmp[1]))
-            }
-
-            def http = new HTTPBuilder( "http://"+url.host)
-            http.post( path: url.path , requestContentType: groovyx.net.http.ContentType.URLENC,
-                    body : postBody) { resp,json ->
-
-                // response handler for a success response code:
-
-                byte[] bytesOut = IOUtils.toByteArray(resp.getEntity().getContent());
-                response.contentLength = bytesOut.length;
-                response.setHeader("Connection", "Keep-Alive")
-                response.setHeader("Accept-Ranges", "bytes")
-                response.setHeader("Content-Type", "image/png")
-                response.getOutputStream() << bytesOut
-                response.getOutputStream().flush()
-
-            }
-        }
-
-    }
-
-    //TODO:APIDOC
-    def windowUrl() {
-        String url = abstractImageService.window(params, request.queryString).url
-        log.info "response $url"
-        responseSuccess([url : url])
-    }
-
-    def camera() {
-        String url = abstractImageService.crop(params, request.queryString)
-        log.info "response $url"
-        responseSuccess([url : url])
-    }
-
-
-    //TODO:APIDOC
-    def window() {
-        def req = abstractImageService.window(params, request.queryString)
-        BufferedImage image = new HttpClient().readBufferedImageFromPOST(req.url,req.post)
-//        redirect(url : url)
-        responseBufferedImage(image)
     }
 
     /**
