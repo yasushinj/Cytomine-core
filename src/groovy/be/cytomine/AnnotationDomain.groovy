@@ -270,7 +270,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         return response
     }
 
-    def getBoundaries() {
+    def getBoundaries(Boolean draw = false) {
         //get num points
         int imageWidth = image.baseImage.getWidth()
         int imageHeight = image.baseImage.getHeight()
@@ -280,6 +280,15 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
             Integer minX = env.getMinX();
             Integer width = env.getWidth();
             Integer height = env.getHeight();
+            if(draw) {
+                maxY += 2
+                minX -= 2
+                // 2 before
+                // 1 by line
+                // 2 after
+                width += 6
+                height += 6
+            }
             return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
         } else if (location.getNumPoints() == 1) {
             Envelope env = location.getEnvelopeInternal();
@@ -311,7 +320,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     public LinkedHashMap<String, Integer> retrieveCropParams(params) {
-        def boundaries = getBoundaries()
+        def boundaries = getBoundaries(Boolean.parseBoolean(params.draw))
 
         if (params.zoom) boundaries.zoom = params.zoom
         if (params.maxSize) boundaries.maxSize = params.maxSize
