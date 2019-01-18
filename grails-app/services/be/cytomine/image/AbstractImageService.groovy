@@ -359,6 +359,7 @@ class AbstractImageService extends ModelService {
         parameters.contrast = params.double('contrast')
         parameters.gamma = params.double('gamma')
         parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
+        parameters.alpha = params.int('alpha')
         return parameters
     }
 

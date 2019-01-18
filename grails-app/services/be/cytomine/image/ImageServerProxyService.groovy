@@ -189,6 +189,7 @@ class ImageServerProxyService {
         parameters.contrast = params.contrast
         parameters.gamma = params.gamma
         parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.bits
+        parameters.alpha = params.alpha
 
         def uri = "/image/crop.$format"
 
