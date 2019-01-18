@@ -128,16 +128,16 @@ class ImageServerProxyService {
         return makeRequest("/image/thumb.$format", server, parameters)
     }
 
-    def crop(AnnotationDomain annotation, def params) {
+    def crop(AnnotationDomain annotation, def params, def urlOnly = false) {
         params.geometry = annotation.location
-        crop(annotation.image, params)
+        crop(annotation.image, params, urlOnly)
     }
 
-    def crop(ImageInstance image, def params) {
-        crop(image.baseImage, params)
+    def crop(ImageInstance image, def params, def urlOnly = false) {
+        crop(image.baseImage, params, urlOnly)
     }
 
-    def crop(AbstractImage image, def params, def urlOnly = false) {
+    def crop(AbstractImage image, def params, def urlOnly = false, def parametersOnly = false) {
         log.info params
         def (server, parameters) = imsParametersFromAbstractImage(image)
 
@@ -190,9 +190,13 @@ class ImageServerProxyService {
         parameters.gamma = params.gamma
         parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.bits
 
+        def uri = "/image/crop.$format"
+
+        if (parametersOnly)
+            return [server:server, uri:uri, parameters:parameters]
         if (urlOnly)
-            return makeGetUrl("/image/crop.$format", server, parameters)
-        return makeRequest("/image/crop.$format", server, parameters)
+            return makeGetUrl(uri, server, parameters)
+        return makeRequest(uri, server, parameters)
     }
 
     def window(ImageInstance image, def params, def urlOnly = false) {

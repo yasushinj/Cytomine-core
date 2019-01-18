@@ -177,12 +177,12 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['bitDepth'] = image?.baseImage?.bitDepth
         returnArray['colorspace'] = image?.baseImage?.colorspace
         try {
-            returnArray['preview'] = image.baseImage ? UrlApi.getThumbImage(image.baseImage?.id, 1024) : null
+            returnArray['preview'] = image.baseImage ? UrlApi.getAbstractImageThumbUrlWithMaxSize(image.baseImage?.id, 1024) : null
         } catch (Exception e) {
             returnArray['preview'] = 'NO preview:' + e.toString()
         }
         try {
-            returnArray['thumb'] = image.baseImage ? UrlApi.getThumbImage(image.baseImage?.id, 512) : null
+            returnArray['thumb'] = image.baseImage ? UrlApi.getAbstractImageThumbUrlWithMaxSize(image.baseImage?.id, 512) : null
         } catch (Exception e) {
             returnArray['thumb'] = 'NO THUMB:' + e.toString()
         }

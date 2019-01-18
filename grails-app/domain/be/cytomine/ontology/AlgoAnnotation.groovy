@@ -99,9 +99,6 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
         terms().collect {it.id}
     }
 
-    def getCropUrl() {
-        UrlApi.getAlgoAnnotationCropWithAnnotationId(id)
-    }
 
     /**
      * Check if annotation is an algo annotation
@@ -174,7 +171,7 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
         def returnArray = AnnotationDomain.getDataFromDomain(domain)
         ImageInstance imageinstance = domain?.image
         returnArray['cropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(domain?.id)
-        returnArray['smallCropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationIdWithMaxWithOrHeight(domain?.id, 256)
+        returnArray['smallCropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationIdWithMaxSize(domain?.id, 256)
         returnArray['url'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(domain?.id)
         returnArray['imageURL'] = UrlApi.getAnnotationURL(imageinstance?.project?.id, imageinstance?.id, domain?.id)
         returnArray['reviewed'] = domain?.hasReviewedAnnotation()

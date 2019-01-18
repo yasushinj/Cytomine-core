@@ -113,9 +113,6 @@ class ReviewedAnnotation extends AnnotationDomain implements Serializable {
         Class.forName(parentClassName, false, Thread.currentThread().contextClassLoader).read(parentIdent)
     }
 
-    def getCropUrl() {
-        UrlApi.getReviewedAnnotationCropWithAnnotationId(id)
-    }
 
     /**
      * Get all terms map with annotation
@@ -239,7 +236,7 @@ class ReviewedAnnotation extends AnnotationDomain implements Serializable {
         returnArray['terms'] = domain?.termsId()
         returnArray['term'] = returnArray['terms']
         returnArray['cropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(domain?.id)
-        returnArray['smallCropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationIdWithMaxWithOrHeight(domain?.id, 256)
+        returnArray['smallCropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationIdWithMaxSize(domain?.id, 256)
         returnArray['url'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(domain?.id)
         returnArray['imageURL'] = UrlApi.getAnnotationURL(imageinstance?.project?.id, imageinstance?.id, domain?.id)
         returnArray['reviewed'] = true

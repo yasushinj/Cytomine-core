@@ -50,7 +50,6 @@ import java.awt.image.BufferedImage
 @RestApi(name = "Image | image instance services", description = "Methods for managing an image instance : abstract image linked to a project")
 class RestImageInstanceController extends RestController {
 
-    def imageProcessingService
     def imageInstanceService
     def projectService
     def abstractImageService

@@ -119,9 +119,6 @@ class RoiAnnotation extends AnnotationDomain implements Serializable {
      * @param cytomineUrl Cytomine base URL
      * @return Full CROP Url
      */
-    def getCropUrl() {
-        UrlApi.getUserAnnotationCropWithAnnotationId(id)
-    }
 
     /**
      * Insert JSON data into domain in param
@@ -161,7 +158,7 @@ class RoiAnnotation extends AnnotationDomain implements Serializable {
         def returnArray = AnnotationDomain.getDataFromDomain(domain)
         ImageInstance imageinstance = domain?.image
         returnArray['cropURL'] = UrlApi.getROIAnnotationCropWithAnnotationId(domain?.id)
-        returnArray['smallCropURL'] = UrlApi.getROIAnnotationCropWithAnnotationIdWithMaxWithOrHeight(domain?.id, 256)
+        returnArray['smallCropURL'] = UrlApi.getROIAnnotationCropWithAnnotationIdWithMaxSize(domain?.id, 256)
         returnArray['url'] = UrlApi.getROIAnnotationCropWithAnnotationId(domain?.id)
         returnArray['imageURL'] = UrlApi.getAnnotationURL(imageinstance?.project?.id, imageinstance?.id, domain?.id)
         returnArray['reviewed'] = domain?.hasReviewedAnnotation()

@@ -38,7 +38,6 @@ import javax.activation.MimetypesFileTypeMap
 @RestApi(name = "Image | uploaded file services", description = "Methods for managing an uploaded image file.")
 class RestUploadedFileController extends RestController {
 
-    def imageProcessingService
     def cytomineService
     def imagePropertiesService
     def projectService

@@ -123,17 +123,17 @@ class AnnotationListingService extends ModelService {
                 if(al.columnToPrint.contains('meta')) {
                     if(al.getClass().name.contains("UserAnnotation")) {
                         item['cropURL'] = UrlApi.getUserAnnotationCropWithAnnotationId(it.id)
-                        item['smallCropURL'] = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
+                        item['smallCropURL'] = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxSize(it.id, 256)
                         item['url'] = UrlApi.getUserAnnotationCropWithAnnotationId(it.id)
                         item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
                     } else if(al.getClass().name.contains("AlgoAnnotation")) {
                         item['cropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(it.id)
-                        item['smallCropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
+                        item['smallCropURL'] = UrlApi.getAlgoAnnotationCropWithAnnotationIdWithMaxSize(it.id, 256)
                         item['url'] = UrlApi.getAlgoAnnotationCropWithAnnotationId(it.id)
                         item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
                     }else if(al.getClass().name.contains("ReviewedAnnotation")) {
                         item['cropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(it.id)
-                        item['smallCropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationIdWithMaxWithOrHeight(it.id, 256)
+                        item['smallCropURL'] = UrlApi.getReviewedAnnotationCropWithAnnotationIdWithMaxSize(it.id, 256)
                         item['url'] = UrlApi.getReviewedAnnotationCropWithAnnotationId(it.id)
                         item['imageURL'] = UrlApi.getAnnotationURL(it.project, it.image, it.id)
                     }

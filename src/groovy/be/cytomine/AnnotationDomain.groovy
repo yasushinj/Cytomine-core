@@ -210,13 +210,6 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
      */
     abstract List<Term> termsForReview()
 
-    /**
-     * Get CROP (annotation image area) URL for this annotation
-     * @param cytomineUrl Cytomine base URL
-     * @return Full CROP Url
-     */
-    abstract def getCropUrl()
-
     String toString() {return "Annotation " + id}
 
     def getFilename() {
@@ -270,96 +263,9 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         return response
     }
 
-    def getBoundaries() {
-        //get num points
-        int imageWidth = image.baseImage.getWidth()
-        int imageHeight = image.baseImage.getHeight()
-        if (location.getNumPoints()>1) {
-            Envelope env = location.getEnvelopeInternal();
-            Integer maxY = env.getMaxY();
-            Integer minX = env.getMinX();
-            Integer width = env.getWidth();
-            Integer height = env.getHeight();
-            return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
-        } else if (location.getNumPoints() == 1) {
-            Envelope env = location.getEnvelopeInternal();
-            Integer maxY = env.getMaxY()+50;
-            Integer minX = env.getMinX()-50;
-            Integer width = 100;
-            Integer height = 100;
-            return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
-        }
-    }
-
-    def toCropURL(params=[:]) {
-        def boundaries = retrieveCropParams(params)
-        return UrlApi.getCropURL(image.baseImage.id, boundaries, boundaries.format)
-    }
-
-    def toCropParams(params=[:]) {
-        def boundaries = retrieveCropParams(params)
-        def parameters = boundaries
-        parameters.id = image.baseImage.id
-        return parameters
-    }
-
-    def urlImageServerCrop(def abstractImageService) {
-        def params = toCropParams()
-        URL url = new URL(toCropURL())
-        String urlCrop = abstractImageService.crop(params, url.query)
-        return urlCrop
-    }
-
-    public LinkedHashMap<String, Integer> retrieveCropParams(params) {
-        def boundaries = getBoundaries()
-
-        if (params.format) boundaries.format = params.format
-        else boundaries.format = "png"
-
-        if (params.zoom) boundaries.zoom = params.zoom
-        if (params.maxSize) boundaries.maxSize = params.maxSize
-        if (params.draw) {
-            boundaries.draw = true
-            boundaries.location = location.toText()
-        }
-        if (params.get('increaseArea')) {
-            boundaries.increaseArea = params.get('increaseArea')
-        }
-
-
-        if (params.mask) {
-            boundaries.mask = true
-            boundaries.location = location.toText()
-        }
-        if (params.alphaMask) {
-            boundaries.alphaMask = true
-            boundaries.location = location.toText()
-            boundaries.format = "png"
-        }
-
-        if(location instanceof com.vividsolutions.jts.geom.Point && !params.point.equals("false")) {
-            boundaries.point = true
-        }
-
-        boolean complete = Boolean.parseBoolean(params.complete)
-        if (boundaries.location && !complete) {
-            //limit the size (text) for the geometry (url max lenght)
-            boundaries.location = simplifyGeometryService.simplifyPolygonTextSize(boundaries.location)
-        }
-
-        if (params.colormap) boundaries.colormap = params.colormap
-        if (params.inverse) boundaries.inverse = params.inverse
-        if (params.bits) boundaries.bits = params.bits
-        if (params.contrast) boundaries.contrast = params.contrast
-        if (params.gamma) boundaries.gamma = params.gamma
-
-        boundaries
-    }
-
     def getCallBack() {
         return [annotationID: this.id, imageID: this.image.id]
     }
-
 
     /**
      * Get user/algo/reviewed annotation with id

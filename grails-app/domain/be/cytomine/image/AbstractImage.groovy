@@ -185,8 +185,8 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['magnification'] = image?.magnification
         returnArray['bitDepth'] = image?.bitDepth
         returnArray['colorspace'] = image?.colorspace
-        returnArray['thumb'] = UrlApi.getThumbImage(image ? (long)image?.id : null, 512)
-        returnArray['preview'] = UrlApi.getThumbImage(image ? (long)image?.id : null, 1024)
+        returnArray['thumb'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image ? (long)image?.id : null, 512)
+        returnArray['preview'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image ? (long)image?.id : null, 1024)
         returnArray['fullPath'] = image?.getAbsolutePath()
         returnArray['macroURL'] = UrlApi.getAssociatedImage(image ? (long)image?.id : null, "macro", 512)
         returnArray
@@ -237,27 +237,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
         return imageServerStorages[index].imageServer.url
     }
-
-    /*def getCropURL(def boundaries) {
-        def imageServerStorages = getImageServersStorage()
-
-        if (imageServerStorages == null || imageServerStorages.size() == 0) {
-            return null
-        }
-        def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
-        Resolver resolver = Resolver.getResolver(imageServerStorages[index].imageServer.className)
-
-        if (!resolver) return null
-        def baseUrl = imageServerStorages[index].imageServer.getBaseUrl()
-        Storage storage = StorageAbstractImage.findAllByAbstractImage(this).first().storage
-
-        String basePath = storage.getBasePath()
-        String path = getPath()
-
-        boundaries.baseImageWidth =this.getWidth()
-        boundaries.baseImageHeight =this.getHeight()
-        resolver.getCropURL(baseUrl, [basePath, path].join(File.separator), boundaries)
-    }*/
 
     def getZoomLevels() {
         if (!width || !height) return [min : 0, max : 9, middle : 0]

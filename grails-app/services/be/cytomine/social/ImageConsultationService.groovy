@@ -44,7 +44,7 @@ class ImageConsultationService extends ModelService {
         consultation.mode = JSONUtils.getJSONAttrStr(json,"mode",true)
         consultation.created = new Date()
         consultation.imageName = image.getInstanceFilename()
-        consultation.imageThumb = UrlApi.getThumbImage(image.baseImage?.id, 256)
+        consultation.imageThumb = UrlApi.getAbstractImageThumbUrlWithMaxSize(image.baseImage?.id, 256)
         consultation.insert(flush:true, failOnError : true) //don't use save (stateless collection)
 
         return consultation
@@ -77,7 +77,7 @@ class ImageConsultationService extends ModelService {
                             user:user,
                             image:it['_id'],
                             time:it['time'],
-                            imageThumb: UrlApi.getAbstractImageThumbURL(image.baseImage.id),
+                            imageThumb: UrlApi.getAbstractImageThumbUrl(image.baseImage.id),
                             imageName:filename,
                             project:image.project.id,
                             countCreatedAnnotations:it['countCreatedAnnotations']

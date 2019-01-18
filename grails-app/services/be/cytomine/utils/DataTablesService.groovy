@@ -145,7 +145,7 @@ class DataTablesService {
                 img.id=it[0]
                 img.originalFilename=it[1]
                 img.created=it[2]
-                img.thumb = UrlApi.getAbstractImageThumbURL(img.id)
+                img.thumb = UrlApi.getAbstractImageThumbUrl(img.id)
                 img.inProject = it[3]
                 data << img
             }
@@ -222,7 +222,7 @@ class DataTablesService {
             row.globalSize = it[i++]
 
             Long imageId = it[i++]
-            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAbstractImageThumbURL(imageId) : null
+            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAbstractImageThumbUrl(imageId) : null
             data << row
         }
         sql.close()

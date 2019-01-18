@@ -47,7 +47,6 @@ class RestUserAnnotationController extends RestController {
     def cytomineService
     def annotationListingService
     def reportService
-    def imageProcessingService
     def securityACLService
     def abstractImageService
     def imageServerProxyService

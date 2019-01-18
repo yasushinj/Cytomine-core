@@ -440,7 +440,7 @@ class UserAnnotationService extends ModelService {
 
             long idAnnotation = it[0]
             long idContainer = it[1]
-            def url = UrlApi.getAnnotationMinCropWithAnnotationId(idAnnotation)
+            def url = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxSize(idAnnotation, 256)
             data << [id: idAnnotation, container: idContainer, url: url]
         }
         sql.close()

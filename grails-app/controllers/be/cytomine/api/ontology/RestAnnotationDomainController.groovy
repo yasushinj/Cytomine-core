@@ -66,8 +66,8 @@ class RestAnnotationDomainController extends RestController {
     def exportService
     def annotationListingService
     def simplifyGeometryService
-    def imageProcessingService
     def currentRoleServiceProxy
+    def imageServerProxyService
 
     def currentDomainName() {
         return "generic annotation" //needed because not RestAbstractImageController...
@@ -146,60 +146,58 @@ class RestAnnotationDomainController extends RestController {
      * This work for all kinds of annotations
      */
 
-    @RestApiMethod(description="Get annotation crop  (image area that frame annotation). This work for all kinds of annotations.")
-    @RestApiResponseObject(objectIdentifier =  "file")
+    @RestApiMethod(description="Get a crop of an annotation (image area framing annotation). It works for all kinds of annotation but slower than a direct call to a specific kind of annotation.", extensions=["png", "jpg", "tiff"])
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
-        @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.PATH,description = "Maximum size of the crop image (w and h)"),
-        @RestApiParam(name="zoom", type="int", paramType = RestApiParamType.PATH,description = "Zoom level"),
-        @RestApiParam(name="draw", type="boolean", paramType = RestApiParamType.PATH,description = "Draw annotation form border on the image")
+            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The annotation id"),
+            @RestApiParam(name="type", type="String", paramType=RestApiParamType.QUERY, description="Type of crop. Allowed values are 'crop' (default behavior if not set), 'draw' (the shape is drawn in the crop), 'mask' (annotation binary mask), 'alphaMask (part of crop outside annotation is transparent, requires png format)", required=false),
+            @RestApiParam(name="draw", type="boolean", paramType=RestApiParamType.QUERY, description="Equivalent to set type='draw'", required=false),
+            @RestApiParam(name="mask", type="boolean", paramType=RestApiParamType.QUERY, description="Equivalent to set type='mask'", required=false),
+            @RestApiParam(name="alphaMask", type="boolean", paramType=RestApiParamType.QUERY, description="Equivalent to set type='alphaMask'", required=false),
+            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY, description="Maximum crop size in width and height", required = false),
+            @RestApiParam(name="zoom", type="int", paramType=RestApiParamType.QUERY, description="Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
+            @RestApiParam(name="increaseArea", type="double", paramType=RestApiParamType.QUERY, description="Increase crop area by multiplying original crop size by this factor.", required = false),
+            @RestApiParam(name="complete", type="boolean", paramType = RestApiParamType.QUERY,description = "Do not simplify the annotation shape.", required=false),
+            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
+            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
+            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
+            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
+            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
     ])
+    @RestApiResponseObject(objectIdentifier ="image (bytes)")
     def crop () {
-        try {
-            def annotation = AnnotationDomain.getAnnotationDomain(params.long("id"))
-            redirect (url : annotation.toCropURL(params))
-        } catch (CytomineException e) {
-            log.error("add error:" + e.msg)
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
+        AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(params.long('id'))
+        if(!annotation) {
+            responseNotFound("Annotation",params.id)
+        } else if(annotation instanceof UserAnnotation) {
+            forward(controller: "restUserAnnotation", action: "crop")
+        } else if(annotation instanceof AlgoAnnotation) {
+            forward(controller: "restAlgoAnnotation", action: "crop")
+        } else if(annotation instanceof ReviewedAnnotation) {
+            forward(controller: "restReviewedAnnotation", action: "crop")
+        } else if(annotation instanceof RoiAnnotation) {
+            forward(controller: "restRoiAnnotation", action: "crop")
         }
     }
 
-    def abstractImageService
     def cropParameters() {
         def annotation = AnnotationDomain.getAnnotationDomain(params.long("id"))
-        def parameters = annotation.toCropParams(params)
-        AbstractImage abstractImage = abstractImageService.read(parameters.id)
-        parameters.remove("id")
-        parameters.fif = abstractImage.absolutePath//URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
-        parameters.mimeType = abstractImage.mimeType
-        parameters.resolution = abstractImage.resolution
-
-        responseSuccess(parameters)
+        if (annotation) {
+            params.location = annotation.location
+            def result = imageServerProxyService.crop(annotation.image.baseImage, params, false, true)
+            result.parameters.location = result.parameters.location.toString()
+            responseSuccess(result)
+        }
     }
 
-    /**
-     * Get annotation crop (image area that frame annotation)
-     * This work for all kinds of annotations
-     */
-
+    @Deprecated
     @RestApiMethod(description="Get annotation crop with minimal size (256*256max)  (image area that frame annotation). This work for all kinds of annotations.")
     @RestApiResponseObject(objectIdentifier =  "file")
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
-        @RestApiParam(name="zoom", type="int", paramType = RestApiParamType.PATH,description = "Zoom level"),
-        @RestApiParam(name="draw", type="boolean", paramType = RestApiParamType.PATH,description = "Draw annotation form border on the image")
     ])
     def cropMin () {
-        try {
-            params.maxSize = 256
-            def annotation = AnnotationDomain.getAnnotationDomain(params.long("id"))
-            redirect (url : annotation.toCropURL(params))
-        } catch (CytomineException e) {
-            log.error("add error:" + e.msg)
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
+        params.maxSize = 256
+        forward(action: "crop")
     }
 
     private doSearch(def params) {

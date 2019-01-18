@@ -126,15 +126,6 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
     }
 
     /**
-     * Get CROP (annotation image area) URL for this annotation
-     * @param cytomineUrl Cytomine base URL
-     * @return Full CROP Url
-     */
-    def getCropUrl() {
-        UrlApi.getUserAnnotationCropWithAnnotationId(id)
-    }
-
-    /**
      * Get a list of each term link with annotation
      * For each term, add all users that add this term
      * [{id: x, term: y, user: [a,b,c]}, {...]
@@ -197,7 +188,7 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
         def returnArray = AnnotationDomain.getDataFromDomain(domain)
         ImageInstance imageinstance = domain?.image
         returnArray['cropURL'] = UrlApi.getUserAnnotationCropWithAnnotationId(domain?.id)
-        returnArray['smallCropURL'] = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxWithOrHeight(domain?.id, 256)
+        returnArray['smallCropURL'] = UrlApi.getUserAnnotationCropWithAnnotationIdWithMaxSize(domain?.id, 256)
         returnArray['url'] = UrlApi.getUserAnnotationCropWithAnnotationId(domain?.id)
         returnArray['imageURL'] = UrlApi.getAnnotationURL(imageinstance?.project?.id, imageinstance?.id, domain?.id)
         returnArray['reviewed'] = domain?.hasReviewedAnnotation()

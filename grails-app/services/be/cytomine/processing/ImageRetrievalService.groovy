@@ -18,6 +18,7 @@ package be.cytomine.processing
 
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.ServerException
+import be.cytomine.api.UrlApi
 import be.cytomine.image.server.RetrievalServer
 import be.cytomine.ontology.Ontology
 import be.cytomine.ontology.Term
@@ -52,6 +53,7 @@ class ImageRetrievalService {
     def cytomineService
     def dataSource
     def abstractImageService
+    def imageServerProxyService
 
 
     public void indexImageAsync(URL url,String id, String storage, Map<String,String> properties) {
@@ -177,7 +179,7 @@ class ImageRetrievalService {
         log.info "get similarities for userAnnotation " + searchAnnotation.id + " on " + projectSearch
         if(!RetrievalServer.list().isEmpty()) {
             RetrievalServer server = RetrievalServer.list().get(0)
-            def cropUrl = searchAnnotation.urlImageServerCrop(abstractImageService)
+            def cropUrl = imageServerProxyService.crop(searchAnnotation, [:], true)
             def responseJSON = doRetrievalSearch(server.url+"/api/searchUrl",server.username,server.password,searchAnnotation.id,cropUrl,projectSearch.collect{it+""})
             def result =  readRetrievalResponse(searchAnnotation,responseJSON.data)
             log.info "result=$result"
@@ -285,7 +287,7 @@ class ImageRetrievalService {
                 log.debug "Annotation $annotation.id IS NOT INDEXED"
                 try {
 
-                    def cropUrl = AnnotationDomain.getAnnotationDomain(annotation.id).urlImageServerCrop(abstractImageService)
+                    def cropUrl = UrlApi.getAnnotationCropWithAnnotationId(annotation.id)
                     if(data.size() == 0) {
                         indexFirstAnnot = i;
                     }

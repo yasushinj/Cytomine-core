@@ -15,7 +15,6 @@
 */
 
 
-import be.cytomine.image.ImageProcessingService
 import be.cytomine.utils.CytomineMailService
 import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.middleware.ImageServerService
@@ -194,10 +193,6 @@ class BootStrap {
 
     private void mockServicesForTests(){
         //mock services which use IMS
-        ImageProcessingService.metaClass.getImageFromURL = {
-            String url -> println "\n\n mocked getImageFromURL \n\n";
-                return javax.imageio.ImageIO.read(new File("test/functional/be/cytomine/utils/images/thumb256.png"))
-        }
         ImageGroupHDF5Service.metaClass.callIMSConversion = {
             SecUser currentUser, def imagesFilenames, String filename -> println "\n\n mocked callIMSConversion \n\n";
         }

@@ -306,26 +306,6 @@ class AbstractImageService extends ModelService {
 
     }
 
-
-    //TODO: delete
-    def getCropIMSUrl(params) {
-        AbstractImage abstractImage = read(params.id)
-        params.remove("id")
-        String imageServerURL = abstractImage.getRandomImageServerURL()
-        String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
-        String mimeType = abstractImage.mimeType
-        String url = "$imageServerURL/image/crop.${params.format}?fif=$fif&mimeType=$mimeType"
-
-        String query = params.collect { key, value ->
-            if (value instanceof String)
-                value = URLEncoder.encode(value, "UTF-8")
-            "$key=$value"
-        }.join("&")
-        url += "&$query"
-        url += "&resolution=${abstractImage.resolution}"
-        return url
-    }
-
     /**
      * Get thumb image URL
      */
