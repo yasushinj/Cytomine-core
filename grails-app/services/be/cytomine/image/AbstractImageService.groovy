@@ -362,6 +362,7 @@ class AbstractImageService extends ModelService {
         parameters.alpha = params.int('alpha')
         parameters.strokeWidth = params.int('strokeWidth')
         parameters.strokeColor = params.strokeColor
+        parameters.jpegQuality = params.int('jpegQuality')
         return parameters
     }
 

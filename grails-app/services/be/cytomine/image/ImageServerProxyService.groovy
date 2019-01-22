@@ -138,7 +138,7 @@ class ImageServerProxyService {
     }
 
     def crop(AbstractImage image, def params, def urlOnly = false, def parametersOnly = false) {
-        log.info params
+//        log.info params
         def (server, parameters) = imsParametersFromAbstractImage(image)
 
         def geometry = params.geometry
@@ -192,6 +192,7 @@ class ImageServerProxyService {
         parameters.alpha = params.alpha
         parameters.strokeWidth = params.strokeWidth
         parameters.strokeColor = params.strokeColor
+        parameters.jpegQuality = params.jpegQuality
 
         def uri = "/image/crop.$format"
 
