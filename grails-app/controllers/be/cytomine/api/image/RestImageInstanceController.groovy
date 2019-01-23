@@ -563,15 +563,14 @@ class RestImageInstanceController extends RestController {
     }
 
     def download() {
-        Long id = params.long("id")
-        Boolean parent = params.boolean("parent", false)
-        ImageInstance imageInstance = imageInstanceService.read(id)
-        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage, parent)
-        if (downloadURL) {
-            log.info "redirect $downloadURL"
-            redirect (url : downloadURL)
-        } else
-            responseNotFound("Download link for", id)
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            def uf = abstractImageService.getMainUploadedFile(imageInstance.baseImage)
+            String url = imageServerProxyService.downloadUri(imageInstance.baseImage, uf)
+            redirect(url: url)
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
     /*def metadata() {

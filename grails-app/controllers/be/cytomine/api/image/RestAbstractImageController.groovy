@@ -305,9 +305,14 @@ class RestAbstractImageController extends RestController {
     }
 
     def download() {
-        String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")), params.boolean("parent", false))
-        log.info "redirect url"
-        redirect (url : url)
+        AbstractImage abstractImage = abstractImageService.read(params.long("id"))
+        if (abstractImage) {
+            def uf = abstractImageService.getMainUploadedFile(abstractImage)
+            String url = imageServerProxyService.downloadUri(abstractImage, uf)
+            redirect(url: url)
+        } else {
+            responseNotFound("Image", params.id)
+        }
     }
 
     /**

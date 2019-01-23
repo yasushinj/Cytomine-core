@@ -266,44 +266,14 @@ class AbstractImageService extends ModelService {
     }
 
     def getMainUploadedFile(AbstractImage abstractImage) {
-        List<UploadedFile> uploadedfiles = UploadedFile.findAllByImage(abstractImage)
-
-        if(uploadedfiles.size()==1) {
-            return uploadedfiles.first()
-        } else {
-            //get the first uploadedfile...
-            return uploadedfiles.find{ main ->
-                //...that is not present in parent (must be the 'last' child)
-                uploadedfiles.find{ second -> second.parent?.id==main.id}==null;
-            }
-        }
-
-//
-//        if (uploadedfile?.parent && !uploadedfile?.parent?.ext?.equals("png") && !uploadedfile?.parent?.ext?.equals("jpg")) {
-//            return uploadedfile.parent
-//        }
-//        else return uploadedfile
-
-    }
-
-    def downloadURI(AbstractImage abstractImage, boolean downloadParent) {
         List<UploadedFile> files = UploadedFile.findAllByImage(abstractImage)
         UploadedFile file = files.size() == 1 ? files[0] : files.find{it.parent!=null}
 
-        if (downloadParent) {
-            while(file.parent) {
-                file = file.parent
-            }
+        while(file.parent) {
+            file = file.parent
         }
 
-        String fif = file?.absolutePath
-        if (fif) {
-            String imageServerURL = abstractImage.getRandomImageServerURL()
-            return "$imageServerURL/image/download?fif=$fif&mimeType=${abstractImage.mimeType}"
-        } else {
-            return null
-        }
-
+        return file
     }
 
     def getStringParamsI18n(def domain) {
@@ -322,7 +292,6 @@ class AbstractImageService extends ModelService {
             attachedFileService.delete(it,transaction,null,false)
         }
     }
-
 
     def deleteDependentNestedFile(AbstractImage ai, Transaction transaction,Task task=null) {
         //TODO: implement this with command (nestedFileService should be create)
