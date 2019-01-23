@@ -91,6 +91,11 @@ class ImageServerProxyService {
         return makeGetUrl("/image/download", server, parameters)
     }
 
+    def properties(AbstractImage image) {
+        def (server, parameters) = imsParametersFromAbstractImage(image)
+        return JSON.parse(new URL(makeGetUrl("/image/properties.json", server, parameters)).text)
+    }
+
     def associated(ImageInstance image) {
         associated(image.baseImage)
     }

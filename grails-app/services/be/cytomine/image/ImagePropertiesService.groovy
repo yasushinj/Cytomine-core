@@ -30,6 +30,7 @@ class ImagePropertiesService implements Serializable{
 
     def grailsApplication
     def abstractImageService
+    def imageServerProxyService
 
     def clear(AbstractImage image) {
         Property.findAllByDomainIdent(image.id)?.each {
@@ -38,14 +39,7 @@ class ImagePropertiesService implements Serializable{
     }
 
     def populate(AbstractImage abstractImage) {
-        String imageServerURL = abstractImage.getRandomImageServerURL()
-        String fif = abstractImage.absolutePath
-        String mimeType = abstractImage.mimeType
-
-        String uri = "$imageServerURL/image/properties?fif="+URLEncoder.encode(fif, "UTF-8")+"&mimeType=$mimeType"
-        println uri
-        def properties = JSON.parse(new URL(uri).text)
-        println properties
+        def properties = imageServerProxyService.properties(abstractImage)
         properties.each {
             String value = it.value
             if (it.value && value.size() < 256) {
