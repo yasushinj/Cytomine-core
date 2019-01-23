@@ -22,6 +22,7 @@ var ActivityView = Backbone.View.extend({
     idProject : null,
     idUser : null,
     command : null,
+    onlineUserInterval: null,
     initialize: function (options) {
         this.el = options.el;
         this.page = 0;
@@ -108,9 +109,11 @@ var ActivityView = Backbone.View.extend({
             )
         };
         refreshData();
-        var interval = window.app.view.addInterval(refreshData, 5000);
+        if(self.onlineUserInterval === null){
+            self.onlineUserInterval = window.app.view.addInterval(refreshData, 5000);
+        }
         $(window).bind('hashchange', function () {
-            clearInterval(interval.loop);
+            clearInterval(self.onlineUserInterval.loop);
         });
     },
 

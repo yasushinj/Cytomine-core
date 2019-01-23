@@ -31,6 +31,7 @@ var ProjectDashboardView = Backbone.View.extend({
     projectDashboardConfig: null,
     projectDashboardUsersConfig: null,
     projectDashboardGroup: null,
+    onlineUserInterval: null,
     rendered: false,
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -351,9 +352,11 @@ var ProjectDashboardView = Backbone.View.extend({
             )
         };
         refreshData();
-        var interval = window.app.view.addInterval(refreshData, 5000);
+        if(self.onlineUserInterval === null){
+            self.onlineUserInterval = window.app.view.addInterval(refreshData, 5000);
+        }
         $(window).bind('hashchange', function () {
-            clearInterval(interval.loop);
+            clearInterval(self.onlineUserInterval.loop);
         });
     },
     fetchCommands: function () {
