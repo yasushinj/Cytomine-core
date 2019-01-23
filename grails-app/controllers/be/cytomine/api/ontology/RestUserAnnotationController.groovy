@@ -218,8 +218,7 @@ class RestUserAnnotationController extends RestController {
     def crop() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
@@ -244,8 +243,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
@@ -269,8 +267,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }

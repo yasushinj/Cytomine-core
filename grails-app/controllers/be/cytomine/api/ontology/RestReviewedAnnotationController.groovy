@@ -52,6 +52,7 @@ class RestReviewedAnnotationController extends RestController {
     def reportService
     def securityACLService
     def abstractImageService
+    def imageServerProxyService
 
     /**
      * List all reviewed annotation available for the user
@@ -526,8 +527,7 @@ class RestReviewedAnnotationController extends RestController {
     def crop() {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
         if (annotation) {
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("ReviewedAnnotation", params.id)
         }
@@ -552,8 +552,7 @@ class RestReviewedAnnotationController extends RestController {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("ReviewedAnnotation", params.id)
         }
@@ -577,8 +576,7 @@ class RestReviewedAnnotationController extends RestController {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("ReviewedAnnotation", params.id)
         }

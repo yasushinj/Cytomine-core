@@ -34,6 +34,7 @@ class NotificationService {
     def secUserService
     def renderService
     def abstractImageService
+    def imageServerProxyService
 
     public def notifyNewImageAvailable(SecUser currentUser, AbstractImage abstractImage, def projects) {
         User recipient = null
@@ -60,7 +61,7 @@ class NotificationService {
         String thumbURL = UrlApi.getAbstractImageThumbUrlWithMaxSize(abstractImage.id, 256)
         if (thumbURL) {
             macroCID = UUID.randomUUID().toString()
-            BufferedImage bufferedImage = abstractImageService.thumb(abstractImage, [maxSize: 256])
+            BufferedImage bufferedImage = imageServerProxyService.thumb(abstractImage, [maxSize: 256])
             if (bufferedImage != null) {
                 File macroFile = File.createTempFile("temp", ".jpg")
                 macroFile.deleteOnExit()

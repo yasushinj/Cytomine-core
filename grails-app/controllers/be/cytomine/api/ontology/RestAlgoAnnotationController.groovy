@@ -47,6 +47,7 @@ class  RestAlgoAnnotationController extends RestController {
     def unionGeometryService
     def annotationIndexService
     def reportService
+    def imageServerProxyService
 
     /**
      * List all annotation (created by algo) visible for the current user
@@ -179,8 +180,7 @@ class  RestAlgoAnnotationController extends RestController {
     def crop() {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))
         if (annotation) {
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("AlgoAnnotation", params.id)
         }
@@ -205,8 +205,7 @@ class  RestAlgoAnnotationController extends RestController {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("AlgoAnnotation", params.id)
         }
@@ -230,8 +229,7 @@ class  RestAlgoAnnotationController extends RestController {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("AlgoAnnotation", params.id)
         }

@@ -39,6 +39,7 @@ class RestRoiAnnotationController extends RestController {
     def cytomineService
     def annotationListingService
     def abstractImageService
+    def imageServerProxyService
 
     /**
      * Get a single annotation
@@ -137,7 +138,7 @@ class RestRoiAnnotationController extends RestController {
         RoiAnnotation annotation = RoiAnnotation.read(params.long("id"))
         if (annotation) {
             params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("RoiAnnotation", params.id)
         }
@@ -163,7 +164,7 @@ class RestRoiAnnotationController extends RestController {
         if (annotation) {
             params.mask = true
             params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("RoiAnnotation", params.id)
         }
@@ -188,7 +189,7 @@ class RestRoiAnnotationController extends RestController {
         if (annotation) {
             params.alphaMask = true
             params.geometry = annotation.location
-            responseBufferedImage(abstractImageService.crop(annotation.image.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(annotation, params))
         } else {
             responseNotFound("RoiAnnotation", params.id)
         }

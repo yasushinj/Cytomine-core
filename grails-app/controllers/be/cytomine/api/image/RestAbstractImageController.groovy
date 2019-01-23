@@ -47,6 +47,7 @@ class RestAbstractImageController extends RestController {
     def projectService
     def imageSequenceService
     def dataTablesService
+    def imageServerProxyService
 
     /**
      * List all abstract image available on cytomine
@@ -183,8 +184,8 @@ class RestAbstractImageController extends RestController {
             parameters.contrast = params.double('contrast')
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
-            boolean refresh = params.boolean('refresh', false)
-            responseBufferedImage(abstractImageService.thumb(abstractImage, parameters, refresh))
+            parameters.refresh = params.boolean('refresh', false)
+            responseBufferedImage(imageServerProxyService.thumb(abstractImage, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -212,7 +213,7 @@ class RestAbstractImageController extends RestController {
             parameters.contrast = params.double('contrast')
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
-            responseBufferedImage(abstractImageService.thumb(abstractImage, parameters))
+            responseBufferedImage(imageServerProxyService.thumb(abstractImage, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -226,7 +227,7 @@ class RestAbstractImageController extends RestController {
     def associated() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
         if (abstractImage) {
-            def associated = abstractImageService.getAvailableAssociatedImages(abstractImage)
+            def associated = imageServerProxyService.associated(abstractImage)
             responseSuccess(associated)
         } else {
             responseNotFound("Image", params.id)
@@ -247,7 +248,7 @@ class RestAbstractImageController extends RestController {
             parameters.format = params.format
             parameters.label = params.label
             parameters.maxSize = params.int('maxSize', 256)
-            def associatedImage = abstractImageService.getAssociatedImage(abstractImage, parameters)
+            def associatedImage = imageServerProxyService.label(abstractImage, parameters)
             responseBufferedImage(associatedImage)
         } else {
             responseNotFound("Image", params.id)
@@ -257,7 +258,7 @@ class RestAbstractImageController extends RestController {
     def crop() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
         if (abstractImage) {
-            responseBufferedImage(abstractImageService.crop(abstractImage, params))
+            responseBufferedImage(imageServerProxyService.crop(abstractImage, params))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -266,7 +267,7 @@ class RestAbstractImageController extends RestController {
     def windowUrl() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
         if (abstractImage) {
-            String url = abstractImageService.window(abstractImage, params, true)
+            String url = imageServerProxyService.window(abstractImage, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("Image", params.id)
@@ -276,7 +277,7 @@ class RestAbstractImageController extends RestController {
     def window() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
         if (abstractImage) {
-            responseBufferedImage(abstractImageService.window(abstractImage, params, false))
+            responseBufferedImage(imageServerProxyService.window(abstractImage, params, false))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -286,7 +287,7 @@ class RestAbstractImageController extends RestController {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
         if (abstractImage) {
             params.withExterior = false
-            String url = abstractImageService.window(abstractImage, params, true)
+            String url = imageServerProxyService.window(abstractImage, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("Image", params.id)
@@ -297,7 +298,7 @@ class RestAbstractImageController extends RestController {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
         if (abstractImage) {
             params.withExterior = false
-            responseBufferedImage(abstractImageService.window(abstractImage, params, false))
+            responseBufferedImage(imageServerProxyService.window(abstractImage, params, false))
         } else {
             responseNotFound("Image", params.id)
         }

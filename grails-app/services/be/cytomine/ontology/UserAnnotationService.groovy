@@ -159,23 +159,19 @@ class UserAnnotationService extends ModelService {
      */
     def list(ImageInstance image, Geometry bbox, List<Long> termsIDS, List<Long> userIDS) {
         //:to do use listlight and parse WKT instead ?
-        Collection<UserAnnotation> annotationsInRoi = []
-
-        annotationsInRoi = UserAnnotation.createCriteria()
+        Collection<UserAnnotation> annotations = UserAnnotation.createCriteria()
                 .add(Restrictions.in("user.id", userIDS))
                 .add(Restrictions.eq("image.id", image.id))
                 .add(SpatialRestrictions.intersects("location",bbox))
                 .list()
 
-        Collection<UserAnnotation> annotations = []
-
-        if (!annotationsInRoi.isEmpty()) {
+        if (!annotations.isEmpty() && termsIDS.size() > 0) {
             annotations = (Collection<UserAnnotation>) AnnotationTerm.createCriteria().list {
                 inList("term.id", termsIDS)
                 join("userAnnotation")
                 createAlias("userAnnotation", "a")
                 projections {
-                    inList("a.id", annotationsInRoi.collect{it.id})
+                    inList("a.id", annotations.collect{it.id})
                     groupProperty("userAnnotation")
                 }
             }

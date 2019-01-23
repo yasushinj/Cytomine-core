@@ -91,9 +91,9 @@ class ImageServerProxyService {
         return makeGetUrl("/image/download", server, parameters)
     }
 
-//    def associated(ImageInstance image) {
-//        associated(image.baseImage)
-//    }
+    def associated(ImageInstance image) {
+        associated(image.baseImage)
+    }
 
     def associated(AbstractImage image) {
         def (server, parameters) = imsParametersFromAbstractImage(image)
@@ -125,20 +125,32 @@ class ImageServerProxyService {
         parameters.contrast = params.contrast
         parameters.gamma = params.gamma
         parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.bits
+
+//        AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(abstractImage.id, url)
+//        if (attachedFile) {
+//            return ImageIO.read(new ByteArrayInputStream(attachedFile.getData()))
+//        } else {
+//            String imageServerURL = abstractImage.getRandomImageServerURL()
+//            byte[] imageData = new URL("$imageServerURL"+url).getBytes()
+//            BufferedImage bufferedImage =  ImageIO.read(new ByteArrayInputStream(imageData))
+//            attachedFileService.add(url, imageData, abstractImage.id, AbstractImage.class.getName())
+//            return bufferedImage
+//        }
+
         return makeRequest("/image/thumb.$format", server, parameters)
     }
 
-    def crop(AnnotationDomain annotation, def params, def urlOnly = false) {
+    def crop(AnnotationDomain annotation, def params, def urlOnly = false, def parametersOnly = false) {
         params.geometry = annotation.location
-        crop(annotation.image, params, urlOnly)
+        crop(annotation.image, params, urlOnly, parametersOnly)
     }
 
-    def crop(ImageInstance image, def params, def urlOnly = false) {
-        crop(image.baseImage, params, urlOnly)
+    def crop(ImageInstance image, def params, def urlOnly = false, def parametersOnly = false) {
+        crop(image.baseImage, params, urlOnly, parametersOnly)
     }
 
     def crop(AbstractImage image, def params, def urlOnly = false, def parametersOnly = false) {
-//        log.info params
+        log.info params
         def (server, parameters) = imsParametersFromAbstractImage(image)
 
         def geometry = params.geometry
@@ -163,9 +175,11 @@ class ImageServerProxyService {
 
         parameters.imageWidth = image.width
         parameters.imageHeight = image.height
-        parameters.maxSize = params.maxSize
-        parameters.zoom = (!params.maxSize) ? params.zoom : null
-        parameters.increaseArea = params.increaseArea
+        log.info params.int('maxSize')
+        log.info params.maxSize
+        parameters.maxSize = params.int('maxSize')
+        parameters.zoom = (!params.int('maxSize')) ? params.int('zoom') : null
+        parameters.increaseArea = params.double('increaseArea')
 
 //        if(location instanceof com.vividsolutions.jts.geom.Point && !params.point.equals("false")) {
 //            boundaries.point = true
@@ -180,19 +194,19 @@ class ImageServerProxyService {
             format = checkFormat(params.format, ['jpg', 'png', 'tiff'])
         }
 
-        parameters.drawScaleBar = params.drawScaleBar
-        parameters.resolution = (params.drawScaleBar) ? params.resolution : null
-        parameters.magnification = (params.drawScaleBar) ? params.magnification : null
+        parameters.drawScaleBar = params.boolean('drawScaleBar')
+        parameters.resolution = (params.boolean('drawScaleBar')) ? params.double('resolution') : null
+        parameters.magnification = (params.boolean('drawScaleBar')) ? params.double('magnification') : null
 
         parameters.colormap = params.colormap
-        parameters.inverse = params.inverse
-        parameters.contrast = params.contrast
-        parameters.gamma = params.gamma
-        parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.bits
-        parameters.alpha = params.alpha
-        parameters.strokeWidth = params.strokeWidth
+        parameters.inverse = params.boolean('inverse')
+        parameters.contrast = params.double('contrast')
+        parameters.gamma = params.double('gamma')
+        parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.int('bits')
+        parameters.alpha = params.int('alpha')
+        parameters.strokeWidth = params.int('strokeWidth')
         parameters.strokeColor = params.strokeColor
-        parameters.jpegQuality = params.jpegQuality
+        parameters.jpegQuality = params.int('jpegQuality')
 
         def uri = "/image/crop.$format"
 
@@ -209,12 +223,13 @@ class ImageServerProxyService {
 
     def window(AbstractImage image, def params, def urlOnly = false) {
         def boundaries = [:]
-        boundaries.topLeftX = Math.max((int) params.x, 0)
-        boundaries.topLeftY = Math.max((int) params.y, 0)
-        boundaries.width = params.w
-        boundaries.height = params.h
+        boundaries.topLeftX = Math.max((int) params.int('x'), 0)
+        boundaries.topLeftY = Math.max((int) params.int('y'), 0)
+        boundaries.width = params.int('w')
+        boundaries.height = params.int('h')
 
-        if (!params.withExterior) {
+        def withExterior = params.boolean('withExterior', false)
+        if (!withExterior) {
             // Do not take part outside of the real image
             if(image.width && (boundaries.width + boundaries.topLeftX) > image.width) {
                 boundaries.width = image.width - boundaries.topLeftX

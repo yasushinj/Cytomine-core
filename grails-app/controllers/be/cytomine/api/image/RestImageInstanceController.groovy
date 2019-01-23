@@ -67,6 +67,7 @@ class RestImageInstanceController extends RestController {
     def propertyService
     def securityACLService
     def imageGroupService
+    def imageServerProxyService
 
     final static int MAX_SIZE_WINDOW_REQUEST = 5000 * 5000 //5k by 5k pixels
 
@@ -355,8 +356,8 @@ class RestImageInstanceController extends RestController {
             parameters.contrast = params.double('contrast')
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
-            boolean refresh = params.boolean('refresh', false)
-            responseBufferedImage(abstractImageService.thumb(imageInstance.baseImage, parameters, refresh))
+            parameters.refresh = params.boolean('refresh', false)
+            responseBufferedImage(imageServerProxyService.thumb(imageInstance, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -384,7 +385,7 @@ class RestImageInstanceController extends RestController {
             parameters.contrast = params.double('contrast')
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
-            responseBufferedImage(abstractImageService.thumb(imageInstance.baseImage, parameters))
+            responseBufferedImage(imageServerProxyService.thumb(imageInstance, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -398,7 +399,7 @@ class RestImageInstanceController extends RestController {
     def associated() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            def associated = abstractImageService.getAvailableAssociatedImages(imageInstance.baseImage)
+            def associated = imageServerProxyService.associated(imageInstance)
             responseSuccess(associated)
         } else {
             responseNotFound("Image", params.id)
@@ -419,7 +420,7 @@ class RestImageInstanceController extends RestController {
             parameters.format = params.format
             parameters.label = params.label
             parameters.maxSize = params.int('maxSize', 256)
-            def associatedImage = abstractImageService.getAssociatedImage(imageInstance.baseImage, parameters)
+            def associatedImage = imageServerProxyService.label(imageInstance, parameters)
             responseBufferedImage(associatedImage)
         } else {
             responseNotFound("Image", params.id)
@@ -429,7 +430,7 @@ class RestImageInstanceController extends RestController {
     def crop() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            responseBufferedImage(abstractImageService.crop(imageInstance.baseImage, params))
+            responseBufferedImage(imageServerProxyService.crop(imageInstance, params))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -439,7 +440,7 @@ class RestImageInstanceController extends RestController {
     def windowUrl() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            String url = abstractImageService.window(imageInstance.baseImage, params, true)
+            String url = imageServerProxyService.window(imageInstance.baseImage, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("Image", params.id)
@@ -450,9 +451,9 @@ class RestImageInstanceController extends RestController {
     def window() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            //        if (params.mask || params.alphaMask)
-//            params.location = getWKTGeometry(imageInstance, params)
-            responseBufferedImage(abstractImageService.window(imageInstance.baseImage, params, false))
+            if (params.mask || params.alphaMask || params.draw || params.type in ['draw', 'mask', 'alphaMask'])
+                params.location = getWKTGeometry(imageInstance, params)
+            responseBufferedImage(imageServerProxyService.window(imageInstance.baseImage, params, false))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -462,7 +463,7 @@ class RestImageInstanceController extends RestController {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
             params.withExterior = false
-            String url = abstractImageService.window(imageInstance.baseImage, params, true)
+            String url = imageServerProxyService.window(imageInstance.baseImage, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("Image", params.id)
@@ -473,7 +474,7 @@ class RestImageInstanceController extends RestController {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
             params.withExterior = false
-            responseBufferedImage(abstractImageService.window(imageInstance.baseImage, params, false))
+            responseBufferedImage(imageServerProxyService.window(imageInstance.baseImage, params, false))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -493,7 +494,8 @@ class RestImageInstanceController extends RestController {
             idAnnotations.each { idAnnotation ->
                 geometries << reviewedAnnotationService.read(idAnnotation).location
             }
-        } else if (!params.annotations) {
+        }
+        else if (!params.annotations) {
             List<Long> termsIDS = params.terms?.split(',')?.collect {
                 Long.parseLong(it)
             }
@@ -555,10 +557,9 @@ class RestImageInstanceController extends RestController {
                     geometry.getLocation()
                 }
             }
-
-            GeometryCollection geometryCollection = new GeometryCollection((Geometry[])geometries, new GeometryFactory())
-            return new WKTWriter().write(geometryCollection)
         }
+        GeometryCollection geometryCollection = new GeometryCollection((Geometry[])geometries, new GeometryFactory())
+        return new WKTWriter().write(geometryCollection)
     }
 
     def download() {

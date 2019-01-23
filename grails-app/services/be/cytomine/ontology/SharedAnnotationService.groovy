@@ -44,6 +44,7 @@ class SharedAnnotationService extends ModelService {
     def secRoleService
     def secUserSecRoleService
     def abstractImageService
+    def imageServerProxyService
 
 
     // Avoid loading loop because secUserService -> userAnnotationService -> shareAnnotationService
@@ -113,7 +114,7 @@ class SharedAnnotationService extends ModelService {
             params.geometry = annotation.location
             params.complete = true
             params.maxSize = 512
-            BufferedImage bufferedImage = abstractImageService.crop(annotation.image.baseImage, params)
+            BufferedImage bufferedImage = imageServerProxyService.crop(annotation, params)
 
             log.info "Image " + bufferedImage
 
