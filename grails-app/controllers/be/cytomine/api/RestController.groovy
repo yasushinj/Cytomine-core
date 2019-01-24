@@ -280,81 +280,61 @@ class RestController {
 
     /**
      * Response an image as a HTTP response
-     * @param url Image url
-     */
-    protected def responseImage(String url) {
-        withFormat {
-            png {
-                if (request.method == 'HEAD') {
-                    render(text: "", contentType: "image/png")
-                }
-                else {
-                    HttpClient client = new HttpClient()
-                    client.timeout = 60000;
-                    client.connect(url, "", "")
-                    byte[] imageData = client.getData()
-                    //IIP Send JPEG, so we have to convert to PNG
-                    InputStream input = new ByteArrayInputStream(imageData);
-                    BufferedImage bufferedImage = ImageIO.read(input);
-                    def out = new ByteArrayOutputStream()
-                    ImageIO.write(bufferedImage, "PNG", out)
-                    response.contentType = "image/png"
-                    response.getOutputStream() << out.toByteArray()
-                }
-            }
-            jpg {
-                if (request.method == 'HEAD') {
-                    render(text: "", contentType: "image/jpeg")
-                } else {
-                    URL source = new URL(url)
-                    URLConnection connection = source.openConnection()
-                    response.outputStream << connection.getInputStream()
-                }
-            }
-        }
-
-    }
-
-
-    /**
-     * Response an image as a HTTP response
      * @param bufferedImage Image
      */
     protected def responseBufferedImage(BufferedImage bufferedImage) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        withFormat {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        log.info params.format
+        if (params.alphaMask || params.type == 'alphaMask')
+            params.format = 'png'
 
-            png {
-                if (request.method == 'HEAD') {
-                    render(text: "", contentType: "image/png")
-                }
-                else {
-                    ImageIO.write(bufferedImage, "png", baos);
-                    byte[] bytesOut = baos.toByteArray();
-                    response.contentLength = baos.size();
-                    response.setHeader("Connection", "Keep-Alive")
-                    response.setHeader("Accept-Ranges", "bytes")
-                    response.setHeader("Content-Type", "image/png")
-                    response.getOutputStream() << bytesOut
-                    response.getOutputStream().flush()
-                }
+        log.info params.format
+        if (params.format == 'jpg') {
+            if (request.method == 'HEAD') {
+                render(text: "", contentType: "image/jpeg");
             }
-            jpg {
-                if (request.method == 'HEAD') {
-                    render(text: "", contentType: "image/jpeg");
-                }
-                else {
-                    ImageIO.write(bufferedImage, "jpg", baos);
-                    byte[] bytesOut = baos.toByteArray();
-                    response.contentLength = baos.size();
-                    response.setHeader("Connection", "Keep-Alive")
-                    response.setHeader("Accept-Ranges", "bytes")
-                    response.setHeader("Content-Type", "image/jpeg")
-                    response.getOutputStream() << bytesOut
-                    response.getOutputStream().flush()
-                }
+            else {
+                ImageIO.write(bufferedImage, "jpg", baos)
+                byte[] bytesOut = baos.toByteArray()
+                response.contentLength = baos.size()
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                response.setHeader("Content-Type", "image/jpeg")
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
             }
         }
+        else if (params.format == 'tiff' || params.format == 'tif') {
+            if (request.method == 'HEAD') {
+                render(text: "", contentType: "image/tiff")
+            }
+            else {
+                ImageIO.write(bufferedImage, "tiff", baos)
+                byte[] bytesOut = baos.toByteArray()
+                response.contentLength = baos.size()
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                response.setHeader("Content-Type", "image/tiff")
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
+            }
+        }
+        else {
+            if (request.method == 'HEAD') {
+                render(text: "", contentType: "image/png")
+            }
+            else {
+                ImageIO.write(bufferedImage, "png", baos)
+                byte[] bytesOut = baos.toByteArray()
+                response.contentLength = baos.size()
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                response.setHeader("Content-Type", "image/png")
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
+            }
+        }
+        baos.close()
     }
 
 

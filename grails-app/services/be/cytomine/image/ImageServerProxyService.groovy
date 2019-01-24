@@ -181,8 +181,6 @@ class ImageServerProxyService {
 
         parameters.imageWidth = image.width
         parameters.imageHeight = image.height
-        log.info params.int('maxSize')
-        log.info params.maxSize
         parameters.maxSize = params.int('maxSize')
         parameters.zoom = (!params.int('maxSize')) ? params.int('zoom') : null
         parameters.increaseArea = params.double('increaseArea')
