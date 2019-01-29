@@ -1,5 +1,6 @@
 package be.cytomine.image
 
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
@@ -78,6 +79,10 @@ class UploadedFileService extends ModelService {
 
     def listHierarchicalTree(User user, Long rootId){
         UploadedFile root = UploadedFile.get(rootId)
+
+        if(root == null){
+            throw new ForbiddenException("UploadedFile not found")
+        }
 
         securityACLService.checkIsSameUser(root.user, cytomineService.currentUser)
         String request =
@@ -191,5 +196,19 @@ class UploadedFileService extends ModelService {
             it.parent = uploadedFile.parent
             this.update(it,JSON.parse(it.encodeAsJSON()), transaction)
         }
+
+        String currentTree = uploadedFile.lTree
+        String parentTree = (uploadedFile?.parent?.lTree)?:""
+
+        //1. Set ltree à null de uf
+        //2. update tree SET  path = ltree du parent || subpath(path, nlevel('A.C'))  where path <@ 'A.C';
+        String request =
+                "UPDATE uploaded_file SET l_tree = '' WHERE id= "+uploadedFile.id+";\n" +
+                        "UPDATE uploaded_file \n" +
+                        "SET l_tree = '"+parentTree+"' || subpath(l_tree, nlevel('"+currentTree+"'))  where l_tree <@ '"+currentTree+"';"
+
+        def sql = new Sql(dataSource)
+        sql.execute(request)
+        sql.close()
     }
 }
