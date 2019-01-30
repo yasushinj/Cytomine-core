@@ -530,30 +530,16 @@ class RestUserController extends RestController {
         def result = db.lastUserPosition.aggregate(
                 [$match : [ project : project.id, created:[$gt:thirtySecondsAgo.toDate()]]],
                 [$project:[user:1,image:1,imageName:1,created:1]],
-                [$group : [_id : [ user: '$user', image: '$image',imageName: '$imageName'], "date":[$max:'$created']]]
+                [$group : [_id : [ user: '$user', image: '$image',imageName: '$imageName'], "date":[$max:'$created']]],
+                [$group : [_id : [ user: '$_id.user'], "position":[$push: [id: '$_id.image',image: '$_id.image', filename: '$_id.imageName', originalFilename: '$_id.imageName', date: '$date']]]]
         )
 
         def usersWithPosition = []
-        def userInfo = [:]
-        long previousUser = -1
         result.results().each {
-
-            def userId = it["_id"]["user"]
-            def imageId = it["_id"]["image"]
-            def imageName = it["_id"]["imageName"]
-            def date = it["date"]
-
-            long currentUser = userId
-            if (previousUser != currentUser) {
-                //new user, create a new line
-                userInfo = [id: currentUser, position: []]
-                usersWithPosition << userInfo
-                usersId.remove(currentUser)
-            }
-            //add position to the current user
-            userInfo['position'] << [id: imageId,image: imageId, filename: imageName, originalFilename:imageName, date: date]
-            previousUser = currentUser
+            usersWithPosition << [id: it["_id"]["user"], position: it["position"]]
         }
+        usersId.remove(usersWithPosition.collect{it.id})
+
         //user online with no image open
         usersId.each {
             usersWithPosition << [id: it, position: []]

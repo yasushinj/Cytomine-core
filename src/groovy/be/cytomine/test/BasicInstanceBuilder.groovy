@@ -37,8 +37,10 @@ import be.cytomine.project.ProjectDefaultLayer
 import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.search.SearchEngineFilter
 import be.cytomine.security.*
+import be.cytomine.social.LastUserPosition
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
+import be.cytomine.social.PersistentUserPosition
 import be.cytomine.utils.AttachedFile
 import be.cytomine.utils.Configuration
 import be.cytomine.utils.Description
@@ -1769,6 +1771,22 @@ class BasicInstanceBuilder {
                 imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
                 project: image.project.id)
         insert ? insertDomain(consult) : checkDomain(consult)
+    }
+
+    static PersistentUserPosition getPersistentUserPosition(ImageInstance image, User user, boolean insert = false){
+        LastUserPosition tmpPosition = new LastUserPosition(user:user.id, image: image.id,
+                imageName: image.instanceFilename, project:image.project, session: "test", zoom:0, rotation : 0.0)
+
+        insert ? insertDomain(tmpPosition) : checkDomain(tmpPosition)
+
+        PersistentUserPosition position = new PersistentUserPosition(user:user.id, image: image.id,
+                imageName: image.instanceFilename, project:image.project, session: "test", zoom:0, rotation : 0.0)
+
+        insert ? insertDomain(position) : checkDomain(position)
+    }
+
+    static PersistentUserPosition getPersistentUserPosition(ImageInstance image, boolean insert = false){
+        getPersistentUserPosition(image, getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD), insert)
     }
 
     static ImageGroupHDF5 getImageGroupHDF5() {
