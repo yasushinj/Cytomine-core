@@ -319,7 +319,8 @@ class SecUserService extends ModelService {
         } else if(project.hideAdminsLayers && project.hideUsersLayers && humans.contains(currentUser)) {
             return [currentUser]
         } else if(project.hideAdminsLayers && !project.hideUsersLayers && humans.contains(currentUser)) {
-            users.removeAll(admins)
+            def adminsId = admins.collect{it.id}
+            users.removeAll{adminsId.contains(it.id)}
             return users
         } else if(!project.hideAdminsLayers && project.hideUsersLayers && humans.contains(currentUser)) {
             admins.add(currentUser)
