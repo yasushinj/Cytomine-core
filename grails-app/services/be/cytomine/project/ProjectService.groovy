@@ -441,7 +441,7 @@ class ProjectService extends ModelService {
     def getActiveProjects(){
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        def xSecondAgo = Utils.getDatePlusSecond(-120)
+        def xSecondAgo = Utils.getDateMinusSecond(120)
 
         def result;
         def match = [$match : [ created : [$gte : xSecondAgo]]];
@@ -457,7 +457,7 @@ class ProjectService extends ModelService {
     def getActiveProjectsWithNumberOfUsers() {
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
 
-        def xSecondAgo = Utils.getDatePlusSecond(-120)
+        def xSecondAgo = Utils.getDateMinusSecond(120)
         def match = [$match : [ created : [$gte : xSecondAgo]]];
 
         def group1 = [$group : [_id : [project : '$project', user : '$user']]]
