@@ -551,8 +551,14 @@ class BasicInstanceBuilder {
     }
 
 
-    static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, boolean save = false) {
-        getUserAnnotationNotExist(project,getImageInstance(),save)
+    static UserAnnotation getUserAnnotationNotExist(boolean save = false) {
+        ImageInstance image = getImageInstance()
+        Project project = image.project
+        getUserAnnotationNotExist(project,image,save)
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(Project project, boolean save = false) {
+        getUserAnnotationNotExist(project,getImageInstanceNotExist(project, true),save)
     }
 
     static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image,boolean save = false) {
