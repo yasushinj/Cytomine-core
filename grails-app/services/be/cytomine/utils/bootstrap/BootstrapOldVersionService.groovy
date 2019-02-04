@@ -102,6 +102,17 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
+    void initv1_3_3() {
+        log.info "20190204"
+
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='job' and column_name='favorite';").size() == 1;
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE job ADD COLUMN favorite boolean NOT NULL DEFAULT false;")
+        }
+    }
+
     void initv1_3_2() {
         log.info "1.3.2"
         new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
