@@ -225,11 +225,13 @@ var DescriptionModal = {
                     }, {success: function (termModel, response) {
 
                         if (callback) {
+                            window.app.view.message("Description", "updated", "");
+                            modal.close();
                             callback();
                         }
                     }, error: function (model, response) {
                         var json = $.parseJSON(response.responseText);
-                        window.app.view.message("Auth error", "error:" + json.errors, "");
+                        window.app.view.message("Auth error", "error:" + json.errors, "error");
                     }});
 
                 });
@@ -238,7 +240,7 @@ var DescriptionModal = {
             callBackAfterCreation : callBackAfterCreation
         });
 
-        modal.addButtons("saveDescription" + idDescription, "Save", true, true);
+        modal.addButtons("saveDescription" + idDescription, "Save", true, false);
         modal.addButtons("closeDescription" + idDescription, "Close", false, true);
     },
     initDescriptionView: function (domainIdent, domainClassName, isOwner, container, maxPreviewCharNumber, callbackGet, callbackUpdate) {
