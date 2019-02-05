@@ -49,7 +49,15 @@ var LayerSwitcherPanel = SideBarPanel.extend({
         var radioName = "layerSwitch-" + model.get("id");
         //index of the layer in this.layers array
         var layerID = "layerSwitch-" + model.get("id") + "-" + new Date().getTime();
-        var liLayer = _.template("<li><input type='radio' id='<%=   id %>' name='<%=   radioName %>' checked/><span style='color : #ffffff;'> <%=   name %></span></li>", {id: layerID, radioName: radioName, name: layer.name.substr(0, 15)});
+
+        var imageFilter = layer.imageFilter;
+        if (imageFilter) {
+            layerID += "-IF-"+imageFilter.id;
+        }
+
+
+        var liLayer = _.template("<li><input type='radio' id='<%=   id %>' name='<%=   radioName %>' checked/><span style='color : #ffffff;'> <%=   name %></span></li>",
+            {id: layerID, radioName: radioName, name: layer.name.substr(0, 15)});
         $("#" + this.browseImageView.divId).find("#layerSwitcher" + this.model.get("id")).find(".baseLayers").append(liLayer);
         $("#" + layerID).change(function () {
             self.browseImageView.map.setBaseLayer(layer);
