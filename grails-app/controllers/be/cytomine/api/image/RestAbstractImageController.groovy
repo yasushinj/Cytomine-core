@@ -62,11 +62,11 @@ class RestAbstractImageController extends RestController {
     ])
     def list() {
         SecUser user = cytomineService.getCurrentUser()
+        Project project = projectService.read(params.long("project"))
         if (params.datatables) {
-            Project project = projectService.read(params.long("project"))
             responseSuccess(dataTablesService.process(params, AbstractImage, null, [],project))
         }  else {
-            responseSuccess(abstractImageService.list(user))
+            responseSuccess(abstractImageService.list(user, project))
         }
     }
 

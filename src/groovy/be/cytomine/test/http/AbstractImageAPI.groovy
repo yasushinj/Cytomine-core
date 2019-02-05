@@ -33,6 +33,11 @@ class AbstractImageAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def list(Long idProject, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/abstractimage.json?project=$idProject"
+        return doGET(URL, username, password)
+    }
+
     static def list(boolean datatable,String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/abstractimage.json?datatable=${datatable}&_search=false&nd=1358249507672&rows=10&page=1&sidx=id&sord=asc"
         return doGET(URL, username, password)
