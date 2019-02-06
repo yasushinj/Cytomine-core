@@ -64,18 +64,89 @@ class RestUserController extends RestController {
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
             @RestApiParam(name="online", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Get only online users for this project"),
             @RestApiParam(name="showJob", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Also show the users job for this project"),
+            @RestApiParam(name="withLastImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last image seen by each user in this project"),
+            @RestApiParam(name="withLastConsultation", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last consultation of this project by each user"),
+            @RestApiParam(name="withNumberConsultations", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the number of consultations of this project by each user"),
     ])
     def showByProject() {
         boolean online = params.boolean('online')
         boolean showUserJob = params.boolean('showJob')
         Project project = projectService.read(params.long('id'))
-        if (project && !online) {
-            responseSuccess(secUserService.listUsers(project, showUserJob))
-        } else if (project && online) {
-            def users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
+        List<SecUser> users
+        if(!project){
+            responseNotFound("User", "Project", params.id)
+        }
+        if (online) {
+            users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
+        } else {
+            users = secUserService.listUsers(project, showUserJob)
+        }
+
+        boolean withLastImage = params.boolean('withLastImage')
+        boolean withLastConsultation = params.boolean('withLastConsultation')
+        boolean withNumberConsultations = params.boolean('withNumberConsultations')
+        if(!withNumberConsultations && !withLastConsultation && !withLastImage){
             responseSuccess(users)
         } else {
-            responseNotFound("User", "Project", params.id)
+            // we sorted to apply binary search instead of a simple "find" method. => performance
+            def binSearchI = { aList, property, target ->
+                def a = aList
+                def offSet = 0
+                while (!a.empty) {
+                    def n = a.size()
+                    def m = n.intdiv(2)
+                    if(a[m]."$property" > target) {
+                        a = a[0..<m]
+                    } else if (a[m]."$property" < target) {
+                        a = a[(m + 1)..<n]
+                        offSet += m + 1
+                    } else {
+                        return (offSet + m)
+                    }
+                }
+                return -1
+            }
+
+            def images = []
+            if(withLastImage){
+                images = imageConsultationService.lastImageOfUsersByProject(project)
+                images.sort {it.user}
+            }
+
+            def connections = []
+            if(withLastConsultation){
+                connections = projectConnectionService.lastConnectionInProject(project)
+                connections.sort {it.user}
+            }
+
+            def frequencies = []
+            if(withNumberConsultations){
+                frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project)
+                frequencies.sort {it.user}
+            }
+
+            def results = []
+            for(SecUser user : users) {
+                def userInfo = User.getDataFromDomain(user)
+                if(withLastImage){
+                    int index = binSearchI(images, "user", user.id)
+                    def image = index >= 0 ? images[index]:null
+                    userInfo.lastImage = image?.image
+                }
+                if(withLastConsultation){
+                    int index = binSearchI(connections, "user", user.id)
+                    def connection = index >= 0 ? connections[index]:null
+                    userInfo.lastConsultation = connection?.created
+                }
+                if(withNumberConsultations){
+                    int index = binSearchI(frequencies, "user", user.id)
+                    def frequency = index >= 0 ? frequencies[index]:null
+                    userInfo.numberConsultations = frequency?.frequency
+                }
+                results << userInfo
+            }
+
+            responseSuccess(results)
         }
     }
 

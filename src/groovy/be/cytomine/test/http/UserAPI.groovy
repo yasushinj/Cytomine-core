@@ -71,8 +71,12 @@ class UserAPI extends DomainAPI {
         list(id,domain,type,false,username,password)
     }
 
-    static def list(Long id,String domain,String type,def offline,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/${domain}/$id/${type}.json" + (offline? "?offline=true":"")
+    static def list(Long id,String domain,String type,def online,String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/${domain}/$id/${type}.json" + (online? "?online=true":"")
+        return doGET(URL, username, password)
+    }
+    static def listWithConsultationInformation(Long id,String domain,String type,String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/${domain}/$id/${type}.json?withLastImage=true&withLastConsultation=true&withNumberConsultations=true"
         return doGET(URL, username, password)
     }
 
