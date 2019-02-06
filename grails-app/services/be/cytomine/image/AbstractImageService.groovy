@@ -111,7 +111,7 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def list(SecUser user, Project project) {
+    def list(SecUser user, Project project = null) {
         List<AbstractImage> images
         if(currentRoleServiceProxy.isAdminByNow(user)) {
             images = AbstractImage.list()
