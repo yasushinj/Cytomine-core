@@ -767,8 +767,8 @@ class RestUserController extends RestController {
 
         // to fit the pagination system
         if(collectionSize > results.size()) {
-            def filler = Arrays.asList(new Object[collectionSize-results.size()]);
-            results << filler
+            def filler = Arrays.asList(new Object[collectionSize-results.size()-offset]);
+            results = Arrays.asList(new Object[offset]) + results + filler
         }
 
         responseSuccess(results)
