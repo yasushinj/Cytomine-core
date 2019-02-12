@@ -171,6 +171,25 @@ var ApplicationController = Backbone.Router.extend({
                     }
                 }).render();
             };
+
+
+            var currentUserModel = null;
+            var configs = null;
+
+            var loadUserandConfigs = function() {
+                if(currentUserModel == null || configs == null) {
+                    return;
+                }
+                self.configurations = {}
+
+                configs.each(function (config) {
+                    self.configurations[config.get("key")]=config.get("value");
+                });
+
+                self.startup();
+            };
+
+
             var successcallback = function (data) {
                 console.log("Launch app!");
                 console.log(data);
@@ -178,6 +197,14 @@ var ApplicationController = Backbone.Router.extend({
                 self.status.serverURL = data.get('serverURL');
                 self.status.serverID = data.get('serverID');
                 if (data.get('authenticated')) {
+
+                    new ConfigurationCollection().fetch({
+                        success: function (model, response) {
+                            configs = model;
+                            loadUserandConfigs();
+                        }
+                    });
+
                     new UserModel({id: "current"}).fetch({
                         success: function (model, response) {
                             self.status.user = {
@@ -185,8 +212,9 @@ var ApplicationController = Backbone.Router.extend({
                                 authenticated: data.get('authenticated'),
                                 model: model,
                                 filenameVisible : true
-                            }
-                            self.startup();
+                            };
+                            currentUserModel = model;
+                            loadUserandConfigs();
                         }
                     });
 

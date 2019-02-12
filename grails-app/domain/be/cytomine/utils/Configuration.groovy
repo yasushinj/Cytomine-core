@@ -38,7 +38,10 @@ class Configuration extends CytomineDomain implements Serializable {
     Role readingRole
 
     static constraints = {
-        key(blank: false, unique: true)
+        key (blank: false, unique: true, validator: {
+            val, obj ->
+                return !val.contains(".")
+        })
         value(blank: false)
         readingRole(blank: false)
     }

@@ -1723,7 +1723,7 @@ class BasicInstanceBuilder {
     }
 
     static Configuration getConfiguration() {
-        def key = "test".toUpperCase()
+        def key = "test_test".toUpperCase()
         def value = "test"
         def config = Configuration.findByKey(key)
 

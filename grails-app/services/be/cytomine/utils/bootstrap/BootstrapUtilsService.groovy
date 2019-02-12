@@ -166,27 +166,27 @@ class BootstrapUtilsService {
 
         configs << new Configuration(key: "WELCOME", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
 
-        configs << new Configuration(key: "retrieval.enabled", value: true, readingRole: allUsers)
+        configs << new Configuration(key: "retrieval_enabled", value: true, readingRole: allUsers)
 
-        configs << new Configuration(key: "admin.email", value: grailsApplication.config.grails.admin.email, readingRole: adminRole)
+        configs << new Configuration(key: "admin_email", value: grailsApplication.config.grails.admin.email, readingRole: adminRole)
 
         //SMTP values
-        configs << new Configuration(key: "notification.email", value: grailsApplication.config.grails.notification.email, readingRole: adminRole)
-        configs << new Configuration(key: "notification.password", value: grailsApplication.config.grails.notification.password, readingRole: adminRole)
-        configs << new Configuration(key: "notification.smtp.host", value: grailsApplication.config.grails.notification.smtp.host, readingRole: adminRole)
-        configs << new Configuration(key: "notification.smtp.port", value: grailsApplication.config.grails.notification.smtp.port, readingRole: adminRole)
+        configs << new Configuration(key: "notification_email", value: grailsApplication.config.grails.notification.email, readingRole: adminRole)
+        configs << new Configuration(key: "notification_password", value: grailsApplication.config.grails.notification.password, readingRole: adminRole)
+        configs << new Configuration(key: "notification_smtp.host", value: grailsApplication.config.grails.notification.smtp.host, readingRole: adminRole)
+        configs << new Configuration(key: "notification_smtp.port", value: grailsApplication.config.grails.notification.smtp.port, readingRole: adminRole)
 
 
         //Default project values
         //configs << new Configuration(key: , value: , readingRole: )
 
         //LDAP values
-        configs << new Configuration(key: "ldap.active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: allUsers)
+        configs << new Configuration(key: "ldap_active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: allUsers)
         if(grailsApplication.config.grails.plugin.springsecurity.ldap.active) {
-            configs << new Configuration(key: "ldap.context.server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
-            configs << new Configuration(key: "ldap.search.base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
-            configs << new Configuration(key: "ldap.context.managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
-            configs << new Configuration(key: "ldap.context.managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
+            configs << new Configuration(key: "ldap_context.server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
+            configs << new Configuration(key: "ldap_search.base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
+            configs << new Configuration(key: "ldap_context.managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
+            configs << new Configuration(key: "ldap_context.managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
             //grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
         }
 
