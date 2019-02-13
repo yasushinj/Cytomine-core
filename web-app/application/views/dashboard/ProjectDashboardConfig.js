@@ -46,7 +46,7 @@ var ProjectDashboardConfig = Backbone.View.extend({
         titlePanel = "General Configuration";
         configs.push({id: idPanel, title : titlePanel});
         var general = new GeneralConfigPanel({
-            el: _.template(generalConfigTemplate, {titre : titlePanel, id : idPanel}),
+            el: _.template(generalConfigTemplate, {titre : titlePanel, id : idPanel, retrieval_enabled : window.app.configurations.retrieval_enabled}),
             model: this.model
         }).render();
         configList.append(general.el);
@@ -700,7 +700,7 @@ var CutomUIPanel = Backbone.View.extend({
                 _.each(CustomUI.components,function(component) {
                     self.createComponentConfig(component,customUIItemTpl,elTabs);
                 });
-                _.each(CustomUI.componentsPanels,function(component) {
+                _.each(CustomUI.getComponentsPanels(),function(component) {
                     self.createComponentConfig(component,customUIItemTpl,elPanels);
                 });
                 _.each(CustomUI.componentsTools,function(component) {

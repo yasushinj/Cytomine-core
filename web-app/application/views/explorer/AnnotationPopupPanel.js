@@ -123,7 +123,9 @@ var AnnotationPopupPanel = SideBarPanel.extend({
         annotation.set('area', Math.round(annotation.get('area')));
         annotation.set('perimeter', Math.round(annotation.get('perimeter')));
 
-        var content = _.template(tpl, annotation.toJSON());
+        var jsonAnnotation = annotation.toJSON()
+        jsonAnnotation.retrieval_enabled = window.app.configurations.retrieval_enabled;
+        var content = _.template(tpl, jsonAnnotation);
         var elem = $("#" + self.browseImageView.divId).find("#annotationDetailPanel" + self.browseImageView.model.id);
         elem.html(content);
         CustomUI.hideOrShowComponents();

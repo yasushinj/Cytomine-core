@@ -37,7 +37,7 @@ var AddProjectDialog = Backbone.View.extend({
     },
     doLayout: function (projectAddDialogTpl) {
         var self = this;
-        var dialog = _.template(projectAddDialogTpl, {});
+        var dialog = _.template(projectAddDialogTpl, {retrieval_enabled : window.app.configurations.retrieval_enabled});
         $("#editproject").replaceWith("");
         $("#addproject").replaceWith("");
         $(self.el).append(dialog);

@@ -52,28 +52,30 @@ var CustomUI = {
         {componentId: "project-configuration-tab", componentName: "Config tab"} //TODO: cannot be hide by project-admin
 
     ],
-    componentsPanels: [
-        //  {componentId: "project-images-tab", componentName: "Image tab"},
-        {componentId: "project-explore-hide-tools", componentName: "All panels"},
-        {componentId: "project-explore-overview", componentName: "Overview panel"}, //TODO: if you need to add a new panel
-        {componentId: "project-explore-info", componentName: "Info panel"},
-        {componentId: "project-explore-image-layers", componentName: "Layer panel"},
-        {componentId: "project-explore-ontology", componentName: "Ontology panel"}, //TODO: cannot be hide by project-admin
-        {componentId: "project-explore-review", componentName: "Review panel"},
-        {componentId: "project-explore-job", componentName: "Job panel"},
-        {componentId: "project-explore-multidim", componentName: "Multidim panel"},
-        {componentId: "project-explore-property", componentName: "Property panel"},
-        {componentId: "project-explore-annotation-main", componentName: "Current annotation - main panel"},
-        {componentId: "project-explore-annotation-info", componentName: "Current annotation - info panel"},
-        {componentId: "project-explore-annotation-comments", componentName: "Current annotation - comments panel"},
-        {componentId: "project-explore-annotation-preview", componentName: "Current annotation - preview panel"},
-        {componentId: "project-explore-annotation-properties", componentName: "Current annotation - properties panel"},
-        {componentId: "project-explore-annotation-description", componentName: "Current annotation - description panel"},
-        {componentId: "project-explore-annotation-similarities", componentName: "Current annotation - similarities panel"},
-        {componentId: "project-explore-annotation-panel", componentName: "Annotations panel (under the image)"}
-        //{componentId: "project-explore-spectra-panel", componentName: "Spectra panel (under the image)"}
-
-    ],
+    getComponentsPanels: function(){
+        var panels = [
+            //  {componentId: "project-images-tab", componentName: "Image tab"},
+            {componentId: "project-explore-hide-tools", componentName: "All panels"},
+            {componentId: "project-explore-overview", componentName: "Overview panel"}, //TODO: if you need to add a new panel
+            {componentId: "project-explore-info", componentName: "Info panel"},
+            {componentId: "project-explore-image-layers", componentName: "Layer panel"},
+            {componentId: "project-explore-ontology", componentName: "Ontology panel"}, //TODO: cannot be hide by project-admin
+            {componentId: "project-explore-review", componentName: "Review panel"},
+            {componentId: "project-explore-job", componentName: "Job panel"},
+            {componentId: "project-explore-multidim", componentName: "Multidim panel"},
+            {componentId: "project-explore-property", componentName: "Property panel"},
+            {componentId: "project-explore-annotation-main", componentName: "Current annotation - main panel"},
+            {componentId: "project-explore-annotation-info", componentName: "Current annotation - info panel"},
+            {componentId: "project-explore-annotation-comments", componentName: "Current annotation - comments panel"},
+            {componentId: "project-explore-annotation-preview", componentName: "Current annotation - preview panel"},
+            {componentId: "project-explore-annotation-properties", componentName: "Current annotation - properties panel"},
+            {componentId: "project-explore-annotation-description", componentName: "Current annotation - description panel"}
+        ];
+        if(window.app.configurations.retrieval_enabled == "true") panels.push({componentId: "project-explore-annotation-similarities", componentName: "Current annotation - similarities panel"});
+        panels.push({componentId: "project-explore-annotation-panel", componentName: "Annotations panel (under the image)"});
+            //{componentId: "project-explore-spectra-panel", componentName: "Spectra panel (under the image)"}
+        return panels;
+    },
     componentsTools: [
         //  {componentId: "project-images-tab", componentName: "Image tab"},
         {componentId: "project-tools-main", componentName: "All tools  <i class='glyphicon glyphicon-th'/>"},
