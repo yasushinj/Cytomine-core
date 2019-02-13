@@ -23,6 +23,7 @@ import be.cytomine.ontology.Property
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import be.cytomine.security.User
+import be.cytomine.utils.Configuration
 import be.cytomine.utils.Version
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -57,8 +58,8 @@ class BootstrapOldVersionService {
         def methods = this.metaClass.methods*.name.sort().unique()
         Version version = Version.getLastVersion()
 
-        methods.each { method ->
-            if (method.startsWith("init")) {
+        if(!version.major){
+            methods.findAll { it =~ "init[0-9]" }.each { method ->
                 Long methodDate = Long.parseLong(method.replace("init", ""))
                 if (methodDate > version.number) {
                     log.info "Run code for version > $methodDate"
@@ -67,9 +68,41 @@ class BootstrapOldVersionService {
                     log.info "Skip code for $methodDate"
                 }
             }
+
+            version.major = 0
+            version.minor = 0
+            version.patch = 0
+        }
+        methods.findAll { it.startsWith("initv") }.each { method ->
+
+            method = method.substring("initv".size())
+
+            Short major = Short.parseShort(method.split("_")[0])
+            Short minor = Short.parseShort(method.split("_")[1])
+            Short patch = Short.parseShort(method.split("_")[2])
+
+            if(major > version.major || (major == version.major && minor > version.minor)
+                    || (major == version.major && minor == version.minor && patch > version.patch)) {
+                log.info "Run code for v${method.replace("_",".")} update"
+                this."initv$method"()
+            } else {
+                log.info "Skip code for initv$method"
+            }
+
+        }
+        Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
+    }
+
+    void initv1_3_0() {
+        log.info "1.3.0"
+        List<Configuration> configurations = Configuration.findAllByKeyLike("%.%")
+
+        for(int i = 0; i<configurations.size(); i++){
+            configurations[i].key = configurations[i].key.replace(".","_")
+            configurations[i].save()
         }
 
-        Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'))
+        bootstrapUtilsService.createConfigurations(true)
     }
 
     void init20180904() {

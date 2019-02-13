@@ -26,10 +26,16 @@ class Version {
 
     Long number
     Date deployed
+    Integer major
+    Integer minor
+    Integer patch
 
     static mapping = {
         version false
         id generator: 'identity', column: 'nid'
+        major (nullable: true)
+        minor (nullable: true)
+        patch (nullable: true)
     }
 
     static Version setCurrentVersion(Long version) {
@@ -41,6 +47,25 @@ class Version {
         } else {
             log.info "New version detected"
             actual = new Version(number:version,deployed: new Date())
+            actual.save(flush:true,failOnError: true)
+            return actual
+        }
+    }
+
+    static Version setCurrentVersion(Long version, String semantic) {
+        Version actual = getLastVersion()
+        log.info "Last version was ${actual}. Actual version will be $semantic ($version)"
+        if(actual && actual.number>=version) {
+            log.info "version $actual don't need to be saved"
+            return actual
+        } else {
+            log.info "New version detected"
+
+            Integer major = Integer.parseInt(semantic.split("\\.")[0])
+            Integer minor = Integer.parseInt(semantic.split("\\.")[1])
+            Integer patch = Integer.parseInt(semantic.split("\\.")[2])
+            
+            actual = new Version(number:version,deployed: new Date(), major:major, minor:minor, patch:patch)
             actual.save(flush:true,failOnError: true)
             return actual
         }
