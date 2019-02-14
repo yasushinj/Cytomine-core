@@ -33,6 +33,9 @@ class Version {
     static mapping = {
         version false
         id generator: 'identity', column: 'nid'
+    }
+
+    static constraints = {
         major (nullable: true)
         minor (nullable: true)
         patch (nullable: true)
