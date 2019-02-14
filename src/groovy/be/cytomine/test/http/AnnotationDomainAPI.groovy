@@ -69,6 +69,11 @@ class AnnotationDomainAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def listByImageAndUsers(Long idImage,List<Long> idUsers, boolean includeAlgo, String username, String password) {
+        String URL = Infos.CYTOMINEURL+"api/annotation.json?users="+ idUsers.join(",") +"&image="+idImage+"&includeAlgo=$includeAlgo"
+        return doGET(URL, username, password)
+    }
+
     static def listByProjectAndUsersWithoutTerm(Long id,Long idUser, Long idImage,String username, String password) {
         String URL = Infos.CYTOMINEURL+"api/annotation.json?project=$id&noTerm=true&users=$idUser"+ (idImage? "&image="+idImage:"")
         return doGET(URL, username, password)
