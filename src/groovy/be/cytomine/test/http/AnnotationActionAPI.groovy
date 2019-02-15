@@ -25,4 +25,11 @@ class AnnotationActionAPI extends DomainAPI {
         def result = doPOST(URL,json,username,password)
         return result
     }
+
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/annotationaction/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
 }

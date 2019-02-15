@@ -23,6 +23,7 @@ import be.cytomine.test.Infos
 import be.cytomine.test.http.ImageConsultationAPI
 import be.cytomine.test.http.ProjectConnectionAPI
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 class ProjectConnectionTests {
 
@@ -176,5 +177,22 @@ class ProjectConnectionTests {
             assert it.countCreatedAnnotations == 0
             assert it.time == 0
         }
+    }
+
+    void testCountAnnotationByProject() {
+        def result = ProjectConnectionAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationByProjectWithDates() {
+        Date startDate = new Date()
+        def result = ProjectConnectionAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
     }
 }

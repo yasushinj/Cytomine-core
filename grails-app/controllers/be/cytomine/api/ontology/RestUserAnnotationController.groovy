@@ -30,6 +30,7 @@ import groovyx.net.http.HTTPBuilder
 import org.apache.commons.io.IOUtils
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 
 /**
@@ -76,6 +77,21 @@ class RestUserAnnotationController extends RestController {
             securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         }
         responseSuccess([total:userAnnotationService.count(user, project)])
+    }
+
+    @RestApiMethod(description="Count the number of annotation in the project")
+    @RestApiResponseObject(objectIdentifier = "[total:x]")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created after this date (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created before this date (optional)")
+    ])
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+        Date startDate = params.startDate ? new Date(params.long("startDate")) : null
+        Date endDate = params.endDate ? new Date(params.long("endDate")) : null
+        responseSuccess([total: userAnnotationService.countByProject(project, startDate, endDate)])
     }
 
     /**

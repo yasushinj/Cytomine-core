@@ -65,6 +65,14 @@ class AlgoAnnotationService extends ModelService {
         annotation
     }
 
+    def countByProject(Project project, Date startDate, Date endDate) {
+        String request = "SELECT COUNT(*) FROM AlgoAnnotation WHERE project = $project.id " +
+                (startDate ? "AND created > '$startDate' " : "") +
+                (endDate ? "AND created < '$endDate' " : "")
+        def result = AlgoAnnotation.executeQuery(request)
+        return result[0]
+    }
+
     def list(Project project,def propertiesToShow = null) {
         securityACLService.check(project,READ)
         AnnotationListing al = new AlgoAnnotationListing(columnToPrint: propertiesToShow,project : project.id)

@@ -50,4 +50,11 @@ class ImageConsultationAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "/api/imageconsultation/resume.json?user=$idUser&project=$idProject"
         return doGET(URL, username, password)
     }
+
+    static def countByProject(Long idProject, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$idProject/imageconsultation/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
 }

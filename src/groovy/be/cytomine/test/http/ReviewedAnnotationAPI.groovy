@@ -38,6 +38,13 @@ class ReviewedAnnotationAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/reviewedannotation/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
+
     static def list(String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/reviewedannotation.json"
         return doGET(URL, username, password)

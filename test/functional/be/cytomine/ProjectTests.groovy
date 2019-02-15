@@ -504,6 +504,13 @@ class ProjectTests  {
 
     }
 
+    void testListCommandHistory() {
+        def result = ProjectAPI.listCommandHistory(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONArray
+    }
+
     void testListCommandHistoryByProject() {
         def annotationToAdd = BasicInstanceBuilder.getUserAnnotation()
         annotationToAdd.project = BasicInstanceBuilder.getProjectNotExist(true)
@@ -512,10 +519,16 @@ class ProjectTests  {
 
         result = ProjectAPI.listCommandHistory(annotationToAdd.project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONArray
+    }
 
-        result = ProjectAPI.listCommandHistory(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testListCommandHistoryByProjectWithDates() {
+        Date startDate = new Date()
+        def result = ProjectAPI.listCommandHistory(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
         assert 200 == result.code
-
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONArray
     }
 
     void testDeleteProjectAndRestoreIt() {

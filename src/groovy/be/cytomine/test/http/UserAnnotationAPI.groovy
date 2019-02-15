@@ -40,6 +40,13 @@ class UserAnnotationAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/userannotation/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
+
     static def list(String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/userannotation.json"
         return doGET(URL, username, password)

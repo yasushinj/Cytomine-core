@@ -45,4 +45,11 @@ class ProjectConnectionAPI extends DomainAPI {
         def result = doPOST(URL,json,username,password)
         return result
     }
+
+    static def countByProject(Long idProject, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$idProject/userconnection/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
 }

@@ -256,6 +256,22 @@ class ProjectConnectionService extends ModelService {
         return result
     }
 
+    def countByProject(Project project, Long startDate = null, Long endDate = null) {
+        def result = PersistentProjectConnection.createCriteria().get {
+            eq("project", project)
+            if(startDate) {
+                gt("created", new Date(startDate))
+            }
+            if(endDate) {
+                lt("created", new Date(endDate))
+            }
+            projections {
+                rowCount()
+            }
+        }
+        return [total: result]
+    }
+
     def numberOfProjectConnections(Long afterThan = null, String period, Project project = null){
 
         // what we want

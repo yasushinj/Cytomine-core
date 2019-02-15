@@ -20,9 +20,9 @@ import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AnnotationActionAPI
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 class AnnotationActionTests {
-
 
     void testAddAction() {
         def annotation = BasicInstanceBuilder.getUserAnnotation()
@@ -30,5 +30,22 @@ class AnnotationActionTests {
 
         def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+    }
+
+    void testCountAnnotationActionsByProject() {
+        def result = AnnotationActionAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationActionsByProjectWithDates() {
+        Date startDate = new Date()
+        def result = AnnotationActionAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
     }
 }

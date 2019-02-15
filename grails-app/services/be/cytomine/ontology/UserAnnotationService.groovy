@@ -102,6 +102,14 @@ class UserAnnotationService extends ModelService {
         return UserAnnotation.countByUser(user)
     }
 
+    def countByProject(Project project, Date startDate, Date endDate) {
+        String request = "SELECT COUNT(*) FROM UserAnnotation WHERE project = $project.id " +
+                (startDate ? "AND created > '$startDate' " : "") +
+                (endDate ? "AND created < '$endDate' " : "")
+        def result = UserAnnotation.executeQuery(request)
+        return result[0]
+    }
+
     /**
      * List all annotation with a very light strcuture: id, project and crop url
      * Use for retrieval server (suggest term)

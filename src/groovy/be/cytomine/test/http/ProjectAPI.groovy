@@ -131,8 +131,10 @@ class ProjectAPI extends DomainAPI {
         return doPOST(url,'{"project": "' + idProject + '"}',username,password)
     }
 
-    static def listCommandHistory(Long idProject,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/$idProject/commandhistory.json"
+    static def listCommandHistory(Long idProject, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/$idProject/commandhistory.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 

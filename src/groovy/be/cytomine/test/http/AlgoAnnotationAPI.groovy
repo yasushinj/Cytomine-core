@@ -121,4 +121,11 @@ class AlgoAnnotationAPI extends DomainAPI {
         return doPUT(URL,"",username,password)
     }
 
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/algoannotation/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
+
 }

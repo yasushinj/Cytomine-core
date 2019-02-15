@@ -65,6 +65,23 @@ class ReviewedAnnotationTests  {
         assert json.total >= 0
     }
 
+    void testCountAnnotationByProject() {
+        def result = ReviewedAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationByProjectWithDates() {
+        Date startDate = new Date()
+        def result = ReviewedAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
     void testAddReviewedAnnotationCorrect() {
         def annotationToAdd = BasicInstanceBuilder.getReviewedAnnotationNotExist()
         def json = JSON.parse(annotationToAdd.encodeAsJSON())

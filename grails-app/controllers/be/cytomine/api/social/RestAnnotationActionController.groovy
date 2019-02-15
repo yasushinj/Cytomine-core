@@ -2,6 +2,12 @@ package be.cytomine.api.social
 
 import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
+import org.restapidoc.annotation.RestApiMethod
+import org.restapidoc.annotation.RestApiParam
+import org.restapidoc.annotation.RestApiParams
+import org.restapidoc.pojo.RestApiParamType
+import be.cytomine.project.Project
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -25,6 +31,8 @@ import be.cytomine.api.RestController
 class RestAnnotationActionController extends RestController {
 
     def annotationActionService
+    def projectService
+    def securityACLService
 
     def add = {
         try {
@@ -33,6 +41,22 @@ class RestAnnotationActionController extends RestController {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
         }
+    }
+
+    @RestApiMethod(description="Get the number of annotation actions in the specified project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Only actions after this date will be counted (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Only actions before this date will be counted (optional)"),
+    ])
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+
+        Long startDate = params.long("startDate")
+        Long endDate = params.long("endDate")
+
+        responseSuccess(annotationActionService.countByProject(project, startDate, endDate))
     }
 
 
