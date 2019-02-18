@@ -45,31 +45,57 @@ class AbstractImage extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The exact image full filename")
     String filename
 
+    // TODO: REMOVE
     @RestApiObjectField(description = "The instrument that digitalize the image", mandatory = false)
     Instrument scanner
 
+    // TODO: REMOVE
     @RestApiObjectField(description = "The source of the image (human, annimal,...)", mandatory = false)
     Sample sample
 
     @RestApiObjectField(description = "The full image path directory")
     String path
 
+    // TODO: REMOVE
     @RestApiObjectField(description = "The image type. For creation, use the ext (not the mime id!)")
     Mime mime
 
-    @RestApiObjectField(description = "The image width", mandatory = false, defaultValue = "-1")
+    @RestApiObjectField(description = "The N-dimensional image width (X)", mandatory = false, defaultValue = "-1")
     Integer width
 
-    @RestApiObjectField(description = "The image height", mandatory = false, defaultValue = "-1")
+    @RestApiObjectField(description = "The N-dimensional image height (Y)", mandatory = false, defaultValue = "-1")
     Integer height
+
+    @RestApiObjectField(description = "The N-dimensional image depth (Z)", mandatory = false, defaultValue = "1")
+    Integer depth
+
+    @RestApiObjectField(description = "The N-dimensional image time (T) (Number of frames)", mandatory = false, defaultValue = "1")
+    Integer time
+
+    @RestApiObjectField(description = "The N-dimensional image channels (C)", mandatory = false, defaultValue = "1")
+    Integer channels
+
+    @RestApiObjectField(description = "Physical size of a pixel along X axis", mandatory = false)
+    Double physicalSizeX
+
+    @RestApiObjectField(description = "Physical size of a pixel along Y axis", mandatory = false)
+    Double physicalSizeY
+
+    @RestApiObjectField(description = "Physical size of a pixel along Z axis", mandatory = false)
+    Double physicalSizeZ
+
+    @RestApiObjectField(description = "The number of frames per second", mandatory = false)
+    Double fps
 
     @RestApiObjectField(description = "The image max zoom")
     Integer magnification
 
+    // TODO: Remove - replaced by physical size X and Y
     @RestApiObjectField(description = "The image resolution (microm per pixel)")
     Double resolution
 
     @RestApiObjectField(description = "The image bit depth (bits per channel)")
+    // TODO: should be named bit per color (bpc) <> bit per pixel (bpp) = bit depth
     Integer bitDepth
 
     @RestApiObjectField(description = "The image colorspace")
@@ -84,7 +110,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         @RestApiObjectField(apiFieldName = "metadataUrl", description = "URL to get image file metadata",allowedType = "string",useForCreation = false),
         @RestApiObjectField(apiFieldName = "thumb", description = "URL to get abstract image short view (htumb)",allowedType = "string",useForCreation = false)
     ])
-    static transients = ["zoomLevels", "thumbURL"]
 
     static mapping = {
         id generator: "assigned"
@@ -102,6 +127,13 @@ class AbstractImage extends CytomineDomain implements Serializable {
         mime(nullable: false)
         width(nullable: true)
         height(nullable: true)
+        depth(nullable: true)
+        time(nullable: true)
+        channels(nullable: true)
+        physicalSizeX(nullable: true)
+        physicalSizeY(nullable: true)
+        physicalSizeZ(nullable: true)
+        fps(nullable: true)
         resolution(nullable: true)
         magnification(nullable: true)
         bitDepth(nullable: true)
@@ -143,13 +175,24 @@ class AbstractImage extends CytomineDomain implements Serializable {
      */
     static AbstractImage insertDataIntoDomain(def json,def domain = new AbstractImage()) throws CytomineException {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
+        domain.created = JSONUtils.getJSONAttrDate(json,'created')
+        domain.updated = JSONUtils.getJSONAttrDate(json,'updated')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
+
         domain.originalFilename = JSONUtils.getJSONAttrStr(json,'originalFilename')
         domain.filename = JSONUtils.getJSONAttrStr(json,'filename')
         domain.path = JSONUtils.getJSONAttrStr(json,'path')
+
         domain.height = JSONUtils.getJSONAttrInteger(json,'height',-1)
         domain.width = JSONUtils.getJSONAttrInteger(json,'width',-1)
-        domain.created = JSONUtils.getJSONAttrDate(json,'created')
-        domain.updated = JSONUtils.getJSONAttrDate(json,'updated')
+        domain.depth = JSONUtils.getJSONAttrInteger(json, "depth", 1)
+        domain.time = JSONUtils.getJSONAttrInteger(json, "time", 1)
+        domain.channels = JSONUtils.getJSONAttrInteger(json, "channels", 1)
+        domain.physicalSizeX = JSONUtils.getJSONAttrDouble(json, "physicalSizeX", null)
+        domain.physicalSizeY = JSONUtils.getJSONAttrDouble(json, "physicalSizeY", null)
+        domain.physicalSizeZ = JSONUtils.getJSONAttrDouble(json, "physicalSizeZ", null)
+        domain.fps = JSONUtils.getJSONAttrDouble(json, "fps", null)
+
         domain.scanner = JSONUtils.getJSONAttrDomain(json,"scanner",new Instrument(),false)
         domain.sample = JSONUtils.getJSONAttrDomain(json,"sample",new Sample(),false)
         domain.mime = JSONUtils.getJSONAttrDomain(json,"mime",new Mime(),'mimeType','String',true)
@@ -157,7 +200,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         domain.resolution = JSONUtils.getJSONAttrDouble(json,'resolution',null)
         domain.bitDepth = JSONUtils.getJSONAttrInteger(json, 'bitDepth', null)
         domain.colorspace = JSONUtils.getJSONAttrStr(json, 'colorspace', false)
-        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
+
 
         if (domain.mime.imageServers().size() == 0) {
             throw new WrongArgumentException("Mime with id:${json.mime} has not image server")
@@ -180,7 +223,17 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['mime'] = image?.mime?.mimeType
         returnArray['width'] = image?.width
         returnArray['height'] = image?.height
-        returnArray['depth'] = image?.getZoomLevels()?.max
+        returnArray['depth'] = image?.depth // /!!\ Breaking API : image?.getZoomLevels()?.max
+        returnArray['time'] = image?.time
+        returnArray['channels'] = image?.channels
+
+        returnArray['physicalSizeX'] = image?.physicalSizeX
+        returnArray['physicalSizeY'] = image?.physicalSizeY
+        returnArray['physicalSizeZ'] = image?.physicalSizeZ
+        returnArray['fps'] = image?.fps
+
+        returnArray['zoom'] = image?.getZoomLevels()?.max
+
         returnArray['resolution'] = image?.resolution
         returnArray['magnification'] = image?.magnification
         returnArray['bitDepth'] = image?.bitDepth
