@@ -279,10 +279,11 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
     def getAbsolutePath() {
-        if(this.version != null) {
-            def sai = StorageAbstractImage.findByAbstractImage(this);
-            if(sai) return [ sai.storage.basePath, this.path].join(File.separator)
-        }
+        return getPath()
+//        if(this.version != null) {
+//            def sai = StorageAbstractImage.findByAbstractImage(this);
+//            if(sai) return [ sai.storage.basePath, this.path].join(File.separator)
+//        }
     }
 
     def getMimeType(){
@@ -290,13 +291,14 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
     def getRandomImageServerURL() {
-        def imageServerStorages = getImageServersStorage()
-        if (imageServerStorages == null || imageServerStorages.size() == 0) {
-            throw new ServerException("no IMS found")
-            //return null
-        }
-        def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
-        return imageServerStorages[index].imageServer.url
+        return uploadedFile?.imageServer?.url
+//        def imageServerStorages = getImageServersStorage()
+//        if (imageServerStorages == null || imageServerStorages.size() == 0) {
+//            throw new ServerException("no IMS found")
+//            //return null
+//        }
+//        def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
+//        return imageServerStorages[index].imageServer.url
     }
 
     def getZoomLevels() {

@@ -38,7 +38,7 @@ import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 class AbstractImageService extends ModelService {
 
-    static transactional = false
+    static transactional = true
 
     def commandService
     def cytomineService
@@ -176,10 +176,7 @@ class AbstractImageService extends ModelService {
 
     def getUploaderOfImage(long id){
         AbstractImage img = AbstractImage.get(id)
-        if(!img){
-            return null
-        }
-        return UploadedFile.findByImage(img).user
+        return img?.uploadedFile?.user
     }
 
     /**
@@ -188,7 +185,7 @@ class AbstractImageService extends ModelService {
     def isUsed(def id) {
         AbstractImage domain = AbstractImage.read(id);
         boolean usedByImageInstance = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain).size() != 0
-        boolean usedByNestedFile = CompanionFile.findAllByAbstractImage(domain).size() != 0
+        boolean usedByNestedFile = CompanionFile.findAllByImage(domain).size() != 0
 
         return usedByImageInstance || usedByNestedFile
     }
@@ -252,19 +249,11 @@ class AbstractImageService extends ModelService {
      */
     def imageServers(def id) {
         AbstractImage image = read(id)
-        def urls = []
-        for (imageServerStorage in image.getImageServersStorage()) {
-            urls << [imageServerStorage.getZoomifyUrl(), image.getPath()].join(File.separator) + "/" //+ "&mimeType=${uploadedFile.mimeType}"
-        }
-
-
-        return [imageServersURLs : urls]
+        return [imageServersURLs : [image?.uploadedFile?.imageServer?.url]]
     }
 
     def getMainUploadedFile(AbstractImage abstractImage) {
-        List<UploadedFile> files = UploadedFile.findAllByImage(abstractImage)
-        UploadedFile file = files.size() == 1 ? files[0] : files.find{it.parent!=null}
-
+        def file = abstractImage.uploadedFile
         while(file.parent) {
             file = file.parent
         }
