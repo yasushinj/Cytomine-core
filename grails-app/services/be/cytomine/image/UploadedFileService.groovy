@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -34,10 +34,11 @@ import groovy.sql.Sql
 class UploadedFileService extends ModelService {
 
     static transactional = true
+
     def cytomineService
+    def abstractImageService
     def securityACLService
     def dataSource
-
 
     def currentDomain() {
         return UploadedFile
@@ -162,27 +163,24 @@ class UploadedFileService extends ModelService {
     def downloadURI(UploadedFile uploadedFile) {
         securityACLService.checkIsSameUser(uploadedFile.user, cytomineService.currentUser)
 
-        String fif = uploadedFile.absolutePath
-
-        if (fif) {
-            String downloadURL = ImageServer.list().get(0).url
-            downloadURL += "/image/download?fif=$fif"
-            if(uploadedFile.image) downloadURL += "&mimeType=${uploadedFile.image.mimeType}"
-            return downloadURL
-        } else {
-            return null
-        }
-
+        return "${uploadedFile.imageServer.url}/image/download?fif=${uploadedFile.path}"
+        // "&mimeType=${uploadedFile.image.mimeType}"
     }
 
-    def abstractImageService
-
     def deleteDependentAbstractImage(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
-        if(uploadedFile.image) abstractImageService.delete(uploadedFile.image,transaction,null,false)
+        //TODO
+//        if(uploadedFile.image) abstractImageService.delete(uploadedFile.image,transaction,null,false)
+    }
+
+    def deleteDependentAbstractSlice(UploadedFile uploadedFile, Transaction transaction, Task task = null) {
+        //TODO
+    }
+
+    def deleteDependentCompanionFile(UploadedFile uploadedFile, Transaction transaction, Task task = null) {
+        //TODO
     }
 
     def deleteDependentUploadedFile(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
-
         taskService.updateTask(task,task? "Delete ${UploadedFile.countByParent(uploadedFile)} uploadedFile parents":"")
 
         UploadedFile.findAllByParent(uploadedFile).each {

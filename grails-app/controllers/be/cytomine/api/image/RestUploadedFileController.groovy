@@ -50,10 +50,8 @@ class RestUploadedFileController extends RestController {
     def notificationService
     def securityACLService
     def secUserService
-
-    static allowedMethods = [image: 'POST']
-
     def dataTablesService
+
     @RestApiMethod(description="Get all uploaded file made by the current user")
     def list() {
 
@@ -147,7 +145,7 @@ class RestUploadedFileController extends RestController {
      * Update a new image
      * TODO:: how to manage security here?
      */
-    @RestApiMethod(description="Edit an uploaded file domain (usefull to edit its status during upload)")
+    @RestApiMethod(description="Edit an uploaded file domain (mainly to edit status during upload)")
     @RestApiParams(params=[
     @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The uploaded file id")
     ])
@@ -179,10 +177,6 @@ class RestUploadedFileController extends RestController {
         } else {
             responseNotFound("UploadedFile", params.id)
         }
-    }
-
-    def upRedirect () {
-        redirect(url: "http://localhost:9090/upload")
     }
 
     @RestApiMethod(description="Download the uploaded file")
