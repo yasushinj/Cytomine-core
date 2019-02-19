@@ -91,6 +91,10 @@ class AbstractImageUrlMappings {
 //        "/api/uploadedfile/$uploadedFile/image.$format"(controller:"restUploadedFile"){
 //            action = [POST:"createImage"]
 //        }
+
+        "/api/uploadedfile/$id/abstractimage.$format"(controller: "restAbstractImage") {
+            action = [GET: "getByUploadedFile"]
+        }
     }
 }
 

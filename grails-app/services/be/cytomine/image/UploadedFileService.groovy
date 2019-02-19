@@ -114,6 +114,9 @@ class UploadedFileService extends ModelService {
         UploadedFile.get(id)
     }
 
+    UploadedFile read(def id) {
+        UploadedFile.read(id)
+    }
 
     /**
      * Add the new domain with JSON data

@@ -21,6 +21,7 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.UploadedFile
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.image.server.ImageServer
@@ -48,6 +49,7 @@ class RestAbstractImageController extends RestController {
     def imageSequenceService
     def dataTablesService
     def imageServerProxyService
+    def uploadedFileService
 
     /**
      * List all abstract image available on cytomine
@@ -85,6 +87,21 @@ class RestAbstractImageController extends RestController {
             responseSuccess(abstractImageService.list(project))
         } else {
             responseNotFound("Image", "Project", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get an abstract image from its uploaded file")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
+    ])
+    def getByAbstractImage () {
+        UploadedFile uf = uploadedFileService.read(params.long('id'))
+        AbstractImage image = AbstractImage.findByUploadedFile(uf)
+        // TODO: security !
+        if (image) {
+            responseSuccess(image)
+        } else {
+            responseNotFound("AbstractImage", params.id)
         }
     }
 
