@@ -19,7 +19,6 @@ package be.cytomine.image
 import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.WrongArgumentException
-import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.EditCommand
@@ -33,9 +32,6 @@ import be.cytomine.utils.AttachedFile
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
-
-import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
@@ -192,7 +188,7 @@ class AbstractImageService extends ModelService {
     def isUsed(def id) {
         AbstractImage domain = AbstractImage.read(id);
         boolean usedByImageInstance = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain).size() != 0
-        boolean usedByNestedFile = NestedFile.findAllByAbstractImage(domain).size() != 0
+        boolean usedByNestedFile = CompanionFile.findAllByAbstractImage(domain).size() != 0
 
         return usedByImageInstance || usedByNestedFile
     }
@@ -295,7 +291,7 @@ class AbstractImageService extends ModelService {
 
     def deleteDependentNestedFile(AbstractImage ai, Transaction transaction,Task task=null) {
         //TODO: implement this with command (nestedFileService should be create)
-        NestedFile.findAllByAbstractImage(ai).each {
+        CompanionFile.findAllByAbstractImage(ai).each {
             it.delete(flush: true)
         }
     }

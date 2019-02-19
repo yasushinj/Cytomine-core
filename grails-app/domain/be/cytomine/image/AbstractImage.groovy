@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -32,29 +32,30 @@ import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 import org.restapidoc.annotation.RestApiObjectFields
 
-/**
- * An abstract image is an image that can be map with projects.
- * When an "AbstractImage" is add to a project, a "ImageInstance" is created.
- */
-@RestApiObject(name = "Abstract image", description = "A real image store on disk, see 'image instance' for an image link in a project")
+@RestApiObject(name = "Abstract image", description = "A N-dimensional image stored on disk")
 class AbstractImage extends CytomineDomain implements Serializable {
+
+    @RestApiObjectField(description = "The underlying file stored on disk")
+    UploadedFile uploadedFile
 
     @RestApiObjectField(description = "The image short filename (will be show in GUI)", useForCreation = false)
     String originalFilename
 
+    // TODO: REMOVE ?
     @RestApiObjectField(description = "The exact image full filename")
     String filename
 
-    // TODO: REMOVE
+    // TODO: REMOVE ?
     @RestApiObjectField(description = "The instrument that digitalize the image", mandatory = false)
     Instrument scanner
 
-    // TODO: REMOVE
+    // TODO: REMOVE ?
     @RestApiObjectField(description = "The source of the image (human, annimal,...)", mandatory = false)
     Sample sample
 
-    @RestApiObjectField(description = "The full image path directory")
-    String path
+    // TODO: REMOVE
+//    @RestApiObjectField(description = "The full image path directory")
+//    String path
 
     // TODO: REMOVE
     @RestApiObjectField(description = "The image type. For creation, use the ext (not the mime id!)")
@@ -119,11 +120,12 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
     static constraints = {
+        uploadedFile(nullable: true) // An abstract without uploaded file is a virtual hyper stack.
         originalFilename(nullable: true, blank: false, unique: false)
         filename(blank: false, unique: true)
         scanner(nullable: true)
         sample(nullable: true)
-        path(nullable: false)
+//        path(nullable: false)
         mime(nullable: false)
         width(nullable: true)
         height(nullable: true)
@@ -181,7 +183,9 @@ class AbstractImage extends CytomineDomain implements Serializable {
 
         domain.originalFilename = JSONUtils.getJSONAttrStr(json,'originalFilename')
         domain.filename = JSONUtils.getJSONAttrStr(json,'filename')
-        domain.path = JSONUtils.getJSONAttrStr(json,'path')
+
+        domain.uploadedFile = JSONUtils.getJSONAttrDomain(json, "uploadedFile", new UploadedFile(), true)
+//        domain.path = JSONUtils.getJSONAttrStr(json,'path')
 
         domain.height = JSONUtils.getJSONAttrInteger(json,'height',-1)
         domain.width = JSONUtils.getJSONAttrInteger(json,'width',-1)
@@ -243,6 +247,10 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['fullPath'] = image?.getAbsolutePath()
         returnArray['macroURL'] = UrlApi.getAssociatedImage(image ? (long)image?.id : null, "macro", 512)
         returnArray
+    }
+
+    def getPath() {
+        return uploadedFile?.path
     }
 
 
