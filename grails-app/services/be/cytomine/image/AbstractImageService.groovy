@@ -25,6 +25,7 @@ import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
+import be.cytomine.laboratory.Sample
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
@@ -52,6 +53,7 @@ class AbstractImageService extends ModelService {
     def securityACLService
     def storageAbstractImageService
     def imageServerProxyService
+    def projectService
 
     def currentDomain() {
         return AbstractImage
@@ -124,25 +126,66 @@ class AbstractImageService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) throws CytomineException {
-        transactionService.start()
-        SecUser currentUser = cytomineService.getCurrentUser()
-        Command c = new AddCommand(user: currentUser)
-        def res = executeCommand(c,null,json)
-        //AbstractImage abstractImage = retrieve(res.data.abstractimage)
-        AbstractImage abstractImage = res.object
+        def currentUser = cytomineService.currentUser
+        securityACLService.checkUser(currentUser)
 
-        json.storage.each { storageID ->
-            Storage storage = storageService.read(storageID)
-            securityACLService.check(storage,WRITE)
-            //CHECK WRITE ON STORAGE
-            StorageAbstractImage sai = new StorageAbstractImage(storage:storage,abstractImage:abstractImage)
-            sai.save(flush:true,failOnError: true)
+        UploadedFile uploadedFile = UploadedFile.read(json.uploadedFile as Long)
+        if (uploadedFile.status != UploadedFile.TO_DEPLOY) {
+            // throw new Error()
         }
-        imagePropertiesService.extractUseful(abstractImage)
-        abstractImage.save(flush : true)
-        //Stop transaction
 
-        return res
+        securityACLService.checkUser(currentUser)
+        return executeCommand(new AddCommand(user: currentUser), null, json)
+    }
+
+    def beforeAdd(def domain) {
+        log.info "Create a new Sample"
+        long timestamp = new Date().getTime()
+        Sample sample = new Sample(name : timestamp.toString() + "-" + domain?.uploadedFile?.getOriginalFilename())
+        domain?.sample = sample
+
+        //TODO: mime type
+//        def ext = uploadedFile.getExt()
+//        Mime mime = Mime.findByMimeType(mimeType)
+//        if (!mime) {
+//            MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+//            mimeType = mimeTypesMap.getContentType(uploadedFile.getAbsolutePath())
+//            mime = new Mime(extension: ext, mimeType : mimeType)
+//            mime.save(failOnError: true)
+//        }
+    }
+
+    def afterAdd(def domain, def response) {
+        log.info "Extract image properties"
+        imagePropertiesService.clear(domain)
+        imagePropertiesService.populate(domain)
+        imagePropertiesService.extractUseful(domain)
+
+        log.info "Add to projects, stored in uploaded file."
+        //TODO: to improve to handle AbstractSlice -> SliceInstance
+        def currentUser = cytomineService.currentUser
+        domain.uploadedFile.projects?.each { projectId ->
+            Project project = projectService.read(projectId)
+            ImageInstance imageInstance = new ImageInstance( baseImage : domain, project:  project, user :currentUser)
+            imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
+        }
+
+//        Collection<Storage> storages = []
+//        uploadedFile.getStorages()?.each {
+//            storages << storageService.read(it)
+//        }
+//
+//            storages.each { storage ->
+//                storageAbstractImageService.add(JSON.parse(JSONUtils.toJSONString([storage: storage.id, abstractimage: abstractImage.id])))
+//            }
+//
+//        json.storage.each { storageID ->
+//            Storage storage = storageService.read(storageID)
+//            securityACLService.check(storage,WRITE)
+//            //CHECK WRITE ON STORAGE
+//            StorageAbstractImage sai = new StorageAbstractImage(storage:storage,abstractImage:abstractImage)
+//            sai.save(flush:true,failOnError: true)
+//        }
     }
 
     /**
