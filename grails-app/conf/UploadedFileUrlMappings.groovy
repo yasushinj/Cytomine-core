@@ -37,7 +37,7 @@ class UploadedFileUrlMappings {
 //        }
 
         "/api/uploadedfile/$id/download"(controller:"restUploadedFile"){
-            action = [GET:"downloadUploadedFile"]
+            action = [GET:"download"]
         }
 
 //        "/uploadedfile" (controller:"restUploadedFile"){

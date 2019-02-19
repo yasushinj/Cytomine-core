@@ -1,7 +1,7 @@
 package be.cytomine.api.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,20 +17,14 @@ package be.cytomine.api.image
 */
 
 import be.cytomine.api.RestController
-import be.cytomine.image.AbstractImage
-import be.cytomine.image.ImageInstance
-import be.cytomine.image.Mime
 import be.cytomine.image.UploadedFile
-import be.cytomine.image.server.Storage
-import be.cytomine.laboratory.Sample
-import be.cytomine.project.Project
 import be.cytomine.security.User
-import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
-import org.restapidoc.annotation.*
+import org.restapidoc.annotation.RestApi
+import org.restapidoc.annotation.RestApiMethod
+import org.restapidoc.annotation.RestApiParam
+import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
-
-import javax.activation.MimetypesFileTypeMap
 
 /**
  * Controller that handle request on file uploading (when a file is uploaded, list uploaded files...)
@@ -50,30 +44,30 @@ class RestUploadedFileController extends RestController {
     def secUserService
     def dataTablesService
 
-    @RestApiMethod(description="Get all uploaded file made by the current user")
+    @RestApiMethod(description = "Get all uploaded file made by the current user")
     def list() {
 
         Long root
         def uploadedFiles
-        if(params.root) {
+        if (params.root) {
             root = Long.parseLong(params.root)
-            uploadedFiles = uploadedFileService.listHierarchicalTree((User)cytomineService.getCurrentUser(), root)
+            uploadedFiles = uploadedFileService.listHierarchicalTree((User) cytomineService.getCurrentUser(), root)
             //if view is datatables, change way to store data
         } else if (params.datatables) {
             uploadedFiles = dataTablesService.process(params, UploadedFile, null, null, null)
         } else {
             Boolean onlyRoots
-            if(params.onlyRoots) {
+            if (params.onlyRoots) {
                 onlyRoots = Boolean.parseBoolean(params.onlyRoots)
             }
             Long parent
-            if(params.parent){
+            if (params.parent) {
                 parent = Long.parseLong(params.parent)
             }
-            if(params.all){
+            if (params.all) {
                 uploadedFiles = uploadedFileService.list()
             } else {
-                uploadedFiles = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
+                uploadedFiles = uploadedFileService.list((User) secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
             }
         }
 
@@ -81,11 +75,11 @@ class RestUploadedFileController extends RestController {
         responseSuccess(uploadedFiles)
     }
 
-    @RestApiMethod(description="Get an uploaded file")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
+    @RestApiMethod(description = "Get an uploaded file")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
-    def show () {
+    def show() {
         UploadedFile up = uploadedFileService.get(params.long('id'))
         if (up) {
             securityACLService.checkIsSameUser(up.user, cytomineService.getCurrentUser())
@@ -95,50 +89,41 @@ class RestUploadedFileController extends RestController {
         }
     }
 
-    /**
-     * Add a new image
-     * TODO:: how to manage security here?
-     *
-     */
-    @RestApiMethod(description="Add a new uploaded file. This DOES NOT upload the file, just create the domain.")
-    def add () {
+    @RestApiMethod(description = "Add a new uploaded file. This DOES NOT upload the file, just create the domain.")
+    def add() {
+        // TODO:: how to manage security here?
         add(uploadedFileService, request.JSON)
     }
 
-    /**
-     * Update a new image
-     * TODO:: how to manage security here?
-     */
-    @RestApiMethod(description="Edit an uploaded file domain (mainly to edit status during upload)")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The uploaded file id")
+    @RestApiMethod(description = "Edit an uploaded file domain (mainly to edit status during upload)")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
-    def update () {
+    def update() {
+        // TODO:: how to manage security here?
         update(uploadedFileService, request.JSON)
     }
 
-    /**
-     * Delete a new image
-     * TODO:: how to manage security here?
-     */
-    @RestApiMethod(description="Delete an uploaded file domain. This do not delete the file on disk.")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The uploaded file id")
+    @RestApiMethod(description = "Delete an uploaded file domain. This do not delete the file on disk.")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
-    def delete () {
-        delete(uploadedFileService, JSON.parse("{id : $params.id}"),null)
+    def delete() {
+        // TODO:: how to manage security here?
+        delete(uploadedFileService, JSON.parse("{id : $params.id}"), null)
     }
 
-    @RestApiMethod(description="Download the uploaded file")
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
+    @RestApiMethod(description = "Download the uploaded file")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
-    def downloadUploadedFile(){
+    def download() {
+        // TODO:: how to manage security here?
         UploadedFile up = uploadedFileService.get(params.long('id'));
         if (up) {
             String url = uploadedFileService.downloadURI(up)
             log.info "redirect url"
-            redirect (url : url)
+            redirect(url: url)
         } else {
             responseNotFound("UploadedFile", params.id)
         }
