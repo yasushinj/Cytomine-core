@@ -427,6 +427,39 @@ class RestAbstractImageController extends RestController {
         }
     }
 
+    @RestApiMethod(description="Delete all previously saved image properties")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def clearProperties () {
+        AbstractImage abstractImage = abstractImageService.read(params.long('id'))
+        imagePropertiesService.clear(abstractImage)
+        responseSuccess([:])
+    }
+
+    @RestApiMethod(description="Get all image properties (metadata) from underlying file")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def populateProperties () {
+        AbstractImage abstractImage = abstractImageService.read(params.long('id'))
+        imagePropertiesService.populate(abstractImage)
+        responseSuccess([:])
+    }
+
+    @RestApiMethod(description="Fill main image field from image properties")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def extractProperties () {
+        AbstractImage abstractImage = abstractImageService.read(params.long('id'))
+        imagePropertiesService.extractUseful(abstractImage)
+        responseSuccess([:])
+    }
+
 }
 
 

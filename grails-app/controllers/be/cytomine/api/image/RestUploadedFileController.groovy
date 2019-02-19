@@ -39,12 +39,10 @@ import javax.activation.MimetypesFileTypeMap
 class RestUploadedFileController extends RestController {
 
     def cytomineService
-    def imagePropertiesService
     def projectService
     def storageService
     def grailsApplication
     def uploadedFileService
-    def storageAbstractImageService
     def imageInstanceService
     def abstractImageService
     def notificationService
@@ -82,40 +80,6 @@ class RestUploadedFileController extends RestController {
 
         responseSuccess(uploadedFiles)
     }
-
-    @RestApiMethod(description="Delete all file properties for an image")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
-    ])
-    @RestApiResponseObject(objectIdentifier = "empty")
-    def clearProperties () {
-        AbstractImage abstractImage = abstractImageService.read(params.long('id'))
-        imagePropertiesService.clear(abstractImage)
-        responseSuccess([:])
-    }
-
-    @RestApiMethod(description="Get all file properties for an image")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
-    ])
-    @RestApiResponseObject(objectIdentifier = "empty")
-    def populateProperties () {
-        AbstractImage abstractImage = abstractImageService.read(params.long('id'))
-        imagePropertiesService.populate(abstractImage)
-        responseSuccess([:])
-    }
-
-    @RestApiMethod(description="Fill image field (magn, width,...) with all file properties")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
-    ])
-    @RestApiResponseObject(objectIdentifier = "empty")
-    def extractProperties () {
-        AbstractImage abstractImage = abstractImageService.read(params.long('id'))
-        imagePropertiesService.extractUseful(abstractImage)
-        responseSuccess([:])
-    }
-
 
     @RestApiMethod(description="Get an uploaded file")
     @RestApiParams(params=[

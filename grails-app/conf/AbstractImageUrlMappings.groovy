@@ -77,13 +77,13 @@ class AbstractImageUrlMappings {
             action = [GET:"cameraUrl", POST:"cameraUrl"]
         }
 
-        "/api/abstractimage/$id/properties/clear.$format"(controller:"restUploadedFile"){
+        "/api/abstractimage/$id/properties/clear.$format"(controller:"restAbstractImage"){
             action = [POST:"clearProperties"]
         }
-        "/api/abstractimage/$id/properties/populate.$format"(controller:"restUploadedFile"){
+        "/api/abstractimage/$id/properties/populate.$format"(controller:"restAbstractImage"){
             action = [POST:"populateProperties"]
         }
-        "/api/abstractimage/$id/properties/extract.$format"(controller:"restUploadedFile"){
+        "/api/abstractimage/$id/properties/extract.$format"(controller:"restAbstractImage"){
             action = [POST:"extractProperties"]
         }
 
