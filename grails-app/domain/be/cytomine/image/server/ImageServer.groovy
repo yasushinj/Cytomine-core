@@ -1,7 +1,7 @@
 package be.cytomine.image.server
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,25 +17,28 @@ package be.cytomine.image.server
 */
 
 import be.cytomine.CytomineDomain
+import org.restapidoc.annotation.RestApiObject
+import org.restapidoc.annotation.RestApiObjectField
 
-/**
- * Server that provide images data
- */
+@RestApiObject(name = "Image server", description = "An image server (IMS) instance")
 class ImageServer extends CytomineDomain {
 
+    @RestApiObjectField(description = "A user friendly name for IMS instance.", mandatory = false)
     String name
+
+    @RestApiObjectField(description = "The URL of the image server instance")
     String url
-    String service
-    String className
+
+    @RestApiObjectField(description = "The base path used by the image server")
+    String basePath
+
+    @RestApiObjectField(description = "A flag for the server availability")
     Boolean available
 
     static constraints = {
         name blank: false
         url blank: false
+        basePath blank: false
         available nullable: false
-    }
-
-    def getBaseUrl() {
-        return url + service
     }
 }
