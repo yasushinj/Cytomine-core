@@ -31,6 +31,9 @@ import be.cytomine.utils.Task
 import grails.converters.JSON
 import groovy.sql.Sql
 
+import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
+
 class UploadedFileService extends ModelService {
 
     static transactional = true
@@ -53,6 +56,7 @@ class UploadedFileService extends ModelService {
     }
 
     def list(User user) {
+        // TODO: update security to use storages container
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
@@ -62,7 +66,7 @@ class UploadedFileService extends ModelService {
     }
 
     def list(User user, Long parentId, Boolean onlyRoot) {
-
+        // TODO: update security to use storages container
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
@@ -78,7 +82,7 @@ class UploadedFileService extends ModelService {
 
     def listHierarchicalTree(User user, Long rootId){
         UploadedFile root = UploadedFile.get(rootId)
-
+        // TODO: update security to use storages container
         securityACLService.checkIsSameUser(root.user, cytomineService.currentUser)
         String request =
                 "SELECT uf.id, uf.created, uf.original_filename, uf.l_tree, uf.parent_id, uf.size, uf.status, uf.image_id \n" +
@@ -110,12 +114,12 @@ class UploadedFileService extends ModelService {
         return data
     }
 
-    UploadedFile get(def id) {
-        UploadedFile.get(id)
-    }
-
     UploadedFile read(def id) {
-        UploadedFile.read(id)
+        UploadedFile uploadedFile = UploadedFile.read(id)
+        if (uploadedFile) {
+            securityACLService.checkAtLeastOne(uploadedFile, READ)
+        }
+        uploadedFile
     }
 
     /**
@@ -139,7 +143,7 @@ class UploadedFileService extends ModelService {
     def update(UploadedFile uploadedFile, def jsonNewData, Transaction transaction = null) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkUser(currentUser)
-        securityACLService.checkIsSameUser(uploadedFile.user, currentUser)
+        securityACLService.checkAtLeastOne(uploadedFile, WRITE)
         return executeCommand(new EditCommand(user: currentUser, transaction : transaction), uploadedFile,jsonNewData)
     }
 
@@ -153,7 +157,7 @@ class UploadedFileService extends ModelService {
      */
     def delete(UploadedFile domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.checkIsSameUser(domain.user, currentUser)
+        securityACLService.checkAtLeastOne(domain, WRITE)
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
     }
@@ -164,7 +168,7 @@ class UploadedFileService extends ModelService {
 
 
     def downloadURI(UploadedFile uploadedFile) {
-        securityACLService.checkIsSameUser(uploadedFile.user, cytomineService.currentUser)
+        securityACLService.checkAtLeastOne(uploadedFile, WRITE)
 
         return "${uploadedFile.imageServer.url}/image/download?fif=${uploadedFile.path}"
         // "&mimeType=${uploadedFile.image.mimeType}"

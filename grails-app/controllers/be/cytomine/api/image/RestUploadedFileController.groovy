@@ -45,6 +45,12 @@ class RestUploadedFileController extends RestController {
     def dataTablesService
 
     @RestApiMethod(description = "Get all uploaded file made by the current user")
+    @RestApiParams(params = [
+            @RestApiParam(name = "root", type = "long", paramType = RestApiParamType.QUERY, description = ""),
+            @RestApiParam(name = "parent", type = "long", paramType = RestApiParamType.QUERY, description = "If set, only return uploaded files with the given parent"),
+            @RestApiParam(name = "onlyRoots", type = "boolean", paramType = RestApiParamType.QUERY, description = "True to only return roots"),
+            @RestApiParam(name = "all", type = "boolean", paramType = RestApiParamType.QUERY, description = "True to list uploaded files for all users the current user has access to")
+    ])
     def list() {
 
         Long root
@@ -80,9 +86,8 @@ class RestUploadedFileController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def show() {
-        UploadedFile up = uploadedFileService.get(params.long('id'))
+        UploadedFile up = uploadedFileService.read(params.long('id'))
         if (up) {
-            securityACLService.checkIsSameUser(up.user, cytomineService.getCurrentUser())
             responseSuccess(up)
         } else {
             responseNotFound("UploadedFile", params.id)
@@ -91,7 +96,6 @@ class RestUploadedFileController extends RestController {
 
     @RestApiMethod(description = "Add a new uploaded file. This DOES NOT upload the file, just create the domain.")
     def add() {
-        // TODO:: how to manage security here?
         add(uploadedFileService, request.JSON)
     }
 
@@ -100,7 +104,6 @@ class RestUploadedFileController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def update() {
-        // TODO:: how to manage security here?
         update(uploadedFileService, request.JSON)
     }
 
@@ -109,7 +112,6 @@ class RestUploadedFileController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def delete() {
-        // TODO:: how to manage security here?
         delete(uploadedFileService, JSON.parse("{id : $params.id}"), null)
     }
 
@@ -118,8 +120,7 @@ class RestUploadedFileController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def download() {
-        // TODO:: how to manage security here?
-        UploadedFile up = uploadedFileService.get(params.long('id'));
+        UploadedFile up = uploadedFileService.read(params.long('id'));
         if (up) {
             String url = uploadedFileService.downloadURI(up)
             log.info "redirect url"

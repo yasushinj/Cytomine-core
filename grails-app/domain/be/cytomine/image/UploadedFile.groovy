@@ -191,4 +191,8 @@ class UploadedFile extends CytomineDomain implements Serializable{
         lTree = parent ? parent.lTree+"." : ""
         lTree += id
     }
+
+    CytomineDomain[] containers() {
+        return storages
+    }
 }
