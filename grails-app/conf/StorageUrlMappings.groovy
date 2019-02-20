@@ -37,8 +37,8 @@ class StorageUrlMappings {
 
 
 
-        "/api/imageserver.$format"(controller : "restStorage") {
-            action = [GET:"listByMime"]
-        }
+//        "/api/imageserver.$format"(controller : "restStorage") {
+//            action = [GET:"listByMime"]
+//        }
     }
 }

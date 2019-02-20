@@ -46,38 +46,38 @@ class RestStorageController extends RestController {
         responseSuccess(storageService.list())
     }
 
-    @RestApiMethod(description="List all storages for the current user and the provided mime type", listing=true)
-    @RestApiParams(params=[
-            @RestApiParam(name="mimeType", type="String", paramType = RestApiParamType.QUERY, description = "The mime type")
-    ])
-    def listByMime() {
-        log.info 'listing storages by mime/user'
-        def currentUser = cytomineService.currentUser
-
-        String mimeType = params.get('mimeType')
-        Mime mime = Mime.findByMimeType(mimeType)
-
-        //list all images server for this mime
-        List<ImageServer> servers = MimeImageServer.findAllByMime(mime).collect{
-            it.imageServer
-        }
-
-        //list all storage for this user
-        List<Storage> storages = Storage.findAllByUser(currentUser)
-
-        if(servers.isEmpty()) {
-            responseNotFound("ImageServer", "No image server found for mimeType=$mimeType")
-        } else if(storages.isEmpty()) {
-            responseNotFound("Storage", "No storage for user=${currentUser.id}")
-        } else {
-            def serverAvailableForUser = ImageServerStorage.findAllByImageServerInListAndStorageInList(servers,storages)
-            if(serverAvailableForUser.isEmpty()) {
-                responseNotFound("ImageServerStorage", "No imageserver-storage found for servers=${servers} and storages=${storages}")
-            } else {
-                responseSuccess(serverAvailableForUser)
-            }
-        }
-    }
+//    @RestApiMethod(description="List all storages for the current user and the provided mime type", listing=true)
+//    @RestApiParams(params=[
+//            @RestApiParam(name="mimeType", type="String", paramType = RestApiParamType.QUERY, description = "The mime type")
+//    ])
+//    def listByMime() {
+//        log.info 'listing storages by mime/user'
+//        def currentUser = cytomineService.currentUser
+//
+//        String mimeType = params.get('mimeType')
+//        Mime mime = Mime.findByMimeType(mimeType)
+//
+//        //list all images server for this mime
+//        List<ImageServer> servers = MimeImageServer.findAllByMime(mime).collect{
+//            it.imageServer
+//        }
+//
+//        //list all storage for this user
+//        List<Storage> storages = Storage.findAllByUser(currentUser)
+//
+//        if(servers.isEmpty()) {
+//            responseNotFound("ImageServer", "No image server found for mimeType=$mimeType")
+//        } else if(storages.isEmpty()) {
+//            responseNotFound("Storage", "No storage for user=${currentUser.id}")
+//        } else {
+//            def serverAvailableForUser = ImageServerStorage.findAllByImageServerInListAndStorageInList(servers,storages)
+//            if(serverAvailableForUser.isEmpty()) {
+//                responseNotFound("ImageServerStorage", "No imageserver-storage found for servers=${servers} and storages=${storages}")
+//            } else {
+//                responseSuccess(serverAvailableForUser)
+//            }
+//        }
+//    }
 
     @RestApiMethod(description="Get a storage")
     @RestApiParams(params=[
