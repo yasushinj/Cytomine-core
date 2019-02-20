@@ -50,7 +50,7 @@ class RestStorageController extends RestController {
             storages = storageService.list()
         }
         else {
-            storages = storageService.list((User) cytomineService.getCurrentUser())
+            storages = storageService.list(cytomineService.getCurrentUser())
         }
         responseSuccess(storages)
     }

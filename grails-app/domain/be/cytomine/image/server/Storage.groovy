@@ -31,9 +31,6 @@ class Storage extends CytomineDomain {
     @RestApiObjectField(description = "The storage owner, which has administration rights on the domain.")
     SecUser user
 
-    // TODO: remove
-    String basePath
-
     static belongsTo = [SecUser]
 
     static mapping = {
@@ -43,15 +40,12 @@ class Storage extends CytomineDomain {
 
     static constraints = {
         name(unique: false)
-        basePath(nullable: true, blank: true)
     }
 
     static def getDataFromDomain(def storage) {
         def returnArray = CytomineDomain.getDataFromDomain(storage)
         returnArray['user'] = storage?.user?.id
         returnArray['name'] = storage?.name
-
-        returnArray['basePath'] = storage?.basePath //TODO: remove
 
         returnArray
     }
@@ -63,8 +57,6 @@ class Storage extends CytomineDomain {
 
         domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name', true)
-
-        domain.basePath = JSONUtils.getJSONAttrStr(json, 'basePath', false) //TODO: remove
 
         return domain
     }

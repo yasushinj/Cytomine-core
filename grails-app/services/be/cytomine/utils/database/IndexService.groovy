@@ -68,7 +68,7 @@ class IndexService {
             createIndex("algo_annotation", "location", "GIST");
 
 
-            createIndex("uploaded_file", "image_id");
+//            createIndex("uploaded_file", "image_id");
             createIndex("uploaded_file","l_tree","gist")
 
             /**

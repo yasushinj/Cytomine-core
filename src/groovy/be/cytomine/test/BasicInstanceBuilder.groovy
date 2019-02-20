@@ -1216,7 +1216,7 @@ class BasicInstanceBuilder {
     static Storage getStorage() {
         def storage = Storage.findByUser(User.findByUsername(Infos.SUPERADMINLOGIN))
         if(!storage) {
-            storage = new Storage(name:"bidon",basePath:"storagepath",user: User.findByUsername(Infos.SUPERADMINLOGIN))
+            storage = new Storage(name:"bidon",user: User.findByUsername(Infos.SUPERADMINLOGIN))
             saveDomain(storage)
             Infos.addUserRight(User.findByUsername(Infos.SUPERADMINLOGIN),storage)
         }
@@ -1224,7 +1224,7 @@ class BasicInstanceBuilder {
     }
 
     static Storage getStorageNotExist(boolean save = false) {
-        Storage storage = new Storage(name: getRandomString(), basePath: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
+        Storage storage = new Storage(name: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
 
         if(save) {
             saveDomain(storage)
@@ -1475,7 +1475,6 @@ class BasicInstanceBuilder {
         Storage storage = Storage.findByUser(user)
         if(!storage) {
             storage = new Storage()
-            storage.basePath = "/data/test.cytomine.be/1"
             storage.name = "lrollus test storage"
             storage.user = user
             BasicInstanceBuilder.saveDomain(storage)
