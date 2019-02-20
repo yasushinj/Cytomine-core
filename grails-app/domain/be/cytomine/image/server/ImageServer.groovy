@@ -38,7 +38,8 @@ class ImageServer extends CytomineDomain {
     static constraints = {
         name blank: false
         url blank: false
-        basePath blank: false
+//        basePath blank: false
+        basePath(nullable: true) //TODO DB schema update issue
         available nullable: false
     }
 }

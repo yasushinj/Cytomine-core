@@ -316,12 +316,13 @@ class BootstrapUtilsService {
             log.info "Create new IMS: $url"
             def IIPImageServer = [className : 'IIPResolver', name : 'IIP'+name, service : '/image/tile', url : url, available : true]
             ImageServer imageServer = new ImageServer(
-                    className: IIPImageServer.className,
+//                    className: IIPImageServer.className,
                     name: IIPImageServer.name,
-                    service : IIPImageServer.service,
+//                    service : IIPImageServer.service,
                     url : IIPImageServer.url,
-                    available : IIPImageServer.available
-            )
+                    available : IIPImageServer.available,
+                    basePath: "/data/images"
+            ) //TODO basepath
 
             if (imageServer.validate()) {
                 imageServer.save()

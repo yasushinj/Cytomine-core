@@ -334,13 +334,15 @@ environments {
         grails.plugin.springsecurity.basic.realmName = "Cytomine log"
         grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
 
-        grails.adminPassword = "password"
-        grails.ImageServerPrivateKey=""
-        grails.ImageServerPublicKey=""
-        grails.adminPrivateKey="XXX"
-        grails.adminPublicKey="XXX"
-        grails.superAdminPrivateKey="X"
-        grails.superAdminPublicKey="X"
+        grails.adminPassword="admin"
+        grails.ImageServerPrivateKey="ABC"
+        grails.ImageServerPublicKey="DEF"
+        grails.adminPrivateKey="GHI"
+        grails.adminPublicKey="JKL"
+        grails.superAdminPrivateKey="MNO"
+        grails.superAdminPublicKey="PQR"
+        grails.rabbitMQPrivateKey="STU"
+        grails.rabbitMQPublicKey="VWX"
     }
 }
 
