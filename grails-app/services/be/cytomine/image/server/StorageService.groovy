@@ -18,6 +18,7 @@ package be.cytomine.image.server
 
 import be.cytomine.command.*
 import be.cytomine.security.SecUser
+import be.cytomine.security.User
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import org.springframework.security.acls.domain.BasePermission
@@ -39,8 +40,12 @@ class StorageService extends ModelService {
     }
 
     def list() {
-        def list = securityACLService.getStorageList(cytomineService.currentUser)
-        list.sort{it.name}
+        return securityACLService.getStorageList(cytomineService.currentUser)
+    }
+
+    def list(User user) {
+        // The collect closure is needed if the user is admin since it has access to all storages.
+        return securityACLService.getStorageList(user).collect{ it.user.id == user.id }
     }
 
     def read(def id) {

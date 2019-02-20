@@ -41,9 +41,18 @@ class RestStorageController extends RestController {
     def secUserService
 
     @RestApiMethod(description="List all storages", listing=true)
+    @RestApiParams(params = [
+            @RestApiParam(name = "all", type = "boolean", paramType = RestApiParamType.QUERY, description = "True to list storages for all users the current user has access to")
+    ])
     def list() {
-        log.info 'listing storages'
-        responseSuccess(storageService.list())
+        def storages
+        if (params.boolean("all", false)) {
+            storages = storageService.list()
+        }
+        else {
+            storages = storageService.list((User) cytomineService.getCurrentUser())
+        }
+        responseSuccess(storages)
     }
 
 //    @RestApiMethod(description="List all storages for the current user and the provided mime type", listing=true)

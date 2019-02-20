@@ -36,6 +36,11 @@ class Storage extends CytomineDomain {
 
     static belongsTo = [SecUser]
 
+    static mapping = {
+        id(generator: 'assigned', unique: true)
+        sort("name")
+    }
+
     static constraints = {
         name(unique: false)
         basePath(nullable: true, blank: true)
