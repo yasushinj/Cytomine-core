@@ -102,14 +102,7 @@ class RestStorageController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The storage id")
     ])
     def update() {
-        try {
-            def domain = storageService.retrieve(request.JSON)
-            def result = storageService.update(domain,request.JSON)
-            responseResult(result)
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
+        update(storageService, request.JSON)
     }
 
     @RestApiMethod(description="Delete a storage")
@@ -117,14 +110,7 @@ class RestStorageController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The storage id")
     ])
     def delete() {
-        try {
-            def domain = storageService.retrieve(JSON.parse("{id : $params.id}"))
-            def result = storageService.delete(domain,transactionService.start(),null,true)
-            responseResult(result)
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
+        delete(storageService, JSON.parse("{id : $params.id}"), null)
     }
 
     /**
@@ -132,7 +118,7 @@ class RestStorageController extends RestController {
      */
     @RestApiMethod(description="Create a storage for a user with default parameter values")
     @RestApiParams(params=[
-            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The human user id")
     ])
     def create() {
         def id = params.long('user')

@@ -93,11 +93,11 @@ class StorageService extends ModelService {
         log.info("Add permission on " + domain + " to " + springSecurityService.authentication.name)
         if(!domain.hasACLPermission(READ)) {
             log.info("force to put it in list")
-            permissionService.addPermission(domain, cytomineService.currentUser.username, BasePermission.READ)
+            permissionService.addPermission(domain, cytomineService.currentUser.username, READ)
         }
         if(!domain.hasACLPermission(ADMINISTRATION)) {
             log.info("force to put it in list")
-            permissionService.addPermission(domain, cytomineService.currentUser.username, BasePermission.ADMINISTRATION)
+            permissionService.addPermission(domain, cytomineService.currentUser.username, ADMINISTRATION)
         }
         for (imageServer in ImageServer.findAll()) {
             imageServer.save(failOnError: true)
@@ -124,6 +124,7 @@ class StorageService extends ModelService {
     }
 
 
+    // TODO: partially move to UserService.afterAdd()
     def initUserStorage(SecUser user) {  //:to do => use command instead of domains
         String storage_base_path = grailsApplication.config.storage_path
         String remotePath;
@@ -142,7 +143,7 @@ class StorageService extends ModelService {
 
         if (storage.validate()) {
             storage.save()
-            permissionService.addPermission(storage,user.username,BasePermission.ADMINISTRATION)
+            permissionService.addPermission(storage,user.username, ADMINISTRATION)
 
             for (imageServer in ImageServer.findAll()) {
                 imageServer.save(failOnError: true)
