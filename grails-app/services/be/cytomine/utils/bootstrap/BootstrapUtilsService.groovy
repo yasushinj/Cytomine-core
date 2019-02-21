@@ -284,6 +284,7 @@ class BootstrapUtilsService {
 
     def createMultipleIS() {
 
+        // TODO: now it will delete all related uploaded files !
         ImageServer.list().each { server ->
             if(!grailsApplication.config.grails.imageServerURL.contains(server.url)) {
                 log.info server.url + " is not in config, drop it"

@@ -106,6 +106,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         projects nullable: true
         parent(nullable : true)
         lTree nullable : true
+        imageServer nullable: true //TODO: DB schema update issue
     }
 
     static def getDataFromDomain(def uploaded) {

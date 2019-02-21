@@ -1,6 +1,7 @@
 package be.cytomine.utils.bootstrap
 
 import be.cytomine.image.AbstractImage
+import be.cytomine.image.server.ImageServer
 
 /*
 * Copyright (c) 2009-2017. Authors: see NOTICE file.
@@ -79,6 +80,71 @@ class BootstrapOldVersionService {
         }
 
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'))
+    }
+
+    void init20190220() {
+        log.info "20190220"
+
+        // Move old Long[] storages to many-to-one.
+        def sql = new Sql(dataSource)
+        if (!sql.rows("select uploaded_file_storages_id from uploaded_file_storage")) {
+            def inserts = []
+            def i = 0
+            def request = "INSERT INTO uploaded_file_storage (uploaded_file_storages_id, storage_id) VALUES "
+            sql.eachRow("select id, storages from uploaded_file") {
+                def ufId = it[0]
+                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(it[1] as byte[]))
+                Long[] storages = (Long[]) ois.readObject()
+                inserts += storages.collect{ "($ufId, $it)" }
+
+                if (i > 0 && i % 2000 == 0) {
+                    sql.execute(request + inserts.join(",") + ";")
+                    inserts = []
+                }
+                i++
+            }
+
+            if (inserts.size() > 0) {
+                sql.execute(request + inserts.join(",") + ";")
+            }
+        }
+
+        // Add image server to uploaded file (TODO: use old ImageServerStorage and StorageAbstractImage)
+        UploadedFile.executeUpdate("update UploadedFile uf set uf.imageServer = ? where uf.imageServer is null",
+                [ImageServer.first()])
+
+        // Update all image servers with known base path
+        ImageServer.executeUpdate("update ImageServer i set i.basePath = ? where i.basePath is null",
+                [grailsApplication.config.storage_path])
+
+        // Create a (0,0,0) abstract slice for all abstract images
+        if (!sql.rows("select id from abstract_slice")) {
+            def inserts = []
+            def i = 0
+            def request = "INSERT INTO abstract_slice (id, created, version, image_id, uploaded_file_id, mime_id, channel, z_stack, time) VALUES "
+            sql.eachRow("select uploaded_file.id, image_id, mime_id, abstract_image.created " +
+                    "from uploaded_file " +
+                    "left join abstract_image on abstract_image.id = uploaded_file.image_id " +
+                    "where image_id is not null") {
+                inserts << "(nextval('hibernate_sequence'), '${it[3]}', 0, ${it[1]}, ${it[0]}, ${it[2]}, 0, 0, 0)"
+                if (i > 0 && i % 2000 == 0) {
+                    sql.execute(request + inserts.join(",") + ";")
+                    inserts = []
+                }
+                i++
+            }
+
+            if (inserts.size() > 0) {
+                sql.execute(request + inserts.join(",") + ";")
+            }
+        }
+
+        // Change direction of UF - AI relation and use the root as AI uploaded file
+        sql.executeUpdate("update abstract_image " +
+                "set uploaded_file_id = cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) " +
+                "from uploaded_file " +
+                "where abstract_image.id = image_id and uploaded_file_id is null;")
+        sql.close()
     }
 
     void init20180904() {
