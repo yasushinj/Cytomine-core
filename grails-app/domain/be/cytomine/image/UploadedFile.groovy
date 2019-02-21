@@ -31,6 +31,8 @@ import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 import org.restapidoc.annotation.RestApiObjectFields
 
+import java.nio.file.Paths
+
 /**
  * An UploadedFile is a file uploaded through the API.
  * Uploaded are temporaly instances, files related to them are placed
@@ -173,7 +175,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
     }
 
     def getPath() {
-        return [imageServer.basePath, user.id, filename].join(File.separator)
+        return Paths.get(imageServer?.basePath, user.id as String, filename).toString()
     }
 
     def getAbsolutePath() {
