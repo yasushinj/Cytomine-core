@@ -62,10 +62,10 @@ class AbstractImageService extends ModelService {
     AbstractImage read(def id) {
         AbstractImage abstractImage = AbstractImage.read(id)
         if(abstractImage) {
-            //securityACLService.checkAtLeastOne(abstractImage, READ)
-            if(!hasRightToReadAbstractImageWithProject(abstractImage) && !hasRightToReadAbstractImageWithStorage(abstractImage)) {
-                throw new ForbiddenException("You don't have the right to read or modity this resource! ${abstractImage} ${id}")
-            }
+            securityACLService.checkAtLeastOne(abstractImage, READ)
+//            if(!hasRightToReadAbstractImageWithProject(abstractImage) && !hasRightToReadAbstractImageWithStorage(abstractImage)) {
+//                throw new ForbiddenException("You don't have the right to read or modity this resource! ${abstractImage} ${id}")
+//            }
         }
         abstractImage
     }
@@ -73,10 +73,10 @@ class AbstractImageService extends ModelService {
     AbstractImage get(def id) {
         AbstractImage abstractImage = AbstractImage.get(id)
         if(abstractImage) {
-            //securityACLService.checkAtLeastOne(abstractImage, READ)
-            if(!hasRightToReadAbstractImageWithProject(abstractImage) && !hasRightToReadAbstractImageWithStorage(abstractImage)) {
-                throw new ForbiddenException("You don't have the right to read or modity this resource! ${abstractImage} ${id}")
-            }
+            securityACLService.checkAtLeastOne(abstractImage, READ)
+//            if(!hasRightToReadAbstractImageWithProject(abstractImage) && !hasRightToReadAbstractImageWithStorage(abstractImage)) {
+//                throw new ForbiddenException("You don't have the right to read or modity this resource! ${abstractImage} ${id}")
+//            }
         }
         abstractImage
     }
@@ -100,6 +100,7 @@ class AbstractImageService extends ModelService {
         return false
     }
 
+    // TODO: remove ? not meaningful
     def list(Project project) {
         securityACLService.check(project,READ)
         ImageInstance.createCriteria().list {
@@ -115,8 +116,13 @@ class AbstractImageService extends ModelService {
             return AbstractImage.list()
         } else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
-            List<AbstractImage> images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}
-            return images.findAll{!it.deleted}
+            return AbstractImage.createCriteria().list {
+                createAlias("uploadedFile", "uf")
+                inList("uf.storages", storages)
+                isNull("deleted")
+            }
+//            List<AbstractImage> images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}
+//            return images.findAll{!it.deleted}
         }
     }
 
@@ -129,9 +135,11 @@ class AbstractImageService extends ModelService {
         def currentUser = cytomineService.currentUser
         securityACLService.checkUser(currentUser)
 
-        UploadedFile uploadedFile = UploadedFile.read(json.uploadedFile as Long)
-        if (uploadedFile.status != UploadedFile.TO_DEPLOY) {
-            // throw new Error()
+        if (json.uploadedFile) {
+            UploadedFile uploadedFile = UploadedFile.read(json.uploadedFile as Long)
+            if (uploadedFile.status != UploadedFile.TO_DEPLOY) {
+                // throw new Error()
+            }
         }
 
         return executeCommand(new AddCommand(user: currentUser), null, json)

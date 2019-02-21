@@ -97,7 +97,6 @@ class RestAbstractImageController extends RestController {
     def getByAbstractImage () {
         UploadedFile uf = uploadedFileService.read(params.long('id'))
         AbstractImage image = AbstractImage.findByUploadedFile(uf)
-        // TODO: security !
         if (image) {
             responseSuccess(image)
         } else {
@@ -123,7 +122,6 @@ class RestAbstractImageController extends RestController {
 
     /**
      * Add a new image
-     * TODO:: how to manage security here?
      */
     @RestApiMethod(description="Add a new image in the software. See 'upload file service' to upload an image")
     def add() {
@@ -132,7 +130,6 @@ class RestAbstractImageController extends RestController {
 
     /**
      * Update a new image
-     * TODO:: how to manage security here?
      */
     @RestApiMethod(description="Update an image in the software")
     @RestApiParams(params=[
@@ -144,7 +141,6 @@ class RestAbstractImageController extends RestController {
 
     /**
      * Delete a new image
-     * TODO:: how to manage security here?
      */
     @RestApiMethod(description="Delete an abstract image)")
     @RestApiParams(params=[
