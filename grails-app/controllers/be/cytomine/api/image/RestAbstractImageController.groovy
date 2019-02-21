@@ -94,7 +94,7 @@ class RestAbstractImageController extends RestController {
     @RestApiParams(params=[
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
-    def getByAbstractImage () {
+    def getByUploadedFile () {
         UploadedFile uf = uploadedFileService.read(params.long('id'))
         AbstractImage image = AbstractImage.findByUploadedFile(uf)
         if (image) {

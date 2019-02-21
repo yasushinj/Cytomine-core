@@ -128,8 +128,8 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['error_convert'] = (uploaded?.status == ERROR_CONVERSION)
         returnArray['uncompressed'] = (uploaded?.status == UNCOMPRESSED)
         returnArray['to_deploy'] = (uploaded?.status == TO_DEPLOY)
-        returnArray['to_convert'] = (uploaded?.status = TO_CONVERT)
-        returnArray['error_deployment'] = (uploaded?.status = ERROR_DEPLOYMENT)
+        returnArray['to_convert'] = (uploaded?.status == TO_CONVERT)
+        returnArray['error_deployment'] = (uploaded?.status == ERROR_DEPLOYMENT)
 
         returnArray['projects'] = uploaded?.projects
 
