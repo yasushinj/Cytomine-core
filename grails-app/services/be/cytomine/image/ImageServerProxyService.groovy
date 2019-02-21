@@ -24,6 +24,15 @@ class ImageServerProxyService {
         return [server, parameters]
     }
 
+    private static def imsParametersFromAbstractSlice(AbstractSlice slice) {
+        def server = slice.getImageServer()
+        def parameters = [
+                fif: slice.path,
+                mimeType: slice.mimeType
+        ]
+        return [server, parameters]
+    }
+
     private static def filterParameters(parameters) {
         parameters.findAll { it.value != null && it.value != ""}
     }
@@ -119,18 +128,18 @@ class ImageServerProxyService {
     }
 
     def thumb(ImageInstance image, def params) {
-        thumb(image.baseImage, params)
+//        thumb(image.baseImage, params)
     }
 
-    def thumb(AbstractImage image, def params) {
-        def (server, parameters) = imsParametersFromAbstractImage(image)
+    def thumb(AbstractSlice slice, def params) {
+        def (server, parameters) = imsParametersFromAbstractSlice(slice)
         def format = checkFormat(params.format, ['jpg', 'png'])
         parameters.maxSize = params.maxSize
         parameters.colormap = params.colormap
         parameters.inverse = params.inverse
         parameters.contrast = params.contrast
         parameters.gamma = params.gamma
-        parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.bits
+        parameters.bits = (params.bits == "max") ? (slice.image.bitDepth ?: 8) : params.bits
 
 //        AttachedFile attachedFile = AttachedFile.findByDomainIdentAndFilename(abstractImage.id, url)
 //        if (attachedFile) {
@@ -152,12 +161,12 @@ class ImageServerProxyService {
     }
 
     def crop(ImageInstance image, def params, def urlOnly = false, def parametersOnly = false) {
-        crop(image.baseImage, params, urlOnly, parametersOnly)
+//        crop(image.baseImage, params, urlOnly, parametersOnly)
     }
 
-    def crop(AbstractImage image, def params, def urlOnly = false, def parametersOnly = false) {
+    def crop(AbstractSlice slice, def params, def urlOnly = false, def parametersOnly = false) {
         log.info params
-        def (server, parameters) = imsParametersFromAbstractImage(image)
+        def (server, parameters) = imsParametersFromAbstractSlice(slice)
 
         def geometry = params.geometry
         if (!geometry && params.location) {
@@ -179,8 +188,8 @@ class ImageServerProxyService {
         else if (geometry)
             parameters.location = simplifyGeometryService.simplifyPolygonForCrop(geometry)
 
-        parameters.imageWidth = image.width
-        parameters.imageHeight = image.height
+        parameters.imageWidth = slice.image.width
+        parameters.imageHeight = slice.image.height
         parameters.maxSize = params.int('maxSize')
         parameters.zoom = (!params.int('maxSize')) ? params.int('zoom') : null
         parameters.increaseArea = params.double('increaseArea')
@@ -206,7 +215,7 @@ class ImageServerProxyService {
         parameters.inverse = params.boolean('inverse')
         parameters.contrast = params.double('contrast')
         parameters.gamma = params.double('gamma')
-        parameters.bits = (params.bits == "max") ? (image.bitDepth ?: 8) : params.int('bits')
+        parameters.bits = (params.bits == "max") ? (slice.image.bitDepth ?: 8) : params.int('bits')
         parameters.alpha = params.int('alpha')
         parameters.strokeWidth = params.int('strokeWidth')
         parameters.strokeColor = params.strokeColor
@@ -222,10 +231,10 @@ class ImageServerProxyService {
     }
 
     def window(ImageInstance image, def params, def urlOnly = false) {
-        window(image.baseImage, params, urlOnly)
+//        window(image.baseImage, params, urlOnly)
     }
 
-    def window(AbstractImage image, def params, def urlOnly = false) {
+    def window(AbstractSlice slice, def params, def urlOnly = false) {
         def boundaries = [:]
         boundaries.topLeftX = Math.max((int) params.int('x'), 0)
         boundaries.topLeftY = Math.max((int) params.int('y'), 0)
@@ -235,16 +244,16 @@ class ImageServerProxyService {
         def withExterior = params.boolean('withExterior', false)
         if (!withExterior) {
             // Do not take part outside of the real image
-            if(image.width && (boundaries.width + boundaries.topLeftX) > image.width) {
-                boundaries.width = image.width - boundaries.topLeftX
+            if(slice.image.width && (boundaries.width + boundaries.topLeftX) > slice.image.width) {
+                boundaries.width = slice.image.width - boundaries.topLeftX
             }
-            if(image.height && (boundaries.height + boundaries.topLeftY) > image.height) {
-                boundaries.height = image.height - boundaries.topLeftY
+            if(slice.image.height && (boundaries.height + boundaries.topLeftY) > slice.image.height) {
+                boundaries.height = slice.image.height - boundaries.topLeftY
             }
         }
 
-        boundaries.topLeftY = Math.max((int) (image.height - boundaries.topLeftY), 0)
+        boundaries.topLeftY = Math.max((int) (slice.image.height - boundaries.topLeftY), 0)
         params.boundaries = boundaries
-        crop(image, params, urlOnly)
+        crop(slice, params, urlOnly)
     }
 }

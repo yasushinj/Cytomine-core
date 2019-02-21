@@ -134,7 +134,6 @@ class AbstractImageService extends ModelService {
             // throw new Error()
         }
 
-        securityACLService.checkUser(currentUser)
         return executeCommand(new AddCommand(user: currentUser), null, json)
     }
 
@@ -196,24 +195,23 @@ class AbstractImageService extends ModelService {
      */
     def update(AbstractImage image,def jsonNewData) throws CytomineException {
         securityACLService.checkAtLeastOne(image,WRITE)
-        transactionService.start()
         SecUser currentUser = cytomineService.getCurrentUser()
         def res = executeCommand(new EditCommand(user: currentUser), image,jsonNewData)
-        AbstractImage abstractImage = res.object
-
-        if(jsonNewData.storage) {
-            StorageAbstractImage.findAllByAbstractImage(abstractImage).each { storageAbstractImage ->
-                securityACLService.check(storageAbstractImage.storage,WRITE)
-                def sai = StorageAbstractImage.findByStorageAndAbstractImage(storageAbstractImage.storage, abstractImage)
-                sai.delete(flush:true)
-            }
-            jsonNewData.storage.each { storageID ->
-                Storage storage = storageService.read(storageID)
-                securityACLService.check(storage,WRITE)
-                StorageAbstractImage sai = new StorageAbstractImage(storage:storage,abstractImage:abstractImage)
-                sai.save(flush:true,failOnError: true)
-            }
-        }
+//        AbstractImage abstractImage = res.object
+//
+//        if(jsonNewData.storage) {
+//            StorageAbstractImage.findAllByAbstractImage(abstractImage).each { storageAbstractImage ->
+//                securityACLService.check(storageAbstractImage.storage,WRITE)
+//                def sai = StorageAbstractImage.findByStorageAndAbstractImage(storageAbstractImage.storage, abstractImage)
+//                sai.delete(flush:true)
+//            }
+//            jsonNewData.storage.each { storageID ->
+//                Storage storage = storageService.read(storageID)
+//                securityACLService.check(storage,WRITE)
+//                StorageAbstractImage sai = new StorageAbstractImage(storage:storage,abstractImage:abstractImage)
+//                sai.save(flush:true,failOnError: true)
+//            }
+//        }
         return res
     }
 
@@ -274,17 +272,17 @@ class AbstractImageService extends ModelService {
 
     def uploadedFileService
     def deleteFile(AbstractImage ai){
-        UploadedFile uf = UploadedFile.findByImage(ai)
-        uploadedFileService.delete(uf)
-
-        while(uf.parent){
-            if(UploadedFile.countByParentAndDeletedIsNull(uf.parent) == 0){
-                uploadedFileService.delete(uf.parent)
-                uf = uf.parent
-            } else {
-                break
-            }
-        }
+//        UploadedFile uf = UploadedFile.findByImage(ai)
+//        uploadedFileService.delete(uf)
+//
+//        while(uf.parent){
+//            if(UploadedFile.countByParentAndDeletedIsNull(uf.parent) == 0){
+//                uploadedFileService.delete(uf.parent)
+//                uf = uf.parent
+//            } else {
+//                break
+//            }
+//        }
     }
 
     /**

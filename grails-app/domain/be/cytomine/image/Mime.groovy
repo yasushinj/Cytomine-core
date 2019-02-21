@@ -46,7 +46,7 @@ class Mime extends CytomineDomain implements Serializable {
     }
 
     String toString() {
-        extension
+        mimeType
     }
 
 }

@@ -57,8 +57,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
 //    @RestApiObjectField(description = "The full image path directory")
 //    String path
 
-    // TODO: REMOVE
-    @RestApiObjectField(description = "The image type. For creation, use the ext (not the mime id!)")
+    @RestApiObjectField(description = "The original image mime type.")
     Mime mime
 
     @RestApiObjectField(description = "The N-dimensional image width (X)", mandatory = false, defaultValue = "-1")
@@ -223,6 +222,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['originalFilename'] = image?.originalFilename
         returnArray['scanner'] = image?.scanner?.id
         returnArray['sample'] = image?.sample?.id
+        returnArray['uploadedFile'] = image?.uploadedFile?.id
         returnArray['path'] = image?.path
         returnArray['mime'] = image?.mime?.mimeType
         returnArray['width'] = image?.width
@@ -244,7 +244,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['colorspace'] = image?.colorspace
         returnArray['thumb'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image ? (long)image?.id : null, 512)
         returnArray['preview'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image ? (long)image?.id : null, 1024)
-        returnArray['fullPath'] = image?.getAbsolutePath()
         returnArray['macroURL'] = UrlApi.getAssociatedImage(image ? (long)image?.id : null, "macro", 512)
         returnArray
     }
@@ -253,30 +252,54 @@ class AbstractImage extends CytomineDomain implements Serializable {
         return uploadedFile?.path
     }
 
+    def getSliceCoordinates() {
+        def slices = AbstractSlice.findAllByImage(this)
 
-    def getImageServersStorage() {
-        try {
-
-            def imageServers = MimeImageServer.findAllByMime(this.getMime())?.collect {it.imageServer}.findAll{it.available}.unique()
-
-            def storageAbstractImage = StorageAbstractImage.findAllByAbstractImage(this)?.collect { it.storage }
-
-            if (imageServers.isEmpty() || storageAbstractImage.isEmpty()) return []
-            else {
-                return ImageServerStorage.createCriteria().list {
-                    inList("imageServer",  imageServers)
-                    inList("storage", storageAbstractImage )
-                }
-            }
-        } catch (Exception e) {
-            //may appear during tests
-            //this method does not work with an unsaved domain or a domain instance with transients values
-            //find another way to handle the error ?
-            log.error "cannot get imageServerStorage from AbstractImage $this"
-            return null
-        }
-
+        return [
+                channels: slices.collect { it.channel }.unique().sort(),
+                zStacks: slices.collect { it.zStack }.unique().sort(),
+                times: slices.collect { it.time }.unique().sort()
+        ]
     }
+
+    def getReferenceSliceCoordinate() {
+        def coordinates = getSliceCoordinates()
+        return [
+                channel: coordinates.channels[(int) Math.floor(coordinates.channels.size() / 2)],
+                zStack: coordinates.zStacks[(int) Math.floor(coordinates.zStacks.size() / 2)],
+                time: coordinates.times[(int) Math.floor(coordinates.times.size() / 2)],
+        ]
+    }
+
+    def getReferenceSlice() {
+        def coord = getReferenceSliceCoordinate()
+        return AbstractSlice.findByImageAndChannelAndZStackAndTime(this, coord.channel, coord.zStack, coord.time)
+    }
+
+
+//    def getImageServersStorage() {
+//        try {
+//
+//            def imageServers = MimeImageServer.findAllByMime(this.getMime())?.collect {it.imageServer}.findAll{it.available}.unique()
+//
+//            def storageAbstractImage = StorageAbstractImage.findAllByAbstractImage(this)?.collect { it.storage }
+//
+//            if (imageServers.isEmpty() || storageAbstractImage.isEmpty()) return []
+//            else {
+//                return ImageServerStorage.createCriteria().list {
+//                    inList("imageServer",  imageServers)
+//                    inList("storage", storageAbstractImage )
+//                }
+//            }
+//        } catch (Exception e) {
+//            //may appear during tests
+//            //this method does not work with an unsaved domain or a domain instance with transients values
+//            //find another way to handle the error ?
+//            log.error "cannot get imageServerStorage from AbstractImage $this"
+//            return null
+//        }
+//
+//    }
 
     def getAbsolutePath() {
         return getPath()

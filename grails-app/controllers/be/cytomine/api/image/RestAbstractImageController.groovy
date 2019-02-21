@@ -192,7 +192,7 @@ class RestAbstractImageController extends RestController {
     @RestApiResponseObject(objectIdentifier = "image (bytes)")
     def thumb() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
+        if (abstractImage && abstractImage.referenceSlice) {
             def parameters = [:]
             parameters.format = params.format
             parameters.maxSize = params.int('maxSize',  512)
@@ -202,7 +202,7 @@ class RestAbstractImageController extends RestController {
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
             parameters.refresh = params.boolean('refresh', false)
-            responseBufferedImage(imageServerProxyService.thumb(abstractImage, parameters))
+            responseBufferedImage(imageServerProxyService.thumb(abstractImage.referenceSlice, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -221,7 +221,7 @@ class RestAbstractImageController extends RestController {
     @RestApiResponseObject(objectIdentifier ="image (bytes)")
     def preview() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
+        if (abstractImage && abstractImage.referenceSlice) {
             def parameters = [:]
             parameters.format = params.format
             parameters.maxSize = params.int('maxSize',  1024)
@@ -230,7 +230,7 @@ class RestAbstractImageController extends RestController {
             parameters.contrast = params.double('contrast')
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
-            responseBufferedImage(imageServerProxyService.thumb(abstractImage, parameters))
+            responseBufferedImage(imageServerProxyService.thumb(abstractImage.referenceSlice, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -274,8 +274,8 @@ class RestAbstractImageController extends RestController {
 
     def crop() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
-            responseBufferedImage(imageServerProxyService.crop(abstractImage, params))
+        if (abstractImage && abstractImage.referenceSlice) {
+            responseBufferedImage(imageServerProxyService.crop(abstractImage.referenceSlice, params))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -283,8 +283,8 @@ class RestAbstractImageController extends RestController {
 
     def windowUrl() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
-            String url = imageServerProxyService.window(abstractImage, params, true)
+        if (abstractImage && abstractImage.referenceSlice) {
+            String url = imageServerProxyService.window(abstractImage.referenceSlice, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("Image", params.id)
@@ -293,8 +293,8 @@ class RestAbstractImageController extends RestController {
 
     def window() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
-            responseBufferedImage(imageServerProxyService.window(abstractImage, params, false))
+        if (abstractImage && abstractImage.referenceSlice) {
+            responseBufferedImage(imageServerProxyService.window(abstractImage.referenceSlice, params, false))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -302,9 +302,9 @@ class RestAbstractImageController extends RestController {
 
     def cameraUrl() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
+        if (abstractImage && abstractImage.referenceSlice) {
             params.withExterior = false
-            String url = imageServerProxyService.window(abstractImage, params, true)
+            String url = imageServerProxyService.window(abstractImage.referenceSlice, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("Image", params.id)
@@ -313,9 +313,9 @@ class RestAbstractImageController extends RestController {
 
     def camera() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
+        if (abstractImage && abstractImage.referenceSlice) {
             params.withExterior = false
-            responseBufferedImage(imageServerProxyService.window(abstractImage, params, false))
+            responseBufferedImage(imageServerProxyService.window(abstractImage.referenceSlice, params, false))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -323,8 +323,8 @@ class RestAbstractImageController extends RestController {
 
     def download() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        if (abstractImage) {
-            def uf = abstractImageService.getMainUploadedFile(abstractImage)
+        def uf = abstractImage?.uploadedFile
+        if (uf) {
             String url = imageServerProxyService.downloadUri(abstractImage, uf)
             redirect(url: url)
         } else {
@@ -338,89 +338,12 @@ class RestAbstractImageController extends RestController {
     @RestApiMethod(description="Get all image servers URL for an image")
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
-        @RestApiParam(name="merge", type="boolean", paramType = RestApiParamType.QUERY,description = "(Optional) If not null, return url representing the merge of multiple image. Value an be channel, zstack, slice or time."),
-        @RestApiParam(name="channels", type="list", paramType = RestApiParamType.QUERY,description = "(Optional) If merge is not null, the list of the sequence index to merge."),
-        @RestApiParam(name="colors", type="list", paramType = RestApiParamType.QUERY,description = "(Optional) If merge is not null, the list of the color for each sequence index (colors.size == channels.size)"),
     ])
     @RestApiResponseObject(objectIdentifier = "URL list")
     def imageServers() {
-
         try {
             def id = params.long('id')
-            def merge = params.get('merge')
-
-            if(!merge){
-                responseSuccess(abstractImageService.imageServers(id))
-                return
-            }
-
-            def idImageInstance = params.long('imageinstance')
-            ImageInstance image = ImageInstance.read(idImageInstance)
-
-            log.info "Ai=$id Ii=$idImageInstance"
-
-            def sequences = imageSequenceService.get(image)
-            ImageSequence sequence
-            if(sequences.size() > 0) sequence = sequences[0]
-
-            if(!sequence) {
-                throw new WrongArgumentException("ImageInstance $idImageInstance is not in a sequence!")
-            }
-
-            ImageGroup group = sequence.imageGroup
-
-            log.info "sequence=$sequence group=$group"
-
-            def images = imageSequenceService.list(group)
-
-            if(merge.equals("channel")){
-                images = images.findAll{it.zStack == sequence.zStack && it.time == sequence.time}
-            }
-            log.info "all image for this group=$images"
-
-
-            def servers = ImageServer.list()
-            Random myRandomizer = new Random();
-
-
-            def ids = params.get('channels').split(",").collect{Integer.parseInt(it)}
-            def colors = params.get('colors').split(",").collect{it}
-            def params = []
-
-            ids.eachWithIndex {pos,index ->
-                images.each { seq ->
-                    def position = -1
-                    if(merge=="channel") position = seq.channel
-                    if(merge=="zstack") position = seq.zStack
-                    if(merge=="slice") position = seq.slice
-                    if(merge=="time") position = seq.time
-
-                    if(position==pos && ids.contains(position)) {
-                        def urls = abstractImageService.imageServers(seq.image.baseImage.id).imageServersURLs
-                        def param = "url$index="+ URLEncoder.encode(urls.first(),"UTF-8") +"&color$index="+ URLEncoder.encode(colors.get(index),"UTF-8")
-                        params << param
-                    }
-
-                }
-
-            }
-
-
-            String url = "vision/merge?" + params.join("&") +"&zoomify="
-            log.info "url=$url"
-
-            def urls = []
-
-            servers.each {
-                urls << it.url +"/"+ url
-            }
-
-            //retrieve all image instance (same sequence)
-
-
-            //get url for each image
-
-            responseSuccess([imageServersURLs : urls])
+            responseSuccess(abstractImageService.imageServers(id))
         } catch (CytomineException e) {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
@@ -461,6 +384,3 @@ class RestAbstractImageController extends RestController {
     }
 
 }
-
-
-

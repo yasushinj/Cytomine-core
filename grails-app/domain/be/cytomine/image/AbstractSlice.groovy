@@ -31,6 +31,9 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The underlying file for the slice")
     UploadedFile uploadedFile
 
+    @RestApiObjectField(description = "The Cytomine internal slice mime type.")
+    Mime mime
+
     @RestApiObjectField(description = "The channel c of the slice")
     Double channel
 
@@ -45,6 +48,7 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     static mapping = {
         id(generator: 'assigned', unique: true)
         sort([time: 'asc', zStack: 'asc', channel: 'asc'])
+        mime fetch: 'join'
     }
 
     static constraints = {
@@ -66,6 +70,7 @@ class AbstractSlice extends CytomineDomain implements Serializable {
 
         domain.uploadedFile = JSONUtils.getJSONAttrDomain(json, "uploadedFile", new UploadedFile(), true)
         domain.image = JSONUtils.getJSONAttrDomain(json, "image", new AbstractImage(), true)
+        domain.mime = JSONUtils.getJSONAttrDomain(json,"mime",new Mime(),'mimeType','String',true)
 
         domain.channel = JSONUtils.getJSONAttrDouble(json, "channel", 0)
         domain.zStack = JSONUtils.getJSONAttrDouble(json, "zStack", 0)
@@ -79,6 +84,7 @@ class AbstractSlice extends CytomineDomain implements Serializable {
         returnArray['uploadedFile'] = domain?.uploadedFile?.id
         returnArray['path'] = domain?.path
         returnArray['image'] = domain?.image?.id
+        returnArray['mime'] = domain?.mime?.mimeType
         returnArray['channel'] = domain?.channel
         returnArray['zStack'] = domain?.zStack
         returnArray['time'] = domain?.time
@@ -88,6 +94,14 @@ class AbstractSlice extends CytomineDomain implements Serializable {
 
     def getPath() {
         return uploadedFile?.path
+    }
+
+    def getImageServer() {
+        return uploadedFile?.imageServer?.url
+    }
+
+    def getMimeType(){
+        return mime?.mimeType
     }
 
     CytomineDomain[] containers() {
