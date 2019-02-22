@@ -224,7 +224,7 @@ class AbstractImageService extends ModelService {
     }
 
     def getUploaderOfImage(long id){
-        AbstractImage img = AbstractImage.get(id)
+        AbstractImage img = read(id)
         return img?.uploadedFile?.user
     }
 
