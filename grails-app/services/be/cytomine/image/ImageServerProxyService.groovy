@@ -131,6 +131,10 @@ class ImageServerProxyService {
 //        thumb(image.baseImage, params)
     }
 
+    def thumb(SliceInstance slice, def params) {
+        thumb(slice.baseSlice, params)
+    }
+
     def thumb(AbstractSlice slice, def params) {
         def (server, parameters) = imsParametersFromAbstractSlice(slice)
         def format = checkFormat(params.format, ['jpg', 'png'])
@@ -162,6 +166,10 @@ class ImageServerProxyService {
 
     def crop(ImageInstance image, def params, def urlOnly = false, def parametersOnly = false) {
 //        crop(image.baseImage, params, urlOnly, parametersOnly)
+    }
+
+    def crop(SliceInstance slice, def params, def urlOnly = false, def parametersOnly = false) {
+        crop(slice.baseSlice, params, urlOnly, parametersOnly)
     }
 
     def crop(AbstractSlice slice, def params, def urlOnly = false, def parametersOnly = false) {
@@ -232,6 +240,10 @@ class ImageServerProxyService {
 
     def window(ImageInstance image, def params, def urlOnly = false) {
 //        window(image.baseImage, params, urlOnly)
+    }
+
+    def window(SliceInstance slice, def params, def urlOnly = false) {
+        window(slice.baseSlice, params, urlOnly)
     }
 
     def window(AbstractSlice slice, def params, def urlOnly = false) {
