@@ -43,7 +43,7 @@ class ImageConsultationService extends ModelService {
         consultation.projectConnection = projectConnectionService.lastConnectionInProject(image.project, user.id)[0].id
         consultation.mode = JSONUtils.getJSONAttrStr(json,"mode",true)
         consultation.created = new Date()
-        consultation.imageName = image.getInstanceFilename()
+        consultation.imageName = image.getBlindInstanceFilename()
         consultation.imageThumb = UrlApi.getAbstractImageThumbUrlWithMaxSize(image.baseImage?.id, 256)
         consultation.insert(flush:true, failOnError : true) //don't use save (stateless collection)
 

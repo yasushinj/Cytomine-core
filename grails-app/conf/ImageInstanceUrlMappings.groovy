@@ -30,14 +30,16 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id.$format"(controller: "restImageInstance"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]
         }
+
         "/api/imageinstance/$id/next.$format"(controller: "restImageInstance"){
             action = [GET:"next"]
         }
-        "/api/user/$user/imageinstance/light.$format"(controller: "restImageInstance"){
-            action = [GET:"listByUser"]
-        }
         "/api/imageinstance/$id/previous.$format"(controller: "restImageInstance"){
             action = [GET:"previous"]
+        }
+
+        "/api/user/$user/imageinstance/light.$format"(controller: "restImageInstance"){
+            action = [GET:"listByUser"]
         }
         "/api/project/$id/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByProject"]
@@ -45,16 +47,17 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/method/lastopened.$format"(controller :"restImageInstance") {
             action = [GET:"listLastOpenImage"]
         }
-        "/api/imageinstance/$id/sameimagedata.$format"(controller :"restImageInstance") {
-            action = [GET:"retrieveSameImageOtherProject"]
-        }
-        "/api/imageinstance/$id/copyimagedata.$format"(controller :"restImageInstance") {
-            action = [POST:"copyAnnotationFromSameAbstractImage"]
-        }
 
-        "/api/imageinstance/$id/copymetadata.$format"(controller :"restImageInstance") {
-            action = [POST:"copyMetadata"]
-        }
+
+//        "/api/imageinstance/$id/sameimagedata.$format"(controller :"restImageInstance") {
+//            action = [GET:"retrieveSameImageOtherProject"]
+//        }
+//        "/api/imageinstance/$id/copyimagedata.$format"(controller :"restImageInstance") {
+//            action = [POST:"copyAnnotationFromSameAbstractImage"]
+//        }
+//        "/api/imageinstance/$id/copymetadata.$format"(controller :"restImageInstance") {
+//            action = [POST:"copyMetadata"]
+//        }
 
         "/api/imageinstance/$idImage/nested.$format"(controller: "restNestedImageInstance"){
             action = [POST:"add", GET : "listByImageInstance"]

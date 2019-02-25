@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -28,13 +28,7 @@ import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 import org.restapidoc.annotation.RestApiObjectFields
 
-/**
- * Created by IntelliJ IDEA.
- * User: lrollus
- * Date: 18/05/11
- * Time: 8:33
- * An ImageInstance is an image map with a project
- */
+
 @RestApiObject(name = "Image instance", description = "A link between 'abstract image' and 'project'. An 'abstract image' may be in multiple projects.")
 class ImageInstance extends CytomineDomain implements Serializable {
 
@@ -47,6 +41,10 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The user that add the image to the project")
     SecUser user
 
+    @RestApiObjectField(description = "Instance image filename", useForCreation = false)
+    String instanceFilename
+    
+    // ----- Annotation counts
     @RestApiObjectField(description = "The number of user annotation in the image", useForCreation = false, apiFieldName = "numberOfAnnotations")
     Long countImageAnnotations = 0L
 
@@ -56,13 +54,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The number of reviewed annotation in the image", useForCreation = false, apiFieldName = "numberOfReviewedAnnotations")
     Long countImageReviewedAnnotations = 0L
 
-    //stack stuff
-    //TODO:APIDOC still used?
-    Integer zIndex
-
-    //TODO:APIDOC still used?
-    Integer channel
-
+    
+    // ----- Image review
     @RestApiObjectField(description = "The start review date", useForCreation = false)
     Date reviewStart
 
@@ -72,9 +65,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The user who reviewed (or still reviewing) this image", useForCreation = false)
     SecUser reviewUser
 
-    @RestApiObjectField(description = "Instance image filename", useForCreation = false)
-    String instanceFilename;
-
+    
+    // ----- Herited properties from baseImage (abstract image)
     @RestApiObjectFields(params = [
             @RestApiObjectField(apiFieldName = "filename", description = "Abstract image filename (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "originalFilename", description = "Abstract image original filename (see Abstract Image)", allowedType = "string", useForCreation = false),
@@ -98,8 +90,6 @@ class ImageInstance extends CytomineDomain implements Serializable {
     static constraints = {
         baseImage(unique: ['project'])
         countImageAnnotations nullable: true
-        zIndex(nullable: true) //order in z-stack referenced by stack
-        channel(nullable: true)  //e.g. fluo channel
         reviewStart nullable: true
         reviewStop nullable: true
         reviewUser nullable: true
@@ -118,8 +108,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
      * Check if this domain will cause unique constraint fail if saving on database
      */
     void checkAlreadyExist() {
-        ImageInstance.withNewSession {
-            ImageInstance imageAlreadyExist = ImageInstance.findByBaseImageAndProject(baseImage, project)
+        withNewSession {
+            ImageInstance imageAlreadyExist = findByBaseImageAndProject(baseImage, project)
             if (imageAlreadyExist != null && (imageAlreadyExist.id != id)) {
                 throw new AlreadyExistException("Image " + baseImage?.filename + " already map with project " + project.name)
             }
@@ -135,20 +125,27 @@ class ImageInstance extends CytomineDomain implements Serializable {
     static ImageInstance insertDataIntoDomain(def json, def domain = new ImageInstance()) {
         domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
         domain.created = JSONUtils.getJSONAttrDate(json, "created")
-        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
         domain.updated = JSONUtils.getJSONAttrDate(json, "updated")
+        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
+        
         domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), false)
         domain.baseImage = JSONUtils.getJSONAttrDomain(json, "baseImage", new AbstractImage(), false)
         domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), false)
+        domain.instanceFilename = JSONUtils.getJSONAttrStr(json, "instanceFilename", false)
+        
         domain.reviewStart = JSONUtils.getJSONAttrDate(json, "reviewStart")
         domain.reviewStop = JSONUtils.getJSONAttrDate(json, "reviewStop")
         domain.reviewUser = JSONUtils.getJSONAttrDomain(json, "reviewUser", new User(), false)
-        domain.instanceFilename = JSONUtils.getJSONAttrStr(json, "instanceFilename", false)
+        
         //Check review constraint
-        if ((domain.reviewUser == null && domain.reviewStart != null) || (domain.reviewUser != null && domain.reviewStart == null) || (domain.reviewStart == null && domain.reviewStop != null))
-            throw new WrongArgumentException("Review data are not valid: user=${domain.reviewUser} start=${domain.reviewStart} stop=${domain.reviewStop}")
+        if ((domain.reviewUser == null && domain.reviewStart != null) 
+                || (domain.reviewUser != null && domain.reviewStart == null) 
+                || (domain.reviewStart == null && domain.reviewStop != null)) {
+            throw new WrongArgumentException("Review data are not valid: user=${domain.reviewUser} " +
+                    "start=${domain.reviewStart} stop=${domain.reviewStop}")
+        }
 
-        return domain;
+        domain
     }
 
     /**
@@ -156,66 +153,50 @@ class ImageInstance extends CytomineDomain implements Serializable {
      * @param domain Domain source for json value
      * @return Map with fields (keys) and their values
      */
-    static def getDataFromDomain(def image) {
-
+    static def getDataFromDomain(ImageInstance image) {
         def returnArray = CytomineDomain.getDataFromDomain(image)
         returnArray['baseImage'] = image?.baseImage?.id
         returnArray['project'] = image?.project?.id
         returnArray['user'] = image?.user?.id
+        returnArray['instanceFilename'] = image?.blindInstanceFilename
+
+        returnArray['originalFilename'] = image?.blindOriginalFilename
         returnArray['filename'] = image?.baseImage?.filename
-        returnArray['extension'] = image?.baseImage?.mime?.extension
-        returnArray['originalFilename'] = image?.baseImage?.originalFilename
-        returnArray['instanceFilename'] = image?.instanceFilename
-        returnArray['sample'] = image?.baseImage?.sample?.id
         returnArray['path'] = image?.baseImage?.path
-        returnArray['mime'] = image?.baseImage?.mimeType
+        returnArray['mime'] = image?.baseImage?.mime?.mimeType
+        returnArray['sample'] = image?.baseImage?.sample?.id
+        
         returnArray['width'] = image?.baseImage?.width
         returnArray['height'] = image?.baseImage?.height
+        returnArray['depth'] = image?.baseImage?.depth // /!!\ Breaking API : image?.baseImage?.getZoomLevels()?.max
+        returnArray['time'] = image?.baseImage?.time
+        returnArray['channels'] = image?.baseImage?.channels
+
+        returnArray['physicalSizeX'] = image?.baseImage?.physicalSizeX
+        returnArray['physicalSizeY'] = image?.baseImage?.physicalSizeY
+        returnArray['physicalSizeZ'] = image?.baseImage?.physicalSizeZ
+        returnArray['fps'] = image?.baseImage?.fps
+
+        returnArray['zoom'] = image?.baseImage?.getZoomLevels()?.max
+
         returnArray['resolution'] = image?.baseImage?.resolution
         returnArray['magnification'] = image?.baseImage?.magnification
-        returnArray['depth'] = image?.baseImage?.getZoomLevels()?.max
         returnArray['bitDepth'] = image?.baseImage?.bitDepth
         returnArray['colorspace'] = image?.baseImage?.colorspace
-        try {
-            returnArray['preview'] = image.baseImage ? UrlApi.getAbstractImageThumbUrlWithMaxSize(image.baseImage?.id, 1024) : null
-        } catch (Exception e) {
-            returnArray['preview'] = 'NO preview:' + e.toString()
-        }
-        try {
-            returnArray['thumb'] = image.baseImage ? UrlApi.getAbstractImageThumbUrlWithMaxSize(image.baseImage?.id, 512) : null
-        } catch (Exception e) {
-            returnArray['thumb'] = 'NO THUMB:' + e.toString()
-        }
-        try {
-            returnArray['macroURL'] = image.baseImage ? UrlApi.getAssociatedImage(image.baseImage?.id, "macro") : null
-        } catch (Exception e) {
-            returnArray['macro'] = 'NO THUMB:' + e.toString()
-        }
-        try {
-            returnArray['fullPath'] = image.baseImage ? image.baseImage.getAbsolutePath() : null
-        } catch (Exception e) {
-            returnArray['thumb'] = 'NO THUMB:' + e.toString()
-        }
-        try {
-            returnArray['numberOfAnnotations'] = image?.countImageAnnotations
-        } catch (Exception e) {
-            returnArray['numberOfAnnotations'] = -1
-        }
-        try {
-            returnArray['numberOfJobAnnotations'] = image?.countImageJobAnnotations
-        } catch (Exception e) {
-            returnArray['numberOfJobAnnotations'] = -1
-        }
-        try {
-            returnArray['numberOfReviewedAnnotations'] = image?.countImageReviewedAnnotations
-        } catch (Exception e) {
-            returnArray['numberOfReviewedAnnotations'] = -1
-        }
-        returnArray['reviewStart'] = image?.reviewStart ? image.reviewStart?.time?.toString() : null
-        returnArray['reviewStop'] = image?.reviewStop ? image.reviewStop?.time?.toString() : null
+
+        returnArray['reviewStart'] =  image?.reviewStart?.time?.toString()
+        returnArray['reviewStop'] = image?.reviewStop?.time?.toString()
         returnArray['reviewUser'] = image?.reviewUser?.id
         returnArray['reviewed'] = image?.isReviewed()
         returnArray['inReview'] = image?.isInReviewMode()
+
+        returnArray['numberOfAnnotations'] = image?.countImageAnnotations
+        returnArray['numberOfJobAnnotations'] = image?.countImageJobAnnotations
+        returnArray['numberOfReviewedAnnotations'] = image?.countImageReviewedAnnotations
+
+        returnArray['thumb'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image?.baseImage?.id, 512)
+        returnArray['preview'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image?.baseImage?.id, 1024)
+        returnArray['macroURL'] = UrlApi.getAssociatedImage(image?.baseImage?.id, "macro", 512)
         return returnArray
     }
 
@@ -254,16 +235,18 @@ class ImageInstance extends CytomineDomain implements Serializable {
         return user
     }
 
-    // use a normal method and not a getter to avoid erasing instanceFilename with "Blind name"
-    public String getFileName() {
-        if(project?.blindMode) return "[BLIND]"+baseImage.id
-        return getInstanceFilename()
+    String getBlindOriginalFilename() {
+        if (project?.blindMode)
+            return "[BLIND] ${baseImage?.id}"
+        return baseImage?.originalFilename
     }
 
-    public String getInstanceFilename() {
-        if (instanceFilename != null && instanceFilename.trim() != '') {
+    String getBlindInstanceFilename() {
+        if (project?.blindMode)
+            return "[BLIND] ${id}"
+        else if (instanceFilename?.trim() != '')
             return instanceFilename
-        }
-        return baseImage.originalFilename
+        else
+            return baseImage?.originalFilename
     }
 }

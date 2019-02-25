@@ -39,7 +39,7 @@ class UserPositionService extends ModelService {
         position.rotation = JSONUtils.getJSONAttrDouble(json,"rotation",0)
         position.created = new Date()
         position.updated = position.created
-        position.imageName = image.getFileName()
+        position.imageName = image.getBlindInstanceFilename()
         position.insert(flush:true, failOnError : true) //don't use save (stateless collection)
 
         position = new PersistentUserPosition()
@@ -58,7 +58,7 @@ class UserPositionService extends ModelService {
         position.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         position.created = new Date()
         position.updated = position.created
-        position.imageName = image.getFileName()
+        position.imageName = image.getBlindInstanceFilename()
         position.insert(flush:true, failOnError : true) //don't use save (stateless collection)
 
         return position
