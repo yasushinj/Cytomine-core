@@ -34,6 +34,7 @@ class RestAbstractSliceController extends RestController {
 
     def abstractSliceService
     def imageServerProxyService
+    def abstractImageService
 
     @RestApiMethod(description = "Get all abstract slices for the given abstract image", listing = true)
     @RestApiParams(params = [
