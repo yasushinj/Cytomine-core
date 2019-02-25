@@ -17,6 +17,7 @@ package be.cytomine.processing
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.command.*
 import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
@@ -59,6 +60,8 @@ class SoftwareParameterService extends ModelService{
      * @return Response structure (created domain data,..)
      */
    def add(def json) throws CytomineException {
+       if(!json.software) throw new InvalidRequestException("software not set")
+
         securityACLService.check(json.software,Software, READ)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id
