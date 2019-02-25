@@ -9,40 +9,47 @@ import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 
+import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
+
 class CompanionFileService extends ModelService {
 
     static transactional = true
     def cytomineService
+    def securityACLService
 
     def currentDomain() {
         return CompanionFile
     }
 
     def read(def id) {
-        def file = CompanionFile.read(id)
+        CompanionFile file = CompanionFile.read(id)
         if (file) {
-            //TODO: security: can read image / uf
-            //TODO: checkDeleted
+            securityACLService.checkAtLeastOne(file, READ)
         }
         file
     }
 
     def list(AbstractImage image) {
-        //TODO: security: can read image
-
+        securityACLService.checkAtLeastOne(image, READ)
         CompanionFile.findAllByImage(image)
     }
 
+    def list(UploadedFile uploadedFile) {
+        securityACLService.checkAtLeastOne(uploadedFile, READ)
+        CompanionFile.findAllByUploadedFile(uploadedFile)
+    }
+
     def add(def json) {
-        //TODO: security
         SecUser currentUser = cytomineService.getCurrentUser()
+        securityACLService.checkUser(currentUser)
 
         Command c = new AddCommand(user: currentUser)
         executeCommand(c, null, json)
     }
 
     def update(CompanionFile file, def json) {
-        //TODO: security
+        securityACLService.checkAtLeastOne(file, WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
 
         Command c = new EditCommand(user: currentUser)
@@ -50,9 +57,15 @@ class CompanionFileService extends ModelService {
     }
 
     def delete(CompanionFile file, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        //TODO: security
+        securityACLService.checkAtLeastOne(file, WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
+
         Command c = new DeleteCommand(user: currentUser, transaction: transaction)
         executeCommand(c, file, null)
+    }
+
+    def getUploader(def id) {
+        CompanionFile file = read(id)
+        return file?.uploadedFile?.user
     }
 }
