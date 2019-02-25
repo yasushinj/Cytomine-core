@@ -121,7 +121,7 @@ class AbstractImageService extends ModelService {
 
         }
         if(project) {
-            TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProject(project).collect{it.baseImage.id})
+            TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProjectAndDeletedIsNull(project).collect{it.baseImage.id})
 
             def result = []
 
