@@ -56,7 +56,7 @@ class AbstractSlice extends CytomineDomain implements Serializable {
 
     void checkAlreadyExist() {
         withNewSession {
-            AbstractSlice slice = findByImageAndChannelAndZStackAndTime(image, channel, zStack, time)
+            AbstractSlice slice = AbstractSlice.findByImageAndChannelAndZStackAndTime(image, channel, zStack, time)
             if (slice?.id != id)
                 throw new AlreadyExistException("AbstractSlice (C:${channel}, Z:${zStack}, T:${time}) already exists for AbstractImage ${image?.id}")
         }

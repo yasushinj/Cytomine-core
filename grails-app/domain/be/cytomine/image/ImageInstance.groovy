@@ -109,7 +109,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
      */
     void checkAlreadyExist() {
         withNewSession {
-            ImageInstance imageAlreadyExist = findByBaseImageAndProject(baseImage, project)
+            ImageInstance imageAlreadyExist = ImageInstance.findByBaseImageAndProject(baseImage, project)
             if (imageAlreadyExist != null && (imageAlreadyExist.id != id)) {
                 throw new AlreadyExistException("Image " + baseImage?.filename + " already map with project " + project.name)
             }

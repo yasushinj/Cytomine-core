@@ -55,7 +55,7 @@ class CompanionFile extends CytomineDomain implements Serializable {
 
     void checkAlreadyExist() {
         withNewSession {
-            CompanionFile file = findByImageAndUploadedFile(image, uploadedFile)
+            CompanionFile file = CompanionFile.findByImageAndUploadedFile(image, uploadedFile)
             if (file?.id != id) {
                 throw new AlreadyExistException("Companion file ${originalFilename} already exists for AbstractImage ${image?.id}")
             }
