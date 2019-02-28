@@ -39,9 +39,9 @@ class RestSliceInstanceController extends RestController {
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image instance id")
     ])
     def listByImageInstance() {
-        ImageInstance abstractImage = ImageInstance.read(params.long("id"))
-        if (abstractImage) {
-            responseSuccess(sliceInstanceService.list(abstractImage))
+        ImageInstance image = ImageInstance.read(params.long("id"))
+        if (image) {
+            responseSuccess(sliceInstanceService.list(image))
         }
         else {
             responseNotFound("SliceInstance", "ImageInstance", params.id)

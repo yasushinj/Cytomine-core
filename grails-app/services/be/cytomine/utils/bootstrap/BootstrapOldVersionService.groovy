@@ -144,6 +144,33 @@ class BootstrapOldVersionService {
                 "set uploaded_file_id = cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) " +
                 "from uploaded_file " +
                 "where abstract_image.id = image_id and uploaded_file_id is null;")
+
+        // Add (0,0,0) slice instances for all image instances which are not in an image group
+        if (!sql.rows("select id from slice_instance")) {
+            def inserts = []
+            def i = 0
+            def request = "INSERT INTO slice_instance(id, created, version, base_slice_id, image_id, project_id) VALUES "
+            sql.eachRow("SELECT image_instance.id as iiid, abstract_slice.id as asid, image_instance.project_id as pid, image_instance.created " +
+                    "from image_instance " +
+                    "left join abstract_image on abstract_image.id = image_instance.base_image_id " +
+                    "left join abstract_slice on abstract_slice.image_id = abstract_image.id " +
+                    "left join image_sequence on image_sequence.image_id = image_instance.id " +
+                    "where abstract_slice.channel = 0 and abstract_slice.z_stack = 0 and abstract_slice.time = 0" +
+                    "and image_sequence.id is null;") {
+                inserts << "(nextval('hibernate_sequence'), '${it[3]}', 0, ${it[1]}, ${it[0]}, ${it[2]})"
+                if (i > 0 && i % 2000 == 0) {
+                    sql.execute(request + inserts.join(",") + ";")
+                    inserts = []
+                }
+                i++
+            }
+
+            if (inserts.size() > 0) {
+                sql.execute(request + inserts.join(",") + ";")
+            }
+        }
+
+
         sql.close()
     }
 

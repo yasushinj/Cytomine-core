@@ -41,7 +41,7 @@ class SliceInstance extends CytomineDomain implements Serializable {
 
     static mapping = {
         id(generator: 'assigned', unique: true)
-        sort([time: 'asc', zStack: 'asc', channel: 'asc'])
+//        sort([time: 'asc', zStack: 'asc', channel: 'asc'])
         baseSlice fetch: 'join'
     }
 
