@@ -25,6 +25,8 @@ import be.cytomine.security.Group
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.social.PersistentProjectConnection
+import be.cytomine.social.PersistentImageConsultation
+import be.cytomine.social.AnnotationAction
 import be.cytomine.utils.SecurityUtils
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -828,6 +830,8 @@ class RestUserController extends RestController {
         result["lastConnection"] = PersistentProjectConnection.findAllByUserAndProject(user.id, project.id, [sort: 'created', order: 'desc', max: 1])[0]?.created
         result["totalAnnotations"] = userAnnotationService.count(user, project)
         result["totalConnections"] = PersistentProjectConnection.countByUserAndProject(user.id, project.id)
+        result["totalConsultations"] = PersistentImageConsultation.countByUserAndProject(user.id, project.id)
+        result["totalAnnotationActions"] = AnnotationAction.countByUserAndProject(user.id, project.id)
 
         responseSuccess(result)
     }
