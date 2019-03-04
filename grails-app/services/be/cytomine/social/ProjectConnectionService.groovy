@@ -418,7 +418,7 @@ class ProjectConnectionService extends ModelService {
         if(!connection.time) {
             int i = 0;
             Date before = new Date()
-            while(!consultations[i].time && i < consultations.size()){
+            while(i < consultations.size() && !consultations[i].time) {
                 consultations[i] = ((PersistentImageConsultation) consultations[i]).clone()
                 imageConsultationService.fillImageConsultation(consultations[i], before)
                 before = consultations[i].created
