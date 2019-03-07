@@ -218,16 +218,6 @@ class StatsService extends ModelService {
         //Get leaf term (parent term cannot be map with annotation)
         def terms = leafsOnly ? project.ontology.leafTerms() : project.ontology.terms()
 
-        //Get the number of annotation for each term
-        String req = "SELECT at.term.id, count(at.id) " +
-                "FROM AnnotationTerm at " +
-                "INNER JOIN at.userAnnotation a " +
-                "WHERE a.project = $project.id " +
-                (startDate ? "AND at.created > '$startDate' " : "") +
-                (endDate ? "AND at.created < '$endDate' " : "") +
-                "GROUP BY at.term.id"
-        def numberOfAnnotationForEachTerm = AnnotationTerm.executeQuery(req)
-
         def stats = [:]
         def color = [:]
         def ids = [:]
@@ -242,10 +232,20 @@ class StatsService extends ModelService {
             idsRevert[term.id] = term.name
         }
 
-        //init result table with data
-        numberOfAnnotationForEachTerm .each { result ->
-            def name = idsRevert[result[0]]
-            if(name) stats[name]=result[1]
+        //Get the number of annotation for each term
+        def sql = new Sql(dataSource)
+        sql.eachRow("" +
+                "SELECT at.term_id, count(*) " +
+                "FROM user_annotation ua " +
+                "LEFT JOIN annotation_term at " +
+                "ON at.user_annotation_id = ua.id " +
+                "GROUP BY at.term_id " +
+                (startDate ? "AND at.created > '$startDate' " : "") +
+                (endDate ? "AND at.created < '$endDate' " : "")) {
+
+            //init result table with data
+            def name = idsRevert[it[0]]
+            stats[name]=it[1]
         }
 
         //fill results stats tabble
