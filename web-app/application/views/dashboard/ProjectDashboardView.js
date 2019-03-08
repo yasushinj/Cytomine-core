@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017. Authors: see NOTICE file.
+ * Copyright (c) 2009-2019. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ var ProjectDashboardView = Backbone.View.extend({
     projectDashboardConfig: null,
     projectDashboardUsersConfig: null,
     projectDashboardGroup: null,
+    onlineUserInterval: null,
     rendered: false,
     initialize: function (options) {
         _.bindAll(this, 'render');
@@ -349,9 +350,11 @@ var ProjectDashboardView = Backbone.View.extend({
             )
         };
         refreshData();
-        var interval = window.app.view.addInterval(refreshData, 5000);
+        if(self.onlineUserInterval === null){
+            self.onlineUserInterval = window.app.view.addInterval(refreshData, 5000);
+        }
         $(window).bind('hashchange', function () {
-            clearInterval(interval.loop);
+            clearInterval(self.onlineUserInterval.loop);
         });
     },
     fetchCommands: function () {

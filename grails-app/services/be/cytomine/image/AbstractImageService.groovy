@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -111,9 +111,10 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def list(SecUser user) {
+    def list(SecUser user, Project project = null) {
+        List<AbstractImage> images
         if(currentRoleServiceProxy.isAdminByNow(user)) {
-            return AbstractImage.list()
+            images = AbstractImage.list()
         } else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
             return AbstractImage.createCriteria().list {
@@ -124,6 +125,19 @@ class AbstractImageService extends ModelService {
 //            List<AbstractImage> images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}
 //            return images.findAll{!it.deleted}
         }
+        if(project) {
+            TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProjectAndDeletedIsNull(project).collect{it.baseImage.id})
+
+            def result = []
+
+            for(AbstractImage image : images){
+                def data = AbstractImage.getDataFromDomain(image)
+                data.inProject = (inProjectImagesId.contains(image.id))
+                result << data
+            }
+            return result
+        }
+        return images
     }
 
     /**

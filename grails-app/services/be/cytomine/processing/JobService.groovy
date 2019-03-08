@@ -1,7 +1,9 @@
 package be.cytomine.processing
 
+import be.cytomine.Exception.InvalidRequestException
+
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -89,6 +91,8 @@ class JobService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
+        if(!json.project) throw new InvalidRequestException("software not set")
+
         securityACLService.check(json.project,Project, READ)
         securityACLService.checkisNotReadOnly(json.project,Project)
         SecUser currentUser = cytomineService.getCurrentUser()

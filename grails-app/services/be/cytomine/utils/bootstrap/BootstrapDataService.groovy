@@ -1,7 +1,7 @@
 package be.cytomine.utils.bootstrap
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ class BootstrapDataService {
 
         bootstrapUtilsService.createUsers(usersSamples)
         bootstrapUtilsService.createRelation()
-        bootstrapUtilsService.createConfigurations()
+        bootstrapUtilsService.createConfigurations(false)
 
         SecUser admin = SecUser.findByUsername("admin")
         if(!grailsApplication.config.grails.adminPrivateKey) {

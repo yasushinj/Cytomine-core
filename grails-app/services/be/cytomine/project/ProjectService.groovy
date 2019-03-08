@@ -1,7 +1,7 @@
 package be.cytomine.project
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ class ProjectService extends ModelService {
                             "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Project as project "+
                             "where aclObjectId.objectId = project.id " +
                             "and aclEntry.aclObjectIdentity = aclObjectId.id "+
-                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"' and project.deleted is null")
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.humanUsername()+"' and project.deleted is null")
         } else {
             Project.findAllByDeletedIsNull()
         }

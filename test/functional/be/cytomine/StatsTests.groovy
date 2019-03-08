@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -236,11 +236,106 @@ class StatsTests  {
 
     }
 
-    void testStatsEvolution() {
+    void testStatsUserAnnotationEvolution() {
         Project project = BasicInstanceBuilder.getProject()
-        def result;
+        def result = StatsAPI.statAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
 
-        result = StatsAPI.statAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    void testStatsUserAnnotationEvolutionWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Term term = BasicInstanceBuilder.getTermNotExist(project.ontology, true)
+        Date startDate = new Date()
+        def result = StatsAPI.statAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000, term.id)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsAlgoAnnotationEvolution() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result = StatsAPI.statAlgoAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsAlgoAnnotationEvolutionWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Term term = BasicInstanceBuilder.getTermNotExist(project.ontology, true)
+        Date startDate = new Date()
+        def result = StatsAPI.statAlgoAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000, term.id)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsReviewedAnnotationEvolution() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result = StatsAPI.statReviewedAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsReviewedAnnotationEvolutionWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Term term = BasicInstanceBuilder.getTermNotExist(project.ontology, true)
+        Date startDate = new Date()
+        def result = StatsAPI.statReviewedAnnotationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000, term.id)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsAnnotationActionEvolution() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result = StatsAPI.statAnnotationActionEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsAnnotationActionEvolutionWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Date startDate = new Date()
+        def result = StatsAPI.statAnnotationActionEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsConnectionEvolution() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result = StatsAPI.statProjectConnectionEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsConnectionEvolutionWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Date startDate = new Date()
+        def result = StatsAPI.statProjectConnectionEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsImageConsultationEvolution() {
+        Project project = BasicInstanceBuilder.getProject()
+        def result = StatsAPI.statImageConsultationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testStatsImageConsultationEvolutionWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Date startDate = new Date()
+        def result = StatsAPI.statImageConsultationEvolution(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray

@@ -1,7 +1,7 @@
 package be.cytomine.test
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -37,8 +37,10 @@ import be.cytomine.project.ProjectDefaultLayer
 import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.search.SearchEngineFilter
 import be.cytomine.security.*
+import be.cytomine.social.LastUserPosition
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
+import be.cytomine.social.PersistentUserPosition
 import be.cytomine.utils.AttachedFile
 import be.cytomine.utils.Configuration
 import be.cytomine.utils.Description
@@ -549,8 +551,14 @@ class BasicInstanceBuilder {
     }
 
 
-    static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, boolean save = false) {
-        getUserAnnotationNotExist(project,getImageInstance(),save)
+    static UserAnnotation getUserAnnotationNotExist(boolean save = false) {
+        ImageInstance image = getImageInstance()
+        Project project = image.project
+        getUserAnnotationNotExist(project,image,save)
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(Project project, boolean save = false) {
+        getUserAnnotationNotExist(project,getImageInstanceNotExist(project, true),save)
     }
 
     static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image,boolean save = false) {
@@ -565,6 +573,42 @@ class BasicInstanceBuilder {
                 project:project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
+        UserAnnotation annotation = new UserAnnotation(
+                location: new WKTReader().read(polygon),
+                image:image,
+                user: user,
+                project:image.project
+        )
+        annotation = saveDomain(annotation)
+
+
+        def at = getAnnotationTermNotExist(annotation,true)
+        at.term = term
+        at.user = user
+        saveDomain(at)
+        annotation
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, User user, Term term) {
+        UserAnnotation annotation = new UserAnnotation(
+                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
+                image:image,
+                user: user,
+                project:image.project
+        )
+        annotation = saveDomain(annotation)
+
+        if(term) {
+            def at = getAnnotationTermNotExist(annotation,true)
+            at.term = term
+            at.user = user
+            saveDomain(at)
+        }
+
+        annotation
     }
 
 
@@ -596,42 +640,6 @@ class BasicInstanceBuilder {
                 project:image.project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
-    }
-
-    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
-        UserAnnotation annotation = new UserAnnotation(
-                location: new WKTReader().read(polygon),
-                image:image,
-                user: user,
-                project:image.project
-        )
-        annotation = saveDomain(annotation)
-
-
-       def at = getAnnotationTermNotExist(annotation,true)
-        at.term = term
-        at.user = user
-        saveDomain(at)
-        annotation
-    }
-
-    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, User user, Term term) {
-        UserAnnotation annotation = new UserAnnotation(
-                location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
-                user: user,
-                project:image.project
-        )
-        annotation = saveDomain(annotation)
-
-       if(term) {
-           def at = getAnnotationTermNotExist(annotation,true)
-            at.term = term
-            at.user = user
-            saveDomain(at)
-       }
-
-        annotation
     }
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
@@ -689,6 +697,17 @@ class BasicInstanceBuilder {
         attachedFile.domainIdent = project.id
         File f = new File(file)
         attachedFile.filename = f.name
+        attachedFile.data = f.bytes
+        save ? saveDomain(attachedFile) : checkDomain(attachedFile)
+    }
+
+    static AttachedFile getAttachedFileNotExist(String file, String filename, boolean save = false) {
+        def attachedFile = new AttachedFile()
+        def project = getProjectNotExist(true)
+        attachedFile.domainClassName = project.class.name
+        attachedFile.domainIdent = project.id
+        File f = new File(file)
+        attachedFile.filename = filename
         attachedFile.data = f.bytes
         save ? saveDomain(attachedFile) : checkDomain(attachedFile)
     }
@@ -1703,7 +1722,7 @@ class BasicInstanceBuilder {
     }
 
     static Configuration getConfiguration() {
-        def key = "test".toUpperCase()
+        def key = "test_test".toUpperCase()
         def value = "test"
         def config = Configuration.findByKey(key)
 
@@ -1757,6 +1776,22 @@ class BasicInstanceBuilder {
                 imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
                 project: image.project.id)
         insert ? insertDomain(consult) : checkDomain(consult)
+    }
+
+    static PersistentUserPosition getPersistentUserPosition(ImageInstance image, User user, boolean insert = false){
+        LastUserPosition tmpPosition = new LastUserPosition(user:user.id, image: image.id,
+                imageName: image.instanceFilename, project:image.project, session: "test", zoom:0, rotation : 0.0)
+
+        insert ? insertDomain(tmpPosition) : checkDomain(tmpPosition)
+
+        PersistentUserPosition position = new PersistentUserPosition(user:user.id, image: image.id,
+                imageName: image.instanceFilename, project:image.project, session: "test", zoom:0, rotation : 0.0)
+
+        insert ? insertDomain(position) : checkDomain(position)
+    }
+
+    static PersistentUserPosition getPersistentUserPosition(ImageInstance image, boolean insert = false){
+        getPersistentUserPosition(image, getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD), insert)
     }
 
     static ImageGroupHDF5 getImageGroupHDF5() {

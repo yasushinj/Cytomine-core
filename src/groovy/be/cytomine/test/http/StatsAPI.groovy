@@ -1,7 +1,7 @@
 package be.cytomine.test.http
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -45,8 +45,48 @@ class StatsAPI  extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def statAnnotationEvolution(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/annotationevolution.json"
+    static def statAnnotationEvolution(Long id, String username, String password, Long startDate=null, Long endDate=null, Long term=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/annotationevolution.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "") +
+                (term ? "&term=$term" : "")
+        return doGET(URL, username, password)
+    }
+
+    static def statAlgoAnnotationEvolution(Long id, String username, String password, Long startDate=null, Long endDate=null, Long term=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/algoannotationevolution.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "") +
+                (term ? "&term=$term" : "")
+        return doGET(URL, username, password)
+    }
+
+    static def statReviewedAnnotationEvolution(Long id, String username, String password, Long startDate=null, Long endDate=null, Long term=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/reviewedannotationevolution.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "") +
+                (term ? "&term=$term" : "")
+        return doGET(URL, username, password)
+    }
+
+    static def statAnnotationActionEvolution(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/annotationactionsevolution.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
+
+    static def statImageConsultationEvolution(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/imageconsultationsevolution.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
+    }
+
+    static def statProjectConnectionEvolution(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/connectionsevolution.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 

@@ -210,5 +210,20 @@ class ImageConsultationService extends ModelService {
 
     }
 
+    def countByProject(Project project, Long startDate = null, Long endDate = null) {
+        def result = PersistentImageConsultation.createCriteria().get {
+            eq("project", project)
+            if(startDate) {
+                gt("created", new Date(startDate))
+            }
+            if(endDate) {
+                lt("created", new Date(endDate))
+            }
+            projections {
+                rowCount()
+            }
+        }
 
+        return [total: result]
+    }
 }

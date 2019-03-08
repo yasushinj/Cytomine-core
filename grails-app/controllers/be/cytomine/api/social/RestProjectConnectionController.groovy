@@ -2,7 +2,7 @@ package be.cytomine.api.social
 
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -134,6 +134,23 @@ class RestProjectConnectionController extends RestController {
     @RestApiParams(params=[
             @RestApiParam(name="afterThan", type="date", paramType = RestApiParamType.QUERY, description = "The date when counting starts"),
             @RestApiParam(name="period", type="string", paramType = RestApiParamType.QUERY, description = "The period of connections (hour : by hours, day : by days, week : by weeks)"),
+    ])
+    
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+
+        Long startDate = params.long("startDate")
+        Long endDate = params.long("endDate")
+
+        responseSuccess(projectConnectionService.countByProject(project, startDate, endDate))
+    }
+
+    @RestApiMethod(description="Get the number of connections in the specified project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Only connections after this date will be counted (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Only connections before this date will be counted (optional)"),
     ])
     def numberOfProjectConnections() {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
@@ -267,6 +284,5 @@ class RestProjectConnectionController extends RestController {
             responseSuccess(result)
         }
     }
-
 
 }

@@ -1,7 +1,7 @@
 package be.cytomine.api.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -66,11 +66,11 @@ class RestAbstractImageController extends RestController {
     ])
     def list() {
         SecUser user = cytomineService.getCurrentUser()
+        Project project = projectService.read(params.long("project"))
         if (params.datatables) {
-            Project project = projectService.read(params.long("project"))
             responseSuccess(dataTablesService.process(params, AbstractImage, null, [],project))
         }  else {
-            responseSuccess(abstractImageService.list(user))
+            responseSuccess(abstractImageService.list(user, project))
         }
     }
 

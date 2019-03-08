@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ class AnnotationListingService extends ModelService {
             /**
              * If an annotation has n multiple term, it will be on "n" lines.
              * For the first line for this annotation (it.id!=lastAnnotationId), add the annotation data,
-             * For the other lines, we add term data t o the last annotation
+             * For the other lines, we add term data to the last annotation
              */
             if (it.id != lastAnnotationId) {
                 if(first) {

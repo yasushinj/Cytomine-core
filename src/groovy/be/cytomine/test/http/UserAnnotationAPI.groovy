@@ -1,7 +1,7 @@
 package be.cytomine.test.http
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -37,6 +37,13 @@ class UserAnnotationAPI extends DomainAPI {
 
     static def countByUser(Long id, String username, String password) {
         String URL = Infos.CYTOMINEURL + "/api/user/$id/userannotation/count.json"
+        return doGET(URL, username, password)
+    }
+
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/userannotation/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 
@@ -128,9 +135,10 @@ class UserAnnotationAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/userannotation.json?"+(minPoint? "&minPoint=$minPoint": "")+(maxPoint? "&maxPoint=$maxPoint": "")
         def result = doPOST(URL,jsonAnnotation,username,password)
         def json = JSON.parse(result.data)
-        if(JSON.parse(jsonAnnotation) instanceof JSONArray) return [code: result.code]
+        if(JSON.parse(jsonAnnotation) instanceof JSONArray) return result
         Long idAnnotation = json?.annotation?.id
-        return [data: UserAnnotation.get(idAnnotation), code: result.code]
+        result.data = UserAnnotation.get(idAnnotation)
+        return result
     }
 
     static def update(def id, def jsonAnnotation, String username, String password) {

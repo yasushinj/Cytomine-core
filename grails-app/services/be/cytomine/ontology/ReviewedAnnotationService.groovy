@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -58,6 +58,14 @@ class ReviewedAnnotationService extends ModelService {
 
     def count(User user) {
         return ReviewedAnnotation.countByUser(user)
+    }
+
+    def countByProject(Project project, Date startDate, Date endDate) {
+        String request = "SELECT COUNT(*) FROM ReviewedAnnotation WHERE project = $project.id " +
+                (startDate ? "AND created > '$startDate' " : "") +
+                (endDate ? "AND created < '$endDate' " : "")
+        def result = ReviewedAnnotation.executeQuery(request)
+        return result[0]
     }
 
     def list(Project project, def propertiesToShow = null) {

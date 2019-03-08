@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package be.cytomine
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.server.Storage
 import be.cytomine.ontology.Property
+import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AbstractImageAPI
@@ -36,14 +37,27 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  */
 class AbstractImageTests {
 
-  void testListImages() {
-      Storage storage = BasicInstanceBuilder.getStorage()
-      BasicInstanceBuilder.getAbstractImage()
-      def result = AbstractImageAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json.collection instanceof JSONArray
-  }
+    void testListImages() {
+        Storage storage = BasicInstanceBuilder.getStorage()
+        BasicInstanceBuilder.getAbstractImage()
+        def result = AbstractImageAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
+    void testListImagesWithInProjectInfo() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        BasicInstanceBuilder.getAbstractImageNotExist(true)
+        def result = AbstractImageAPI.list(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+        assert json.collection.collect{it.inProject}.contains(true)
+        assert json.collection.collect{it.inProject}.contains(false)
+    }
 
     void testListImagesDatatable() {
         def result = AbstractImageAPI.list(true,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -56,15 +70,17 @@ class AbstractImageTests {
       assert 401 == result.code
   }
 
-  void testListAnnotationsByProject() {
-      BasicInstanceBuilder.getAbstractImage()
-      def result = AbstractImageAPI.listByProject(BasicInstanceBuilder.getProject().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+  void testListByProject() {
+      Project project = BasicInstanceBuilder.getProjectNotExist(true)
+      BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+      def result = AbstractImageAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
       def json = JSON.parse(result.data)
       assert json.collection instanceof JSONArray
+      assert json.collection.size() == 1
   }
 
-  void testListAnnotationsByProjectNoExistWithCredential() {
+  void testListByProjectNoExistWithCredential() {
       def result = AbstractImageAPI.listByProject(-99,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 404 == result.code
   }

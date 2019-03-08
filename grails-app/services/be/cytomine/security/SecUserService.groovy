@@ -1,7 +1,7 @@
 package be.cytomine.security
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -185,14 +185,13 @@ class SecUserService extends ModelService {
 
     def listUsers(Project project, boolean showUserJob = false) {
         securityACLService.check(project,READ)
-        List<SecUser> users = SecUser.executeQuery("select distinct secUser " +
-                "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, SecUser as secUser "+
+        List<User> users = User.executeQuery("select distinct secUser " +
+                "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
                 "where aclObjectId.objectId = "+project.id+" " +
                 "and aclEntry.aclObjectIdentity = aclObjectId.id " +
                 "and aclEntry.sid = aclSid.id " +
                 "and aclSid.sid = secUser.username " +
                 "and secUser.class = 'be.cytomine.security.User'")
-
         if(showUserJob) {
             //TODO:: should be optim (see method head comment)
             List<Job> allJobs = Job.findAllByProject(project, [sort: 'created', order: 'desc'])
@@ -301,8 +300,7 @@ class SecUserService extends ModelService {
     def listLayers(Project project, ImageInstance image = null) {
         securityACLService.check(project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
-        def users = []
-        def humans = listUsers(project)
+        def users = listUsers(project)
 
         if(image) {
             humans.each {
@@ -312,11 +310,8 @@ class SecUserService extends ModelService {
             def jobs = getUserJobImage(image)
             users.addAll(jobs)
         }
-        else {
-            users.addAll(humans)
-        }
+        def admins = listAdmins(project)
 
-        def  admins = listAdmins(project)
 
         if(project.checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(currentUser))) {
             return users

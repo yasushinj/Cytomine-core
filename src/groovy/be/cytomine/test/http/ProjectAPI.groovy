@@ -1,7 +1,7 @@
 package be.cytomine.test.http
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -131,8 +131,10 @@ class ProjectAPI extends DomainAPI {
         return doPOST(url,'{"project": "' + idProject + '"}',username,password)
     }
 
-    static def listCommandHistory(Long idProject,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/$idProject/commandhistory.json"
+    static def listCommandHistory(Long idProject, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/$idProject/commandhistory.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 
