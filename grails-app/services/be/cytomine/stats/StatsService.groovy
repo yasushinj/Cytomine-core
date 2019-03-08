@@ -239,9 +239,10 @@ class StatsService extends ModelService {
                 "FROM user_annotation ua " +
                 "LEFT JOIN annotation_term at " +
                 "ON at.user_annotation_id = ua.id " +
-                "GROUP BY at.term_id " +
-                (startDate ? "AND at.created > '$startDate' " : "") +
-                (endDate ? "AND at.created < '$endDate' " : "")) {
+                "WHERE ua.project_id = $project.id " +
+                (startDate ? "AND ua.created > '$startDate' " : "") +
+                (endDate ? "AND ua.created < '$endDate' " : "") +
+                "GROUP BY at.term_id ") {
 
             //init result table with data
             def name = idsRevert[it[0]]
