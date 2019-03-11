@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -140,19 +140,59 @@ class UserTests  {
 
 
     void testListProjectUser() {
-        def project = BasicInstanceBuilder.getProject()
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
         def result = UserAPI.list(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
 
         result = UserAPI.list(project.id,"project","user",true,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        assert json.collection.size() == 0
 
         result = UserAPI.list(-99,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
+    }
+
+    void testListProjectUserWithInfos() {
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
+        def result = UserAPI.list(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+
+        assert !(((JSONObject)json.collection[0]).has("lastImage"))
+        assert !(((JSONObject)json.collection[0]).has("lastConsultation"))
+        assert !(((JSONObject)json.collection[0]).has("numberConsultations"))
+
+        result = UserAPI.listWithConsultationInformation(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert (((JSONObject)json.collection[0]).has("lastImage"))
+        assert (((JSONObject)json.collection[0]).has("lastConsultation"))
+        assert (((JSONObject)json.collection[0]).has("numberConsultations"))
+        assert json.collection[0].lastImage instanceof JSONObject.Null
+        assert json.collection[0].lastConsultation instanceof JSONObject.Null
+        assert json.collection[0].numberConsultations instanceof JSONObject.Null
+
+        BasicInstanceBuilder.getImageConsultationNotExist(project.id,true)
+
+        result = UserAPI.listWithConsultationInformation(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert !(json.collection[0].lastImage instanceof JSONObject.Null)
+        assert !(json.collection[0].lastConsultation instanceof JSONObject.Null)
+        assert !(json.collection[0].numberConsultations instanceof JSONObject.Null)
     }
 
     void testListProjectAdmin() {

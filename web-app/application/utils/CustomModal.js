@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017. Authors: see NOTICE file.
+ * Copyright (c) 2009-2019. Authors: see NOTICE file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -232,11 +232,13 @@ var DescriptionModal = {
                         success: function (termModel, response) {
 
                             if (callback) {
+                                window.app.view.message("Description", "updated", "");
+                                modal.close();
                                 callback();
                             }
                         }, error: function (model, response) {
                             var json = $.parseJSON(response.responseText);
-                            window.app.view.message("Auth error", "error:" + json.errors, "");
+                            window.app.view.message("Auth error", "error:" + json.errors, "error");
                         }
                     });
 
@@ -246,7 +248,7 @@ var DescriptionModal = {
             callBackAfterCreation: callBackAfterCreation
         });
 
-        modal.addButtons("saveDescription" + idDescription, "Save", true, true);
+        modal.addButtons("saveDescription" + idDescription, "Save", true, false);
         modal.addButtons("closeDescription" + idDescription, "Close", false, true);
     },
     initDescriptionView: function (domainIdent, domainClassName, isOwner, container, maxPreviewCharNumber, callbackGet, callbackUpdate) {

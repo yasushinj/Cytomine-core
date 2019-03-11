@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -22,14 +22,15 @@ import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.image.server.ImageServer
 import be.cytomine.security.UserJob
-import groovy.sql.Sql
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import groovy.sql.Sql
 
 class UploadedFileService extends ModelService {
 
@@ -77,6 +78,10 @@ class UploadedFileService extends ModelService {
 
     def listHierarchicalTree(User user, Long rootId){
         UploadedFile root = UploadedFile.get(rootId)
+
+        if(root == null){
+            throw new ForbiddenException("UploadedFile not found")
+        }
 
         securityACLService.checkIsSameUser(root.user, cytomineService.currentUser)
         String request =
@@ -190,5 +195,19 @@ class UploadedFileService extends ModelService {
             it.parent = uploadedFile.parent
             this.update(it,JSON.parse(it.encodeAsJSON()), transaction)
         }
+
+        String currentTree = uploadedFile.lTree
+        String parentTree = (uploadedFile?.parent?.lTree)?:""
+
+        //1. Set ltree à null de uf
+        //2. update tree SET  path = ltree du parent || subpath(path, nlevel('A.C'))  where path <@ 'A.C';
+        String request =
+                "UPDATE uploaded_file SET l_tree = '' WHERE id= "+uploadedFile.id+";\n" +
+                        "UPDATE uploaded_file \n" +
+                        "SET l_tree = '"+parentTree+"' || subpath(l_tree, nlevel('"+currentTree+"'))  where l_tree <@ '"+currentTree+"';"
+
+        def sql = new Sql(dataSource)
+        sql.execute(request)
+        sql.close()
     }
 }

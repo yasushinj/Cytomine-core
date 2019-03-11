@@ -1,7 +1,7 @@
 package be.cytomine.security
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -185,8 +185,13 @@ class SecUserService extends ModelService {
 
     def listUsers(Project project, boolean showUserJob = false) {
         securityACLService.check(project,READ)
-        List<SecUser> users = SecUser.executeQuery("select distinct secUser from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, SecUser as secUser "+
-                "where aclObjectId.objectId = "+project.id+" and aclEntry.aclObjectIdentity = aclObjectId.id and aclEntry.sid = aclSid.id and aclSid.sid = secUser.username and secUser.class = 'be.cytomine.security.User'")
+        List<User> users = User.executeQuery("select distinct secUser " +
+                "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
+                "where aclObjectId.objectId = "+project.id+" " +
+                "and aclEntry.aclObjectIdentity = aclObjectId.id " +
+                "and aclEntry.sid = aclSid.id " +
+                "and aclSid.sid = secUser.username " +
+                "and secUser.class = 'be.cytomine.security.User'")
         if(showUserJob) {
             //TODO:: should be optim (see method head comment)
             List<Job> allJobs = Job.findAllByProject(project, [sort: 'created', order: 'desc'])
@@ -294,17 +299,13 @@ class SecUserService extends ModelService {
     def listLayers(Project project, ImageInstance image = null) {
         securityACLService.check(project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
-        def users = []
-        def humans = listUsers(project)
-        users.addAll(humans)
+        def users = listUsers(project)
 
         if(image) {
             def jobs = getUserJobImage(image)
             users.addAll(jobs)
         }
-        def  admins = listAdmins(project)
-
-
+        def admins = listAdmins(project)
 
 
         if(project.checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(currentUser))) {
@@ -340,11 +341,12 @@ class SecUserService extends ModelService {
     List<SecUser> getAllOnlineUsers() {
         securityACLService.checkGuest(cytomineService.currentUser)
         //get date with -X secondes
-        def xSecondAgo = Utils.getDatePlusSecond(-20000)
+        def xSecondAgo = Utils.getDateMinusSecond(300)
         def results = LastConnection.withCriteria {
             ge('created', xSecondAgo)
+            distinct('user')
         }
-        return User.getAll(results.collect{it.user.id}.unique())
+        return User.getAll(results.collect{it.user.id})
     }
 
     /**
@@ -353,13 +355,13 @@ class SecUserService extends ModelService {
     List<SecUser> getAllOnlineUsers(Project project) {
         securityACLService.check(project,READ)
         if(!project) return getAllOnlineUsers()
+        def xSecondAgo = Utils.getDateMinusSecond(300)
         def results = LastConnection.withCriteria {
             eq('project',project)
-            ne('user',cytomineService.currentUser)
+            ge('created', xSecondAgo)
+            distinct('user')
         }
-        def users = User.getAll(results.collect{it.user.id}.unique())
-        users << cytomineService.currentUser
-        return users
+        return User.getAll(results.collect{it.user.id})
     }
 
     /**

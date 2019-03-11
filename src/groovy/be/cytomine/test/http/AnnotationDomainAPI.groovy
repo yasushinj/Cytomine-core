@@ -1,7 +1,7 @@
 package be.cytomine.test.http
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -66,6 +66,11 @@ class AnnotationDomainAPI extends DomainAPI {
 
     static def listByImageAndUser(Long idImage,Long idUser, String username, String password) {
         String URL = Infos.CYTOMINEURL+"api/annotation.json?user="+ idUser +"&image="+idImage
+        return doGET(URL, username, password)
+    }
+
+    static def listByImageAndUsers(Long idImage,List<Long> idUsers, boolean includeAlgo, String username, String password) {
+        String URL = Infos.CYTOMINEURL+"api/annotation.json?users="+ idUsers.join(",") +"&image="+idImage+"&includeAlgo=$includeAlgo"
         return doGET(URL, username, password)
     }
 

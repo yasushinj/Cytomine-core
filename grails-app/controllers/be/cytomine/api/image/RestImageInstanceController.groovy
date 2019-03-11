@@ -1,7 +1,7 @@
 package be.cytomine.api.image
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package be.cytomine.api.image
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
@@ -193,6 +194,9 @@ class RestImageInstanceController extends RestController {
     @RestApiMethod(description="Add a new image instance in a project. If we add an image previously deleted, all previous information will be restored.")
     def add() {
         try {
+            if(!request.JSON.baseImage) throw new InvalidRequestException("abstract image not set")
+            if(!request.JSON.project) throw new InvalidRequestException("project not set")
+
             responseResult(imageInstanceService.add(request.JSON))
         } catch (CytomineException e) {
             log.error(e)

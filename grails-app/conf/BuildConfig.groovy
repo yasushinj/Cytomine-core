@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ grails.project.dependency.resolution = {
         runtime "org.hibernate:hibernate-validator:5.0.3.Final"
         compile 'commons-beanutils:commons-beanutils:1.8.3'
         compile 'org.imsglobal:basiclti-util:1.1.2'
+        compile 'joda-time:joda-time:2.10.1'
     }
     plugins {
         compile ":mongodb:3.0.2"

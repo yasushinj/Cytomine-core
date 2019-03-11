@@ -1,7 +1,7 @@
 package be.cytomine.api.security
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -64,18 +64,89 @@ class RestUserController extends RestController {
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
             @RestApiParam(name="online", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Get only online users for this project"),
             @RestApiParam(name="showJob", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Also show the users job for this project"),
+            @RestApiParam(name="withLastImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last image seen by each user in this project"),
+            @RestApiParam(name="withLastConsultation", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last consultation of this project by each user"),
+            @RestApiParam(name="withNumberConsultations", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the number of consultations of this project by each user"),
     ])
     def showByProject() {
         boolean online = params.boolean('online')
         boolean showUserJob = params.boolean('showJob')
         Project project = projectService.read(params.long('id'))
-        if (project && !online) {
-            responseSuccess(secUserService.listUsers(project, showUserJob))
-        } else if (project && online) {
-            def users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
+        List<SecUser> users
+        if(!project){
+            responseNotFound("User", "Project", params.id)
+        }
+        if (online) {
+            users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
+        } else {
+            users = secUserService.listUsers(project, showUserJob)
+        }
+
+        boolean withLastImage = params.boolean('withLastImage')
+        boolean withLastConsultation = params.boolean('withLastConsultation')
+        boolean withNumberConsultations = params.boolean('withNumberConsultations')
+        if(!withNumberConsultations && !withLastConsultation && !withLastImage){
             responseSuccess(users)
         } else {
-            responseNotFound("User", "Project", params.id)
+            // we sorted to apply binary search instead of a simple "find" method. => performance
+            def binSearchI = { aList, property, target ->
+                def a = aList
+                def offSet = 0
+                while (!a.empty) {
+                    def n = a.size()
+                    def m = n.intdiv(2)
+                    if(a[m]."$property" > target) {
+                        a = a[0..<m]
+                    } else if (a[m]."$property" < target) {
+                        a = a[(m + 1)..<n]
+                        offSet += m + 1
+                    } else {
+                        return (offSet + m)
+                    }
+                }
+                return -1
+            }
+
+            def images = []
+            if(withLastImage){
+                images = imageConsultationService.lastImageOfUsersByProject(project)
+                images.sort {it.user}
+            }
+
+            def connections = []
+            if(withLastConsultation){
+                connections = projectConnectionService.lastConnectionInProject(project)
+                connections.sort {it.user}
+            }
+
+            def frequencies = []
+            if(withNumberConsultations){
+                frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project)
+                frequencies.sort {it.user}
+            }
+
+            def results = []
+            for(SecUser user : users) {
+                def userInfo = User.getDataFromDomain(user)
+                if(withLastImage){
+                    int index = binSearchI(images, "user", user.id)
+                    def image = index >= 0 ? images[index]:null
+                    userInfo.lastImage = image?.image
+                }
+                if(withLastConsultation){
+                    int index = binSearchI(connections, "user", user.id)
+                    def connection = index >= 0 ? connections[index]:null
+                    userInfo.lastConsultation = connection?.created
+                }
+                if(withNumberConsultations){
+                    int index = binSearchI(frequencies, "user", user.id)
+                    def frequency = index >= 0 ? frequencies[index]:null
+                    userInfo.numberConsultations = frequency?.frequency
+                }
+                results << userInfo
+            }
+
+            responseSuccess(results)
         }
     }
 
@@ -530,30 +601,16 @@ class RestUserController extends RestController {
         def result = db.lastUserPosition.aggregate(
                 [$match : [ project : project.id, created:[$gt:thirtySecondsAgo.toDate()]]],
                 [$project:[user:1,image:1,imageName:1,created:1]],
-                [$group : [_id : [ user: '$user', image: '$image',imageName: '$imageName'], "date":[$max:'$created']]]
+                [$group : [_id : [ user: '$user', image: '$image',imageName: '$imageName'], "date":[$max:'$created']]],
+                [$group : [_id : [ user: '$_id.user'], "position":[$push: [id: '$_id.image',image: '$_id.image', filename: '$_id.imageName', originalFilename: '$_id.imageName', date: '$date']]]]
         )
 
         def usersWithPosition = []
-        def userInfo = [:]
-        long previousUser = -1
         result.results().each {
-
-            def userId = it["_id"]["user"]
-            def imageId = it["_id"]["image"]
-            def imageName = it["_id"]["imageName"]
-            def date = it["date"]
-
-            long currentUser = userId
-            if (previousUser != currentUser) {
-                //new user, create a new line
-                userInfo = [id: currentUser, position: []]
-                usersWithPosition << userInfo
-                usersId.remove(currentUser)
-            }
-            //add position to the current user
-            userInfo['position'] << [id: imageId,image: imageId, filename: imageName, originalFilename:imageName, date: date]
-            previousUser = currentUser
+            usersWithPosition << [id: it["_id"]["user"], position: it["position"]]
         }
+        usersId.remove(usersWithPosition.collect{it.id})
+
         //user online with no image open
         usersId.each {
             usersWithPosition << [id: it, position: []]
@@ -628,6 +685,7 @@ class RestUserController extends RestController {
         Integer offset = params.offset != null ? params.getInt('offset') : 0
         Integer max = (params.max != null && params.getInt('max')!=0) ? params.getInt('max') : Integer.MAX_VALUE
         def maxForCollection = Math.min(users.size() - offset, max)
+        long collectionSize = users.size()
 
         if(field && ["id","email","username"].contains(field)) {
             users.sort { a,b->
@@ -705,6 +763,12 @@ class RestUserController extends RestController {
                 }
             }
             sorted = true;
+        }
+
+        // to fit the pagination system
+        if(collectionSize > results.size()) {
+            def filler = Arrays.asList(new Object[collectionSize-results.size()-offset]);
+            results = Arrays.asList(new Object[offset]) + results + filler
         }
 
         responseSuccess(results)

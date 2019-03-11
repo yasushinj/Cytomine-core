@@ -1,9 +1,7 @@
 package be.cytomine.utils
 
-import be.cytomine.CytomineDomain
-
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -21,6 +19,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
 import be.cytomine.security.SecUser
+import be.cytomine.AnnotationDomain
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -54,6 +53,10 @@ class DescriptionService extends ModelService {
      * Get a description thanks to its domain info (id and class)
      */
     def get(def domainIdent, def domainClassName) {
+        if(domainClassName.contains("AnnotationDomain")){
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(domainIdent)
+            domainClassName = annotation.getClass().name
+        }
         securityACLService.check(domainIdent,domainClassName,READ)
         Description.findByDomainIdentAndDomainClassName(domainIdent,domainClassName)
     }
@@ -64,15 +67,17 @@ class DescriptionService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
-        CytomineDomain domain = Class.forName(json.domainClassName, false, Thread.currentThread().contextClassLoader).read(JSONUtils.getJSONAttrLong(json,'domainIdent',0))
-
-        if (domain != null && !domain.class.name.contains("AbstractImage")) {
-            securityACLService.check(domain.container(),READ)
-            if (domain.hasProperty('user') && domain.user) {
-                securityACLService.checkFullOrRestrictedForOwner(domain, domain.user)
-            } else {
-                securityACLService.checkisNotReadOnly(domain)
-            }
+        if(json.domainClassName.equals("be.cytomine.project.Project")){
+            securityACLService.check(json.domainIdent,json.domainClassName,READ)
+            securityACLService.checkisNotReadOnly(json.domainIdent,json.domainClassName)
+        } else if(json.domainClassName.contains("AnnotationDomain")){
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(json.domainIdent)
+            json.domainClassName = annotation.getClass().name
+            securityACLService.check(json.domainIdent,annotation.getClass().name,READ)
+            securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,annotation.getClass().name, "user")
+        } else if (!json.domainClassName.contains("AbstractImage")){
+            securityACLService.check(json.domainIdent,json.domainClassName,READ)
+            securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,json.domainClassName, "user")
         }
         SecUser currentUser = cytomineService.getCurrentUser()
         return executeCommand(new AddCommand(user: currentUser),null,json)

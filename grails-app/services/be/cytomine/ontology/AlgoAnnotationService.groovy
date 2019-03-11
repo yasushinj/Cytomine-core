@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -167,9 +167,12 @@ class AlgoAnnotationService extends ModelService {
         if (annotationID) {
             def term = JSONUtils.getJSONList(json.term);
             if (term) {
+                def terms = []
                 term.each { idTerm ->
-                    algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
+                    def annotationTermResult = algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
+                    terms << annotationTermResult.data.algoannotationterm.term
                 }
+                result.data.annotation.term = terms
             }
         }
 

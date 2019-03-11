@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -261,9 +261,12 @@ class UserAnnotationService extends ModelService {
             //Add annotation-term if term
             def term = JSONUtils.getJSONList(json.term);
             if (term) {
+                def terms = []
                 term.each { idTerm ->
-                    annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
+                    def annotationTermResult = annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
+                    terms << annotationTermResult.data.annotationterm.term
                 }
+                result.data.annotation.term = terms
             }
 
             def properties = JSONUtils.getJSONList(json.property)
@@ -287,22 +290,22 @@ class UserAnnotationService extends ModelService {
         }
 
 
-            //add annotation on the retrieval
+        //add annotation on the retrieval
         log.info "annotationID=$annotationID"
-            if (annotationID && UserAnnotation.read(annotationID).location.getNumPoints() >= 3) {
-                if (!currentUser.algo()) {
-                    try {
-                        log.info "log.addannotation2"
-                        if (annotationID) {
-                            indexRetrievalAnnotation(annotationID)
-                        }
-                    } catch (CytomineException ex) {
-                        log.error "CytomineException index in retrieval:" + ex.toString()
+        if (annotationID && UserAnnotation.read(annotationID).location.getNumPoints() >= 3) {
+            if (!currentUser.algo()) {
+                try {
+                    log.info "log.addannotation2"
+                    if (annotationID) {
+                        indexRetrievalAnnotation(annotationID)
                     }
+                } catch (CytomineException ex) {
+                    log.error "CytomineException index in retrieval:" + ex.toString()
                 }
             }
+        }
 
-            return result
+        return result
     }
 
     /**

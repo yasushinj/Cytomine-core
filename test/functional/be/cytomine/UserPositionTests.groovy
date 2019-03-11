@@ -1,7 +1,7 @@
 package be.cytomine
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package be.cytomine
 
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
-import be.cytomine.test.http.ImageInstanceAPI
+import be.cytomine.test.http.UserAPI
 import be.cytomine.test.http.UserPositionAPI
 import grails.converters.JSON
 
@@ -174,10 +174,38 @@ class UserPositionTests  {
 
         result = UserPositionAPI.listLastByUser(image.id,creator,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+        assert creator == JSON.parse(result.data).user
         result = UserPositionAPI.listLastByImage(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
          //same position, user don't move
         result = UserPositionAPI.create(image.id, json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
+
+    void testListOnlineFriendsWithOpenedImages() {
+        def image1 = BasicInstanceBuilder.getImageInstance()
+        def project = image1.project
+        def image2 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        def user1 = BasicInstanceBuilder.getUserNotExist(true)
+        def user2 = BasicInstanceBuilder.getUserNotExist(true)
+
+        BasicInstanceBuilder.getPersistentUserPosition(image1, user1, true)
+        BasicInstanceBuilder.getPersistentUserPosition(image2, user1, true)
+        BasicInstanceBuilder.getPersistentUserPosition(image2, user2,true)
+
+        def result = UserAPI.listOnline(project.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        def json = JSON.parse(result.data)
+
+        assert (json.collection.find{it.id == user1.id})
+        assert (json.collection.find{it.id == user2.id})
+        assert (json.collection.find{it.id == user1.id}.position.size() == 2)
+        assert (json.collection.find{it.id == user2.id}.position.size() == 1)
+        assert (json.collection.find{it.id == user1.id}.position.find{it.image == image1.id})
+        assert (json.collection.find{it.id == user1.id}.position.find{it.image == image2.id})
+        assert (json.collection.find{it.id == user2.id}.position.find{it.image == image2.id})
+        assert (json.collection.find{it.id == user2.id}.position.find{it.image == image1.id} == null)
+
         assert 200 == result.code
     }
 }

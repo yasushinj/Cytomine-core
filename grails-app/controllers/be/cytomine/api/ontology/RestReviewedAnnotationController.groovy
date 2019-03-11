@@ -1,7 +1,7 @@
 package be.cytomine.api.ontology
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -512,10 +512,13 @@ class RestReviewedAnnotationController extends RestController {
     @RestApiMethod(description="Get annotation reviewed crop (image area that frame annotation)")
     @RestApiResponseObject(objectIdentifier = "file")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
-        @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.PATH,description = "Maximum size of the crop image (w and h)"),
-        @RestApiParam(name="zoom", type="int", paramType = RestApiParamType.PATH,description = "Zoom level"),
-        @RestApiParam(name="draw", type="boolean", paramType = RestApiParamType.PATH,description = "Draw annotation form border on the image")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
+            @RestApiParam(name="maxSize", type="int", paramType = RestApiParamType.PATH,description = "Maximum size of the crop image (w and h)"),
+            @RestApiParam(name="zoom", type="int", paramType = RestApiParamType.PATH,description = "Zoom level"),
+            @RestApiParam(name="draw", type="boolean", paramType = RestApiParamType.PATH,description = "Draw annotation form border on the image"),
+            @RestApiParam(name="thickness", type="int", paramType = RestApiParamType.QUERY, description = " If draw used, set the thickness of the geometry contour on the crop.", required = false),
+            @RestApiParam(name="color", type="string", paramType = RestApiParamType.QUERY, description = " If draw used, set the color of the geometry contour on the crop. Color are hexadecimal value", required = false),
+            @RestApiParam(name="square", type="boolean", paramType = RestApiParamType.QUERY, description = " If draw used, try to extends the ROI around the crop to have a square.", required = false),
     ])
     def crop() {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import grails.plugin.springsecurity.SecurityFilterPosition
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
 import grails.util.Holders
+import groovy.sql.Sql
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.grails.plugin.resource.ResourceMeta
 import org.grails.plugin.resource.ResourceProcessor
@@ -111,7 +112,7 @@ class BootStrap {
 
         if(Version.count()==0) {
             log.info "Version was not set, set to last version"
-            Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'))
+            Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'),grailsApplication.metadata.'app.version')
         }
 
         //Initialize marshallers and services
@@ -178,6 +179,16 @@ class BootStrap {
         }
 
         log.info "init change for old version..."
+        // TODO : delete this sql in v2.1
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='version' and column_name='major';").size() == 1;
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN major integer;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN minor integer;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN patch integer;")
+        }
+
         bootstrapOldVersionService.execChangeForOldVersion()
 
         log.info "create multiple IS and Retrieval..."

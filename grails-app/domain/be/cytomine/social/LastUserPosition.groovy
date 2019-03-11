@@ -1,7 +1,7 @@
 package be.cytomine.social
 
 /*
-* Copyright (c) 2009-2017. Authors: see NOTICE file.
+* Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ class LastUserPosition extends CytomineDomain {
      */
     int zoom
 
+    float rotation
+
     static constraints = {
         project nullable: true
     }
@@ -78,6 +80,7 @@ class LastUserPosition extends CytomineDomain {
         returnArray.image = domain?.image?.id
         returnArray.project = domain?.project?.id
         returnArray.zoom = domain?.zoom
+        returnArray.rotation = domain?.rotation
         com.vividsolutions.jts.geom.Polygon polygon = PersistentUserPosition.getPolygonFromMongo(domain?.location)
         returnArray.location = polygon.toString()
         returnArray.x = polygon.getCentroid().getX()
