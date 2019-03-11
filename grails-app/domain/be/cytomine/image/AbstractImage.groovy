@@ -225,6 +225,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['uploadedFile'] = image?.uploadedFile?.id
         returnArray['path'] = image?.path
         returnArray['mime'] = image?.mime?.mimeType
+        returnArray['contentType'] = image?.uploadedFile?.contentType
         returnArray['width'] = image?.width
         returnArray['height'] = image?.height
         returnArray['depth'] = image?.depth // /!!\ Breaking API : image?.getZoomLevels()?.max
