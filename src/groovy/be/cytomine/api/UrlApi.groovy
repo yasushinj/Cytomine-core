@@ -83,6 +83,10 @@ class UrlApi {
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/thumb.$format?maxSize=$maxSize"
     }
 
+    static def getAbstractSliceThumbUrl(Long idSlice, def format="png") {
+        return "${serverUrl()}/api/abstractslice/$idSlice/thumb.$format"
+    }
+
     static def getImageGroupThumbUrlWithMaxSize(Long idImageGroup, def maxSize = 256, def format="png") {
         return "${serverUrl()}/api/imagegroup/$idImageGroup/thumb.$format?maxSize=$maxSize"
     }

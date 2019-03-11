@@ -23,11 +23,12 @@ import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
-import be.cytomine.image.server.ImageServer
+import be.cytomine.image.server.Storage
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.security.UserJob
 import be.cytomine.utils.ModelService
+import be.cytomine.utils.SQLUtils
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import groovy.sql.Sql
@@ -57,18 +58,20 @@ class UploadedFileService extends ModelService {
     }
 
     def list(User user) {
-        // TODO: update security to use storages container
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+        List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
             isNull("deleted")
+            createAlias("storages", "s")
+            'in'("s.id", storages.collect{ it.id })
         }
         return uploadedFiles
     }
 
     def list(User user, Long parentId, Boolean onlyRoot) {
-        // TODO: update security to use storages container
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+        List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
             if(onlyRoot) {
@@ -77,42 +80,90 @@ class UploadedFileService extends ModelService {
                 eq("parent.id", parentId)
             }
             isNull("deleted")
+            createAlias("storages", "s")
+            'in'("s.id", storages.collect{ it.id })
         }
         return uploadedFiles
     }
 
-    def listHierarchicalTree(User user, Long rootId){
-        UploadedFile root = UploadedFile.get(rootId)
-        // TODO: update security to use storages container
+    def listWithDetails(User user) {
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
 
-        if(root == null){
-            throw new ForbiddenException("UploadedFile not found")
-        }
-
-        securityACLService.checkIsSameUser(root.user, cytomineService.currentUser)
-        String request =
-                "SELECT uf.id, uf.created, uf.original_filename, uf.l_tree, uf.parent_id, uf.size, uf.status, uf.image_id \n" +
-                        "FROM uploaded_file uf\n" +
-                        "WHERE uf.l_tree <@ '"+root.lTree+"'::text::ltree \n" +
-                        "AND uf.user_id = "+user.id+" \n" +
-                        "ORDER BY uf.l_tree ASC "
+        String request = "SELECT uf.id, " +
+                "uf.content_type, " +
+                "uf.created, " +
+                "uf.filename, " +
+                "uf.original_filename, " +
+                "uf.size, " +
+                "uf.status, " +
+                "COUNT(tree.id) as nb_children, " +
+                "COALESCE(SUM(tree.size),0)+uf.size as global_size, " +
+                "CASE WHEN (uf.status = 1 OR uf.status = 2) THEN ai.id ELSE NULL END as image " +
+                "FROM uploaded_file uf " +
+                "LEFT JOIN (SELECT * FROM uploaded_file) tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id) " +
+                "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
+                "LEFT JOIN uploaded_file_storage as ufs on ufs.uploaded_file_storages_id = uf.id " +
+                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = ufs.storage_id " +
+                "LEFT JOIN acl_entry as ae ON ae.acl_object_identity = aoi.id " +
+                "LEFT JOIN acl_sid as asi ON asi.id = ae.sid " +
+//                "LEFT JOIN (SELECT * FROM uploaded_file) parent ON parent.id = uf.parent_id" +
+                "WHERE uf.parent_id is NULL " /*uf.content_type NOT similar to '%zip|ome%' "*/ +
+//                "AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') " +
+                "AND asi.sid = :username " +
+                "AND uf.deleted IS NULL " +
+                "GROUP BY uf.id, ai.id " +
+                "ORDER BY uf.created DESC "
 
         def data = []
         def sql = new Sql(dataSource)
-        sql.eachRow(request) {
-            def row = [:]
-            int i = 0
-            row.id = it[i++]
-            row.created = it[i++]
-            row.originalFilename = it[i++]
-            row.lTree = it[i++].value
-            row.parentId = it[i++]
-            row.size = it[i++]
-            row.status = it[i++]
+        sql.eachRow(request, [username: user.username]) { resultSet ->
+            def row = SQLUtils.keysToCamelCase(resultSet.toRowResult())
+            row.thumbURL = (row.image) ? UrlApi.getAbstractImageThumbUrl(row.image as Long) : null
+            data << row
+        }
+        sql.close()
 
-            Long imageId = it[i++]
-            row.image = imageId
-            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAssociatedImage(imageId, "macro") : null
+        return data
+    }
+
+    def listHierarchicalTree(User user, Long rootId){
+        UploadedFile root = read(rootId)
+        if(!root) {
+            throw new ForbiddenException("UploadedFile not found")
+        }
+        securityACLService.checkAtLeastOne(root, READ)
+        String request = "SELECT uf.id, uf.created, uf.original_filename, " +
+                "uf.l_tree, uf.parent_id as parent, " +
+                "uf.size, uf.status, " +
+                "array_agg(ai.id) as images, array_agg(asl.id) as slices, array_agg(cf.id) as companion_files " +
+                "FROM uploaded_file uf " +
+                "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
+                "LEFT JOIN abstract_slice asl ON asl.uploaded_file_id = uf.id " +
+                "LEFT JOIN companion_file cf ON cf.uploaded_file_id = uf.id " +
+                "LEFT JOIN uploaded_file_storage as ufs on ufs.uploaded_file_storages_id = uf.id " +
+                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = ufs.storage_id " +
+                "LEFT JOIN acl_entry as ae ON ae.acl_object_identity = aoi.id " +
+                "LEFT JOIN acl_sid as asi ON asi.id = ae.sid " +
+                "WHERE uf.l_tree <@ '" + root.lTree + "'::text::ltree " +
+                "AND asi.sid = :username " +
+                "AND uf.deleted IS NULL " +
+                "GROUP BY uf.id " +
+                "ORDER BY uf.l_tree ASC "
+
+        def data = []
+        def sql = new Sql(dataSource)
+        sql.eachRow(request, [username: user.username]) { resultSet ->
+            def row = SQLUtils.keysToCamelCase(resultSet.toRowResult())
+            row.lTree = row.lTree.value
+            row.images = row.images.array.findAll { it != null }
+            row.slices = row.slices.array.findAll { it != null }
+            row.companionFiles = row.companionFiles.array.findAll { it != null }
+            row.thumbURL =  null
+            if(row.images.size() > 0) {
+                row.thumbURL = UrlApi.getAbstractImageThumbUrl(row.images[0] as Long)
+            } else if (row.slices.size() > 0) {
+                row.thumbURL = UrlApi.getAbstractSliceThumbUrl(row.slices[0] as Long)
+            }
             data << row
         }
         sql.close()

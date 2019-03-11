@@ -42,41 +42,30 @@ class RestUploadedFileController extends RestController {
     def notificationService
     def securityACLService
     def secUserService
-    def dataTablesService
 
-    @RestApiMethod(description = "Get all uploaded file made by the current user")
+    @RestApiMethod(description = "Get all uploaded files made by the current user")
     @RestApiParams(params = [
-            @RestApiParam(name = "root", type = "long", paramType = RestApiParamType.QUERY, description = ""),
-            @RestApiParam(name = "parent", type = "long", paramType = RestApiParamType.QUERY, description = "If set, only return uploaded files with the given parent"),
-            @RestApiParam(name = "onlyRoots", type = "boolean", paramType = RestApiParamType.QUERY, description = "True to only return roots"),
+            @RestApiParam(name = "onlyRootsWithDetails", type = "boolean", paramType = RestApiParamType.QUERY, description = "If set, only return uploaded files which are roots (no parent) with supplementary details such global size."),
+            @RestApiParam(name = "onlyRoots", type = "boolean", paramType = RestApiParamType.QUERY, description = "If set, only return uploaded files which are roots (no parent)."),
+            @RestApiParam(name = "parent", type = "long", paramType = RestApiParamType.QUERY, description = "If set, only return uploaded files having the given parent."),
+            @RestApiParam(name = "root", type = "long", paramType = RestApiParamType.QUERY, description = "If set, only return uploaded files which are children of the given root. Returned attributes are a subset of uploaded files attributes."),
             @RestApiParam(name = "all", type = "boolean", paramType = RestApiParamType.QUERY, description = "True to list uploaded files for all users the current user has access to")
     ])
     def list() {
-
         Long root
         def uploadedFiles
         if (params.root) {
-            root = Long.parseLong(params.root)
+            root = params.long('root')
             uploadedFiles = uploadedFileService.listHierarchicalTree((User) cytomineService.getCurrentUser(), root)
-            //if view is datatables, change way to store data
-        } else if (params.datatables) {
-            uploadedFiles = dataTablesService.process(params, UploadedFile, null, null, null)
+        } else if (params.onlyRootsWithDetails) {
+            uploadedFiles = uploadedFileService.listWithDetails((User) cytomineService.getCurrentUser())
+        } else if (params.all) {
+            uploadedFiles = uploadedFileService.list()
         } else {
-            Boolean onlyRoots
-            if (params.onlyRoots) {
-                onlyRoots = Boolean.parseBoolean(params.onlyRoots)
-            }
-            Long parent
-            if (params.parent) {
-                parent = Long.parseLong(params.parent)
-            }
-            if (params.all) {
-                uploadedFiles = uploadedFileService.list()
-            } else {
-                uploadedFiles = uploadedFileService.list((User) secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
-            }
+            Boolean onlyRoots = params.boolean('onlyRoots', false)
+            Long parent = params.long('parent', null)
+            uploadedFiles = uploadedFileService.list((User) secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
         }
-
 
         responseSuccess(uploadedFiles)
     }
