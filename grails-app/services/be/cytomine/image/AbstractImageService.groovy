@@ -117,20 +117,18 @@ class AbstractImageService extends ModelService {
             images = AbstractImage.list()
         } else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
-            return AbstractImage.createCriteria().list {
+            images = AbstractImage.createCriteria().list {
                 createAlias("uploadedFile", "uf")
-                inList("uf.storages", storages)
+                createAlias("uf.storages", "s")
+                'in'("s.id", storages.collect{ it.id })
                 isNull("deleted")
             }
-//            List<AbstractImage> images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}
-//            return images.findAll{!it.deleted}
         }
         if(project) {
             TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProjectAndDeletedIsNull(project).collect{it.baseImage.id})
 
             def result = []
-
-            for(AbstractImage image : images){
+            images.each { image ->
                 def data = AbstractImage.getDataFromDomain(image)
                 data.inProject = (inProjectImagesId.contains(image.id))
                 result << data
