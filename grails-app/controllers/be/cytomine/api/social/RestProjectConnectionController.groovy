@@ -74,13 +74,14 @@ class RestProjectConnectionController extends RestController {
     def numberOfConnectionsByProjectAndUser() {
         SecUser user = secUserService.read(params.user)
         Project project = projectService.read(params.project)
-        Long afterThan = params.long("afterThan");
+        Long afterThan = params.long("afterThan")
+        Long beforeThan = params.long("beforeThan")
         String period = params.period
 
         if(params.boolean('heatmap')) {
             responseSuccess(projectConnectionService.numberOfConnectionsByProjectOrderedByHourAndDays(project, afterThan, user))
         }else if(period) {
-            responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period, project))
+            responseSuccess(projectConnectionService.numberOfProjectConnections(period, afterThan, beforeThan, project, user))
         } else {
             responseSuccess(projectConnectionService.numberOfConnectionsByProjectAndUser(project, user))
         }
@@ -104,10 +105,11 @@ class RestProjectConnectionController extends RestController {
 
     def numberOfProjectConnections() {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
-        Long afterThan = params.long("afterThan");
+        Long beforeThan = params.long("beforeThan")
+        Long afterThan = params.long("afterThan")
         String period = params.get("period").toString()
         if(period){
-            responseSuccess(projectConnectionService.numberOfProjectConnections(afterThan,period))
+            responseSuccess(projectConnectionService.numberOfProjectConnections(period, afterThan, beforeThan))
         } else {
             response([success: false, message: "Mandatory parameter 'period' not found. Parameters are : "+params], 400)
         }
