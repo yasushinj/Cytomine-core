@@ -115,8 +115,8 @@ class BootstrapOldVersionService {
         bootstrapUtilsService.createConfigurations(true)
     }
 
-    void init20190220() {
-        log.info "20190220"
+    void init20190228() {
+        log.info "20190228"
 
         // Move old Long[] storages to many-to-one.
         def sql = new Sql(dataSource)
