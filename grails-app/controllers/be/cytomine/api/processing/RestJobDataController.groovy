@@ -1,5 +1,7 @@
 package be.cytomine.api.processing
 
+import be.cytomine.Exception.InvalidRequestException
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -83,6 +85,7 @@ class RestJobDataController extends RestController {
      */
     @RestApiMethod(description="Add a new data file description. After that, call then 'upload' action to upload the file")
     def add() {
+        if(!request.JSON.job) throw new InvalidRequestException("job not set")
         add(jobDataService, request.JSON)
     }
 

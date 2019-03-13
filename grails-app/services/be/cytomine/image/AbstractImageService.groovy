@@ -265,7 +265,8 @@ class AbstractImageService extends ModelService {
         String imageServerURL = abstractImage.getRandomImageServerURL()
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
-        String url = "$imageServerURL/image/crop.png?fif=$fif&mimeType=$mimeType"
+        String format = params.format
+        String url = "$imageServerURL/image/crop.$format?fif=$fif&mimeType=$mimeType"
 
         String query = params.collect { key, value ->
             if (value instanceof String)

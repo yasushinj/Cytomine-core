@@ -1,5 +1,7 @@
 package be.cytomine.utils
 
+import be.cytomine.AnnotationDomain
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -52,6 +54,10 @@ class DescriptionService extends ModelService {
      * Get a description thanks to its domain info (id and class)
      */
     def get(def domainIdent, def domainClassName) {
+        if(domainClassName.contains("AnnotationDomain")){
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(domainIdent)
+            domainClassName = annotation.getClass().name
+        }
         securityACLService.check(domainIdent,domainClassName,READ)
         Description.findByDomainIdentAndDomainClassName(domainIdent,domainClassName)
     }
@@ -62,10 +68,16 @@ class DescriptionService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
-        securityACLService.check(json.domainIdent,json.domainClassName,READ)
         if(json.domainClassName.equals("be.cytomine.project.Project")){
+            securityACLService.check(json.domainIdent,json.domainClassName,READ)
             securityACLService.checkisNotReadOnly(json.domainIdent,json.domainClassName)
+        } else if(json.domainClassName.contains("AnnotationDomain")){
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(json.domainIdent)
+            json.domainClassName = annotation.getClass().name
+            securityACLService.check(json.domainIdent,annotation.getClass().name,READ)
+            securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,annotation.getClass().name, "user")
         } else {
+            securityACLService.check(json.domainIdent,json.domainClassName,READ)
             securityACLService.checkFullOrRestrictedForOwner(json.domainIdent,json.domainClassName, "user")
         }
         SecUser currentUser = cytomineService.getCurrentUser()
