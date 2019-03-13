@@ -28,8 +28,13 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.test.HttpClient
 import grails.converters.JSON
-import groovyx.net.http.HTTPBuilder
 import org.apache.commons.io.IOUtils
+import org.apache.http.HttpResponse
+import org.apache.http.NameValuePair
+import org.apache.http.client.entity.UrlEncodedFormEntity
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.message.BasicNameValuePair
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 import java.awt.image.BufferedImage
@@ -231,7 +236,7 @@ class RestAbstractImageController extends RestController {
         log.info params
         log.info request.queryString
         log.info params.increaseArea
-        String redirection = abstractImageService.crop(params, request.queryString)
+        String redirection = abstractImageService.crop(params, request.queryString ?: "")
 
         if(redirection.length()<2000){
             log.info "redirect $redirection"
@@ -239,27 +244,34 @@ class RestAbstractImageController extends RestController {
         } else {
             URL url = new URL(redirection)
 
-            def postBody = [:]
-            for(String parameter : url.query.split("&")){
+            log.info "URL too long "+redirection.length()+". Post request to ${url.protocol}://${url.host}${url.path}"
+
+            def queries = url.query.split("&")
+            List<NameValuePair> parameters = new ArrayList<NameValuePair>(queries.size());
+            for(String parameter : queries){
                 String[] tmp = parameter.split('=');
-                postBody.put(tmp[0], URLDecoder.decode(tmp[1]))
+                parameters.add(new BasicNameValuePair(tmp[0], URLDecoder.decode(tmp[1])));
             }
 
-            def http = new HTTPBuilder( "http://"+url.host)
-            http.post( path: url.path , requestContentType: groovyx.net.http.ContentType.URLENC,
-                    body : postBody) { resp,json ->
+            org.apache.http.client.HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("${url.protocol}://${url.host}${url.path}");
 
-                // response handler for a success response code:
+            httppost.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
 
-                byte[] bytesOut = IOUtils.toByteArray(resp.getEntity().getContent());
-                response.contentLength = bytesOut.length;
-                response.setHeader("Connection", "Keep-Alive")
-                response.setHeader("Accept-Ranges", "bytes")
+            HttpResponse httpResponse = httpclient.execute(httppost);
+            InputStream instream = httpResponse.getEntity().getContent()
+
+            byte[] bytesOut = IOUtils.toByteArray(instream);
+            response.contentLength = bytesOut.length;
+            response.setHeader("Connection", "Keep-Alive")
+            response.setHeader("Accept-Ranges", "bytes")
+            if(params.format == "png") {
                 response.setHeader("Content-Type", "image/png")
-                response.getOutputStream() << bytesOut
-                response.getOutputStream().flush()
-
+            } else {
+                response.setHeader("Content-Type", "image/jpeg")
             }
+            response.getOutputStream() << bytesOut
+            response.getOutputStream().flush()
         }
 
     }

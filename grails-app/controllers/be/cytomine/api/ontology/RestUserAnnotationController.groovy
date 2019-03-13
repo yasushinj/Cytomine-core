@@ -26,8 +26,14 @@ import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import grails.converters.JSON
-import groovyx.net.http.HTTPBuilder
 import org.apache.commons.io.IOUtils
+import org.apache.http.HttpResponse
+import org.apache.http.NameValuePair
+import org.apache.http.client.HttpClient
+import org.apache.http.client.entity.UrlEncodedFormEntity
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.message.BasicNameValuePair
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
@@ -222,28 +228,33 @@ class RestUserAnnotationController extends RestController {
                 //POST request
                 URL destination = new URL(url)
 
-                def postBody = [:]
-                for(String parameter : destination.query.split("&")){
+                log.info "URL too long "+url.length()+". Post request to ${destination.protocol}://${destination.host}${destination.path}"
+
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost("${destination.protocol}://${destination.host}${destination.path}");
+
+                def queries = destination.query.split("&")
+                List<NameValuePair> params = new ArrayList<NameValuePair>(queries.size());
+                for(String parameter : queries){
                     String[] tmp = parameter.split('=');
-                    postBody.put(tmp[0], URLDecoder.decode(tmp[1]))
+                    params.add(new BasicNameValuePair(tmp[0], URLDecoder.decode(tmp[1])));
                 }
+                httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 
-                def http = new HTTPBuilder( "http://"+destination.host)
-                log.info "URL too long "+url.length()+". Post request to ${destination.host}${destination.path}"
-                http.post( path: destination.path, requestContentType: groovyx.net.http.ContentType.URLENC,
-                        body : postBody) { resp,json ->
+                HttpResponse httpResponse = httpclient.execute(httppost);
+                InputStream instream = httpResponse.getEntity().getContent()
 
-                    // response handler for a success response code:
-
-                    byte[] bytesOut = IOUtils.toByteArray(resp.getEntity().getContent());
-                    response.contentLength = bytesOut.length;
-                    response.setHeader("Connection", "Keep-Alive")
-                    response.setHeader("Accept-Ranges", "bytes")
+                byte[] bytesOut = IOUtils.toByteArray(instream);
+                response.contentLength = bytesOut.length;
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                if(parameters.format == "png") {
                     response.setHeader("Content-Type", "image/png")
-                    response.getOutputStream() << bytesOut
-                    response.getOutputStream().flush()
-
+                } else {
+                    response.setHeader("Content-Type", "image/jpeg")
                 }
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
             }
         } else {
             responseNotFound("Annotation", params.id)
