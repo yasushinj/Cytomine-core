@@ -24,12 +24,12 @@ class AnnotationUrlMappings {
 
     static mappings = {
 
-//        /**
-//         * Annotation search
-//         */
-//        "/api/annotation/search.$format"(controller:"restAnnotationDomain"){
-//            action = []
-//        }
+        /**
+         * Annotation search
+         */
+        "/api/search/annotation.$format"(controller:"restAnnotationDomain"){
+            action = [GET: "search",POST:"search"]
+        }
 
         /**
          * Annotation generic
