@@ -116,6 +116,11 @@ class UserAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/user/$id/password.json"
         return doPUT(URL,json,username,password)
     }
+    static def checkPassword(String passwordToCheck, String username, String password) {
+        String json = ([password: passwordToCheck] as JSON).toString()
+        String URL = Infos.CYTOMINEURL + "api/user/security_check.json"
+        return doPOST(URL,json,username,password)
+    }
 
 
     static def delete(def id, String username, String password) {

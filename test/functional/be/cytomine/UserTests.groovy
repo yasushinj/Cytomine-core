@@ -585,6 +585,15 @@ class UserTests  {
 
     }
 
+    void testCheckPassword() {
+
+        def response = UserAPI.checkPassword(Infos.SUPERADMINPASSWORD,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == response.code
+
+        response = UserAPI.checkPassword("test",Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 401 == response.code
+    }
+
     void testResetPasswordWithBadUser() {
         //change password
         assert 404 == UserAPI.resetPassword(-99,"newpassword",Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code

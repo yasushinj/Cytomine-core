@@ -516,8 +516,8 @@ class RestUserController extends RestController {
 
     @RestApiMethod(description="Change a user password for a user")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
-        @RestApiParam(name="password", type="string", paramType = RestApiParamType.QUERY, description = "The new password")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
+            @RestApiParam(name="password", type="string", paramType = RestApiParamType.QUERY, description = "The new password")
     ])
     def resetPassword () {
         try {
@@ -541,6 +541,21 @@ class RestUserController extends RestController {
             responseError(e)
         }
 
+    }
+
+    @RestApiMethod(description="Check a user password for the current user")
+    @RestApiParams(params=[
+            @RestApiParam(name="password", type="string", paramType = RestApiParamType.QUERY, description = "The password")
+    ])
+    def checkPassword () {
+        String password = request.JSON.password
+        def result = springSecurityService.encodePassword(password).equals(cytomineService.currentUser.password)
+
+        if(result) {
+            responseSuccess([:])
+        } else {
+            response([success: false, errors: "No matching password"], 401)
+        }
     }
 
     /**
