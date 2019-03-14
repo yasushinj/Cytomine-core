@@ -114,6 +114,10 @@ class UserUrlMappings {
             action = [POST:"lock", DELETE:"unlock"]
         }
 
+        "/api/user/security_check.json"(controller:"restUser"){
+            action = [GET:"checkPassword", POST:"checkPassword"]
+        }
+
         "/api/user/$id/password.$format"(controller:"restUser"){
             action = [PUT:"resetPassword"]
         }

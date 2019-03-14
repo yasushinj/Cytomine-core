@@ -122,6 +122,11 @@ class RestAnnotationDomainController extends RestController {
 
     ])
     def search() {
+
+        for(def parameter : request.JSON){
+            if(!params.containsKey(parameter.key)) params.put(parameter.key, parameter.value)
+        }
+
          try {
              def data = doSearch(params).result
                  responseSuccess(data)
