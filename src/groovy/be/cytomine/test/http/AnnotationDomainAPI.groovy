@@ -75,7 +75,7 @@ class AnnotationDomainAPI extends DomainAPI {
     }
 
     static def listByImagesAndUsersByPOST(List<Long>  idImages,List<Long> idUsers, boolean includeAlgo, String username, String password) {
-        String URL = Infos.CYTOMINEURL+"api/search/annotation.json"
+        String URL = Infos.CYTOMINEURL+"api/annotation/search.json"
         def parameters = [:]
         parameters["users"] = idUsers.join(",")
         parameters["images"] = idImages.join(",")

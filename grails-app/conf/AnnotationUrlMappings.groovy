@@ -25,13 +25,6 @@ class AnnotationUrlMappings {
     static mappings = {
 
         /**
-         * Annotation search
-         */
-        "/api/search/annotation.$format"(controller:"restAnnotationDomain"){
-            action = [GET: "search",POST:"search"]
-        }
-
-        /**
          * Annotation generic
          */
         "/api/annotation/method/union.$format"(controller:"restAnnotationDomain"){
@@ -64,6 +57,14 @@ class AnnotationUrlMappings {
         "/api/annotation/$id/cropMin.$format"(controller: "restAnnotationDomain"){
             action = [GET:"cropMin"]
         }
+
+        /**
+         * Annotation search
+         */
+        "/api/annotation/search.$format"(controller:"restAnnotationDomain"){
+            action = [GET: "search",POST:"search"]
+        }
+
 
         /**
          * User Annotation
