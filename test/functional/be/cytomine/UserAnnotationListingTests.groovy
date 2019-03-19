@@ -268,6 +268,23 @@ class UserAnnotationListingTests {
 
     }
 
+    void testListAnnotationSearchByTerm() {
+
+        def dataSet = createAnnotationSet()
+        Term term2 =  BasicInstanceBuilder.getTermNotExist(dataSet.project.ontology,true)
+        term2 = BasicInstanceBuilder.saveDomain(term2)
+        UserAnnotation a1 =  dataSet.annotations[0]
+        def at = BasicInstanceBuilder.getAnnotationTermNotExist(a1,term2,true)
+        def result = UserAnnotationAPI.listByProjectAndTerm(dataSet.project.id,term2.id,dataSet.user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+
+        assert json.collection instanceof JSONArray
+        assert json.collection.size()==1
+        assert json.collection[0].term.size() == 2
+        assert json.collection[0].term.findAll{term2.id == it}.size() == 1
+    }
+
     def testAnnotationIncludeFilterUserAnnotation() {
 
         def dataSet = createAnnotationSet()
