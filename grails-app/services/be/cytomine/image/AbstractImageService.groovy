@@ -160,7 +160,7 @@ class AbstractImageService extends ModelService {
     def beforeAdd(def domain) {
         log.info "Create a new Sample"
         long timestamp = new Date().getTime()
-        Sample sample = new Sample(name : timestamp.toString() + "-" + domain?.uploadedFile?.getOriginalFilename())
+        Sample sample = new Sample(name : timestamp.toString() + "-" + domain?.uploadedFile?.getOriginalFilename()).save()
         domain?.sample = sample
 
         //TODO: mime type
@@ -176,9 +176,9 @@ class AbstractImageService extends ModelService {
 
     def afterAdd(def domain, def response) {
         log.info "Extract image properties"
-        imagePropertiesService.clear(domain)
-        imagePropertiesService.populate(domain)
-        imagePropertiesService.extractUseful(domain)
+//        imagePropertiesService.clear(domain)
+//        imagePropertiesService.populate(domain)
+//        imagePropertiesService.extractUseful(domain)
 
         log.info "Add to projects, stored in uploaded file."
         //TODO: to improve to handle AbstractSlice -> SliceInstance
