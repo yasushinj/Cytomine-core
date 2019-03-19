@@ -17,6 +17,7 @@ package be.cytomine.image.server
 */
 
 import be.cytomine.command.*
+import be.cytomine.middleware.ImageServer
 import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task

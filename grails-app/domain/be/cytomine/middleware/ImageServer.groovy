@@ -1,4 +1,4 @@
-package be.cytomine.image.server
+package be.cytomine.middleware
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -17,6 +17,7 @@ package be.cytomine.image.server
 */
 
 import be.cytomine.CytomineDomain
+import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
@@ -37,9 +38,36 @@ class ImageServer extends CytomineDomain {
 
     static constraints = {
         name blank: false
-        url blank: false
+        url blank: false //unique ?
 //        basePath blank: false
         basePath(nullable: true) //TODO DB schema update issue
         available nullable: false
+    }
+
+    static ImageServer insertDataIntoDomain(def json, def domain = new ImageServer()) {
+        domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
+        domain.created = JSONUtils.getJSONAttrDate(json,'created')
+        domain.updated = JSONUtils.getJSONAttrDate(json,'updated')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
+
+        domain.name = JSONUtils.getJSONAttrStr(json, 'name', true)
+        domain.url = JSONUtils.getJSONAttrStr(json, 'url', true)
+        domain.basePath = JSONUtils.getJSONAttrStr(json, 'basePath', true)
+        domain.available = JSONUtils.getJSONAttrBoolean(json, 'available', true)
+
+        return domain
+    }
+
+    static def getDataFromDomain(def domain) {
+        def returnArray = CytomineDomain.getDataFromDomain(domain)
+        returnArray['name'] = domain?.name
+        returnArray['url'] = domain?.url
+        returnArray['basePath'] = domain?.basePath
+        returnArray['available'] = domain?.available
+        return returnArray
+    }
+
+    CytomineDomain container() {
+        this
     }
 }

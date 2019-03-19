@@ -1,5 +1,3 @@
-package be.cytomine.image.server
-
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -16,16 +14,15 @@ package be.cytomine.image.server
 * limitations under the License.
 */
 
-import be.cytomine.CytomineDomain
-import be.cytomine.image.Mime
-import be.cytomine.middleware.ImageServer
+class ImageServerUrlMappings {
 
-/**
- * Association between mime and image server
- */
-class MimeImageServer extends CytomineDomain {
-
-    ImageServer imageServer
-    Mime mime
+    static mappings = {
+        "/api/imageserver.$format"(controller: "restImageServer") {
+            action = [GET: "list"]
+        }
+        "/api/imageserver/$id.$format"(controller: "restImageServer") {
+            action = [GET: "show"]
+        }
+    }
 
 }

@@ -28,6 +28,7 @@ import be.cytomine.laboratory.Sample
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.AmqpQueueConfig
 import be.cytomine.middleware.AmqpQueueConfigInstance
+import be.cytomine.middleware.ImageServer
 import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.ontology.*
 import be.cytomine.processing.*

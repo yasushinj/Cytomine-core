@@ -19,13 +19,11 @@ package be.cytomine.utils.bootstrap
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.image.AbstractImage
-import be.cytomine.image.ImageInstance
 import be.cytomine.image.Mime
-import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.*
 import be.cytomine.middleware.AmqpQueue
+import be.cytomine.middleware.ImageServer
 import be.cytomine.middleware.MessageBrokerServer
-import be.cytomine.ontology.Property
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
 import be.cytomine.processing.ImageFilter
@@ -40,7 +38,6 @@ import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
-import org.json.simple.JSONObject
 
 /**
  * Cytomine

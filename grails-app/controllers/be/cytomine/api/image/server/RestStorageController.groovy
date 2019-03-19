@@ -17,12 +17,7 @@ package be.cytomine.api.image.server
 */
 
 import be.cytomine.Exception.AlreadyExistException
-import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
-import be.cytomine.image.Mime
-import be.cytomine.image.server.ImageServer
-import be.cytomine.image.server.ImageServerStorage
-import be.cytomine.image.server.MimeImageServer
 import be.cytomine.image.server.Storage
 import be.cytomine.security.SecUser
 import be.cytomine.security.User

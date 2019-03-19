@@ -1,7 +1,7 @@
 package be.cytomine.utils.bootstrap
 
-import be.cytomine.image.AbstractImage
-import be.cytomine.image.server.ImageServer
+
+import be.cytomine.middleware.ImageServer
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -25,7 +25,6 @@ import be.cytomine.image.UploadedFile
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.ontology.Property
 import be.cytomine.processing.ImageFilter
-import be.cytomine.processing.ImagingServer
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser

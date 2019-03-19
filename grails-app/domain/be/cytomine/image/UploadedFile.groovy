@@ -19,10 +19,8 @@ package be.cytomine.image
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.WrongArgumentException
-import be.cytomine.api.UrlApi
-import be.cytomine.image.server.ImageServer
+import be.cytomine.middleware.ImageServer
 import be.cytomine.image.server.Storage
-import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.postgresql.LTreeType
 import be.cytomine.security.SecUser
 import be.cytomine.security.UserJob

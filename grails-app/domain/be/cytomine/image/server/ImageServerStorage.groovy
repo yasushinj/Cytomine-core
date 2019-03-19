@@ -1,6 +1,7 @@
 package be.cytomine.image.server
 
 import be.cytomine.CytomineDomain
+import be.cytomine.middleware.ImageServer
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.

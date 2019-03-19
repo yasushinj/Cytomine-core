@@ -17,23 +17,14 @@ package be.cytomine.api.image
 */
 
 import be.cytomine.Exception.CytomineException
-import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
-import be.cytomine.image.ImageInstance
 import be.cytomine.image.UploadedFile
-import be.cytomine.image.multidim.ImageGroup
-import be.cytomine.image.multidim.ImageSequence
-import be.cytomine.image.server.ImageServer
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
-import be.cytomine.test.HttpClient
 import grails.converters.JSON
-import groovyx.net.http.HTTPBuilder
-import org.apache.commons.io.IOUtils
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
-import java.awt.image.BufferedImage
 
 /**
  * Controller for abstract image
