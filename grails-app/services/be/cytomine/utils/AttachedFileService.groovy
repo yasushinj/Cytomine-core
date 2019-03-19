@@ -1,5 +1,7 @@
 package be.cytomine.utils
 
+import be.cytomine.AnnotationDomain
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -52,6 +54,9 @@ class AttachedFileService extends ModelService {
     def list(Long domainIdent,String domainClassName) {
         if(domainClassName.contains("AbstractImage")) {
             securityACLService.checkAtLeastOne(domainIdent,domainClassName,"containers",READ)
+        } else if(domainClassName.contains("AnnotationDomain")) {
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(domainIdent)
+            securityACLService.check(domainIdent,annotation.getClass().name,"container",READ)
         } else {
             securityACLService.check(domainIdent,domainClassName,"container",READ)
         }

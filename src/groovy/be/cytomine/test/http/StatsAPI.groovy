@@ -20,8 +20,10 @@ import be.cytomine.test.Infos
 
 class StatsAPI  extends DomainAPI {
 
-    static def statTerm(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/term.json"
+    static def statTerm(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/term.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 

@@ -18,6 +18,7 @@ package be.cytomine.security
 
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
+import be.cytomine.test.Infos
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAPI
 import grails.converters.JSON
@@ -112,6 +113,15 @@ class UserSecurityTests extends SecurityTestsAbstract {
 
         //Check if a non connected user  can del
         assert (401 == UserAPI.delete(user1.id,USERNAMEBAD,PASSWORDBAD).code)
+    }
+
+    void testPasswordSecurity() {
+
+        def response = UserAPI.checkPassword(PASSWORD2,USERNAME2,PASSWORD2)
+        assert 200 == response.code
+
+        response = UserAPI.checkPassword("test",USERNAMEBAD,PASSWORDBAD)
+        assert 401 == response.code
     }
 
 }

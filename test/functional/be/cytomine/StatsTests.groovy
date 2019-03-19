@@ -59,8 +59,6 @@ class StatsTests  {
         result = TermAPI.create(termToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-
-
         def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
         Term term2 = BasicInstanceBuilder.getTermNotExist()
         term2.ontology = project.ontology
@@ -72,10 +70,6 @@ class StatsTests  {
         result = UserAnnotationAPI.create(annotationWithTerm.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-
-
-
-
         result = StatsAPI.statTerm(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
@@ -86,6 +80,15 @@ class StatsTests  {
 
         result = StatsAPI.statTerm(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
+    }
+
+    void testStatTermWithParams() {
+        Project project = BasicInstanceBuilder.getProject()
+        Long startTime = new Date().getTime()
+        def result = StatsAPI.statTerm(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startTime, startTime - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
     }
 
     void testStatUser() {
@@ -173,13 +176,11 @@ class StatsTests  {
 
         int total = json.collection.find{it.key == admin.firstname + " " + admin.lastname}.terms.size()
 
-        // we add a terme with an annotation
+        // we add a term with an annotation
 
         Term termToAdd = BasicInstanceBuilder.getTermNotExist()
         result = TermAPI.create(termToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-
-
 
         def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
         Term term2 = BasicInstanceBuilder.getTermNotExist()
@@ -191,9 +192,6 @@ class StatsTests  {
 
         result = UserAnnotationAPI.create(annotationWithTerm.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-
-
-
 
 
         result = StatsAPI.statUserAnnotations(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
