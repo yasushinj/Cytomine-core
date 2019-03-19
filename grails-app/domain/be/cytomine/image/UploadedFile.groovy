@@ -154,7 +154,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
             throw new WrongArgumentException("No storage for uploaded file.")
         }
         else {
-            domain.storages.clear()
+            domain.storages?.clear()
             json.storages?.each { id ->
                 def storage = Storage.read(id)
                 if (storage) domain.addToStorages(storage)

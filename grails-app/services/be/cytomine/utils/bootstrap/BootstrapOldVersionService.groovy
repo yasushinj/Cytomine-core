@@ -102,6 +102,19 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
+    void initv1_3_1() {
+        log.info "1.3.1"
+        new Sql(dataSource).executeUpdate("ALTER TABLE storage DROP COLUMN IF EXISTS base_path;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE image_server DROP COLUMN IF EXISTS service;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE image_server DROP COLUMN IF EXISTS class_name;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image DROP COLUMN IF EXISTS path;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS image_id;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS path;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS converted;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS storages;")
+
+    }
+
     void initv1_3_0() {
         log.info "1.3.0"
         List<Configuration> configurations = Configuration.findAllByKeyLike("%.%")
@@ -172,10 +185,15 @@ class BootstrapOldVersionService {
         }
 
         // Change direction of UF - AI relation and use the root as AI uploaded file
-        sql.executeUpdate("update abstract_image " +
-                "set uploaded_file_id = cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) " +
-                "from uploaded_file " +
-                "where abstract_image.id = image_id and uploaded_file_id is null;")
+        boolean exists = sql.rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='uploaded_file' and column_name='image_id';").size() == 1;
+        if (exists) {
+            sql.executeUpdate("update abstract_image " +
+                    "set uploaded_file_id = cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) " +
+                    "from uploaded_file " +
+                    "where abstract_image.id = image_id and uploaded_file_id is null;")
+        }
 
         // Add (0,0,0) slice instances for all image instances which are not in an image group
         if (!sql.rows("select id from slice_instance")) {
