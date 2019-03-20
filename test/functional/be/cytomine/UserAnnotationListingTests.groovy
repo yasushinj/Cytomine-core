@@ -417,55 +417,6 @@ class UserAnnotationListingTests {
 
      }
 
-    private static void checkUserAnnotationResultNumber(String url,int expectedResult) {
-        String URL = Infos.CYTOMINEURL+"api/annotation.json?$url"
-        def result = DomainAPI.doGET(URL, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.collection.size()==expectedResult
-    }
-
-    private static void checkUserAnnotationResults(String url,List<AnnotationDomain> expected, List<AnnotationDomain> notExpected) {
-        String URL = Infos.CYTOMINEURL+"api/annotation.json?$url"
-        def result = DomainAPI.doGET(URL, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-
-        expected.each { annotation ->
-            assert DomainAPI.containsInJSONList(annotation.id,json)
-        }
-        notExpected.each { annotation ->
-            assert !DomainAPI.containsInJSONList(annotation.id,json)
-        }
-    }
-
-
-    static def checkForProperties(JSONObject jsonObject, def expectedProperties = null, def unexpectedProperties = null) {
-
-        expectedProperties.each {
-            assert jsonObject.containsKey(it)
-        }
-        if(unexpectedProperties) {
-            unexpectedProperties.each {
-                assert !jsonObject.containsKey(it)
-            }
-        }
-    }
-
-    def createAnnotationSet() {
-        Project project = BasicInstanceBuilder.getProjectNotExist(true)
-        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
-        User me = User.findByUsername(Infos.SUPERADMINLOGIN)
-        Term term =  BasicInstanceBuilder.getTermNotExist(project.ontology,true)
-
-        UserAnnotation a1 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
-        UserAnnotation a2 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
-        UserAnnotation a3 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
-
-        UserAnnotation a4 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, null)
-
-        return [project:project,image:image,user:me,term:term,annotations:[a1,a2,a3,a4]]
-    }
 
 
     void testListingUserAnnotationWithoutTerm() {
@@ -578,6 +529,30 @@ class UserAnnotationListingTests {
         at2.user = user
         at2.userAnnotation=annotationWithMultipleTerm
         at2.save(flush: true)
+        AnnotationTerm at3 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at3.term.ontology = ontology
+        at3.term.save(flush: true)
+        at3.user = user
+        at3.userAnnotation=annotationWithMultipleTerm
+        at3.save(flush: true)
+
+
+        //annotation with multiple term
+        AnnotationTerm at4 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at4.term = at.term
+        at4.user = user
+        at4.save(flush: true)
+        UserAnnotation annotationWithMultipleTerm2 = at4.userAnnotation
+        annotationWithMultipleTerm2.user = user
+        annotationWithMultipleTerm2.project = project
+        annotationWithMultipleTerm2.image = image
+        assert annotationWithMultipleTerm2.save(flush: true)
+        AnnotationTerm at5 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at5.term = at2.term
+        at5.user = user
+        at5.userAnnotation=annotationWithMultipleTerm2
+        at5.save(flush: true)
+
 
         //list annotation without term with this user
         def result = UserAnnotationAPI.listByProjectAndUsersSeveralTerm(project.id, user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -585,6 +560,9 @@ class UserAnnotationListingTests {
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        assert json.collection.size() == 2
+        assert json.collection.collect{it.userByTerm.size()}.contains(2)
+        assert json.collection.collect{it.userByTerm.size()}.contains(3)
 
         assert !DomainAPI.containsInJSONList(annotationWithNoTerm.id,json)
         assert DomainAPI.containsInJSONList(annotationWithMultipleTerm.id,json)
@@ -607,6 +585,84 @@ class UserAnnotationListingTests {
 
         assert !DomainAPI.containsInJSONList(annotationWithNoTerm.id,json)
         assert DomainAPI.containsInJSONList(annotationWithMultipleTerm.id,json)
+    }
+
+    void testListingUserAnnotationWithSeveralIdenticalTerm() {
+        //create annotation without term
+        User user = BasicInstanceBuilder.getUser()
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        Infos.addUserRight(user.username,project)
+        Ontology ontology = BasicInstanceBuilder.getOntology()
+        project.ontology = ontology
+        project.save(flush: true)
+
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
+        image.project = project
+        image.save(flush: true)
+
+        //annotation with multiple term
+        AnnotationTerm at = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at.term.ontology = ontology
+        at.term.save(flush: true)
+        at.user = user
+        at.save(flush: true)
+        UserAnnotation annotationWithMultipleTerm = at.userAnnotation
+        annotationWithMultipleTerm.user = user
+        annotationWithMultipleTerm.project = project
+        annotationWithMultipleTerm.image = image
+        assert annotationWithMultipleTerm.save(flush: true)
+        AnnotationTerm at2 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at2.term.ontology = ontology
+        at2.term.save(flush: true)
+        at2.user = user
+        at2.userAnnotation=annotationWithMultipleTerm
+        at2.save(flush: true)
+
+        AnnotationTerm at3 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at3.term = at.term
+        //at3.user = user
+        at3.userAnnotation=annotationWithMultipleTerm
+        at3.save(flush: true)
+
+
+        //annotation with multiple term
+        AnnotationTerm at4 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at4.term = at.term
+        at4.user = user
+        at4.save(flush: true)
+        UserAnnotation annotationWithMultipleTerm2 = at4.userAnnotation
+        annotationWithMultipleTerm2.user = user
+        annotationWithMultipleTerm2.project = project
+        annotationWithMultipleTerm2.image = image
+        assert annotationWithMultipleTerm2.save(flush: true)
+        AnnotationTerm at5 = BasicInstanceBuilder.getAnnotationTermNotExist()
+        at5.term = at2.term
+        at5.user = user
+        at5.userAnnotation=annotationWithMultipleTerm2
+        at5.save(flush: true)
+
+
+        //list annotation without term with this user
+        def result = UserAnnotationAPI.listByProjectAndTerm(project.id, at.term.id, user.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 2
+        assert json.collection.collect{it.userByTerm.size()}.contains(2)
+        assert json.collection.collect{it.userByTerm.size()}.contains(2)
+
+        def users = []
+        json.collection.collect{it.userByTerm}.each {
+            it.collect{it.user}.each{ u->
+                users << u
+            }
+        }
+        assert users.collect{it.size()}.contains(2)
+
+        assert DomainAPI.containsInJSONList(annotationWithMultipleTerm.id,json)
+        assert DomainAPI.containsInJSONList(annotationWithMultipleTerm2.id,json)
     }
 
     void testListUserAnnotationByImageWithCredential() {
@@ -701,5 +757,55 @@ class UserAnnotationListingTests {
         //assert json.collection instanceof JSONArray
     }
 
+
+    private static void checkUserAnnotationResultNumber(String url,int expectedResult) {
+        String URL = Infos.CYTOMINEURL+"api/annotation.json?$url"
+        def result = DomainAPI.doGET(URL, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection.size()==expectedResult
+    }
+
+    private static void checkUserAnnotationResults(String url,List<AnnotationDomain> expected, List<AnnotationDomain> notExpected) {
+        String URL = Infos.CYTOMINEURL+"api/annotation.json?$url"
+        def result = DomainAPI.doGET(URL, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+
+        expected.each { annotation ->
+            assert DomainAPI.containsInJSONList(annotation.id,json)
+        }
+        notExpected.each { annotation ->
+            assert !DomainAPI.containsInJSONList(annotation.id,json)
+        }
+    }
+
+
+    static def checkForProperties(JSONObject jsonObject, def expectedProperties = null, def unexpectedProperties = null) {
+
+        expectedProperties.each {
+            assert jsonObject.containsKey(it)
+        }
+        if(unexpectedProperties) {
+            unexpectedProperties.each {
+                assert !jsonObject.containsKey(it)
+            }
+        }
+    }
+
+    def createAnnotationSet() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        User me = User.findByUsername(Infos.SUPERADMINLOGIN)
+        Term term =  BasicInstanceBuilder.getTermNotExist(project.ontology,true)
+
+        UserAnnotation a1 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
+        UserAnnotation a2 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
+        UserAnnotation a3 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
+
+        UserAnnotation a4 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, null)
+
+        return [project:project,image:image,user:me,term:term,annotations:[a1,a2,a3,a4]]
+    }
 
 }

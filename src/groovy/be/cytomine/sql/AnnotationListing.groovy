@@ -205,7 +205,7 @@ abstract class AnnotationListing {
         if(term || terms){
             sqlColumns = sqlColumns.findAll{it.key != "term" && it.key != "annotationTerms" && it.key != "userTerm"}
 
-            return "SELECT a.*, at.term_id as term , at.id as annotationTerms, at.user_id as userTerm\n " +
+            return "SELECT DISTINCT a.*, at.term_id as term , at.id as annotationTerms, at.user_id as userTerm\n " +
                     "FROM ("+
                     getSelect(sqlColumns) + getFrom() + whereRequest+
                     " ) a \n" +
@@ -559,7 +559,7 @@ class UserAnnotationListing extends AnnotationListing {
         if (orderByRate) {
             return "ORDER BY aat.rate desc"
         } else if (!orderBy) {
-            return "ORDER BY a.id desc " + ((term || terms) ? ", at.term_id " : "")
+            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "")
         } else {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         }
