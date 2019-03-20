@@ -75,6 +75,12 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "Instance image filename", useForCreation = false)
     String instanceFilename;
 
+    @RestApiObjectField(description = "The image max zoom")
+    Integer magnification
+
+    @RestApiObjectField(description = "The image resolution (microm per pixel)")
+    Double resolution
+
     @RestApiObjectFields(params = [
             @RestApiObjectField(apiFieldName = "filename", description = "Abstract image filename (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "originalFilename", description = "Abstract image original filename (see Abstract Image)", allowedType = "string", useForCreation = false),
@@ -83,8 +89,6 @@ class ImageInstance extends CytomineDomain implements Serializable {
             @RestApiObjectField(apiFieldName = "mime", description = "Abstract image mime (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "width", description = "Abstract image width (see Abstract Image)", allowedType = "int", useForCreation = false),
             @RestApiObjectField(apiFieldName = "height", description = "Abstract image height (see Abstract Image)", allowedType = "int", useForCreation = false),
-            @RestApiObjectField(apiFieldName = "resolution", description = "Abstract image resolution (see Abstract Image)", allowedType = "double", useForCreation = false),
-            @RestApiObjectField(apiFieldName = "magnification", description = "Abstract image magnification (see Abstract Image)", allowedType = "int", useForCreation = false),
             @RestApiObjectField(apiFieldName = "preview", description = "Abstract image preview (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "thumb", description = "Abstract image thumb (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "reviewed", description = "Image has been reviewed", allowedType = "boolean", useForCreation = false),
@@ -104,6 +108,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
         reviewStop nullable: true
         reviewUser nullable: true
         instanceFilename nullable: true
+        magnification nullable: true
+        resolution nullable: true
     }
 
     static mapping = {
@@ -144,6 +150,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
         domain.reviewStop = JSONUtils.getJSONAttrDate(json, "reviewStop")
         domain.reviewUser = JSONUtils.getJSONAttrDomain(json, "reviewUser", new User(), false)
         domain.instanceFilename = JSONUtils.getJSONAttrStr(json, "instanceFilename", false)
+        domain.magnification = JSONUtils.getJSONAttrInteger(json,'magnification',null)
+        domain.resolution = JSONUtils.getJSONAttrDouble(json,'resolution',null)
         //Check review constraint
         if ((domain.reviewUser == null && domain.reviewStart != null) || (domain.reviewUser != null && domain.reviewStart == null) || (domain.reviewStart == null && domain.reviewStop != null))
             throw new WrongArgumentException("Review data are not valid: user=${domain.reviewUser} start=${domain.reviewStart} stop=${domain.reviewStop}")
@@ -171,8 +179,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['mime'] = image?.baseImage?.mimeType
         returnArray['width'] = image?.baseImage?.width
         returnArray['height'] = image?.baseImage?.height
-        returnArray['resolution'] = image?.baseImage?.resolution
-        returnArray['magnification'] = image?.baseImage?.magnification
+        returnArray['resolution'] = image?.resolution
+        returnArray['magnification'] = image?.magnification
         returnArray['depth'] = image?.baseImage?.getZoomLevels()?.max
         try {
             returnArray['preview'] = image.baseImage ? UrlApi.getThumbImage(image.baseImage?.id, 1024) : null
@@ -263,5 +271,17 @@ class ImageInstance extends CytomineDomain implements Serializable {
             return instanceFilename
         }
         return baseImage.originalFilename
+    }
+    public Double getResolution() {
+        if (resolution != null && resolution != 0) {
+            return resolution
+        }
+        return baseImage.resolution
+    }
+    public Integer getMagnification() {
+        if (magnification != null && magnification != 0) {
+            return magnification
+        }
+        return baseImage.magnification
     }
 }
