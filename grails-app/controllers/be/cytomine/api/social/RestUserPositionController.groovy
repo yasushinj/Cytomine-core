@@ -55,7 +55,8 @@ class RestUserPositionController extends RestController {
             @RestApiParam(name="bottomLeftY", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Left Y coordinate of the user viewport"),
             @RestApiParam(name="bottomRightY", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Right Y coordinate of the user viewport"),
             @RestApiParam(name="zoom", type="integer", paramType = RestApiParamType.QUERY, description = "Zoom level in the user viewport"),
-            @RestApiParam(name="rotation", type="double", paramType = RestApiParamType.QUERY, description = "Rotation level in the user viewport")
+            @RestApiParam(name="rotation", type="double", paramType = RestApiParamType.QUERY, description = "Rotation level in the user viewport"),
+            @RestApiParam(name="broadcast", type="boolean", paramType = RestApiParamType.QUERY, description = "Whether or not the user is broadcasting his/her position")
     ])
     def add() {
         try {
@@ -70,12 +71,14 @@ class RestUserPositionController extends RestController {
     @RestApiMethod(description="Get the last position for a user and an image.")
     @RestApiParams(params=[
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
-            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id (Mandatory)")
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The user id (Mandatory)"),
+            @RestApiParam(name="broadcast", type="boolean", paramType = RestApiParamType.PATH, description = "If set to true, the last position broadcasted by the user will be returned"),
     ])
     def lastPositionByUser() {
         ImageInstance image = imageInstanceService.read(params.id)
         SecUser user = secUserService.read(params.user)
-        responseSuccess(userPositionService.lastPositionByUser(image, user))
+        boolean broadcast = params.getBoolean("broadcast")
+        responseSuccess(userPositionService.lastPositionByUser(image, user, broadcast))
     }
 
     @RestApiMethod(description="Summarize the UserPosition entries.")
@@ -102,9 +105,11 @@ class RestUserPositionController extends RestController {
     @RestApiMethod(description="Get users that have opened an image recently.")
     @RestApiParams(params=[
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory)"),
+            @RestApiParam(name="broadcast", type="boolean", paramType = RestApiParamType.QUERY, description = "If set to true, only users broadcasting their position will be returned"),
     ])
     def listOnlineUsersByImage() {
+        boolean broadcast = params.getBoolean("broadcast")
         ImageInstance image = imageInstanceService.read(params.id)
-        responseSuccess(userPositionService.listOnlineUsersByImage(image))
+        responseSuccess(userPositionService.listOnlineUsersByImage(image, broadcast))
     }
 }

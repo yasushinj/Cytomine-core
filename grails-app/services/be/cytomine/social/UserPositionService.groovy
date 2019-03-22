@@ -37,6 +37,7 @@ class UserPositionService extends ModelService {
         position.location = polygon
         position.zoom = JSONUtils.getJSONAttrInteger(json,"zoom",0)
         position.rotation = JSONUtils.getJSONAttrDouble(json,"rotation",0)
+        position.broadcast = JSONUtils.getJSONAttrBoolean(json, "broadcast", false)
         position.created = new Date()
         position.updated = position.created
         position.imageName = image.getFileName()
@@ -55,6 +56,7 @@ class UserPositionService extends ModelService {
         position.location = polygon
         position.zoom = JSONUtils.getJSONAttrInteger(json,"zoom",0)
         position.rotation = JSONUtils.getJSONAttrDouble(json,"rotation",0)
+        position.broadcast = JSONUtils.getJSONAttrBoolean(json, "broadcast", false)
         position.session = RequestContextHolder.currentRequestAttributes().getSessionId()
         position.created = new Date()
         position.updated = position.created
@@ -64,29 +66,37 @@ class UserPositionService extends ModelService {
         return position
     }
 
-    def lastPositionByUser(ImageInstance image, SecUser user){
+    def lastPositionByUser(ImageInstance image, SecUser user, boolean broadcast) {
         securityACLService.check(image,READ)
         def userPositions = LastUserPosition.createCriteria().list(sort: "created", order: "desc", max: 1) {
             eq("user", user)
             eq("image", image)
+            if(broadcast) {
+                eq("broadcast", true)
+            }
         }
-        def result = (userPositions.size() > 0) ? userPositions[0] : []
+        def result = (userPositions.size() > 0) ? userPositions[0] : [:]
         return result
     }
 
-    def listOnlineUsersByImage(ImageInstance image){
+    def listOnlineUsersByImage(ImageInstance image, boolean broadcast) {
         securityACLService.check(image,READ)
         DateTime thirtySecondsAgo = new DateTime().minusSeconds(30)
 
+        def match = [image: image.id, created: [$gte: thirtySecondsAgo.toDate()]]
+        if(broadcast) {
+            match = [$and: [match, [broadcast: true]]]
+        }
+
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
         def userPositions = db.lastUserPosition.aggregate(
-                [$match: [image: image.id, created: [$gte: thirtySecondsAgo.toDate()]]],
+                [$match: match],
                 [$project: [user: '$user']],
                 [$group : [_id : '$user']]
         );
 
         def result= userPositions.results().collect{it["_id"]}
-        return ["users": result.join(",")]
+        return ["users": result]
     }
 
     def list(ImageInstance image, User user, Long afterThan = null, Long beforeThan = null){
