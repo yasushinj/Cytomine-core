@@ -60,17 +60,17 @@ class AbstractImage extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The original image mime type.")
     Mime mime
 
-    @RestApiObjectField(description = "The N-dimensional image width (X)", mandatory = false, defaultValue = "-1")
+    @RestApiObjectField(description = "The N-dimensional image width, in pixels (X)", mandatory = false, defaultValue = "-1")
     Integer width
 
-    @RestApiObjectField(description = "The N-dimensional image height (Y)", mandatory = false, defaultValue = "-1")
+    @RestApiObjectField(description = "The N-dimensional image height, in pixels (Y)", mandatory = false, defaultValue = "-1")
     Integer height
 
-    @RestApiObjectField(description = "The N-dimensional image depth (Z)", mandatory = false, defaultValue = "1")
+    @RestApiObjectField(description = "The N-dimensional image depth, in z-slices (Z)", mandatory = false, defaultValue = "1")
     Integer depth
 
-    @RestApiObjectField(description = "The N-dimensional image time (T) (Number of frames)", mandatory = false, defaultValue = "1")
-    Integer time
+    @RestApiObjectField(description = "The N-dimensional image duration, in frames (T)", mandatory = false, defaultValue = "1")
+    Integer duration
 
     @RestApiObjectField(description = "The N-dimensional image channels (C)", mandatory = false, defaultValue = "1")
     Integer channels
@@ -129,7 +129,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         width(nullable: true)
         height(nullable: true)
         depth(nullable: true)
-        time(nullable: true)
+        duration(nullable: true)
         channels(nullable: true)
         physicalSizeX(nullable: true)
         physicalSizeY(nullable: true)
@@ -189,7 +189,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         domain.height = JSONUtils.getJSONAttrInteger(json,'height',-1)
         domain.width = JSONUtils.getJSONAttrInteger(json,'width',-1)
         domain.depth = JSONUtils.getJSONAttrInteger(json, "depth", 1)
-        domain.time = JSONUtils.getJSONAttrInteger(json, "time", 1)
+        domain.duration = JSONUtils.getJSONAttrInteger(json, "duration", 1)
         domain.channels = JSONUtils.getJSONAttrInteger(json, "channels", 1)
         domain.physicalSizeX = JSONUtils.getJSONAttrDouble(json, "physicalSizeX", null)
         domain.physicalSizeY = JSONUtils.getJSONAttrDouble(json, "physicalSizeY", null)
@@ -229,7 +229,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['width'] = image?.width
         returnArray['height'] = image?.height
         returnArray['depth'] = image?.depth // /!!\ Breaking API : image?.getZoomLevels()?.max
-        returnArray['time'] = image?.time
+        returnArray['duration'] = image?.duration
         returnArray['channels'] = image?.channels
 
         returnArray['physicalSizeX'] = image?.physicalSizeX
