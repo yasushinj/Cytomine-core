@@ -76,4 +76,9 @@ class AbstractSliceService extends ModelService {
         AbstractSlice slice = read(id)
         return slice?.uploadedFile?.user
     }
+
+    @Override
+    def getStringParamsI18n(Object domain) {
+        return [domain.id, domain.channel, domain.zStack, domain.time]
+    }
 }
