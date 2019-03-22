@@ -46,7 +46,6 @@ class AbstractImageService extends ModelService {
     def imagePropertiesService
     def transactionService
     def storageService
-    def groupService
     def imageInstanceService
     def attachedFileService
     def currentRoleServiceProxy
@@ -54,6 +53,7 @@ class AbstractImageService extends ModelService {
     def storageAbstractImageService
     def imageServerProxyService
     def projectService
+    def uploadedFileService
 
     def currentDomain() {
         return AbstractImage
@@ -63,9 +63,6 @@ class AbstractImageService extends ModelService {
         AbstractImage abstractImage = AbstractImage.read(id)
         if(abstractImage) {
             securityACLService.checkAtLeastOne(abstractImage, READ)
-//            if(!hasRightToReadAbstractImageWithProject(abstractImage) && !hasRightToReadAbstractImageWithStorage(abstractImage)) {
-//                throw new ForbiddenException("You don't have the right to read or modity this resource! ${abstractImage} ${id}")
-//            }
         }
         abstractImage
     }
@@ -74,9 +71,6 @@ class AbstractImageService extends ModelService {
         AbstractImage abstractImage = AbstractImage.get(id)
         if(abstractImage) {
             securityACLService.checkAtLeastOne(abstractImage, READ)
-//            if(!hasRightToReadAbstractImageWithProject(abstractImage) && !hasRightToReadAbstractImageWithStorage(abstractImage)) {
-//                throw new ForbiddenException("You don't have the right to read or modity this resource! ${abstractImage} ${id}")
-//            }
         }
         abstractImage
     }
@@ -87,15 +81,6 @@ class AbstractImageService extends ModelService {
         List<Project> projects = imageInstances.collect{it.project}
         for(Project project : projects) {
             if(project.hasACLPermission(project,READ)) return true
-        }
-        return false
-    }
-
-    boolean hasRightToReadAbstractImageWithStorage(AbstractImage image) {
-        if(currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser)) return true
-        List<Storage> storages = StorageAbstractImage.findAllByAbstractImage(image).collect{it.storage}
-        for(Storage storage : storages) {
-            if(storage.hasACLPermission(storage,READ)) return true
         }
         return false
     }
@@ -115,7 +100,8 @@ class AbstractImageService extends ModelService {
         List<AbstractImage> images
         if(currentRoleServiceProxy.isAdminByNow(user)) {
             images = AbstractImage.list()
-        } else {
+        }
+        else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
             images = AbstractImage.createCriteria().list {
                 createAlias("uploadedFile", "uf")
@@ -124,6 +110,7 @@ class AbstractImageService extends ModelService {
                 isNull("deleted")
             }
         }
+
         if(project) {
             TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProjectAndDeletedIsNull(project).collect{it.baseImage.id})
 
@@ -138,17 +125,12 @@ class AbstractImageService extends ModelService {
         return images
     }
 
-    /**
-     * Add the new domain with JSON data
-     * @param json New domain data
-     * @return Response structure (created domain data,..)
-     */
     def add(def json) throws CytomineException {
         def currentUser = cytomineService.currentUser
         securityACLService.checkUser(currentUser)
 
         if (json.uploadedFile) {
-            UploadedFile uploadedFile = UploadedFile.read(json.uploadedFile as Long)
+            UploadedFile uploadedFile = uploadedFileService.read(json.uploadedFile as Long)
             if (uploadedFile.status != UploadedFile.TO_DEPLOY) {
                 // throw new Error()
             }
@@ -162,23 +144,13 @@ class AbstractImageService extends ModelService {
         long timestamp = new Date().getTime()
         Sample sample = new Sample(name : timestamp.toString() + "-" + domain?.uploadedFile?.getOriginalFilename()).save()
         domain?.sample = sample
-
-        //TODO: mime type
-//        def ext = uploadedFile.getExt()
-//        Mime mime = Mime.findByMimeType(mimeType)
-//        if (!mime) {
-//            MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-//            mimeType = mimeTypesMap.getContentType(uploadedFile.getAbsolutePath())
-//            mime = new Mime(extension: ext, mimeType : mimeType)
-//            mime.save(failOnError: true)
-//        }
     }
 
     def afterAdd(def domain, def response) {
         log.info "Extract image properties"
-//        imagePropertiesService.clear(domain)
-//        imagePropertiesService.populate(domain)
-//        imagePropertiesService.extractUseful(domain)
+        imagePropertiesService.clear(domain)
+        imagePropertiesService.populate(domain)
+        imagePropertiesService.extractUseful(domain)
 
         log.info "Add to projects, stored in uploaded file."
         //TODO: to improve to handle AbstractSlice -> SliceInstance
@@ -188,23 +160,6 @@ class AbstractImageService extends ModelService {
             ImageInstance imageInstance = new ImageInstance( baseImage : domain, project:  project, user :currentUser)
             imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
         }
-
-//        Collection<Storage> storages = []
-//        uploadedFile.getStorages()?.each {
-//            storages << storageService.read(it)
-//        }
-//
-//            storages.each { storage ->
-//                storageAbstractImageService.add(JSON.parse(JSONUtils.toJSONString([storage: storage.id, abstractimage: abstractImage.id])))
-//            }
-//
-//        json.storage.each { storageID ->
-//            Storage storage = storageService.read(storageID)
-//            securityACLService.check(storage,WRITE)
-//            //CHECK WRITE ON STORAGE
-//            StorageAbstractImage sai = new StorageAbstractImage(storage:storage,abstractImage:abstractImage)
-//            sai.save(flush:true,failOnError: true)
-//        }
     }
 
     /**
@@ -216,23 +171,7 @@ class AbstractImageService extends ModelService {
     def update(AbstractImage image,def jsonNewData) throws CytomineException {
         securityACLService.checkAtLeastOne(image,WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
-        def res = executeCommand(new EditCommand(user: currentUser), image,jsonNewData)
-//        AbstractImage abstractImage = res.object
-//
-//        if(jsonNewData.storage) {
-//            StorageAbstractImage.findAllByAbstractImage(abstractImage).each { storageAbstractImage ->
-//                securityACLService.check(storageAbstractImage.storage,WRITE)
-//                def sai = StorageAbstractImage.findByStorageAndAbstractImage(storageAbstractImage.storage, abstractImage)
-//                sai.delete(flush:true)
-//            }
-//            jsonNewData.storage.each { storageID ->
-//                Storage storage = storageService.read(storageID)
-//                securityACLService.check(storage,WRITE)
-//                StorageAbstractImage sai = new StorageAbstractImage(storage:storage,abstractImage:abstractImage)
-//                sai.save(flush:true,failOnError: true)
-//            }
-//        }
-        return res
+        return executeCommand(new EditCommand(user: currentUser), image,jsonNewData)
     }
 
     def getUploaderOfImage(long id){
@@ -290,7 +229,6 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def uploadedFileService
     def deleteFile(AbstractImage ai){
 //        UploadedFile uf = UploadedFile.findByImage(ai)
 //        uploadedFileService.delete(uf)

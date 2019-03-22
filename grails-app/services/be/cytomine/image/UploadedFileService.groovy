@@ -188,6 +188,11 @@ class UploadedFileService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         if(currentUser instanceof UserJob) currentUser = ((UserJob)currentUser).user
         securityACLService.checkUser(currentUser)
+        if (json.storages) {
+            json.storages.each {
+                securityACLService.check(it, Storage, WRITE)
+            }
+        }
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
 

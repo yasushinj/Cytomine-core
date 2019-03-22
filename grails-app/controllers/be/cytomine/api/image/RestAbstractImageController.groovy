@@ -45,8 +45,6 @@ class RestAbstractImageController extends RestController {
     /**
      * List all abstract image available on cytomine
      */
-    //TODO:APIDOC
-
     @RestApiMethod(description="Get all image available for the current user", listing = true)
     @RestApiParams(params=[
         @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "If set, check if image is in project or not", required=false),
