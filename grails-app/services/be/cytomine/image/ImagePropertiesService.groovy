@@ -24,38 +24,16 @@ class ImagePropertiesService implements Serializable {
     def abstractImageService
     def imageServerProxyService
 
-    def clear(AbstractImage image) {
-        Property.findAllByDomainIdent(image.id)?.each {
-            it.delete()
-        }
-    }
-
-    def populate(AbstractImage abstractImage) {
-        def properties = imageServerProxyService.properties(abstractImage)
-        properties.each {
-            String key = it.key.trim()
-            String value = it.value.trim()
-            if (key && value) {
-                def property = Property.findByDomainIdentAndKey(abstractImage.id, key)
-                if (!property) {
-                    log.info("New property: $key => $value for abstract image $abstractImage")
-                    property = new Property(key: key, value: value, domainIdent: abstractImage.id, domainClassName: abstractImage.class.name)
-                    property.save(failOnError: true)
-                }
-            }
-        }
-        abstractImage.save()
-    }
-
-
-    def extractUseful(AbstractImage image) {
+    def keys() {
         def parseString = { x -> x }
         def parseInt = { x -> Integer.parseInt(x) }
         def parseDouble = { x -> Double.parseDouble(x) }
-
-        def keys = [
+        return [
                 width        : [name: 'cytomine.width', parser: parseInt],
-                height       : [name: 'cytomine.height', parser: parseDouble],
+                height       : [name: 'cytomine.height', parser: parseInt],
+                depth        : [name: 'cytomine.depth', parser: parseInt],
+                duration     : [name: 'cytomine.duration', parser: parseInt],
+                channels     : [name: 'cytomine.channels', parser: parseInt],
                 physicalSizeX: [name: 'cytomine.physicalSizeX', parser: parseDouble],
                 physicalSizeY: [name: 'cytomine.physicalSizeY', parser: parseDouble],
                 physicalSizeZ: [name: 'cytomine.physicalSizeZ', parser: parseDouble],
@@ -65,8 +43,33 @@ class ImagePropertiesService implements Serializable {
                 magnification: [name: 'cytomine.magnification', parser: parseInt],
                 resolution   : [name: 'cytomine.resolution', parser: parseDouble]
         ]
+    }
 
-        keys.each { k, v ->
+    def clear(AbstractImage image) {
+        def propertyKeys = keys().collect { it.value.name }
+        Property.findAllByDomainIdentAndKeyInList(image.id, propertyKeys)?.each {
+            it.delete()
+        }
+    }
+
+    def populate(AbstractImage image) {
+        def properties = imageServerProxyService.properties(image)
+        properties.each {
+            String key = it.key.trim()
+            String value = it.value.trim()
+            if (key && value) {
+                def property = Property.findByDomainIdentAndKey(image.id, key)
+                if (!property) {
+                    log.info("New property: $key => $value for abstract image $image")
+                    property = new Property(key: key, value: value, domainIdent: image.id, domainClassName: image.class.name)
+                    property.save(failOnError: true)
+                }
+            }
+        }
+    }
+
+    def extractUseful(AbstractImage image) {
+        keys().each { k, v ->
             def property = Property.findByDomainIdentAndKey(image.id, v.name)
             if (property)
                 image[k] = v.parser(property.value)
