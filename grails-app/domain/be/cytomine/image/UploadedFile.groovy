@@ -177,10 +177,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
         return Paths.get(imageServer?.basePath, user.id as String, filename).toString()
     }
 
-    def getAbsolutePath() {
-        return getPath()
-    }
-
     def beforeInsert() {
         super.beforeInsert()
         lTree = parent ? parent.lTree+"." : ""

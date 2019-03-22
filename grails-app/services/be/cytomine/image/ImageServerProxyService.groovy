@@ -97,7 +97,7 @@ class ImageServerProxyService {
 
     def downloadUri(AbstractImage image, UploadedFile uf) {
         def (server, parameters) = imsParametersFromAbstractImage(image)
-        parameters.fif = uf.absolutePath
+        parameters.fif = uf.path
         return makeGetUrl("/image/download", server, parameters)
     }
 
