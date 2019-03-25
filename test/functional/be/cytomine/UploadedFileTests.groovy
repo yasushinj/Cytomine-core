@@ -116,6 +116,28 @@ class UploadedFileTests {
         assert third != null
     }
 
+    void testSearchUploadedFile() {
+        String name = "test"
+        def result = UploadedFileAPI.searchWithName(name, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        int previousSize = json.collection.size()
+
+        UploadedFile uf = BasicInstanceBuilder.getUploadedFileNotExist()
+        uf.originalFilename = "test"
+        uf.save(true)
+        uf = BasicInstanceBuilder.getUploadedFileNotExist()
+        uf.originalFilename = "random"
+        uf.save(true)
+
+        result = UploadedFileAPI.searchWithName(name, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == previousSize + 1
+    }
+
     void testShowUploadedFileWithCredential() {
       def result = UploadedFileAPI.show(BasicInstanceBuilder.getUploadedFile().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
