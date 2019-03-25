@@ -169,7 +169,7 @@ class RestImageInstanceController extends RestController {
     ])
     def next() {
         def image = imageInstanceService.read(params.long('id'))
-        def next = ImageInstance.findAllByProjectAndCreatedLessThan(image.project,image.created,[sort:'created',order:'desc',max:1])
+        def next = ImageInstance.findAllByProjectAndCreatedLessThanAndDeletedIsNull(image.project,image.created,[sort:'created',order:'desc',max:1])
         if(next && !next.isEmpty()) {
             responseSuccess(next.first())
         } else {
@@ -183,7 +183,7 @@ class RestImageInstanceController extends RestController {
     ])
     def previous() {
         def image = imageInstanceService.read(params.long('id'))
-        def previous = ImageInstance.findAllByProjectAndCreatedGreaterThan(image.project,image.created,[sort:'created',order:'asc',max:1])
+        def previous = ImageInstance.findAllByProjectAndCreatedGreaterThanAndDeletedIsNull(image.project,image.created,[sort:'created',order:'asc',max:1])
         if(previous && !previous.isEmpty()) {
             responseSuccess(previous.first())
         } else {

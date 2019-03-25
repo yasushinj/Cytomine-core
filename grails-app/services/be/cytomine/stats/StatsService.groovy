@@ -232,6 +232,9 @@ class StatsService extends ModelService {
             idsRevert[term.id] = term.name
         }
 
+        //add an item for the annotations not associated to any term
+        stats[null] = 0
+
         //Get the number of annotation for each term
         def sql = new Sql(dataSource)
         sql.eachRow("" +

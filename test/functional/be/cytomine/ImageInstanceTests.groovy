@@ -339,6 +339,12 @@ class ImageInstanceTests  {
 
         result = ImageInstanceAPI.next(image1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+
+        ImageInstanceAPI.delete(image1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.next(image2.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert Long.parseLong(json.id+"") != image1.id
     }
 
     void testGetPreviousImageInstance() {
@@ -361,6 +367,12 @@ class ImageInstanceTests  {
 
         result = ImageInstanceAPI.previous(image2.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+
+        ImageInstanceAPI.delete(image2, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.previous(image1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.id == null
     }
 
 

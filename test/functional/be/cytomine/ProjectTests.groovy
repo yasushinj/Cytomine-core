@@ -69,7 +69,7 @@ class ProjectTests  {
         assert 200 == result.code
         Long id = result.data.id
 
-        result = ProjectAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true, true)
+        result = ProjectAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true, true, true)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
@@ -77,6 +77,8 @@ class ProjectTests  {
         def proj = json.collection.find{it.id == id}
         assert proj.lastActivity > proj.created
         assert proj.membersCount == 1
+        assert proj.currentUserRoles != null
+        assert proj.currentUserRoles.admin
     }
 
     void testListProjectWithoutCredential() {

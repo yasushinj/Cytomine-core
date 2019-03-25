@@ -191,8 +191,16 @@ class ProjectService extends ModelService {
                     "   GROUP BY aclObjectId.object_id_identity " +
                     ") members ON p.id = members.project_id "
         }
+        if(extended.withCurrentUserRoles) {
+            SecUser currentUser = cytomineService.currentUser // cannot use user param because it is set to null if user connected as admin
+            select += ", (admin_project.id IS NOT NULL) AS is_admin, (repr.id IS NOT NULL) AS is_representative "
+            from += "LEFT OUTER JOIN admin_project " +
+                    "ON admin_project.id = p.id AND admin_project.user_id = $currentUser.id " +
+                    "LEFT OUTER JOIN project_representative_user repr " +
+                    "ON repr.project_id = p.id AND repr.user_id = $currentUser.id "
+        }
 
-        request = select + from+where
+        request = select + from + where
 
         def sql = new Sql(dataSource)
         def data = []
@@ -221,6 +229,9 @@ class ProjectService extends ModelService {
             }
             if(extended.withMembersCount) {
                 line.putAt("membersCount", map.memberCount)
+            }
+            if(extended.withCurrentUserRoles) {
+                line.putAt("currentUserRoles", [admin: map.isAdmin, representative: map.isRepresentative])
             }
             data << line
 
