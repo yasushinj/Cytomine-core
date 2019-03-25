@@ -53,18 +53,22 @@ class ImagePropertiesService implements Serializable {
     }
 
     def populate(AbstractImage image) {
-        def properties = imageServerProxyService.properties(image)
-        properties.each {
-            String key = it.key.trim()
-            String value = it.value.trim()
-            if (key && value) {
-                def property = Property.findByDomainIdentAndKey(image.id, key)
-                if (!property) {
-                    log.info("New property: $key => $value for abstract image $image")
-                    property = new Property(key: key, value: value, domainIdent: image.id, domainClassName: image.class.name)
-                    property.save(failOnError: true)
+        try {
+            def properties = imageServerProxyService.properties(image)
+            properties.each {
+                String key = it.key.trim()
+                String value = it.value.trim()
+                if (key && value) {
+                    def property = Property.findByDomainIdentAndKey(image.id, key)
+                    if (!property) {
+                        log.info("New property: $key => $value for abstract image $image")
+                        property = new Property(key: key, value: value, domainIdent: image.id, domainClassName: image.class.name)
+                        property.save(failOnError: true)
+                    }
                 }
             }
+        } catch(Exception e) {
+            log.error(e)
         }
     }
 
