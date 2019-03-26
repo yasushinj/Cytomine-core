@@ -107,7 +107,8 @@ class UploadedFileService extends ModelService {
 
             Long imageId = it[i++]
             row.image = imageId
-            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAssociatedImage(imageId, "macro") : null
+            row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getThumbImage(imageId, 256) : null
+            row.macroURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAssociatedImage(imageId, "macro", 256) : null
             data << row
         }
         sql.close()
