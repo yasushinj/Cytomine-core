@@ -846,7 +846,7 @@ class RestUserController extends RestController {
         result["totalAnnotations"] = userAnnotationService.count(user, project)
         result["totalConnections"] = PersistentProjectConnection.countByUserAndProject(user.id, project.id)
         result["totalConsultations"] = PersistentImageConsultation.countByUserAndProject(user.id, project.id)
-        result["totalAnnotationActions"] = AnnotationAction.countByUserAndProject(user.id, project.id)
+        result["totalAnnotationSelections"] = AnnotationAction.countByUserAndProjectAndAction(user.id, project.id, "select")
 
         responseSuccess(result)
     }
