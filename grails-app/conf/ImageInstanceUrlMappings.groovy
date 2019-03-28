@@ -54,7 +54,7 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/associated/$label.$format"(controller: "restImageInstance"){
             action = [GET:"label"]
         }
-        "/api/project/$id/imageinstance.$format"(controller: "restImageInstance"){
+        "/api/project/$project/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByProject"]
         }
 

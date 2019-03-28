@@ -164,7 +164,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
      * @param domain Domain source for json value
      * @return Map with fields (keys) and their values
      */
-    static def getDataFromDomain(def image) {
+    static def getDataFromDomain(ImageInstance image) {
 
         def returnArray = CytomineDomain.getDataFromDomain(image)
         returnArray['baseImage'] = image?.baseImage?.id
@@ -174,6 +174,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['extension'] = image?.baseImage?.mime?.extension
         returnArray['originalFilename'] = image?.baseImage?.originalFilename
         returnArray['instanceFilename'] = image?.instanceFilename
+        returnArray['blindedName'] = image?.getBlindedName()
         returnArray['sample'] = image?.baseImage?.sample?.id
         returnArray['path'] = image?.baseImage?.path
         returnArray['mime'] = image?.baseImage?.mimeType
@@ -262,8 +263,13 @@ class ImageInstance extends CytomineDomain implements Serializable {
 
     // use a normal method and not a getter to avoid erasing instanceFilename with "Blind name"
     public String getFileName() {
-        if(project?.blindMode) return "[BLIND]"+baseImage.id
+        if(project?.blindMode) return getBlindedName()()
         return getInstanceFilename()
+    }
+
+    private String getBlindedName(){
+        if(project?.blindMode) return "[BLIND]"+baseImage.id
+        return null
     }
 
     public String getInstanceFilename() {

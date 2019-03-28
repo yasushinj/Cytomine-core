@@ -27,6 +27,7 @@ import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.DomainAPI
+import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.TaskAPI
 import be.cytomine.test.http.UserAnnotationAPI
@@ -35,13 +36,6 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 
-/**
- * Created by IntelliJ IDEA.
- * User: lrollus
- * Date: 17/02/11
- * Time: 16:16
- * To change this template use File | Settings | File Templates.
- */
 class ProjectTests  {
 
     void testListProjectWithCredential() {
@@ -602,6 +596,61 @@ class ProjectTests  {
         result = ProjectAPI.listBySoftware(softproj.software.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         assert !DomainAPI.containsInJSONList(project.id,JSON.parse(result.data))
+    }
+
+    void testImageNamesOfBlindProject() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+
+        def result = ImageInstanceAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection[0].instanceFilename == image.instanceFilename
+        assert json.collection[0].blindedName instanceof JSONObject.Null
+
+        result = ImageInstanceAPI.show(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.instanceFilename == image.instanceFilename
+        assert json.blindedName instanceof JSONObject.Null
+
+        project.blindMode = true
+        project.save(true)
+
+        result = ImageInstanceAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection[0].instanceFilename == image.instanceFilename
+        assert !(json.collection[0].blindedName instanceof JSONObject.Null)
+
+        result = ImageInstanceAPI.show(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.instanceFilename == image.instanceFilename
+        assert !(json.blindedName instanceof JSONObject.Null)
+
+
+        User user = BasicInstanceBuilder.getUser()
+
+        assert (200 ==ProjectAPI.addUserProject(project.id, user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).code)
+
+        result = ImageInstanceAPI.listByProject(project.id, user.username, "password")
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection[0].instanceFilename instanceof JSONObject.Null
+        assert !(json.collection[0].blindedName instanceof JSONObject.Null)
+
+        result = ImageInstanceAPI.show(image.id, user.username, "password")
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.instanceFilename instanceof JSONObject.Null
+        assert !(json.blindedName instanceof JSONObject.Null)
     }
 
 }

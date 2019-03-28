@@ -17,10 +17,12 @@ package be.cytomine.api
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ServerException
 import be.cytomine.test.HttpClient
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
@@ -130,16 +132,38 @@ class RestController {
      * @param data Data ro send
      * @return response
      */
+    // TODO see ImageInstanceController to think how to make it more flexible
     protected def response(data) {
         withFormat {
             json {
-                render data as JSON
+                def result = data as JSON
+
+                if(isFilterResponseEnabled()) result = filterResponse(result)
+
+                render result
             }
             jsonp {
                 response.contentType = 'application/javascript'
                 render "${params.callback}(${data as JSON})"
             }
         }
+    }
+
+    private grails.converters.JSON filterResponse(grails.converters.JSON response){
+        JSONObject json = JSON.parse(response.toString())
+        if(json.containsKey("collection")) {
+            for(JSONObject element : json.collection) {
+                filterOneElement(element)
+            }
+        } else {
+            filterOneElement(json)
+        }
+
+        return json as JSON
+    }
+
+    protected void filterOneElement(JSONObject element){
+        if(isFilterResponseEnabled()) throw new ServerException("Filter enabled but no filter defined")
     }
 
     /**
@@ -384,4 +408,9 @@ class RestController {
         def maxForCollection = Math.min(collection.size() - offset, max)
         return collection.subList(offset, offset + maxForCollection)
     }
+
+    protected boolean isFilterResponseEnabled() {
+        return false
+    }
+
 }
