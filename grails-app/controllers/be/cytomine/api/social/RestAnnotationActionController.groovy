@@ -48,6 +48,7 @@ class RestAnnotationActionController extends RestController {
             @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
             @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Only actions after this date will be counted (optional)"),
             @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Only actions before this date will be counted (optional)"),
+            @RestApiParam(name="type", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) If specified, only annotation action of this type will be taken into account"),
     ])
     def countByProject() {
         Project project = projectService.read(params.project)
@@ -56,7 +57,7 @@ class RestAnnotationActionController extends RestController {
         Long startDate = params.long("startDate")
         Long endDate = params.long("endDate")
 
-        responseSuccess(annotationActionService.countByProject(project, startDate, endDate))
+        responseSuccess(annotationActionService.countByProject(project, startDate, endDate, params.type))
     }
 
 

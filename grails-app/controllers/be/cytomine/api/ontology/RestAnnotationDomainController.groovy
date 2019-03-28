@@ -106,6 +106,8 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="userForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only user annotation link with a term added by this job id"),
         @RestApiParam(name="kmeansValue", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only used for GUI "),
         @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these users id"),
+        @RestApiParam(name="reviewed", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Get only reviewed annotations"),
+        @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation reviewed by these users"),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
         @RestApiParam(name="notReviewedOnly", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation not reviewed"),
@@ -365,6 +367,11 @@ class RestAnnotationDomainController extends RestController {
         def users = params.get('users')
         if(users) {
             al.users = params.get('users').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+
+        def reviewUsers = params.get('reviewUsers')
+        if(reviewUsers) {
+            al.reviewUsers = reviewUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
         }
 
         def images = params.get('images')

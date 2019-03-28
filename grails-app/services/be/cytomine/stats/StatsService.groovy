@@ -404,7 +404,7 @@ class StatsService extends ModelService {
         return aggregateByPeriods(sortPageResult(consultations), daysRange, startDate ?: project.created, endDate ?: new Date(), accumulate)
     }
 
-    def statAnnotationActionsEvolution(Project project, int daysRange, Date startDate, Date endDate, boolean accumulate=false) {
+    def statAnnotationActionsEvolution(Project project, int daysRange, Date startDate, Date endDate, boolean accumulate=false, String type=null) {
         def actions = AnnotationAction.createCriteria().list(sort: "created", order: "asc") {
             eq("project", project)
             if(startDate) {
@@ -412,6 +412,9 @@ class StatsService extends ModelService {
             }
             if(endDate) {
                 lt("created", endDate)
+            }
+            if(type) {
+                eq("action", type)
             }
             projections {
                 property("created")

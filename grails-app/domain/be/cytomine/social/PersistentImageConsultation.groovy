@@ -103,6 +103,7 @@ class PersistentImageConsultation extends CytomineDomain {
     public Object clone() {
         PersistentImageConsultation result = new PersistentImageConsultation()
         result.user = user;
+        result.project = project
         result.projectConnection = projectConnection;
         result.time = time;
         result.image = image;

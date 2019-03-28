@@ -354,6 +354,7 @@ class StatsController extends RestController {
             @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "The start date of the first interval to consider"),
             @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "The end date to consider (therefore, the last interval may be shorter than specified in daysRange)"),
             @RestApiParam(name="accumulate", type="boolean", paramType = RestApiParamType.QUERY, description = "If true, the number of actions will be accumulated (period n+1 count = period n count + nb of actions during period n+1)"),
+            @RestApiParam(name="type", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) If specified, only annotation action of this type will be taken into account"),
     ])
     def statAnnotationActionsEvolution() {
         Project project = Project.read(params.project)
@@ -364,6 +365,6 @@ class StatsController extends RestController {
         Date endDate = params.endDate ? new Date(params.long("endDate")) : null
         boolean accumulate = params.getBoolean("accumulate")
 
-        responseSuccess(statsService.statAnnotationActionsEvolution(project, daysRange, startDate, endDate, accumulate))
+        responseSuccess(statsService.statAnnotationActionsEvolution(project, daysRange, startDate, endDate, accumulate, params.type))
     }
 }

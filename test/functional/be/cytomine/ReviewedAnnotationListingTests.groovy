@@ -171,6 +171,26 @@ class ReviewedAnnotationListingTests {
          assert ReviewedAnnotationAPI.containsInJSONList(annotation.id,json)
      }
 
+    void testListReviewedAnnotationByImageAndReviewUser() {
+        def annotation = BasicInstanceBuilder.getReviewedAnnotation()
+        println "annotation.reviewUser="+annotation.reviewUser
+
+        def annotationNotCriteria = BasicInstanceBuilder.getReviewedAnnotationNotExist()
+        annotationNotCriteria.project = annotation.project
+        annotationNotCriteria.image = annotation.image
+        def anotherUser = BasicInstanceBuilder.getUserNotExist(true)
+        annotationNotCriteria.reviewUser = anotherUser
+        BasicInstanceBuilder.saveDomain(annotationNotCriteria)
+        println "annotationNotCriteria.reviewUser="+annotationNotCriteria.reviewUser
+
+        def result = ReviewedAnnotationAPI.listByImageAndReviewUser(annotation.image.id, annotation.reviewUser.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert ReviewedAnnotationAPI.containsInJSONList(annotation.id,json)
+        assert !ReviewedAnnotationAPI.containsInJSONList(annotationNotCriteria.id,json)
+    }
+
      void testListReviewedAnnotationByImageAndUserAndBBOX() {
          String bbox = "1,1,10000,10000"
          def annotation = BasicInstanceBuilder.getReviewedAnnotation()
