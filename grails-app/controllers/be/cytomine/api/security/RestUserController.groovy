@@ -17,6 +17,7 @@ package be.cytomine.api.security
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.Ontology
@@ -850,4 +851,20 @@ class RestUserController extends RestController {
 
         responseSuccess(result)
     }
+
+    @Override
+    protected boolean isFilterResponseEnabled() {
+        try{
+            securityACLService.checkAdmin(cytomineService.currentUser)
+            return false
+        } catch(ForbiddenException e){}
+        return true
+    }
+
+    @Override
+    protected void filterOneElement(JSONObject element){
+        if(element['id'] != cytomineService.currentUser.id)
+        element['email'] = null
+    }
+
 }

@@ -22,6 +22,7 @@ import be.cytomine.test.Infos
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAPI
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 /**
  * Created by IntelliJ IDEA.
@@ -122,6 +123,34 @@ class UserSecurityTests extends SecurityTestsAbstract {
 
         response = UserAPI.checkPassword("test",USERNAMEBAD,PASSWORDBAD)
         assert 401 == response.code
+    }
+
+    void testAccessToPersonalData(){
+        //Get user 1
+        User user1 = BasicInstanceBuilder.getUser(USERNAMEWITHOUTDATA,PASSWORDWITHOUTDATA)
+
+        //Get user admin
+        User admin = BasicInstanceBuilder.getSuperAdmin(USERNAMEADMIN,PASSWORDADMIN)
+        //Get user 2
+        User user2 = BasicInstanceBuilder.getUser(USERNAME2,PASSWORD2)
+
+        //admin can see its email
+        def result = UserAPI.show(user1.id,USERNAMEADMIN,PASSWORDADMIN)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert !(json.email instanceof JSONObject.Null)
+
+        //he can see itself too
+        result = UserAPI.show(user1.id,USERNAMEWITHOUTDATA,PASSWORDWITHOUTDATA)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert !(json.email instanceof JSONObject.Null)
+
+        //another user cannot
+        result = UserAPI.show(user1.id,USERNAME2,PASSWORD2)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.email instanceof JSONObject.Null
     }
 
 }
