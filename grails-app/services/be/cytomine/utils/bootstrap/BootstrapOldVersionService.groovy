@@ -93,6 +93,12 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
+    void initv1_2_2() {
+        log.info "1.2.2"
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user DROP COLUMN IF EXISTS skype_account;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user DROP COLUMN IF EXISTS sipAccount;")
+    }
+
     void initv1_2_1() {
         log.info "1.2.1"
         List<Configuration> configurations = Configuration.findAllByKeyLike("%.%")
