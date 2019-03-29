@@ -93,8 +93,8 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
-    void initv1_3_0() {
-        log.info "1.3.0"
+    void initv1_2_1() {
+        log.info "1.2.1"
         List<Configuration> configurations = Configuration.findAllByKeyLike("%.%")
 
         for(int i = 0; i<configurations.size(); i++){
