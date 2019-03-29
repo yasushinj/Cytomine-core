@@ -137,6 +137,7 @@ class UserAnnotationAPI extends DomainAPI {
         def json = JSON.parse(result.data)
         if(JSON.parse(jsonAnnotation) instanceof JSONArray) return result
         Long idAnnotation = json?.annotation?.id
+        result.command = json.command
         result.data = UserAnnotation.get(idAnnotation)
         return result
     }

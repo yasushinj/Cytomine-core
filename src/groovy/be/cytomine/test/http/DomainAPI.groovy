@@ -45,14 +45,14 @@ class DomainAPI {
      */
     static boolean containsInJSONList(Long id, def responselist) {
         log.info "Search $id in ${responselist}"
-        if(responselist instanceof String) {
+        if (responselist instanceof String) {
             responselist = JSON.parse(responselist)
         }
 
 
         def list = responselist.collection
 
-        if (list == null)  {
+        if (list == null) {
             list = responselist.aaData
         }
 
@@ -60,7 +60,9 @@ class DomainAPI {
         boolean find = false
         list.each { item ->
             Long idItem = item.id
-            if ((idItem+"").equals(id+"")) {find = true}
+            if ((idItem + "").equals(id + "")) {
+                find = true
+            }
         }
         return find
     }
@@ -72,50 +74,32 @@ class DomainAPI {
         boolean find = false
         list.each { item ->
             String strItem = item
-            if (strItem.equals(key)) {find = true}
+            if (strItem.equals(key)) {
+                find = true
+            }
         }
         return find
     }
-
 
     /**
      * Make undo request to cytomine server
      */
     static def undo() {
-        log.info("test undo")
-        HttpClient client = new HttpClient()
-        String URL = Infos.CYTOMINEURL + Infos.UNDOURL
-        client.connect(URL, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        client.get()
-        int code = client.getResponseCode()
-        String response = client.getResponseData()
-        client.disconnect();
-        return [data: response, code: code]
+        return undo(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
     }
 
-    /**
-     * Make redo request to cytomine server
-     */
-    static def redo() {
-        log.info("test redo")
-        HttpClient client = new HttpClient()
-        String URL = Infos.CYTOMINEURL + Infos.REDOURL
-        client.connect(URL, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        client.get()
-        int code = client.getResponseCode()
-        String response = client.getResponseData()
-        client.disconnect();
-        return [data: response, code: code]
+    static def undo(Long commandId) {
+        return undo(commandId, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
     }
 
-
-    /**
-     * Make undo request to cytomine server
-     */
     static def undo(String username, String password) {
+        return undo(null, username, password)
+    }
+
+    static def undo(Long commandId, String username, String password) {
         log.info("test undo")
         HttpClient client = new HttpClient()
-        String URL = Infos.CYTOMINEURL + Infos.UNDOURL
+        String URL = Infos.CYTOMINEURL + "api/" + (commandId == null ? Infos.UNDOURL : "command/$commandId/undo.json")
         client.connect(URL, username, password)
         client.get()
         int code = client.getResponseCode()
@@ -127,10 +111,22 @@ class DomainAPI {
     /**
      * Make redo request to cytomine server
      */
+    static def redo() {
+        return redo(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    }
+
+    static def redo(Long commandId) {
+        return redo(commandId, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+    }
+
     static def redo(String username, String password) {
+        return redo(null, username, password)
+    }
+
+    static def redo(Long commandId, String username, String password) {
         log.info("test redo")
         HttpClient client = new HttpClient()
-        String URL = Infos.CYTOMINEURL + Infos.REDOURL
+        String URL = Infos.CYTOMINEURL + "api/" + (commandId == null ? Infos.REDOURL : "command/$commandId/redo.json")
         client.connect(URL, username, password)
         client.get()
         int code = client.getResponseCode()
