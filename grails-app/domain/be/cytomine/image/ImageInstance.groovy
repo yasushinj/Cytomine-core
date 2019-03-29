@@ -263,7 +263,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
 
     // use a normal method and not a getter to avoid erasing instanceFilename with "Blind name"
     public String getFileName() {
-        if(project?.blindMode) return getBlindedName()()
+        if(project?.blindMode) return getBlindedName()
         return getInstanceFilename()
     }
 
