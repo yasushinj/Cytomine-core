@@ -17,6 +17,7 @@ package be.cytomine.project
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
@@ -53,6 +54,7 @@ class ProjectService extends ModelService {
     def jobService
     def transactionService
     def algoAnnotationService
+    def annotationTermService
     def algoAnnotationTermService
     def imageInstanceService
     def reviewedAnnotationService
@@ -353,6 +355,18 @@ class ProjectService extends ModelService {
         taskService.updateTask(task,5,"Start editing project ${project.name}")
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(project.container(),WRITE)
+
+        if(project.ontology.id != jsonNewData.ontology){
+            long associatedTermsCount = 0L
+            associatedTermsCount += annotationTermService.list(project).size()
+            associatedTermsCount += algoAnnotationTermService.list(project).size()
+            associatedTermsCount += ReviewedAnnotation.countByProjectAndTermsIsNotNull(project)
+
+            if(associatedTermsCount > 0){
+                throw new ForbiddenException("This project has $associatedTermsCount associated terms. The ontology cannot be updated")
+            }
+        }
+
         def result = executeCommand(new EditCommand(user: currentUser),project, jsonNewData)
 
         project = Project.read(result?.data?.project?.id)

@@ -294,6 +294,44 @@ class ProjectTests  {
         assert 404 == result.code
     }
 
+    void testEditProjectOntologyCorrect() {
+
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        def data = UpdateData.createUpdateSet(project,[ontology: [project.ontology,BasicInstanceBuilder.getOntologyNotExist(true)]])
+
+        def result = ProjectAPI.update(project.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        int idProject = json.project.id
+        def showResult = ProjectAPI.show(idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        json = JSON.parse(showResult.data)
+
+
+        BasicInstanceBuilder.compare(data.mapNew, json)
+
+
+        def term = BasicInstanceBuilder.getTermNotExist(project.ontology, true)
+        def at = BasicInstanceBuilder.getAnnotationTermNotExist(BasicInstanceBuilder.getUserAnnotationNotExist(project,true), term, true)
+        def aat = BasicInstanceBuilder.getAlgoAnnotationTermNotExist(at.userAnnotation, term, true)
+        def rat = BasicInstanceBuilder.getReviewedAnnotationNotExist(project)
+        rat.terms = [term]
+        rat.save()
+
+
+        data = UpdateData.createUpdateSet(project,[ontology: [project.ontology,BasicInstanceBuilder.getOntologyNotExist(true)]])
+
+        result = ProjectAPI.update(project.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 403 == result.code
+
+        json = JSON.parse(result.data)
+
+        assert json.errors.contains("3 associated terms")
+
+    }
+
     void testDeleteProject() {
         def projectToDelete = BasicInstanceBuilder.getProjectNotExist(true)
 

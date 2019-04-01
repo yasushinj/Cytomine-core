@@ -22,6 +22,7 @@ import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
+import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.ModelService
@@ -45,6 +46,13 @@ class AnnotationTermService extends ModelService {
     def list(UserAnnotation userAnnotation) {
         securityACLService.check(userAnnotation.container(),READ)
         AnnotationTerm.findAllByUserAnnotation(userAnnotation)
+    }
+
+    def list(Project project) {
+        return AnnotationTerm.withCriteria{
+            createAlias('userAnnotation', 'ua')
+            eq('ua.project', project)
+        }
     }
 
     def listNotUser(UserAnnotation userAnnotation, User user) {

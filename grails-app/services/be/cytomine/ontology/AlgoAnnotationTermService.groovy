@@ -49,6 +49,10 @@ class AlgoAnnotationTermService extends ModelService {
         AlgoAnnotationTerm.findAllByAnnotationIdent(annotation.id)
     }
 
+    def list(Project project) {
+        return AlgoAnnotationTerm.findAllByProject(project)
+    }
+
     def count(Job job) {
         securityACLService.check(job.container(),READ)
         long total = 0
