@@ -357,13 +357,28 @@ class ProjectService extends ModelService {
         securityACLService.check(project.container(),WRITE)
 
         if(project.ontology.id != jsonNewData.ontology){
-            long associatedTermsCount = 0L
-            associatedTermsCount += annotationTermService.list(project).size()
-            associatedTermsCount += algoAnnotationTermService.list(project).size()
-            associatedTermsCount += ReviewedAnnotation.countByProjectAndTermsIsNotNull(project)
+            boolean deleteTerms = jsonNewData.forceOntologyUpdate
+            long associatedTermsCount
+            long userAssociatedTermsCount = 0L
+            long algoAssociatedTermsCount = 0L
+            long reviewedAssociatedTermsCount = 0L
+            if(!deleteTerms) userAssociatedTermsCount += annotationTermService.list(project).size()
+            algoAssociatedTermsCount += algoAnnotationTermService.list(project).size()
+            reviewedAssociatedTermsCount += ReviewedAnnotation.countByProjectAndTermsIsNotNull(project)
+            associatedTermsCount = userAssociatedTermsCount + algoAssociatedTermsCount + reviewedAssociatedTermsCount
 
             if(associatedTermsCount > 0){
-                throw new ForbiddenException("This project has $associatedTermsCount associated terms. The ontology cannot be updated")
+                String message = "This project has $associatedTermsCount associated terms : "
+                if(!deleteTerms) message += "$userAssociatedTermsCount from project members"
+                message += "$algoAssociatedTermsCount from jobs"
+                message += "$reviewedAssociatedTermsCount reviewed"
+                message += ". The ontology cannot be updated"
+                throw new ForbiddenException(message)
+            }
+            if(deleteTerms) {
+                for(def at : annotationTermService.list(project)){
+                    annotationTermService.delete(at)
+                }
             }
         }
 

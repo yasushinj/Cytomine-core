@@ -330,6 +330,64 @@ class ProjectTests  {
 
         assert json.errors.contains("3 associated terms")
 
+        data.postData = JSON.parse(data.postData)
+        data.postData.forceOntologyUpdate = true
+        data.postData = data.postData.toString()
+
+        result = ProjectAPI.update(project.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 403 == result.code
+
+        json = JSON.parse(result.data)
+
+        assert json.errors.contains("2 associated terms")
+
+    }
+
+    void testEditProjectOntologyAndDeletingTerms() {
+
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
+        def term = BasicInstanceBuilder.getTermNotExist(project.ontology, true)
+        def at = BasicInstanceBuilder.getAnnotationTermNotExist(BasicInstanceBuilder.getUserAnnotationNotExist(project,true), term, true)
+
+        def data = UpdateData.createUpdateSet(project,[ontology: [project.ontology,BasicInstanceBuilder.getOntologyNotExist(true)]])
+
+        data.postData = JSON.parse(data.postData)
+        data.postData.forceOntologyUpdate = true
+        data.postData = data.postData.toString()
+
+        def result = ProjectAPI.update(project.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        int idProject = json.project.id
+        def showResult = ProjectAPI.show(idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        json = JSON.parse(showResult.data)
+
+
+        BasicInstanceBuilder.compare(data.mapNew, json)
+
+
+        def aat = BasicInstanceBuilder.getAlgoAnnotationTermNotExist(at.userAnnotation, term, true)
+        def rat = BasicInstanceBuilder.getReviewedAnnotationNotExist(project)
+        rat.terms = [term]
+        rat.save()
+
+
+        data = UpdateData.createUpdateSet(project,[ontology: [project.ontology,BasicInstanceBuilder.getOntologyNotExist(true)]])
+
+        data.postData = JSON.parse(data.postData)
+        data.postData.forceOntologyUpdate = true
+        data.postData = data.postData.toString()
+
+        result = ProjectAPI.update(project.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 403 == result.code
+
+        json = JSON.parse(result.data)
+
+        assert json.errors.contains("2 associated terms")
+        assert !json.errors.contains("project members")
+
     }
 
     void testDeleteProject() {
