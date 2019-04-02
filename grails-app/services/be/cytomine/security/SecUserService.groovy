@@ -25,7 +25,6 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.image.NestedImageInstance
 import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.Storage
-import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.ontology.*
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
@@ -681,7 +680,7 @@ class SecUserService extends ModelService {
 
     def deleteDependentStorage(SecUser user,Transaction transaction, Task task = null) {
         for (storage in Storage.findAllByUser(user)) {
-            if (StorageAbstractImage.countByStorage(storage) > 0) {
+            if (UploadedFile.countByStoragesInList([storage]) > 0) {
                 throw new ConstraintException("Storage contains data, cannot delete user. Remove or assign storage to an another user first")
             } else {
                 storage.delete()

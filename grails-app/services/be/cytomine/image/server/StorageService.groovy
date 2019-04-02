@@ -109,13 +109,6 @@ class StorageService extends ModelService {
         return [domain.id, domain.name]
     }
 
-    def storageAbstractImageService
-    void  deleteDependentStorageAbstractImage(Storage storage, Transaction transaction, Task task = null) {
-        StorageAbstractImage.findAllByStorage(storage).each {
-            storageAbstractImageService.delete(it, transaction, task)
-        }
-    }
-
 
     // TODO: partially move to UserService.afterAdd()
     def initUserStorage(SecUser user) {  //:to do => use command instead of domains

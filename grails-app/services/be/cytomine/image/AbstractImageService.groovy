@@ -24,7 +24,6 @@ import be.cytomine.command.Command
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.server.Storage
-import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.laboratory.Sample
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -50,7 +49,6 @@ class AbstractImageService extends ModelService {
     def attachedFileService
     def currentRoleServiceProxy
     def securityACLService
-    def storageAbstractImageService
     def imageServerService
     def projectService
     def uploadedFileService
@@ -284,12 +282,6 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def deleteDependentStorageAbstractImage(AbstractImage ai, Transaction transaction,Task task=null) {
-        //TODO: implement this with command (storage abst image should be create)
-        StorageAbstractImage.findAllByAbstractImage(ai).each {
-            storageAbstractImageService.delete(it,transaction,null)
-        }
-    }
 
     def deleteDependentNestedImageInstance(AbstractImage ai, Transaction transaction,Task task=null) {
         NestedImageInstance.findAllByBaseImage(ai).each {
