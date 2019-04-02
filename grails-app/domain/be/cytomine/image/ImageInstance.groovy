@@ -72,7 +72,6 @@ class ImageInstance extends CytomineDomain implements Serializable {
             @RestApiObjectField(apiFieldName = "originalFilename", description = "Abstract image original filename (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "path", description = "Abstract image path (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "sample", description = "Abstract image sample (see Abstract Image)", allowedType = "long", useForCreation = false),
-            @RestApiObjectField(apiFieldName = "mime", description = "Abstract image mime (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "width", description = "Abstract image width (see Abstract Image)", allowedType = "int", useForCreation = false),
             @RestApiObjectField(apiFieldName = "height", description = "Abstract image height (see Abstract Image)", allowedType = "int", useForCreation = false),
             @RestApiObjectField(apiFieldName = "resolution", description = "Abstract image resolution (see Abstract Image)", allowedType = "double", useForCreation = false),
@@ -163,7 +162,6 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['originalFilename'] = image?.blindOriginalFilename
         returnArray['filename'] = image?.baseImage?.filename
         returnArray['path'] = image?.baseImage?.path
-        returnArray['mime'] = image?.baseImage?.mime?.mimeType
         returnArray['contentType'] = image?.baseImage?.uploadedFile?.contentType
         returnArray['sample'] = image?.baseImage?.sample?.id
         

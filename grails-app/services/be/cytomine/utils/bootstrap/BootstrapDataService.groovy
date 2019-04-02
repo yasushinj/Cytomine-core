@@ -71,22 +71,19 @@ class BootstrapDataService {
         ]
         bootstrapUtilsService.createFilters(filters)
 
-        def IIPMimeSamples = [
+        def nativelySupportedMimes = [
+                [extension : 'tif', mimeType : 'image/pyrtiff'],
+                [extension : 'jp2', mimeType : 'image/jp2'],
+                [extension : 'ndpi', mimeType : 'openslide/ndpi'],
                 [extension : 'mrxs', mimeType : 'openslide/mrxs'],
                 [extension : 'vms', mimeType : 'openslide/vms'],
-                [extension : 'tif', mimeType : 'openslide/ventana'],
-                [extension : 'tif', mimeType : 'image/tif'],
-                [extension : 'tif', mimeType : 'philips/tif'],
-                [extension : 'tiff', mimeType : 'image/tiff'],
-                [extension : 'tif', mimeType : 'image/pyrtiff'],
                 [extension : 'svs', mimeType : 'openslide/svs'],
-                [extension : 'jp2', mimeType : 'image/jp2'],
                 [extension : 'scn', mimeType : 'openslide/scn'],
-                [extension : 'ndpi', mimeType : 'openslide/ndpi'],
                 [extension : 'bif', mimeType : 'openslide/bif'],
-                [extension : 'zvi', mimeType : 'zeiss/zvi']
+                [extension : 'tif', mimeType : 'openslide/ventana'],
+                [extension : 'tif', mimeType : 'philips/tif']
         ]
-        bootstrapUtilsService.createMimes(IIPMimeSamples)
+        bootstrapUtilsService.createMimes(nativelySupportedMimes)
 
 
         def usersSamples = [

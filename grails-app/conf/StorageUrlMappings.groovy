@@ -34,11 +34,5 @@ class StorageUrlMappings {
         "/api/storage/create/$user.$format"(controller : "restStorage") {
             action = [POST:"create"]
         }
-
-
-
-//        "/api/imageserver.$format"(controller : "restStorage") {
-//            action = [GET:"listByMime"]
-//        }
     }
 }

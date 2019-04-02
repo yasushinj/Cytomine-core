@@ -1,6 +1,6 @@
 package be.cytomine.utils.bootstrap
 
-
+import be.cytomine.image.Mime
 import be.cytomine.middleware.ImageServer
 
 /*
@@ -112,7 +112,18 @@ class BootstrapOldVersionService {
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS path;")
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS converted;")
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS storages;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image DROP COLUMN IF EXISTS mime_id;")
 
+        def pyrTiffMime = Mime.findByMimeType("image/pyrtiff")
+        def mimeToRemove = ["image/tiff", "image/tif", "zeiss/zvi"]
+        mimeToRemove.each {
+            def mime = Mime.findByMimeType(it)
+            if (mime) {
+                new Sql(dataSource).executeUpdate("UPDATE abstract_slice SET mime_id = ${pyrTiffMime.id} WHERE mime_id = ${mime.id}")
+                new Sql(dataSource).executeUpdate("DELETE FROM mime_image_server WHERE mime_id = ${mime.id}")
+                mime.delete()
+            }
+        }
     }
 
     void initv1_3_0() {

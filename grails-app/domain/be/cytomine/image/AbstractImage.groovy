@@ -18,13 +18,8 @@ package be.cytomine.image
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.CytomineException
-import be.cytomine.Exception.ServerException
-import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.image.acquisition.Instrument
-import be.cytomine.image.server.ImageServerStorage
-import be.cytomine.image.server.MimeImageServer
-import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.laboratory.Sample
 import be.cytomine.security.SecUser
 import be.cytomine.utils.JSONUtils
@@ -56,9 +51,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
     // TODO: REMOVE
 //    @RestApiObjectField(description = "The full image path directory")
 //    String path
-
-    @RestApiObjectField(description = "The original image mime type.")
-    Mime mime
 
     @RestApiObjectField(description = "The N-dimensional image width, in pixels (X)", mandatory = false, defaultValue = "-1")
     Integer width
@@ -114,8 +106,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
     static mapping = {
         id generator: "assigned"
         sort "id"
-        mime fetch: 'join'
-
     }
 
     static constraints = {
@@ -125,7 +115,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         scanner(nullable: true)
         sample(nullable: true)
 //        path(nullable: false)
-        mime(nullable: false)
         width(nullable: true)
         height(nullable: true)
         depth(nullable: true)
@@ -198,16 +187,10 @@ class AbstractImage extends CytomineDomain implements Serializable {
 
         domain.scanner = JSONUtils.getJSONAttrDomain(json,"scanner",new Instrument(),false)
         domain.sample = JSONUtils.getJSONAttrDomain(json,"sample",new Sample(),false)
-        domain.mime = JSONUtils.getJSONAttrDomain(json,"mime",new Mime(),'mimeType','String',true)
         domain.magnification = JSONUtils.getJSONAttrInteger(json,'magnification',null)
         domain.resolution = JSONUtils.getJSONAttrDouble(json,'resolution',null)
         domain.bitDepth = JSONUtils.getJSONAttrInteger(json, 'bitDepth', null)
         domain.colorspace = JSONUtils.getJSONAttrStr(json, 'colorspace', false)
-
-
-        if (domain.mime.imageServers().size() == 0) {
-            throw new WrongArgumentException("Mime with id:${json.mime} has not image server")
-        }
         return domain;
     }
 
@@ -224,7 +207,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['sample'] = image?.sample?.id
         returnArray['uploadedFile'] = image?.uploadedFile?.id
         returnArray['path'] = image?.path
-        returnArray['mime'] = image?.mime?.mimeType
         returnArray['contentType'] = image?.uploadedFile?.contentType
         returnArray['width'] = image?.width
         returnArray['height'] = image?.height
@@ -276,10 +258,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         def coord = getReferenceSliceCoordinate()
         return AbstractSlice.findByImageAndChannelAndZStackAndTime(this, coord.channel, coord.zStack, coord.time)
     }
-
-//    def getMimeType(){
-//        return mime?.mimeType
-//    }
 
     def getImageServerUrl() {
         return uploadedFile?.imageServer?.url
