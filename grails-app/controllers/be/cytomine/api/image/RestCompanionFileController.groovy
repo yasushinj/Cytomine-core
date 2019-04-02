@@ -33,7 +33,7 @@ import org.restapidoc.pojo.RestApiParamType
 class RestCompanionFileController extends RestController {
     
     def companionFileService
-    def imageServerProxyService
+    def imageServerService
     def abstractImageService
 
     @RestApiMethod(description = "Get all companion files for the given abstract image", listing = true)
@@ -115,7 +115,7 @@ class RestCompanionFileController extends RestController {
 //        CompanionFile companionFile = companionFileService.read(params.long("id"))
 //        def uf = companionFile?.uploadedFile
 //        if (uf) {
-//            String url = imageServerProxyService.downloadUri(companionFile, uf)
+//            String url = imageServerService.downloadUri(companionFile, uf)
 //            redirect(url: url)
 //        } else {
 //            responseNotFound("CompanionFile", params.id)

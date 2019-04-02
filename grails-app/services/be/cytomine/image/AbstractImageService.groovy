@@ -51,7 +51,7 @@ class AbstractImageService extends ModelService {
     def currentRoleServiceProxy
     def securityACLService
     def storageAbstractImageService
-    def imageServerProxyService
+    def imageServerService
     def projectService
     def uploadedFileService
 

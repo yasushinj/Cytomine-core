@@ -53,7 +53,7 @@ class ImageRetrievalService {
     def cytomineService
     def dataSource
     def abstractImageService
-    def imageServerProxyService
+    def imageServerService
 
 
     public void indexImageAsync(URL url,String id, String storage, Map<String,String> properties) {
@@ -179,7 +179,7 @@ class ImageRetrievalService {
         log.info "get similarities for userAnnotation " + searchAnnotation.id + " on " + projectSearch
         if(!RetrievalServer.list().isEmpty()) {
             RetrievalServer server = RetrievalServer.list().get(0)
-            def cropUrl = imageServerProxyService.crop(searchAnnotation, [:], true)
+            def cropUrl = imageServerService.crop(searchAnnotation, [:], true)
             def responseJSON = doRetrievalSearch(server.url+"/api/searchUrl",server.username,server.password,searchAnnotation.id,cropUrl,projectSearch.collect{it+""})
             def result =  readRetrievalResponse(searchAnnotation,responseJSON.data)
             log.info "result=$result"

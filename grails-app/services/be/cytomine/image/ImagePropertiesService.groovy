@@ -22,7 +22,7 @@ class ImagePropertiesService implements Serializable {
 
     def grailsApplication
     def abstractImageService
-    def imageServerProxyService
+    def imageServerService
 
     def keys() {
         def parseString = { x -> x }
@@ -54,7 +54,7 @@ class ImagePropertiesService implements Serializable {
 
     def populate(AbstractImage image) {
         try {
-            def properties = imageServerProxyService.properties(image)
+            def properties = imageServerService.properties(image)
             properties.each {
                 String key = it.key.trim()
                 String value = it.value.trim()

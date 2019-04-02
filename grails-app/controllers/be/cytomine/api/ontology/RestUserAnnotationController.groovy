@@ -50,7 +50,7 @@ class RestUserAnnotationController extends RestController {
     def reportService
     def securityACLService
     def abstractImageService
-    def imageServerProxyService
+    def imageServerService
 
     /**
      * List all annotation with light format
@@ -234,7 +234,7 @@ class RestUserAnnotationController extends RestController {
     def crop() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
-            responseBufferedImage(imageServerProxyService.crop(annotation, params))
+            responseBufferedImage(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
@@ -259,7 +259,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            responseBufferedImage(imageServerProxyService.crop(annotation, params))
+            responseBufferedImage(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
@@ -283,7 +283,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            responseBufferedImage(imageServerProxyService.crop(annotation, params))
+            responseBufferedImage(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }

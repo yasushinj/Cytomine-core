@@ -38,7 +38,7 @@ class ImageGroupService extends ModelService {
     def securityACLService
     def abstractImageService
     def imageGroupHDF5Service
-    def imageServerProxyService
+    def imageServerService
 
     def currentDomain() {
         return ImageGroup
@@ -147,6 +147,6 @@ class ImageGroupService extends ModelService {
         def zMean = characteristics.zStack[(int) Math.floor(characteristics.zStack.size() / 2)]
         def sequence = imageSequenceService.get(imageGroup, characteristics.channel[0], zMean, characteristics.slice[0], characteristics.time[0])
 
-        return imageServerProxyService.thumb(sequence.image.baseImage, [maxSize:maxSize])
+        return imageServerService.thumb(sequence.image.baseImage, [maxSize:maxSize])
     }
 }

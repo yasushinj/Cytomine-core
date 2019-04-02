@@ -33,7 +33,7 @@ import org.restapidoc.pojo.RestApiParamType
 class RestAbstractSliceController extends RestController {
 
     def abstractSliceService
-    def imageServerProxyService
+    def imageServerService
     def abstractImageService
 
     @RestApiMethod(description = "Get all abstract slices for the given abstract image", listing = true)
@@ -158,7 +158,7 @@ class RestAbstractSliceController extends RestController {
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
             parameters.refresh = params.boolean('refresh', false)
-            responseBufferedImage(imageServerProxyService.thumb(abstractSlice, parameters))
+            responseBufferedImage(imageServerService.thumb(abstractSlice, parameters))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -167,7 +167,7 @@ class RestAbstractSliceController extends RestController {
     def crop() {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
-            responseBufferedImage(imageServerProxyService.crop(abstractSlice, params))
+            responseBufferedImage(imageServerService.crop(abstractSlice, params))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -176,7 +176,7 @@ class RestAbstractSliceController extends RestController {
     def windowUrl() {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
-            String url = imageServerProxyService.window(abstractSlice, params, true)
+            String url = imageServerService.window(abstractSlice, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("AbstractSlice", params.id)
@@ -186,7 +186,7 @@ class RestAbstractSliceController extends RestController {
     def window() {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
-            responseBufferedImage(imageServerProxyService.window(abstractSlice, params, false))
+            responseBufferedImage(imageServerService.window(abstractSlice, params, false))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -196,7 +196,7 @@ class RestAbstractSliceController extends RestController {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
             params.withExterior = false
-            String url = imageServerProxyService.window(abstractSlice, params, true)
+            String url = imageServerService.window(abstractSlice, params, true)
             responseSuccess([url : url])
         } else {
             responseNotFound("AbstractSlice", params.id)
@@ -207,7 +207,7 @@ class RestAbstractSliceController extends RestController {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
             params.withExterior = false
-            responseBufferedImage(imageServerProxyService.window(abstractSlice, params, false))
+            responseBufferedImage(imageServerService.window(abstractSlice, params, false))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -217,7 +217,7 @@ class RestAbstractSliceController extends RestController {
 //        AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
 //        def uf = abstractSlice?.uploadedFile
 //        if (uf) {
-//            String url = imageServerProxyService.downloadUri(abstractSlice, uf)
+//            String url = imageServerService.downloadUri(abstractSlice, uf)
 //            redirect(url: url)
 //        } else {
 //            responseNotFound("AbstractSlice", params.id)
