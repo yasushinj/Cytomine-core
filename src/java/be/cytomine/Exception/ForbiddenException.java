@@ -16,6 +16,8 @@ package be.cytomine.Exception;
 * limitations under the License.
 */
 
+import java.util.LinkedHashMap;
+
 /**
  * User: lrollus
  * Date: 17/11/11
@@ -30,7 +32,10 @@ public class ForbiddenException extends CytomineException {
      * @param message Message
      */
     public ForbiddenException(String message) {
-             super(message,403);
+        this(message, new LinkedHashMap<Object, Object> ());
+    }
+    public ForbiddenException(String message, LinkedHashMap<Object, Object> values) {
+        super(message,403, values);
     }
 
 }

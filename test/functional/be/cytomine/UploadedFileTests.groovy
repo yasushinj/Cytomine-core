@@ -139,11 +139,11 @@ class UploadedFileTests {
     }
 
     void testShowUploadedFileWithCredential() {
-      def result = UploadedFileAPI.show(BasicInstanceBuilder.getUploadedFile().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json instanceof JSONObject
-  }
+        def result = UploadedFileAPI.show(BasicInstanceBuilder.getUploadedFile().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+    }
 
   void testAddUploadedFileCorrect() {
       def uploadedfileToAdd = BasicInstanceBuilder.getUploadedFileNotExist()

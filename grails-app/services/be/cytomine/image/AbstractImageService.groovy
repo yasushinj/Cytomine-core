@@ -303,7 +303,7 @@ class AbstractImageService extends ModelService {
         } else{
             def instances = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain)
             throw new ForbiddenException("Abstract Image has instances in active projects : "+instances.collect{it.project.name}.join(",")
-                    +" with the following names : "+instances.collect{it.instanceFilename}.unique().join(","));
+                    +" with the following names : "+instances.collect{it.instanceFilename}.unique().join(","), [projectNames:instances.collect{it.project.name},imageNames:instances.collect{it.instanceFilename}.unique()]);
         }
     }
 
