@@ -645,6 +645,13 @@ class GenericAnnotationTests  {
 
         annot1.refresh()
         assert new WKTReader().read(expectedLocation).equals(annot1.location)
+
+        Long commandId = JSON.parse(result.data).command
+        result = UserAnnotationAPI.undo(commandId)
+        assert 200 == result.code
+
+        annot1.refresh()
+        assert !(new WKTReader().read(expectedLocation).equals(annot1.location))
     }
 
 

@@ -1059,13 +1059,16 @@ class RestAnnotationDomainController extends RestController {
         }
 
         def result
+        def oldLocation = based.location
         if (remove) {
             //diff will be made
             //-remove the new geometry from the based annotation location
             //-remove the new geometry from all other annotation location
             based.location = based.location.difference(newGeometry)
             if (based.location.getNumPoints() < 2) throw new WrongArgumentException("You cannot delete an annotation with substract! Use reject or delete tool.")
-            result = reviewedAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+            result = reviewedAnnotationService.update(based,json)
             allAnnotationWithSameTerm.eachWithIndex { other, i ->
                 other.location = other.location.difference(newGeometry)
                 reviewedAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
@@ -1079,7 +1082,10 @@ class RestAnnotationDomainController extends RestController {
                 based.location = based.location.union(other.location)
                 reviewedAnnotationService.delete(other)
             }
-            result = reviewedAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+
+            result = reviewedAnnotationService.update(based,json)
         }
         return result
     }
@@ -1107,6 +1113,7 @@ class RestAnnotationDomainController extends RestController {
         }
 
         def result
+        def oldLocation = based.location
         if (remove) {
             log.info "doCorrectUserAnnotation : remove"
             //diff will be made
@@ -1114,7 +1121,10 @@ class RestAnnotationDomainController extends RestController {
             //-remove the new geometry from all other annotation location
             based.location = based.location.difference(newGeometry)
             if (based.location.getNumPoints() < 2) throw new WrongArgumentException("You cannot delete an annotation with substract! Use reject or delete tool.")
-            result = userAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+            result = userAnnotationService.update(based,json)
             allAnnotationWithSameTerm.eachWithIndex { other, i ->
                 other.location = other.location.difference(newGeometry)
                 userAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
@@ -1129,7 +1139,11 @@ class RestAnnotationDomainController extends RestController {
                 based.location = based.location.union(other.location)
                 userAnnotationService.delete(other)
             }
-            result = userAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+
+            result = userAnnotationService.update(based,json)
         }
         return result
     }
