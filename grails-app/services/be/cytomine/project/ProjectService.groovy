@@ -301,7 +301,11 @@ class ProjectService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
 
         securityACLService.checkUser(currentUser)
-        securityACLService.check(json.ontology,Ontology, READ)
+
+        if(json.ontology && !json.ontology instanceof JSONObject.Null) {
+            securityACLService.check(json.ontology,Ontology, READ)
+        }
+
         taskService.updateTask(task,10,"Check retrieval consistency")
         checkRetrievalConsistency(json)
         def result = executeCommand(new AddCommand(user: currentUser),null,json)

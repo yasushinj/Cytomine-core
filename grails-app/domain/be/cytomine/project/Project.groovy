@@ -127,6 +127,7 @@ class Project extends CytomineDomain implements Serializable {
     static constraints = {
         name(maxSize: 150, unique: true, blank: false)
         discipline(nullable: true)
+        ontology(nullable: true)
     }
 
     /**
@@ -179,7 +180,7 @@ class Project extends CytomineDomain implements Serializable {
 
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name',true)
-        domain.ontology = JSONUtils.getJSONAttrDomain(json, "ontology", new Ontology(), true)
+        domain.ontology = JSONUtils.getJSONAttrDomain(json, "ontology", new Ontology(), false)
         domain.discipline = JSONUtils.getJSONAttrDomain(json, "discipline", new Discipline(), false)
 
         domain.retrievalDisable = JSONUtils.getJSONAttrBoolean(json, 'retrievalDisable', false)

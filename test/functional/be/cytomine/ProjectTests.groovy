@@ -170,6 +170,18 @@ class ProjectTests  {
         assert ProjectAPI.containsInJSONList(User.findByUsername(Infos.SUPERADMINLOGIN).id,JSON.parse(ProjectAPI.listUser(project.id,"admin",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).data))
     }
 
+    void testAddProjectWithoutOntology() {
+        def projectToAdd = BasicInstanceBuilder.getProjectNotExist()
+        projectToAdd.ontology = null
+        def result = ProjectAPI.create(projectToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        Project project = result.data
+        result = ProjectAPI.show(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        assert ProjectAPI.containsInJSONList(User.findByUsername(Infos.SUPERADMINLOGIN).id,JSON.parse(ProjectAPI.listUser(project.id,"admin",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).data))
+    }
+
     void testAddProjectWithUser() {
         def projectToAdd = BasicInstanceBuilder.getProjectNotExist()
         def user =  BasicInstanceBuilder.getUser()
