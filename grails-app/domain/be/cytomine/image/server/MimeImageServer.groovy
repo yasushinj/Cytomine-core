@@ -28,4 +28,7 @@ class MimeImageServer extends CytomineDomain {
     ImageServer imageServer
     Mime mime
 
+    static mapping = {
+        cache true
+    }
 }
