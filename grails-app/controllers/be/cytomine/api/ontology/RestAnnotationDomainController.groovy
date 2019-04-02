@@ -840,27 +840,39 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="JSON POST DATA: review", type="boolean", paramType = RestApiParamType.QUERY,description = "Only get reviewed annotation"),
         @RestApiParam(name="JSON POST DATA: image", type="long", paramType = RestApiParamType.QUERY,description = "The image id"),
         @RestApiParam(name="JSON POST DATA: remove", type="boolean", paramType = RestApiParamType.QUERY,description = "Add or remove Y"),
-        @RestApiParam(name="JSON POST DATA: layers", type="list", paramType = RestApiParamType.QUERY,description = "List of layers id")
+        @RestApiParam(name="JSON POST DATA: layers", type="list", paramType = RestApiParamType.QUERY,description = "List of layers id"),
+        @RestApiParam(name="JSON POST DATA: annotation", type="long", paramType = RestApiParamType.QUERY,description = "The annotation to correct (if specified, only this annotation will be changed; image and layers parameters will be ignored)")
     ])
     def addCorrection() {
         def json = request.JSON
         String location = json.location
         boolean review = json.review
-        long idImage = json.image
+        Long idImage = json.image
         boolean remove = json.remove
         def layers = json.layers
+        Long idAnnotation = json.annotation
         try {
             List<Long> idsReviewedAnnotation = []
             List<Long> idsUserAnnotation = []
 
-            //if review mode, priority is done to reviewed annotation correction
-            if (review) {
-                idsReviewedAnnotation = findAnnotationIdThatTouch(location, layers,idImage, "reviewed_annotation")
+            if(idAnnotation) {
+                if(review) {
+                    idsReviewedAnnotation = [idAnnotation]
+                }
+                else {
+                    idsUserAnnotation = [idAnnotation]
+                }
             }
+            else {
+                //if review mode, priority is done to reviewed annotation correction
+                if (review) {
+                    idsReviewedAnnotation = findAnnotationIdThatTouch(location, layers, idImage, "reviewed_annotation")
+                }
 
-            //there is no reviewed intersect annotation or user is not in review mode
-            if (idsReviewedAnnotation.isEmpty()) {
-                idsUserAnnotation = findAnnotationIdThatTouch(location, layers, idImage, "user_annotation")
+                //there is no reviewed intersect annotation or user is not in review mode
+                if (idsReviewedAnnotation.isEmpty()) {
+                    idsUserAnnotation = findAnnotationIdThatTouch(location, layers, idImage, "user_annotation")
+                }
             }
 
             log.info "idsReviewedAnnotation=$idsReviewedAnnotation"
@@ -872,9 +884,9 @@ class RestAnnotationDomainController extends RestController {
             }
 
             if (idsUserAnnotation.isEmpty()) {
-                responseResult(doCorrectReviewedAnnotation(idsReviewedAnnotation,location, remove))
+                responseResult(doCorrectReviewedAnnotation(idsReviewedAnnotation, location, remove))
             } else {
-                responseResult(doCorrectUserAnnotation(idsUserAnnotation,location, remove))
+                responseResult(doCorrectUserAnnotation(idsUserAnnotation, location, remove))
             }
 
         } catch (CytomineException e) {

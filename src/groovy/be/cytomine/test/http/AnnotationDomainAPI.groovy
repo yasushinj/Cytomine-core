@@ -129,7 +129,7 @@ class AnnotationDomainAPI extends DomainAPI {
         return doPUT(URL,"",username,password)
     }
 
-    static def correctAnnotation(def id, def data,String username, String password) {
+    static def correctAnnotation(def id, def data, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/annotationcorrection.json"
         return doPOST(URL,data,username,password)
     }
