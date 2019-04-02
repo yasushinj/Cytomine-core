@@ -40,9 +40,12 @@ class ImageServer extends CytomineDomain {
     static constraints = {
         name blank: false
         url blank: false //unique ?
-//        basePath blank: false
-        basePath(nullable: true) //TODO DB schema update issue
+        basePath(nullable: true) // It shouldn't be nullable but required for already encoded data.
         available nullable: false
+    }
+
+    static mapping = {
+        cache true
     }
 
     static ImageServer insertDataIntoDomain(def json, def domain = new ImageServer()) {

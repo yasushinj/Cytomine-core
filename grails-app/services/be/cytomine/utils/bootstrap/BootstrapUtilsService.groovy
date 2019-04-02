@@ -280,43 +280,29 @@ class BootstrapUtilsService {
     }
 
     def createMultipleIS() {
-
-        // TODO: now it will delete all related uploaded files !
         ImageServer.list().each { server ->
             if(!grailsApplication.config.grails.imageServerURL.contains(server.url)) {
-                log.info server.url + " is not in config, drop it"
-                MimeImageServer.findAllByImageServer(server).each {
-                    log.info "delete $it"
-                    it.delete()
-                }
-
-                log.info "delete IS $server"
-                server.delete()
+                log.info server.url + " is not in config, set it to unavailable"
+                server.available = false
+                server.save()
             }
-
         }
 
-
-
         grailsApplication.config.grails.imageServerURL.eachWithIndex { it, index ->
-            createNewIS(index+"",it)
+            createNewIS("IMS $index", it as String, grailsApplication.config.storage_path as String)
         }
     }
 
 
-    def createNewIS(String name = "", String url) {
-
+    def createNewIS(String name, String url, String basePath) {
         if(!ImageServer.findByUrl(url)) {
             log.info "Create new IMS: $url"
-            def IIPImageServer = [className : 'IIPResolver', name : 'IIP'+name, service : '/image/tile', url : url, available : true]
             ImageServer imageServer = new ImageServer(
-//                    className: IIPImageServer.className,
-                    name: IIPImageServer.name,
-//                    service : IIPImageServer.service,
-                    url : IIPImageServer.url,
-                    available : IIPImageServer.available,
-                    basePath: "/data/images"
-            ) //TODO basepath
+                    name: name,
+                    url : url,
+                    available : true,
+                    basePath: basePath
+            )
 
             if (imageServer.validate()) {
                 imageServer.save()
