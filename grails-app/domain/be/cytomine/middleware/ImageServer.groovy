@@ -23,6 +23,7 @@ import org.restapidoc.annotation.RestApiObjectField
 
 @RestApiObject(name = "Image server", description = "An image server (IMS) instance")
 class ImageServer extends CytomineDomain {
+    /* TODO: Allow DNS sharding by linking several urls to an image server */
 
     @RestApiObjectField(description = "A user friendly name for IMS instance.", mandatory = false)
     String name

@@ -348,22 +348,20 @@ class StatsService extends ModelService {
     }
 
     def statUsedStorage(){
-        def spaces = imageServerService.getStorageSpaces()
-        Long used = 0;
-        Long available = 0;
+        def spaces = imageServerService.list()
+        if(spaces.isEmpty())
+            throw new ServerException("No Image Server found!")
 
-        if(spaces.isEmpty()) throw new ServerException("No Image Server found!");
-
+        Long used = 0
+        Long available = 0
         spaces.each {
-            used+=it.used
-            available+=it.available
+            def size = imageServerService.storageSpace(it)
+            used += size.used
+            available += size.available
         }
 
-        Long total = used+available
-
-
-        return [total : total, available : available, used : used, usedP:(double)(used/total)];
-
+        Long total = used + available
+        return [total : total, available : available, used : used, usedP:(double)(used/total)]
     }
 
     def statConnectionsEvolution(Project project, int daysRange, Date startDate, Date endDate, boolean accumulate=false) {

@@ -6,7 +6,6 @@ import be.cytomine.image.AbstractSlice
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.SliceInstance
 import be.cytomine.image.UploadedFile
-import be.cytomine.test.HttpClient
 import be.cytomine.utils.GeometryUtils
 import be.cytomine.utils.ModelService
 import com.vividsolutions.jts.io.WKTReader
@@ -40,29 +39,8 @@ class ImageServerService extends ModelService {
         ImageServer
     }
 
-    def getStorageSpaces() {
-        def result = []
-        String url;
-        ImageServer.list().each {
-            url = it.url+"/storage/size.json"
-
-            HttpClient client = new HttpClient()
-
-            client.connect(url,"","")
-
-            client.get()
-
-            String response = client.getResponseData()
-            int code = client.getResponseCode()
-            log.info "code=$code response=$response"
-            if(code < 400){
-                result << JSON.parse(response)
-            }
-        }
-
-        // if dns sharding, multiple link are to the same IMS. We merge the same IMS.
-        result = result.unique { it.hostname }
-        return result
+    def storageSpace(ImageServer is) {
+        return makeGetUrl("/storage/size.json", is.url, [:])
     }
 
     def downloadUri(AbstractImage image, UploadedFile uf) {
