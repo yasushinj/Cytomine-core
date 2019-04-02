@@ -103,23 +103,12 @@ class StorageService extends ModelService {
             log.info("force to put it in list")
             permissionService.addPermission(domain, cytomineService.currentUser.username, ADMINISTRATION)
         }
-        for (imageServer in ImageServer.findAll()) {
-            imageServer.save(failOnError: true)
-            ImageServerStorage imageServerStorage = new ImageServerStorage(imageServer : imageServer, storage : domain)
-            imageServerStorage.save(flush : true)
-        }
     }
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.name]
     }
 
-    def imageServerStorageService
-    void deleteDependentImageServerStorage(Storage storage, Transaction transaction, Task task = null){
-        ImageServerStorage.findAllByStorage(storage).each {
-            imageServerStorageService.delete(it,transaction,task)
-        }
-    }
     def storageAbstractImageService
     void  deleteDependentStorageAbstractImage(Storage storage, Transaction transaction, Task task = null) {
         StorageAbstractImage.findAllByStorage(storage).each {
@@ -147,12 +136,6 @@ class StorageService extends ModelService {
         if (storage.validate()) {
             storage.save()
             permissionService.addPermission(storage,user.username, ADMINISTRATION)
-
-            for (imageServer in ImageServer.findAll()) {
-                imageServer.save(failOnError: true)
-                ImageServerStorage imageServerStorage = new ImageServerStorage(imageServer : imageServer, storage : storage)
-                imageServerStorage.save(flush : true)
-            }
         } else {
             storage.errors.each {
                 log.error it

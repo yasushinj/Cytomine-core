@@ -290,10 +290,6 @@ class BootstrapUtilsService {
                     it.delete()
                 }
 
-                ImageServerStorage.findAllByImageServer(server).each {
-                    log.info "delete $it"
-                    it.delete()
-                }
                 log.info "delete IS $server"
                 server.delete()
             }
@@ -328,13 +324,6 @@ class BootstrapUtilsService {
                 imageServer.errors?.each {
                     log.info it
                 }
-            }
-
-            Storage.list().each {
-                new ImageServerStorage(
-                        storage : it,
-                        imageServer: imageServer
-                ).save()
             }
 
             Mime.list().each {

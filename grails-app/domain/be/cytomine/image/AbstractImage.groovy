@@ -277,31 +277,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         return AbstractSlice.findByImageAndChannelAndZStackAndTime(this, coord.channel, coord.zStack, coord.time)
     }
 
-
-//    def getImageServersStorage() {
-//        try {
-//
-//            def imageServers = MimeImageServer.findAllByMime(this.getMime())?.collect {it.imageServer}.findAll{it.available}.unique()
-//
-//            def storageAbstractImage = StorageAbstractImage.findAllByAbstractImage(this)?.collect { it.storage }
-//
-//            if (imageServers.isEmpty() || storageAbstractImage.isEmpty()) return []
-//            else {
-//                return ImageServerStorage.createCriteria().list {
-//                    inList("imageServer",  imageServers)
-//                    inList("storage", storageAbstractImage )
-//                }
-//            }
-//        } catch (Exception e) {
-//            //may appear during tests
-//            //this method does not work with an unsaved domain or a domain instance with transients values
-//            //find another way to handle the error ?
-//            log.error "cannot get imageServerStorage from AbstractImage $this"
-//            return null
-//        }
-//
-//    }
-
 //    def getMimeType(){
 //        return mime?.mimeType
 //    }
