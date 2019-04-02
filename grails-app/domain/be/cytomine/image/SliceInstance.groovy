@@ -86,7 +86,7 @@ class SliceInstance extends CytomineDomain implements Serializable {
         return baseSlice?.uploadedFile?.path
     }
 
-    def getImageServer() {
+    def getImageServerUrl() {
         return baseSlice?.uploadedFile?.imageServer?.url
     }
 

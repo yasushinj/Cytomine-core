@@ -240,7 +240,7 @@ class ImageServerService extends ModelService {
     }
 
     private static def imsParametersFromAbstractImage(AbstractImage image) {
-        def server = image.getImageServer()
+        def server = image.getImageServerUrl()
         def parameters = [
                 fif: image.path
         ]
@@ -248,7 +248,7 @@ class ImageServerService extends ModelService {
     }
 
     private static def imsParametersFromAbstractSlice(AbstractSlice slice) {
-        def server = slice.getImageServer()
+        def server = slice.getImageServerUrl()
         def parameters = [
                 fif: slice.path,
                 mimeType: slice.mimeType
