@@ -112,7 +112,8 @@ class StorageService extends ModelService {
     def initUserStorage(SecUser user) {
         log.info ("create storage for $user.username")
         SpringSecurityUtils.doWithAuth(user.username, {
-            add(new JSONObject([name: "$user.username storage", user: user.id]))
+            Command c = new AddCommand(user: user)
+            executeCommand(c,null, new JSONObject([name: "$user.username storage", user: user.id]))
         })
     }
 }
