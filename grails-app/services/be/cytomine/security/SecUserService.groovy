@@ -42,6 +42,7 @@ import org.apache.commons.collections.ListUtils
 
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
+import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 class SecUserService extends ModelService {
 
@@ -531,6 +532,7 @@ class SecUserService extends ModelService {
 
         log.info "Add user $user to storage $storage"
         permissionService.addPermission(storage, user.username, READ)
+        permissionService.addPermission(storage, user.username, WRITE)
 
         [data: [message: "OK"], status: 201]
     }
@@ -544,6 +546,7 @@ class SecUserService extends ModelService {
 
         log.info "Remove user $user from storage $storage"
         permissionService.deletePermission(storage, user.username, READ)
+        permissionService.deletePermission(storage, user.username, WRITE)
         [data: [message: "OK"], status: 201]
     }
 

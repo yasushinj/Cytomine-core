@@ -74,6 +74,9 @@ class StorageService extends ModelService {
         if(!domain.hasACLPermission(READ)) {
             permissionService.addPermission(domain, domain.user.username, READ)
         }
+        if(!domain.hasACLPermission(WRITE)) {
+            permissionService.addPermission(domain, domain.user.username, WRITE)
+        }
         if(!domain.hasACLPermission(ADMINISTRATION)) {
             permissionService.addPermission(domain, domain.user.username, ADMINISTRATION)
         }
@@ -86,7 +89,7 @@ class StorageService extends ModelService {
      * @return  Response structure (new domain data, old domain data..)
      */
     def update(Storage storage,def jsonNewData) {
-        securityACLService.check(storage,WRITE)
+        securityACLService.check(storage, ADMINISTRATION)
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new EditCommand(user: currentUser)
         executeCommand(c,storage,jsonNewData)
@@ -99,7 +102,7 @@ class StorageService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def delete(Storage storage, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        securityACLService.check(storage.container(),WRITE)
+        securityACLService.check(storage.container(), ADMINISTRATION)
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,storage,null)
