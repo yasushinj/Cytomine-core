@@ -401,8 +401,6 @@ class ImageInstanceService extends ModelService {
         log.info "alreadyExist=${alreadyExist}"
         if(alreadyExist && alreadyExist.checkDeleted()) {
             //Image was previously deleted, restore it
-            securityACLService.check(alreadyExist.container(),ADMINISTRATION)
-            securityACLService.checkisNotReadOnly(alreadyExist.container())
             def jsonNewData = JSON.parse(alreadyExist.encodeAsJSON())
             jsonNewData.deleted = null
             Command c = new EditCommand(user: currentUser)
@@ -413,9 +411,6 @@ class ImageInstanceService extends ModelService {
                 return executeCommand(c,null,json)
             }
         }
-
-
-
     }
 
     /**
