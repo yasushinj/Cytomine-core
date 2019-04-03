@@ -126,7 +126,7 @@ class RestProjectController extends RestController {
             responseResult(result)
         } catch (CytomineException e) {
             log.error(e)
-            response([success: false, errors: e.msg], e.code)
+            response([success: false, errors: e.msg, errorValues: e.values], e.code)
         }
     }
 
