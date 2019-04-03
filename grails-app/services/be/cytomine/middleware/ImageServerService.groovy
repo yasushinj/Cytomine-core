@@ -18,6 +18,10 @@ import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 
 class ImageServerService extends ModelService {
+    /* TODO: delete dependent objects - do we want to allow this ?
+        - uploadedFile
+        - mimeImageServer
+     */
 
     static transactional = true
 

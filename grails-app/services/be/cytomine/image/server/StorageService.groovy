@@ -69,6 +69,16 @@ class StorageService extends ModelService {
         executeCommand(c,null,json)
     }
 
+    def afterAdd(Storage domain, def response) {
+        log.info("Add permission on $domain to ${domain.user.username}")
+        if(!domain.hasACLPermission(READ)) {
+            permissionService.addPermission(domain, domain.user.username, READ)
+        }
+        if(!domain.hasACLPermission(ADMINISTRATION)) {
+            permissionService.addPermission(domain, domain.user.username, ADMINISTRATION)
+        }
+    }
+
     /**
      * Update this domain with new data from json
      * @param domain Domain to update
@@ -95,14 +105,8 @@ class StorageService extends ModelService {
         return executeCommand(c,storage,null)
     }
 
-    def afterAdd(Storage domain, def response) {
-        log.info("Add permission on $domain to ${domain.user.username}")
-        if(!domain.hasACLPermission(READ)) {
-            permissionService.addPermission(domain, domain.user.username, READ)
-        }
-        if(!domain.hasACLPermission(ADMINISTRATION)) {
-            permissionService.addPermission(domain, domain.user.username, ADMINISTRATION)
-        }
+    def deleteDependentUploadedFile(Storage storage, Transaction transaction, Task task = null) {
+        // TODO: do we want to allow this ?
     }
 
     def getStringParamsI18n(def domain) {

@@ -94,7 +94,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         @RestApiObjectField(apiFieldName = "uncompressed", description = "Indicates if the file is not compressed", useForCreation = false)
     ])
 
-    static belongsTo = [ImageServer]
+    static belongsTo = [ImageServer, Storage]
 
     static mapping = {
         id(generator: 'assigned', unique: true)
