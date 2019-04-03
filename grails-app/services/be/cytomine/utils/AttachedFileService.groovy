@@ -1,7 +1,5 @@
 package be.cytomine.utils
 
-import be.cytomine.AnnotationDomain
-
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -19,25 +17,16 @@ import be.cytomine.AnnotationDomain
 */
 
 import be.cytomine.command.Command
-import be.cytomine.CytomineDomain
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
-import be.cytomine.image.AbstractImage
-import be.cytomine.project.Project
 import be.cytomine.security.SecUser
-
-import static org.springframework.security.acls.domain.BasePermission.DELETE
-import static org.springframework.security.acls.domain.BasePermission.READ
-import static org.springframework.security.acls.domain.BasePermission.WRITE
 
 class AttachedFileService extends ModelService {
 
     static transactional = true
-    def springSecurityService
     def transactionService
     def commandService
     def cytomineService
-    def securityACLService
 
     def currentDomain() {
         return AttachedFile
@@ -47,44 +36,19 @@ class AttachedFileService extends ModelService {
      * List all description, Only for admin
      */
     def list() {
-        securityACLService.checkAdmin(cytomineService.currentUser)
         return AttachedFile.list()
     }
 
     def list(Long domainIdent,String domainClassName) {
-        if(domainClassName.contains("AbstractImage")) {
-            securityACLService.checkAtLeastOne(domainIdent,domainClassName,"containers",READ)
-        } else if(domainClassName.contains("AnnotationDomain")) {
-            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(domainIdent)
-            securityACLService.check(domainIdent,annotation.getClass().name,"container",READ)
-        } else {
-            securityACLService.check(domainIdent,domainClassName,"container",READ)
-        }
         return AttachedFile.findAllByDomainIdentAndDomainClassName(domainIdent,domainClassName)
     }
 
 
     def read(def id) {
-        AttachedFile file = AttachedFile.read(id)
-        if(file) {
-            if(file.domainClassName.contains("AbstractImage")) {
-                securityACLService.checkAtLeastOne(file.domainIdent, file.domainClassName, "containers", READ)
-            } else {
-                securityACLService.check(file.domainIdent,file.domainClassName,"container",READ)
-            }
-        }
-        file
+        AttachedFile.read(id)
     }
 
     def add(String filename,byte[] data,Long domainIdent,String domainClassName) {
-        CytomineDomain recipientDomain = Class.forName(domainClassName, false, Thread.currentThread().contextClassLoader).read(domainIdent)
-        if(recipientDomain instanceof AbstractImage) {
-            securityACLService.checkAtLeastOne(domainIdent, domainClassName, "containers", READ)
-        } else if(recipientDomain instanceof Project || !recipientDomain.container() instanceof Project) {
-            securityACLService.check(domainIdent,domainClassName,"container",WRITE)
-        } else {
-            securityACLService.checkFullOrRestrictedForOwner(domainIdent,domainClassName)
-        }
         AttachedFile file = new AttachedFile()
         file.domainIdent =  domainIdent
         file.domainClassName = domainClassName
@@ -103,14 +67,6 @@ class AttachedFileService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(AttachedFile domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        CytomineDomain recipientDomain = domain.retrieveCytomineDomain()
-        if(recipientDomain instanceof AbstractImage) {
-            securityACLService.checkAtLeastOne(domain.domainIdent, domain.domainClassName, "containers", READ)
-        } else if(recipientDomain instanceof Project || !recipientDomain.container() instanceof Project) {
-            securityACLService.check(domain.domainIdent,domain.domainClassName,"container",DELETE)
-        } else {
-            securityACLService.checkFullOrRestrictedForOwner(domain.domainIdent,domain.domainClassName)
-        }
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
