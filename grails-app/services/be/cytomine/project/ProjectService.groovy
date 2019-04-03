@@ -360,7 +360,7 @@ class ProjectService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(project.container(),WRITE)
 
-        if(project.ontology.id != jsonNewData.ontology){
+        if(project.ontology?.id != jsonNewData.ontology){
             boolean deleteTerms = jsonNewData.forceOntologyUpdate
             long associatedTermsCount
             long userAssociatedTermsCount = 0L
@@ -372,12 +372,16 @@ class ProjectService extends ModelService {
             associatedTermsCount = userAssociatedTermsCount + algoAssociatedTermsCount + reviewedAssociatedTermsCount
 
             if(associatedTermsCount > 0){
-                String message = "This project has $associatedTermsCount associated terms : "
-                if(!deleteTerms) message += "$userAssociatedTermsCount from project members"
-                message += "$algoAssociatedTermsCount from jobs"
-                message += "$reviewedAssociatedTermsCount reviewed"
-                message += ". The ontology cannot be updated"
-                throw new ForbiddenException(message)
+                String message = "This project has $associatedTermsCount associated terms: "
+                if(!deleteTerms) message += "$userAssociatedTermsCount from project members, "
+                message += "$algoAssociatedTermsCount from jobs and "
+                message += "$reviewedAssociatedTermsCount reviewed. "
+                message += "The ontology cannot be updated."
+                throw new ForbiddenException(message, [
+                        userAssociatedTermsCount: userAssociatedTermsCount,
+                        algoAssociatedTermsCount: algoAssociatedTermsCount,
+                        reviewedAssociatedTermsCount: reviewedAssociatedTermsCount
+                ])
             }
             if(deleteTerms) {
                 for(def at : annotationTermService.list(project)){
