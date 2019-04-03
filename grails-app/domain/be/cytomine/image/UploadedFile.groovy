@@ -148,11 +148,10 @@ class UploadedFile extends CytomineDomain implements Serializable {
         returnArray['path'] = uploaded?.path
 
         returnArray['status'] = uploaded?.status
-        returnArray['statusText'] = Status.findByCode(uploaded?.status)?.name()
+        returnArray['statusText'] = uploaded?.statusText
 
         returnArray['projects'] = uploaded?.projects
 
-//        returnArray['thumbURL'] = uploaded?.status == DEPLOYED && uploaded?.image ? UrlApi.getAssociatedImage(uploaded?.image?.id, "macro") : null
         returnArray
     }
 
@@ -179,6 +178,10 @@ class UploadedFile extends CytomineDomain implements Serializable {
         domain.projects = JSONUtils.getJSONAttrListLong(json,'projects')
 
         domain
+    }
+
+    def getStatusText() {
+        return Status.findByCode(status)?.name()
     }
 
     def getPath() {

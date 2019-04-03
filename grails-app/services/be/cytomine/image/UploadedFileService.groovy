@@ -87,6 +87,7 @@ class UploadedFileService extends ModelService {
     def listWithDetails(User user) {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
 
+        //TODO: manage zip uploaded files
         String request = "SELECT uf.id, " +
                 "uf.content_type, " +
                 "uf.created, " +
@@ -96,7 +97,8 @@ class UploadedFileService extends ModelService {
                 "uf.status, " +
                 "COUNT(tree.id) as nb_children, " +
                 "COALESCE(SUM(tree.size),0)+uf.size as global_size, " +
-                "CASE WHEN (uf.status = 1 OR uf.status = 2) THEN ai.id ELSE NULL END as image " +
+                "CASE WHEN (uf.status = ${UploadedFile.Status.CONVERTED.code} OR uf.status = ${UploadedFile.Status.DEPLOYED.code}) " +
+                "THEN ai.id ELSE NULL END as image " +
                 "FROM uploaded_file uf " +
                 "LEFT JOIN (SELECT * FROM uploaded_file) tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id) " +
                 "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
@@ -132,7 +134,7 @@ class UploadedFileService extends ModelService {
         String request = "SELECT uf.id, uf.created, uf.original_filename, " +
                 "uf.l_tree, uf.parent_id as parent, " +
                 "uf.size, uf.status, " +
-                "array_agg(ai.id) as images, array_agg(asl.id) as slices, array_agg(cf.id) as companion_files " +
+                "array_agg(ai.id) as image, array_agg(asl.id) as slices, array_agg(cf.id) as companion_file " +
                 "FROM uploaded_file uf " +
                 "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
                 "LEFT JOIN abstract_slice asl ON asl.uploaded_file_id = uf.id " +
@@ -151,12 +153,12 @@ class UploadedFileService extends ModelService {
         sql.eachRow(request, [username: user.username]) { resultSet ->
             def row = SQLUtils.keysToCamelCase(resultSet.toRowResult())
             row.lTree = row.lTree.value
-            row.images = row.images.array.findAll { it != null }
-            row.slices = row.slices.array.findAll { it != null }
-            row.companionFiles = row.companionFiles.array.findAll { it != null }
+            row.image = row.image.array.find { it != null }
+            row.slices = row.slices.array.findAll { it != null } // A same UF can be linked to several slices (virtual stacks)
+            row.companionFile = row.companionFile.array.find { it != null }
             row.thumbURL =  null
-            if(row.images.size() > 0) {
-                row.thumbURL = UrlApi.getAbstractImageThumbUrl(row.images[0] as Long)
+            if(row.image) {
+                row.thumbURL = UrlApi.getAbstractImageThumbUrl(row.image as Long)
             } else if (row.slices.size() > 0) {
                 row.thumbURL = UrlApi.getAbstractSliceThumbUrl(row.slices[0] as Long)
             }
