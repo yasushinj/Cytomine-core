@@ -52,8 +52,11 @@ class UploadedFile extends CytomineDomain implements Serializable{
     @RestApiObjectField(description = "The uploader")
     SecUser user
 
+    @RestApiObjectField(description = "The virtual storage where the file is uploaded")
+    Storage storage
+
     @RestApiObjectField(description = "List of projects (id) that will have the image, if it can be deployed")
-    Long[] projects //projects ids that we have to link with the new file
+    Long[] projects
 
     @RestApiObjectField(description = "The internal filename path, including extension")
     String filename
@@ -91,8 +94,6 @@ class UploadedFile extends CytomineDomain implements Serializable{
         @RestApiObjectField(apiFieldName = "uncompressed", description = "Indicates if the file is not compressed", useForCreation = false)
     ])
 
-    static hasMany = [storages: Storage]
-
     static belongsTo = [ImageServer]
 
     static mapping = {
@@ -103,8 +104,9 @@ class UploadedFile extends CytomineDomain implements Serializable{
     static constraints = {
         projects nullable: true
         parent(nullable : true)
-        lTree nullable : true
-        imageServer nullable: true //TODO: DB schema update issue
+        lTree nullable : true //Due to DB schema update issue
+        imageServer nullable: true //Due to DB schema update issue
+        storage nullable: true //Due to DB schema update issue
     }
 
     static def getDataFromDomain(def uploaded) {
@@ -112,7 +114,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['user'] = uploaded?.user?.id
         returnArray['parent'] = uploaded?.parent?.id
         returnArray['imageServer'] = uploaded?.imageServer?.id
-        returnArray['storages'] = uploaded?.storages?.collect{ it.id }
+        returnArray['storage'] = uploaded?.storage?.id
 
         returnArray['originalFilename'] = uploaded?.originalFilename
         returnArray['filename'] = uploaded?.filename
@@ -149,17 +151,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
 
         domain.parent = JSONUtils.getJSONAttrDomain(json, "parent", new UploadedFile(), false)
         domain.imageServer = JSONUtils.getJSONAttrDomain(json, "imageServer", new ImageServer(), true)
-
-        if (json.storages == null || json.storages.equals("null")) {
-            throw new WrongArgumentException("No storage for uploaded file.")
-        }
-        else {
-            domain.storages?.clear()
-            json.storages?.each { id ->
-                def storage = Storage.read(id)
-                if (storage) domain.addToStorages(storage)
-            }
-        }
+        domain.storage = JSONUtils.getJSONAttrDomain(json, "storage", new Storage(), true)
 
         domain.filename = JSONUtils.getJSONAttrStr(json,'filename')
         domain.originalFilename = JSONUtils.getJSONAttrStr(json,'originalFilename')
@@ -189,7 +181,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         lTree += id
     }
 
-    CytomineDomain[] containers() {
-        return storages
+    CytomineDomain container() {
+        return storage
     }
 }

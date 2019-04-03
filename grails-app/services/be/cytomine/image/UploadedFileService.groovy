@@ -59,19 +59,18 @@ class UploadedFileService extends ModelService {
 
     def list(User user) {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
-        List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
+        List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser, false)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
             isNull("deleted")
-            createAlias("storages", "s")
-            'in'("s.id", storages.collect{ it.id })
+            'in'("storage.id", storages.collect{ it.id })
         }
         return uploadedFiles
     }
 
     def list(User user, Long parentId, Boolean onlyRoot) {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
-        List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
+        List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser, false)
         def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
             eq("user.id", user.id)
             if(onlyRoot) {
@@ -80,8 +79,7 @@ class UploadedFileService extends ModelService {
                 eq("parent.id", parentId)
             }
             isNull("deleted")
-            createAlias("storages", "s")
-            'in'("s.id", storages.collect{ it.id })
+            'in'("storage.id", storages.collect{ it.id })
         }
         return uploadedFiles
     }
@@ -102,8 +100,7 @@ class UploadedFileService extends ModelService {
                 "FROM uploaded_file uf " +
                 "LEFT JOIN (SELECT * FROM uploaded_file) tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id) " +
                 "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
-                "LEFT JOIN uploaded_file_storage as ufs on ufs.uploaded_file_storages_id = uf.id " +
-                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = ufs.storage_id " +
+                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = uf.storage_id " +
                 "LEFT JOIN acl_entry as ae ON ae.acl_object_identity = aoi.id " +
                 "LEFT JOIN acl_sid as asi ON asi.id = ae.sid " +
 //                "LEFT JOIN (SELECT * FROM uploaded_file) parent ON parent.id = uf.parent_id" +
@@ -140,8 +137,7 @@ class UploadedFileService extends ModelService {
                 "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
                 "LEFT JOIN abstract_slice asl ON asl.uploaded_file_id = uf.id " +
                 "LEFT JOIN companion_file cf ON cf.uploaded_file_id = uf.id " +
-                "LEFT JOIN uploaded_file_storage as ufs on ufs.uploaded_file_storages_id = uf.id " +
-                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = ufs.storage_id " +
+                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = uf.storage_id " +
                 "LEFT JOIN acl_entry as ae ON ae.acl_object_identity = aoi.id " +
                 "LEFT JOIN acl_sid as asi ON asi.id = ae.sid " +
                 "WHERE uf.l_tree <@ '" + root.lTree + "'::text::ltree " +
@@ -188,10 +184,8 @@ class UploadedFileService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         if(currentUser instanceof UserJob) currentUser = ((UserJob)currentUser).user
         securityACLService.checkUser(currentUser)
-        if (json.storages) {
-            json.storages.each {
-                securityACLService.check(it, Storage, WRITE)
-            }
+        if (json.storage) {
+            securityACLService.check(json.storage, Storage, WRITE)
         }
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
@@ -206,6 +200,11 @@ class UploadedFileService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkUser(currentUser)
         securityACLService.checkAtLeastOne(uploadedFile, WRITE)
+
+        if (jsonNewData.storage && jsonNewData.storage != uploadedFile.storage.id) {
+            securityACLService.check(jsonNewData.storage, Storage, WRITE)
+        }
+
         return executeCommand(new EditCommand(user: currentUser, transaction : transaction), uploadedFile,jsonNewData)
     }
 

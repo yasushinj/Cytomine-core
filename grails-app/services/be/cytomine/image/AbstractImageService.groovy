@@ -100,11 +100,10 @@ class AbstractImageService extends ModelService {
             images = AbstractImage.list()
         }
         else {
-            List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
+            List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser, false)
             images = AbstractImage.createCriteria().list {
                 createAlias("uploadedFile", "uf")
-                createAlias("uf.storages", "s")
-                'in'("s.id", storages.collect{ it.id })
+                'in'("uf.storage.id", storages.collect{ it.id })
                 isNull("deleted")
             }
         }
