@@ -37,17 +37,46 @@ import java.nio.file.Paths
  * in a buffer space before being converted into the right format and copied to the storages
  */
 @RestApiObject(name = "Uploaded file", description = "A file uploaded on the server")
-class UploadedFile extends CytomineDomain implements Serializable{
+class UploadedFile extends CytomineDomain implements Serializable {
 
-    public static int UPLOADED = 0
-    public static int CONVERTED = 1
-    public static int DEPLOYED = 2
-    public static int ERROR_FORMAT = 3
-    public static int ERROR_CONVERSION = 4
-    public static int UNCOMPRESSED = 5
-    public static int TO_DEPLOY = 6
-    public static int TO_CONVERT = 7
-    public static int ERROR_DEPLOYMENT = 8
+    enum Status {
+        /**
+         * Even codes lower than 100 => information
+         * Even codes greater or equal to 100 => success
+         * Odd codes => error
+         */
+        UPLOADED (0),
+
+        DETECTING_FORMAT (10),
+        ERROR_FORMAT (11), // 3
+
+        EXTRACTING_DATA (20),
+        ERROR_EXTRACTION (21),
+
+        CONVERTING (30),
+        ERROR_CONVERSION (31), // 4
+
+        DEPLOYING (40),
+        ERROR_DEPLOYMENT (41), // 8
+
+        DEPLOYED (100),
+        EXTRACTED (102),
+        CONVERTED (104)
+
+        private final int code
+
+        Status(int code) {
+            this.code = code
+        }
+
+        int getCode() {
+            return code
+        }
+
+        static Status findByCode(int code) {
+            return values().find{ it.code == code }
+        }
+    }
 
     @RestApiObjectField(description = "The uploader")
     SecUser user
@@ -79,19 +108,14 @@ class UploadedFile extends CytomineDomain implements Serializable{
     @RestApiObjectField(description = "File size", mandatory = false)
     Long size
 
-    @RestApiObjectField(description = "File status (UPLOADED = 0, CONVERTED = 1, DEPLOYED = 2, ERROR_FORMAT = 3,ERROR_CONVERSION = 4, UNCOMPRESSED = 5, TO_DEPLOY = 6, TO_CONVERT = 7, ERROR_DEPLOYMENT = 8)", mandatory = false)
+    @RestApiObjectField(description = "File status", mandatory = false)
     int status = 0
 
     @RestApiObjectField(description = "Hierarchical tree of uploaded files", mandatory = false, presentInResponse = false)
     String lTree
 
     @RestApiObjectFields(params=[
-        @RestApiObjectField(apiFieldName = "uploaded", description = "Indicates if the file is uploaded", useForCreation = false),
-        @RestApiObjectField(apiFieldName = "converted", description = "Indicates if the file is converted", useForCreation = false),
-        @RestApiObjectField(apiFieldName = "deployed", description = "Indicates if the file is deployed", useForCreation = false),
-        @RestApiObjectField(apiFieldName = "error_format", description = "Indicates if there is a error with file format", useForCreation = false),
-        @RestApiObjectField(apiFieldName = "error_convert", description = "Indicates if there is an error with file conversion", useForCreation = false),
-        @RestApiObjectField(apiFieldName = "uncompressed", description = "Indicates if the file is not compressed", useForCreation = false)
+        @RestApiObjectField(apiFieldName = "statusText", description = "Textual file status", useForCreation = false),
     ])
 
     static belongsTo = [ImageServer, Storage]
@@ -124,15 +148,7 @@ class UploadedFile extends CytomineDomain implements Serializable{
         returnArray['path'] = uploaded?.path
 
         returnArray['status'] = uploaded?.status
-        returnArray['uploaded'] = (uploaded?.status == UPLOADED)
-        returnArray['converted'] = (uploaded?.status == CONVERTED)
-        returnArray['deployed'] = (uploaded?.status == DEPLOYED)
-        returnArray['error_format'] = (uploaded?.status == ERROR_FORMAT)
-        returnArray['error_convert'] = (uploaded?.status == ERROR_CONVERSION)
-        returnArray['uncompressed'] = (uploaded?.status == UNCOMPRESSED)
-        returnArray['to_deploy'] = (uploaded?.status == TO_DEPLOY)
-        returnArray['to_convert'] = (uploaded?.status == TO_CONVERT)
-        returnArray['error_deployment'] = (uploaded?.status == ERROR_DEPLOYMENT)
+        returnArray['statusText'] = Status.findByCode(uploaded?.status)?.name()
 
         returnArray['projects'] = uploaded?.projects
 

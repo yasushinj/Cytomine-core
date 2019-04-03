@@ -128,7 +128,7 @@ class AbstractImageService extends ModelService {
 
         if (json.uploadedFile) {
             UploadedFile uploadedFile = uploadedFileService.read(json.uploadedFile as Long)
-            if (uploadedFile.status != UploadedFile.TO_DEPLOY) {
+            if (uploadedFile.status != UploadedFile.Status.DEPLOYING.code) {
                 // throw new Error()
             }
         }

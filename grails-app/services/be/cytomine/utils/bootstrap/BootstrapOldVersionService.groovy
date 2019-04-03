@@ -124,6 +124,17 @@ class BootstrapOldVersionService {
                 mime.delete()
             }
         }
+
+        [[old: 1, "new": 104],
+            [old: 2, "new": 100],
+            [old: 3, "new": 11],
+            [old: 4, "new": 31],
+            [old: 5, "new": 20],
+            [old: 6, "new": 40],
+            [old: 7, "new": 20],
+            [old: 8, "new": 41]].each {
+            new Sql(dataSource).executeUpdate("UPDATE uploaded_file SET status = ${it["new"]} WHERE status = ${it["old"]}")
+        }
     }
 
     void initv1_3_0() {
@@ -352,7 +363,7 @@ class BootstrapOldVersionService {
                     uf.parent = it
                     uf.path = it.path
                     uf.ext = FilenameUtils.getExtension(it.image.path)
-                    uf.status = UploadedFile.DEPLOYED
+                    uf.status = 2 //UploadedFile.DEPLOYED
                     uf.user = it.user
                     uf.storages = StorageAbstractImage.findAllByAbstractImage(it.image).collect { it.storage.id }
                     uf.size = 0L
@@ -360,7 +371,7 @@ class BootstrapOldVersionService {
                     uf.save(failOnError: true)
 
                     it.image = null
-                    it.status = UploadedFile.CONVERTED
+                    it.status = 1 //UploadedFile.CONVERTED
                     it.save()
 
                     if (i % 100 == 0) log.info("done : " + i + "/" + ufs.size())
