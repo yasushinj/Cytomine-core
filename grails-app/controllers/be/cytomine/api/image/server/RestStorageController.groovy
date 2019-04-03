@@ -87,20 +87,20 @@ class RestStorageController extends RestController {
     /**
      * Create a storage for user with default parameters
      */
-    @RestApiMethod(description="Create a storage for a user with default parameter values")
-    @RestApiParams(params=[
-            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The human user id")
-    ])
-    def create() {
-        def id = params.long('user')
-        SecUser user = secUserService.read(id)
-        if (user instanceof User) {
-            if (Storage.findByUser(user)) {
-                new AlreadyExistException("A storage already exists for user $user.username")
-            } else {
-                storageService.initUserStorage((User)user)
-                responseSuccess(Storage.findByUser(user))
-            }
-        }
-    }
+//    @RestApiMethod(description="Create a storage for a user with default parameter values")
+//    @RestApiParams(params=[
+//            @RestApiParam(name="user", type="long", paramType = RestApiParamType.PATH, description = "The human user id")
+//    ])
+//    def create() {
+//        def id = params.long('user')
+//        SecUser user = secUserService.read(id)
+//        if (user instanceof User) {
+//            if (Storage.findByUser(user)) {
+//                new AlreadyExistException("A storage already exists for user $user.username")
+//            } else {
+//                storageService.initUserStorage((User)user)
+//                responseSuccess(Storage.findByUser(user))
+//            }
+//        }
+//    }
 }

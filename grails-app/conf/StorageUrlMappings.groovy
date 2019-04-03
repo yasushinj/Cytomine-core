@@ -31,8 +31,8 @@ class StorageUrlMappings {
         "/api/storage/$id.$format"(controller: "restStorage"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]
         }
-        "/api/storage/create/$user.$format"(controller : "restStorage") {
-            action = [POST:"create"]
-        }
+//        "/api/storage/create/$user.$format"(controller : "restStorage") {
+//            action = [POST:"create"]
+//        }
     }
 }

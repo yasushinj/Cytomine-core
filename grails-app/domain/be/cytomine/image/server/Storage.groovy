@@ -22,13 +22,14 @@ import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 
-@RestApiObject(name = "Storage", description = "A virtual directory owned by a human user where uploaded files are stored.")
+@RestApiObject(name = "Storage", description = "A virtual directory where uploaded files are stored. It is owned by a human user and can be shared with other human users.")
 class Storage extends CytomineDomain {
+    /* TODO: add quota on a storage to limit disk usage per user */
 
     @RestApiObjectField(description = "The storage name")
     String name
 
-    @RestApiObjectField(description = "The storage owner, which has administration rights on the domain.")
+    @RestApiObjectField(description = "The storage owner, which has administration rights on the domain.", useForCreation = false)
     SecUser user
 
     static belongsTo = [SecUser]

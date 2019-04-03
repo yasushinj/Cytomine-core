@@ -90,6 +90,16 @@ class UserUrlMappings {
         "/api/project/$id/usersActivity.$format"(controller: "restUser"){
             action = [GET:"listUsersWithLastActivity"]
         }
+
+
+        "/api/storage/$id/user.$format"(controller: "restUser"){
+            action = [GET: "showUserByStorage"]
+        }
+        "/api/storage/$id/user/$idUser.$format"(controller: "restUser"){
+            action = [DELETE:"deleteUserFromStorage",POST:"addUserToStorage"]
+        }
+
+
         "/api/ldap/user.$format"(controller:"restUser"){
             action = [POST:"addFromLDAP"]
         }

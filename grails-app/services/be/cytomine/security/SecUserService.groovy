@@ -233,6 +233,17 @@ class SecUserService extends ModelService {
         users.unique()
     }
 
+    def listUsers(Storage storage) {
+        securityACLService.check(storage, READ)
+        return User.executeQuery("select distinct secUser " +
+                "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
+                "where aclObjectId.objectId = "+storage.id+" " +
+                "and aclEntry.aclObjectIdentity = aclObjectId.id " +
+                "and aclEntry.sid = aclSid.id " +
+                "and aclSid.sid = secUser.username " +
+                "and secUser.class = 'be.cytomine.security.User'")
+    }
+
     def listByGroup(Group group) {
         securityACLService.checkAdmin(cytomineService.currentUser)
         UserGroup.findAllByGroup(group).collect{it.user}
@@ -513,6 +524,27 @@ class SecUserService extends ModelService {
             //permissionService.deletePermission(project.ontology,user.username,READ)
         }
 
+    }
+
+    def addUserToStorage(SecUser user, Storage storage) {
+        securityACLService.check(storage, ADMINISTRATION)
+
+        log.info "Add user $user to storage $storage"
+        permissionService.addPermission(storage, user.username, READ)
+
+        [data: [message: "OK"], status: 201]
+    }
+
+    def deleteUserFromStorage(SecUser user, Storage storage) {
+        securityACLService.checkIsSameUserOrAdminContainer(storage, user, cytomineService.currentUser)
+
+        if (user == storage.user) {
+            throw new InvalidRequestException("The storage owner cannot be deleted.")
+        }
+
+        log.info "Remove user $user from storage $storage"
+        permissionService.deletePermission(storage, user.username, READ)
+        [data: [message: "OK"], status: 201]
     }
 
     def beforeDelete(def domain) {

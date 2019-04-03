@@ -17,10 +17,11 @@ package be.cytomine.image.server
 */
 
 import be.cytomine.command.*
-import be.cytomine.middleware.ImageServer
 import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import grails.plugin.springsecurity.SpringSecurityUtils
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import static org.springframework.security.acls.domain.BasePermission.*
 
@@ -31,6 +32,7 @@ class StorageService extends ModelService {
     def permissionService
     def securityACLService
     def springSecurityService
+    def currentRoleServiceProxy
 
     static transactional = true
 
@@ -39,12 +41,11 @@ class StorageService extends ModelService {
     }
 
     def list() {
-        return securityACLService.getStorageList(cytomineService.currentUser)
+        return securityACLService.getStorageList(cytomineService.currentUser, true)
     }
 
     def list(SecUser user) {
-        // The collect closure is needed if the user is admin since it has access to all storages.
-        return securityACLService.getStorageList(user).findAll{ it.user.id == user.id }
+        return securityACLService.getStorageList(user, false)
     }
 
     def read(def id) {
@@ -63,6 +64,7 @@ class StorageService extends ModelService {
     def add(def json) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkUser(currentUser)
+        json.user = (currentRoleServiceProxy.isAdminByNow(currentUser)) ? json.user : currentUser.id
         Command c = new AddCommand(user: currentUser)
         executeCommand(c,null,json)
     }
@@ -94,14 +96,12 @@ class StorageService extends ModelService {
     }
 
     def afterAdd(Storage domain, def response) {
-        log.info("Add permission on " + domain + " to " + springSecurityService.authentication.name)
+        log.info("Add permission on $domain to ${domain.user.username}")
         if(!domain.hasACLPermission(READ)) {
-            log.info("force to put it in list")
-            permissionService.addPermission(domain, cytomineService.currentUser.username, READ)
+            permissionService.addPermission(domain, domain.user.username, READ)
         }
         if(!domain.hasACLPermission(ADMINISTRATION)) {
-            log.info("force to put it in list")
-            permissionService.addPermission(domain, cytomineService.currentUser.username, ADMINISTRATION)
+            permissionService.addPermission(domain, domain.user.username, ADMINISTRATION)
         }
     }
 
@@ -109,32 +109,10 @@ class StorageService extends ModelService {
         return [domain.id, domain.name]
     }
 
-
-    // TODO: partially move to UserService.afterAdd()
-    def initUserStorage(SecUser user) {  //:to do => use command instead of domains
-        String storage_base_path = grailsApplication.config.storage_path
-        String remotePath;
-        if(storage_base_path.charAt(storage_base_path.length()-1) == File.separator) {
-            remotePath = [storage_base_path, user.id.toString()].join("")
-        } else {
-            remotePath = [storage_base_path, user.id.toString()].join(File.separator)
-        }
-
+    def initUserStorage(SecUser user) {
         log.info ("create storage for $user.username")
-        Storage storage = new Storage(
-                name: "$user.username storage",
-                user: user
-        )
-
-        if (storage.validate()) {
-            storage.save()
-            permissionService.addPermission(storage,user.username, ADMINISTRATION)
-        } else {
-            storage.errors.each {
-                log.error it
-            }
-        }
-
+        SpringSecurityUtils.doWithAuth(user.username, {
+            add(new JSONObject([name: "$user.username storage", user: user.id]))
+        })
     }
-
 }

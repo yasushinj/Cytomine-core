@@ -19,6 +19,7 @@ package be.cytomine.api.security
 import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.server.Storage
 import be.cytomine.ontology.Ontology
 import be.cytomine.project.Project
 import be.cytomine.security.Group
@@ -56,6 +57,7 @@ class RestUserController extends RestController {
     def imageConsultationService
     def projectRepresentativeUserService
     def userAnnotationService
+    def storageService
 
     /**
      * Get all project users
@@ -245,6 +247,19 @@ class RestUserController extends RestController {
             responseSuccess(secUserService.listLayers(project,image))
         } else {
             responseNotFound("User", "Project", params.id)
+        }
+    }
+
+    @RestApiMethod(description="Get all storage users.", listing = true)
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The storage id")
+    ])
+    def showUserByStorage() {
+        Storage storage = storageService.read(params.long('id'))
+        if (storage) {
+            responseSuccess(secUserService.listUsers(storage))
+        } else {
+            responseNotFound("User", "Storage", params.id)
         }
     }
 
@@ -514,6 +529,34 @@ class RestUserController extends RestController {
         response.status = 200
         def ret = [data: [message: "OK"], status: 200]
         response(ret)
+    }
+
+    @RestApiMethod(description="Add user in a storage")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The storage id"),
+            @RestApiParam(name="idUser", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def addUserToStorage() {
+        Storage storage = storageService.read(params.long('id'))
+        SecUser user = secUserService.read(params.long('idUser'))
+        secUserService.addUserToStorage(user, storage)
+        response.status = 200
+        response([data: [message: "OK"], status: 200])
+    }
+    
+    @RestApiMethod(description="Delete user from a storage")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The storage id"),
+            @RestApiParam(name="idUser", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def deleteUserFromStorage() {
+        Storage storage = storageService.read(params.long('id'))
+        SecUser user = secUserService.read(params.long('idUser'))
+        secUserService.deleteUserFromStorage(user, storage)
+        response.status = 200
+        response([data: [message: "OK"], status: 200])
     }
 
     @RestApiMethod(description="Change a user password for a user")
