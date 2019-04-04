@@ -97,7 +97,8 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/js/*']
     }
     production {
-        grails.serverURL = "http://localhost:8086"
+        grails.UIURL = "http://localhost"
+        grails.serverURL = "http://localhost-core"
         grails.uploadURL = "http://localhost:9090"
         grails.plugin.springsecurity.useBasicAuth = false
         grails.resources.adhoc.patterns = ['/images/*', '/js/*','/css/jsondoc/*']
@@ -462,12 +463,6 @@ environments {
 }
 
 
-grails.admin.email = "info@cytomine.org"
-grails.notification.email = ""
-grails.notification.password = ""
-grails.notification.smtp.host = "smtp.gmail.com"
-grails.notification.smtp.port = "587"
-
 grails.client = "NO"
 
 grails.plugin.springsecurity.password.algorithm = 'SHA-256'
@@ -479,3 +474,15 @@ cytomine.middleware.rabbitmq.password = "router"
 
 //limitations
 cytomine.annotation.maxNumberOfPoint = 200
+
+
+// instance hoster configurations
+grails.admin.email = "info@cytomine.org"
+grails.notification.email = ""
+grails.notification.password = ""
+grails.notification.smtp.host = "smtp.gmail.com"
+grails.notification.smtp.port = "587"
+
+grails.instanceHostWebsite = "https://www.cytomine.org"
+grails.instanceHostSupportMail = "support@cytomine.coop"
+grails.instanceHostPhoneNumber = null
