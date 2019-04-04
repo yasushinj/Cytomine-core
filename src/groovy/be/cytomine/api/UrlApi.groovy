@@ -120,6 +120,10 @@ class UrlApi {
         return "${serverUrl()}/api/annotation/$idAnnotation/crop.png" + (maxSize? "?maxSize=$maxSize" :"")
     }
 
+    static def getCompleteAnnotationCropDrawedWithAnnotationId(Long idAnnotation, def maxSize = null) {
+        return "${serverUrl()}/api/annotation/$idAnnotation/crop.png" + (maxSize? "?maxSize=$maxSize" :""+ "draw=true&complete=true")
+    }
+
     static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null) {
         String size = maxSize ? "?maxWidth=$maxSize" : "";
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label" + ".png$size"
@@ -183,7 +187,7 @@ class UrlApi {
      * @return full cytomine url
      */
     static def getAnnotationURL(Long idProject, Long idImage, Long idAnnotation) {
-        return  "${serverUrl()}/#tabs-image-$idProject-$idImage-$idAnnotation"
+        return  "${UIUrl()}/#/project/$idProject/image/$idImage/annotation/$idAnnotation"
     }
 
     /**
@@ -194,11 +198,11 @@ class UrlApi {
      * @return full cytomine url
      */
     static def getBrowseImageInstanceURL(Long idProject, Long idImage) {
-        return  "${serverUrl()}/#tabs-image-$idProject-$idImage-"
+        return  "${UIUrl()}/#/project/$idProject/image/$idImage"
     }
 
     static def getDashboardURL(Long idProject) {
-        return  "${serverUrl()}/#tabs-dashboard-$idProject"
+        return  "${UIUrl()}/#/project/$idProject"
     }
 
     /**
@@ -213,5 +217,9 @@ class UrlApi {
 
     static def serverUrl() {
         Holders.getGrailsApplication().config.grails.serverURL
+    }
+
+    static def UIUrl() {
+        return Holders.getGrailsApplication().config.grails.UIURL?:serverUrl()
     }
 }
