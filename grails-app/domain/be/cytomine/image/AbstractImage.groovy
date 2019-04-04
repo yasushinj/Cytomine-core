@@ -33,12 +33,8 @@ class AbstractImage extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The underlying file stored on disk")
     UploadedFile uploadedFile
 
-    @RestApiObjectField(description = "The image short filename (will be show in GUI)", useForCreation = false)
+    @RestApiObjectField(description = "The image filename (will be show in GUI)", useForCreation = false)
     String originalFilename
-
-    // TODO: REMOVE ?
-    @RestApiObjectField(description = "The exact image full filename")
-    String filename
 
     // TODO: REMOVE ?
     @RestApiObjectField(description = "The instrument that digitalize the image", mandatory = false)
@@ -47,10 +43,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
     // TODO: REMOVE ?
     @RestApiObjectField(description = "The source of the image (human, annimal,...)", mandatory = false)
     Sample sample
-
-    // TODO: REMOVE
-//    @RestApiObjectField(description = "The full image path directory")
-//    String path
 
     @RestApiObjectField(description = "The N-dimensional image width, in pixels (X)", mandatory = false, defaultValue = "-1")
     Integer width
@@ -112,10 +104,8 @@ class AbstractImage extends CytomineDomain implements Serializable {
     static constraints = {
         uploadedFile(nullable: true) // An abstract without uploaded file is a virtual hyper stack.
         originalFilename(nullable: true, blank: false, unique: false)
-        filename(blank: false, unique: true)
         scanner(nullable: true)
         sample(nullable: true)
-//        path(nullable: false)
         width(nullable: true)
         height(nullable: true)
         depth(nullable: true)
@@ -132,31 +122,6 @@ class AbstractImage extends CytomineDomain implements Serializable {
         user(nullable: true)
     }
 
-    public beforeInsert() {
-        super.beforeInsert()
-        if (originalFilename == null || originalFilename == "") {
-            String filename = getFilename()
-            filename = filename.replace(".vips.tiff", "")
-            filename = filename.replace(".vips.tif", "")
-            if (filename.lastIndexOf("/") != -1 && filename.lastIndexOf("/") != filename.size())
-                filename = filename.substring(filename.lastIndexOf("/")+1, filename.size())
-            originalFilename = filename
-        }
-    }
-
-    public beforeUpdate() {
-        super.beforeInsert()
-        if (originalFilename == null || originalFilename == "") {
-            String filename = getFilename()
-            filename = filename.replace(".vips.tiff", "")
-            filename = filename.replace(".vips.tif", "")
-            if (filename.lastIndexOf("/") != -1 && filename.lastIndexOf("/") != filename.size())
-                filename = filename.substring(filename.lastIndexOf("/")+1, filename.size())
-            originalFilename = filename
-        }
-    }
-
-
     /**
      * Insert JSON data into domain in param
      * @param domain Domain that must be filled
@@ -171,10 +136,8 @@ class AbstractImage extends CytomineDomain implements Serializable {
         domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
 
         domain.originalFilename = JSONUtils.getJSONAttrStr(json,'originalFilename')
-        domain.filename = JSONUtils.getJSONAttrStr(json,'filename')
 
         domain.uploadedFile = JSONUtils.getJSONAttrDomain(json, "uploadedFile", new UploadedFile(), true)
-//        domain.path = JSONUtils.getJSONAttrStr(json,'path')
 
         domain.height = JSONUtils.getJSONAttrInteger(json,'height',-1)
         domain.width = JSONUtils.getJSONAttrInteger(json,'width',-1)
@@ -220,7 +183,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['physicalSizeZ'] = image?.physicalSizeZ
         returnArray['fps'] = image?.fps
 
-        returnArray['zoom'] = image?.getZoomLevels()?.max
+        returnArray['zoom'] = image?.getZoomLevels()
 
         returnArray['resolution'] = image?.resolution
         returnArray['magnification'] = image?.magnification
@@ -265,24 +228,30 @@ class AbstractImage extends CytomineDomain implements Serializable {
     }
 
     def getZoomLevels() {
-        if (!width || !height) return [min : 0, max : 9, middle : 0]
+        if (!width || !height)
+            return 1
+
         double tmpWidth = width
         double tmpHeight = height
         def nbZoom = 0
         while (tmpWidth > 256 || tmpHeight > 256) {
             nbZoom++
-            tmpWidth = tmpWidth / 2
-            tmpHeight = tmpHeight / 2
+            tmpWidth /= 2
+            tmpHeight /= 2
         }
-        return [min : 0, max : nbZoom, middle : (nbZoom / 2), overviewWidth : Math.round(tmpWidth), overviewHeight : Math.round(tmpHeight), width : width, height : height]
 
+        return nbZoom
+    }
+
+    def getFilename() {
+        return originalFilename
     }
 
     /**
      * Get the container domain for this domain (usefull for security)
      * @return Container of this domain
      */
-    public CytomineDomain[] containers() {
-        uploadedFile.containers()
+    public CytomineDomain container() {
+        uploadedFile.container()
     }
 }

@@ -114,6 +114,14 @@ class BootstrapOldVersionService {
         new Sql(dataSource).executeUpdate("ALTER TABLE uploaded_file DROP COLUMN IF EXISTS storages;")
         new Sql(dataSource).executeUpdate("ALTER TABLE abstract_image DROP COLUMN IF EXISTS mime_id;")
 
+        def sql = new Sql(dataSource)
+        sql.eachRow("select constraint_name from information_schema.table_constraints where table_name = 'abstract_image' and constraint_type = 'UNIQUE'") {
+            log.info it.constraint_name
+            sql.executeUpdate("ALTER TABLE abstract_image DROP CONSTRAINT "+ it.constraint_name +";")
+        }
+//        sql.executeUpdate("ALTER TABLE abstract_image DROP COLUMN IF EXISTS filename;")
+        // TODO: fix view user_image to delete column
+
         def pyrTiffMime = Mime.findByMimeType("image/pyrtiff")
         def mimeToRemove = ["image/tiff", "image/tif", "zeiss/zvi"]
         mimeToRemove.each {
