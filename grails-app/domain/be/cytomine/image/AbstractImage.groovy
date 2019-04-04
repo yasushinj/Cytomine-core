@@ -106,6 +106,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
     static mapping = {
         id generator: "assigned"
         sort "id"
+        cache(true)
     }
 
     static constraints = {

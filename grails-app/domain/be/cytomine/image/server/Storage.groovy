@@ -36,11 +36,11 @@ class Storage extends CytomineDomain {
 
     static mapping = {
         id(generator: 'assigned', unique: true)
-        sort("name")
+        cache(true)
     }
 
     static constraints = {
-        name(unique: false)
+        name(unique: false, blank: false)
     }
 
     static def getDataFromDomain(def storage) {

@@ -125,7 +125,7 @@ class UploadedFileService extends ModelService {
         return data
     }
 
-    def listHierarchicalTree(User user, Long rootId){
+    def listHierarchicalTree(User user, Long rootId) {
         UploadedFile root = read(rootId)
         if(!root) {
             throw new ForbiddenException("UploadedFile not found")
@@ -233,6 +233,7 @@ class UploadedFileService extends ModelService {
     def downloadURI(UploadedFile uploadedFile) {
         securityACLService.checkAtLeastOne(uploadedFile, WRITE)
 
+        //TODO: merge with ImageServer service
         return "${uploadedFile.imageServer.url}/image/download?fif=${uploadedFile.path}"
         // "&mimeType=${uploadedFile.image.mimeType}"
     }

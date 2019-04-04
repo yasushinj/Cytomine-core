@@ -123,6 +123,7 @@ class UploadedFile extends CytomineDomain implements Serializable {
     static mapping = {
         id(generator: 'assigned', unique: true)
         lTree(type: LTreeType, sqlType: 'ltree')
+        cache(true)
     }
 
     static constraints = {

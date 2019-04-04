@@ -48,7 +48,8 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     static mapping = {
         id(generator: 'assigned', unique: true)
         sort([time: 'asc', zStack: 'asc', channel: 'asc'])
-        mime fetch: 'join'
+        mime fetch: 'join', cache: true
+        cache(true)
     }
 
     static constraints = {
