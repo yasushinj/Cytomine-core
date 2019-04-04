@@ -119,6 +119,7 @@ class BootstrapOldVersionService {
             log.info it.constraint_name
             sql.executeUpdate("ALTER TABLE abstract_image DROP CONSTRAINT "+ it.constraint_name +";")
         }
+        sql.executeUpdate("ALTER TABLE abstract_image ALTER COLUMN filename DROP NOT NULL;")
 //        sql.executeUpdate("ALTER TABLE abstract_image DROP COLUMN IF EXISTS filename;")
         // TODO: fix view user_image to delete column
 
