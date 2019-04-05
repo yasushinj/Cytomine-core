@@ -94,6 +94,11 @@ class TermService extends ModelService {
      */
     public List<Long> getAllTermId(Project project) {
         securityACLService.check(project.container(),READ)
+
+        if(!project.ontology) {
+            return []
+        }
+
         //better perf with sql request
         String request = "SELECT t.id FROM term t WHERE t.ontology_id="+project.ontology.id
         def data = []
