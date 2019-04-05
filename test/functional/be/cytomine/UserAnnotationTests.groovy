@@ -23,10 +23,10 @@ import be.cytomine.ontology.UserAnnotation
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AlgoAnnotationAPI
+import be.cytomine.test.http.AnnotationTermAPI
 import be.cytomine.test.http.UserAnnotationAPI
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.UpdateData
-import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -390,10 +390,21 @@ class UserAnnotationTests  {
         assert 404 == result.code
     }
 
-    void testDeleteUserAnnotationWithData() {
-        def annotTerm = BasicInstanceBuilder.getAnnotationTerm()
-        def annotationToDelete = annotTerm.userAnnotation
+    void testDeleteUserAnnotationWithTerm() {
+        def annotationToDelete = BasicInstanceBuilder.getUserAnnotationNotExist(true)
         def result = UserAnnotationAPI.delete(annotationToDelete.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        def user = BasicInstanceBuilder.getUser(Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+
+        annotationToDelete = BasicInstanceBuilder.getUserAnnotationNotExist(true)
+        def annotTerm = BasicInstanceBuilder.getAnnotationTermNotExist(annotationToDelete)
+        annotTerm.user = user
+
+        result = AnnotationTermAPI.createAnnotationTerm(annotTerm.encodeAsJSON(), Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
+        assert 200 == result.code
+
+        result = UserAnnotationAPI.delete(annotationToDelete.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
 

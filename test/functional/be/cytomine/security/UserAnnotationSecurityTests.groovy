@@ -22,6 +22,7 @@ import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AnnotationDomainAPI
+import be.cytomine.test.http.AnnotationTermAPI
 import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAnnotationAPI
@@ -514,5 +515,65 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
         annotation.refresh()
         assert new WKTReader().read(expectedLocation).equals(annotation.location)
     }
+
+    void testDeleteUserAnnotationWithTerm() {
+
+        User user1 = getUser1()
+        User user2 = getUser2()
+
+
+        ImageInstance image = ImageInstanceAPI.buildBasicImage(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        Project project = image.project
+
+
+        // DELETE AN ANNOT (USER1) WHEN USER1 HAD ASSOCIATED A TERM
+
+        //Add annotation 1 with user1
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
+        annotation.image = image
+        annotation.project = image.project
+        def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert result.code == 200
+        annotation = result.data
+
+
+        def annotTerm = BasicInstanceBuilder.getAnnotationTermNotExist(annotation)
+        annotTerm.user = user1
+
+        result = AnnotationTermAPI.createAnnotationTerm(annotTerm.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert result.code == 200
+
+        result = UserAnnotationAPI.delete(annotation.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert result.code == 200
+
+
+        // DELETE AN ANNOT (USER1) WHEN USER2 HAD ASSOCIATED A TERM
+
+        //Add annotation 1 with user1
+        annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
+        annotation.image = image
+        annotation.project = image.project
+        annotation.user = user1
+        result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert result.code == 200
+        annotation = result.data
+
+
+        //Add project right for user 2
+        def resAddUser = ProjectAPI.addUserProject(project.id, user2.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        Infos.printRight(project)
+        assert 200 == resAddUser.code
+
+
+        annotTerm = BasicInstanceBuilder.getAnnotationTermNotExist(annotation)
+        annotTerm.user = user2
+
+        result = AnnotationTermAPI.createAnnotationTerm(annotTerm.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert result.code == 200
+
+        result = UserAnnotationAPI.delete(annotation.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert result.code == 200
+    }
+
 
 }
