@@ -130,7 +130,7 @@ class UrlApi {
     static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null) {
         if(label == "macro") {
             AbstractImage abstractImage = AbstractImage.read(idAbstractImage)
-            if(["image/pyrtiff", "image/tiff", "image/tif", "image/jp2"].contains(abstractImage.mimeType)) return null
+            if(["image/pyrtiff", "image/tiff", "image/tif", "image/jp2"].contains(abstractImage?.mimeType)) return null
         }
         String size = maxSize ? "?maxWidth=$maxSize" : "";
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label" + ".png$size"
