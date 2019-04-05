@@ -42,6 +42,7 @@ class RestUploadedFileController extends RestController {
     def notificationService
     def securityACLService
     def secUserService
+    def imageServerService
 
     @RestApiMethod(description = "Get all uploaded files made by the current user")
     @RestApiParams(params = [
@@ -111,7 +112,7 @@ class RestUploadedFileController extends RestController {
     def download() {
         UploadedFile up = uploadedFileService.read(params.long('id'));
         if (up) {
-            String url = uploadedFileService.downloadURI(up)
+            String url = imageServerService.downloadUri(up)
             log.info "redirect url"
             redirect(url: url)
         } else {
