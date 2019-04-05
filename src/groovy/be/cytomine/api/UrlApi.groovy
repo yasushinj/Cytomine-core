@@ -123,7 +123,8 @@ class UrlApi {
     }
 
     static def getCompleteAnnotationCropDrawedWithAnnotationId(Long idAnnotation, def maxSize = null) {
-        return "${serverUrl()}/api/annotation/$idAnnotation/crop.png" + (maxSize? "?maxSize=$maxSize" :""+ "draw=true&complete=true")
+        String params = (maxSize ? "maxSize=$maxSize&" : "") + "draw=true&complete=true"
+        return "${serverUrl()}/api/annotation/$idAnnotation/crop.png?" + params
     }
 
     static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null) {
