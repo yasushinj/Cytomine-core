@@ -75,7 +75,6 @@ class AnnotationTermService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
-        securityACLService.check(json.userannotation,UserAnnotation,"container",READ)
         SecUser currentUser = cytomineService.getCurrentUser()
         SecUser creator = SecUser.read(json.user)
         if (!creator)
@@ -94,6 +93,7 @@ class AnnotationTermService extends ModelService {
     def delete(AnnotationTerm domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkIsSameUserOrCreator(domain.userAnnotation.user,currentUser, domain)
+        securityACLService.checkFullOrRestrictedForOwner(domain,domain.userAnnotation.user)
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)
     }
