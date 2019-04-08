@@ -219,6 +219,7 @@ class Ontology extends CytomineDomain implements Serializable {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name')
         domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
+        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
         return domain;
     }
 

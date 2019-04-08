@@ -214,14 +214,14 @@ class SecurityACLService {
 
     public List<Ontology> getOntologyList(SecUser user) {
         //faster method
-        if (currentRoleServiceProxy.isAdminByNow(user)) return Ontology.list()
+        if (currentRoleServiceProxy.isAdminByNow(user)) return Ontology.findAllByDeletedIsNull()
         else {
             return Ontology.executeQuery(
                     "select distinct ontology "+
                             "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Ontology as ontology "+
                             "where aclObjectId.objectId = ontology.id " +
                             "and aclEntry.aclObjectIdentity = aclObjectId.id "+
-                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"'")
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"' and ontology.deleted is null")
         }
     }
 
