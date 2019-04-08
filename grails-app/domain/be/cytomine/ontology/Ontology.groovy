@@ -130,7 +130,7 @@ class Ontology extends CytomineDomain implements Serializable {
      */
     def projects() {
         if(this.version!=null){
-            Project.findAllByOntology(this)
+            Project.findAllByOntologyAndDeletedIsNull(this)
         } else {
             return []
         }
