@@ -224,8 +224,8 @@ class RestAnnotationDomainController extends RestController {
             result.addAll(createRequest(al, params))
             params.suggestedTerm = params.term
             params.term = null
-            params.usersForTermAlgo = params.users
-            params.users = null
+            params.usersForTermAlgo = null
+
             al = new UserAnnotationListing() //if algo, we look for user_annotation JOIN algo_annotation_term  too
             result.addAll(createRequest(al, params))
         } else {
@@ -330,11 +330,8 @@ class RestAnnotationDomainController extends RestController {
            def idUsers = params.get('users')
             if(idUsers) {
                 def ids= idUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
-                def user = SecUser.read(ids.first())
-                if(!user) {
-                    throw new ObjectNotFoundException("User $user not exist!")
-                }
-                return !ids.isEmpty() && user.algo()
+
+                return (UserJob.countByIdInList(ids) > 0)
             }
         }
         //if no other filter, just take user annotation

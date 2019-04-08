@@ -42,15 +42,14 @@ class AnnotationDomainTests {
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        assert json.collection.size() == 1
+        assert json.collection.size() == 2
 
         result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        //TODO : includeAlgo remove the parameter users in the RestAnnotationDomainController ==> change that
-        assert json.collection.size() == 1
+        assert json.collection.size() == 2
 
         users = users.reverse()
         result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
@@ -58,8 +57,7 @@ class AnnotationDomainTests {
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        //TODO : includeAlgo remove the parameter users in the RestAnnotationDomainController ==> change that
-        assert json.collection.size() == 1
+        assert json.collection.size() == 2
     }
 
     void testSearchAnnotationFromUsers() {
@@ -94,8 +92,7 @@ class AnnotationDomainTests {
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        //TODO : includeAlgo remove the parameter users in the RestAnnotationDomainController ==> change that
-        assert json.collection.size() == 0
+        assert json.collection.size() == 2
     }
 
     void testSearchAnnotationFromJobs() {
