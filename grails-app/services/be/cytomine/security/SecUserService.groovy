@@ -462,8 +462,10 @@ class SecUserService extends ModelService {
                 synchronized (this.getClass()) {
                     log.info "addUserToProject project=" + project + " username=" + user?.username + " ADMIN=" + admin
                     permissionService.addPermission(project,user.username,READ)
-                    log.info "addUserToProject ontology=" + project.ontology + " username=" + user?.username + " ADMIN=" + admin
-                    permissionService.addPermission(project.ontology,user.username,READ)
+                    if(project.ontology) {
+                        log.info "addUserToProject ontology=" + project.ontology + " username=" + user?.username + " ADMIN=" + admin
+                        permissionService.addPermission(project.ontology, user.username, READ)
+                    }
                 }
 
             }
