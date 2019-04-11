@@ -91,7 +91,7 @@ class TableService {
             createRequest('creator_project',reqcreate)
 
             reqcreate = "CREATE VIEW user_image AS\n" +
-                    "SELECT distinct image_instance.*, abstract_image.filename, abstract_image.original_filename, project.name as project_name, sec_user.id as user_image_id\n" +
+                    "SELECT distinct image_instance.*, abstract_image.filename, abstract_image.original_filename, project.name as project_name, project.blind_mode as project_blind, sec_user.id as user_image_id, case when mask = 16 then true else false end as user_project_manager\n" +
                     "FROM project,  image_instance, abstract_image, acl_object_identity, sec_user, acl_sid, acl_entry \n" +
                     "WHERE project.id = acl_object_identity.object_id_identity\n" +
                     "AND image_instance.deleted IS NULL \n" +
