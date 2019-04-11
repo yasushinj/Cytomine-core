@@ -21,6 +21,7 @@ import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.ServerException
 import be.cytomine.Exception.WrongArgumentException
+import be.cytomine.annotations.DependencyOrder
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.ontology.AlgoAnnotation
@@ -29,6 +30,7 @@ import grails.util.GrailsNameUtils
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
+import java.lang.reflect.Method
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 
@@ -136,16 +138,17 @@ abstract class ModelService {
                 c.backup = backup
             }
             //remove all dependent domains
-            def allServiceMethods = this.metaClass.methods*.name
-            int numberOfDirectDependence = 0
-            def dependencyMethodName = []
-            allServiceMethods.each {
-                if(it.startsWith("deleteDependent")) {
-                    numberOfDirectDependence++
-                    dependencyMethodName << "$it"
-                }
-            }
-            dependencyMethodName.unique().eachWithIndex { method, index ->
+
+            def allServiceMethods = this.getClass().getDeclaredMethods()
+            def dependencyMethods = allServiceMethods.findAll{it.name.startsWith("deleteDependent")}.unique({it.name})
+
+            def (ordered, unordered) = dependencyMethods.split { it.annotations.findAll{it instanceof DependencyOrder}.size() > 0  }
+            ordered = ordered.sort{- it.annotations.find{it instanceof DependencyOrder}.order()}
+            dependencyMethods = ordered + unordered
+
+            int numberOfDirectDependence = dependencyMethods.size()
+
+            dependencyMethods*.name.eachWithIndex { method, index ->
                 taskService.updateTask(task, (int)((double)index/(double)numberOfDirectDependence)*100, "")
                 this."$method"(domainToDelete,c.transaction,task)
             }

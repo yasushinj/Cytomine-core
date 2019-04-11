@@ -23,10 +23,13 @@ import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import grails.converters.JSON
+import grails.transaction.Transactional
 import groovy.sql.Sql
 
 import static org.springframework.security.acls.domain.BasePermission.*
 
+@Transactional
 class TermService extends ModelService {
 
     static transactional = true
@@ -55,13 +58,14 @@ class TermService extends ModelService {
      */
     def list() {
         securityACLService.checkAdmin(cytomineService.currentUser)
-        return Term.list()
+        return Term.findAllByDeletedIsNull()
     }
 
     Term read(def id) {
         def term = Term.read(id)
         if (term) {
             securityACLService.check(term.container(),READ)
+            checkDeleted(term)
         }
         term
     }
@@ -144,10 +148,15 @@ class TermService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(Term domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+        //We don't delete domain, we juste change a flag
+        def jsonNewData = JSON.parse(domain.encodeAsJSON())
+        jsonNewData.deleted = new Date().time
+
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),DELETE)
-        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-        return executeCommand(c,domain,null)
+        Command c = new EditCommand(user: currentUser, transaction: transaction)
+        c.delete = true
+        return executeCommand(c,domain,jsonNewData)
     }
 
     def getStringParamsI18n(def domain) {
@@ -155,7 +164,13 @@ class TermService extends ModelService {
     }
 
     def deleteDependentAlgoAnnotationTerm(Term term, Transaction transaction, Task task = null) {
-        def nbreAlgoAnnotation = AlgoAnnotationTerm.countByTermOrExpectedTerm(term,term)
+        def nbreAlgoAnnotation = AlgoAnnotationTerm.createCriteria().count {
+            isNull("deleted")
+            or {
+                eq("term", term)
+                eq("expectedTerm", term)
+            }
+        }
 
         if (nbreAlgoAnnotation>0) {
             throw new ConstraintException("Term is still linked with ${nbreAlgoAnnotation} annotations created by job. Cannot delete term!")
@@ -163,7 +178,7 @@ class TermService extends ModelService {
     }
 
     def deleteDependentAnnotationTerm(Term term, Transaction transaction, Task task = null) {
-        def nbreUserAnnotation = AnnotationTerm.countByTerm(term)
+        def nbreUserAnnotation = AnnotationTerm.countByTermAndDeletedIsNull(term)
 
         if (nbreUserAnnotation>0) {
             throw new ConstraintException("Term is still linked with ${nbreUserAnnotation} annotations created by user. Cannot delete term!")

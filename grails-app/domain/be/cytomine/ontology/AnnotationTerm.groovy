@@ -55,6 +55,7 @@ class AnnotationTerm extends CytomineDomain implements Serializable {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.created = JSONUtils.getJSONAttrDate(json, 'created')
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
         domain.userAnnotation = JSONUtils.getJSONAttrDomain(json, "userannotation", new UserAnnotation(), true)
         domain.term = JSONUtils.getJSONAttrDomain(json, "term", new Term(), true)
         domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)

@@ -114,7 +114,7 @@ class ImageInstanceService extends ModelService {
 
         //user_image already filter nested image
         def sql = new Sql(dataSource)
-         sql.eachRow("select * from user_image where user_image_id = ? order by original_filename",[user.id]) {
+        sql.eachRow("select * from user_image where user_image_id = ? order by original_filename",[user.id]) {
             data << [id:it.id, filename:it.filename, originalFilename: it.original_filename, projectName:it.project_name,  project:it.project_id]
         }
         sql.close()
@@ -141,9 +141,9 @@ class ImageInstanceService extends ModelService {
                 String filename;
                 filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
                 if(image.project.blindMode) filename = image.getBlindedName()
-                 data << [id:it['_id'],date:it['date'], thumb: UrlApi.getAbstractImageThumbURL(image.baseImage.id),instanceFilename:filename,project:image.project.id]
+                data << [id:it['_id'],date:it['date'], thumb: UrlApi.getAbstractImageThumbURL(image.baseImage.id),instanceFilename:filename,project:image.project.id]
             } catch(CytomineException e) {
-               //if user has data but has no access to picture,  ImageInstance.read will throw a forbiddenException
+                //if user has data but has no access to picture,  ImageInstance.read will throw a forbiddenException
             }
         }
         data = data.sort{-it.date.getTime()}
@@ -488,23 +488,26 @@ class ImageInstanceService extends ModelService {
         return [domain.id, domain.instanceFilename == null ? domain.baseImage?.originalFilename : domain.instanceFilename, domain.project.name]
     }
 
-//    def deleteDependentAlgoAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-//        AlgoAnnotation.findAllByImage(image).each {
-//            algoAnnotationService.delete(it,transaction)
-//        }
-//    }
-//
-//    def deleteDependentReviewedAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-//        ReviewedAnnotation.findAllByImage(image).each {
-//            reviewedAnnotationService.delete(it,transaction,null,false)
-//        }
-//    }
-//
-//    def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-//        UserAnnotation.findAllByImage(image).each {
-//            userAnnotationService.delete(it,transaction,null,false)
-//        }
-//    }
+    def deleteDependentAlgoAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+        taskService.updateTask(task,task? "Delete ${AlgoAnnotation.countByImage(image)} annotations from algo":"")
+        AlgoAnnotation.findAllByImage(image).each {
+            algoAnnotationService.delete(it,transaction)
+        }
+    }
+
+    def deleteDependentReviewedAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+        taskService.updateTask(task,task? "Delete ${ReviewedAnnotation.countByImage(image)} reviewed annotations":"")
+        ReviewedAnnotation.findAllByImage(image).each {
+            reviewedAnnotationService.delete(it,transaction,null,false)
+        }
+    }
+
+    def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+        taskService.updateTask(task,task? "Delete ${UserAnnotation.countByImage(image)} annotations created by user":"")
+        UserAnnotation.findAllByImage(image).each {
+            userAnnotationService.delete(it,transaction,null,false)
+        }
+    }
 //
 //    def deleteDependentUserPosition(ImageInstance image,Transaction transaction, Task task = null) {
 //        UserPosition.findAllByImage(image).each {
@@ -562,7 +565,7 @@ class ImageInstanceService extends ModelService {
             order(_sortColumn, sortDirection)
         }
 
-       // return ImageInstance.findAllByProjectAndIdNotInList(project, listout);
+        // return ImageInstance.findAllByProjectAndIdNotInList(project, listout);
     }
 
     def listWithoutAnyGroup(Project project,String sortColumn, String sortDirection, String search ){

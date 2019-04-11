@@ -138,6 +138,7 @@ class AlgoAnnotationTerm extends CytomineDomain implements Serializable {
         AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(annotationId)
         domain.annotationClassName = annotation.class.getName()
         domain.annotationIdent = annotation.id
+        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
         domain.term = JSONUtils.getJSONAttrDomain(json, "term", new Term(), false)
         domain.expectedTerm = JSONUtils.getJSONAttrDomain(json, "expectedTerm", new Term(), false)
         domain.userJob = JSONUtils.getJSONAttrDomain(json, "user", new UserJob(), false)

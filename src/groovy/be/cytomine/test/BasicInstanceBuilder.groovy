@@ -282,7 +282,7 @@ class BasicInstanceBuilder {
         def annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: getImageInstanceNotExist(project,true),
-                user: getUserJob(),
+                user: getUserJobNotExist(getJobNotExist(true, project), true),
                 project:project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
@@ -363,7 +363,7 @@ class BasicInstanceBuilder {
 
     //getAlgoAnnotationTermForAlgoAnnotation
     static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(AnnotationDomain annotation, Term term,boolean save = false) {
-        UserJob userJob = getUserJob()
+        UserJob userJob = getUserJobNotExist(getJobNotExist(true, annotation.project), true)
         def algoannotationTerm = new AlgoAnnotationTerm(term:term,userJob:userJob, expectedTerm: term, rate:1d)
         algoannotationTerm.setAnnotation(annotation)
         save ? saveDomain(algoannotationTerm) : checkDomain(algoannotationTerm)
@@ -975,7 +975,7 @@ class BasicInstanceBuilder {
 
     static Ontology getOntology() {
         def ontology = Ontology.findByName("BasicOntology")
-        if (!ontology) {
+        if (!ontology || ontology.deleted != null) {
             ontology = new Ontology(name: "BasicOntology", user: User.findByUsername(Infos.SUPERADMINLOGIN))
             saveDomain(ontology)
             def term = getTermNotExist()
@@ -990,9 +990,7 @@ class BasicInstanceBuilder {
         Ontology ontology = new Ontology(name: getRandomString() + "", user: User.findByUsername(Infos.SUPERADMINLOGIN))
         save ? saveDomain(ontology) : checkDomain(ontology)
         if (save) {
-            Term term = getTermNotExist(true)
-            term.ontology = ontology
-            saveDomain(ontology)
+            Term term = getTermNotExist(ontology,true)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,ontology)
         }
         ontology
@@ -1001,7 +999,7 @@ class BasicInstanceBuilder {
     static Project getProject() {
         def name = "BasicProject".toUpperCase()
         def project = Project.findByName(name)
-        if (!project) {
+        if (!project || project.deleted != null) {
             project = new Project(name: name, ontology: getOntology(), discipline: getDiscipline())
             saveDomain(project)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,project)
