@@ -71,7 +71,7 @@ class ImageConsultationService extends ModelService {
                     ImageInstance image = imageInstanceService.read(it['_id'])
                     String filename;
                     filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                    if(image.project.blindMode) filename = "[BLIND]"+image.baseImage.id
+                    if(image.project.blindMode) filename = image.getBlindedName()
                     data << [
                             created:it['date'],
                             user:user,
