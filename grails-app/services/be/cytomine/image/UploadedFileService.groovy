@@ -87,7 +87,6 @@ class UploadedFileService extends ModelService {
     def listWithDetails(User user) {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
 
-        //TODO: manage zip uploaded files
         String request = "SELECT uf.id, " +
                 "uf.content_type, " +
                 "uf.created, " +
@@ -95,20 +94,21 @@ class UploadedFileService extends ModelService {
                 "uf.original_filename, " +
                 "uf.size, " +
                 "uf.status, " +
-                "COUNT(tree.id) as nb_children, " +
-                "COALESCE(SUM(tree.size),0)+uf.size as global_size, " +
+                "CASE WHEN (nlevel(uf.l_tree) > 0) THEN ltree2text(subltree(uf.l_tree, 0, 1)) ELSE NULL END AS root, " +
+                "COUNT(DISTINCT tree.id) AS nb_children, " +
+                "COALESCE(SUM(DISTINCT tree.size),0)+uf.size AS global_size, " +
                 "CASE WHEN (uf.status = ${UploadedFile.Status.CONVERTED.code} OR uf.status = ${UploadedFile.Status.DEPLOYED.code}) " +
-                "THEN ai.id ELSE NULL END as image " +
+                "THEN ai.id ELSE NULL END AS image " +
                 "FROM uploaded_file uf " +
-                "LEFT JOIN (SELECT * FROM uploaded_file) tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id) " +
-                "LEFT JOIN abstract_image ai ON ai.uploaded_file_id = uf.id " +
-                "LEFT JOIN acl_object_identity as aoi ON aoi.object_id_identity = uf.storage_id " +
-                "LEFT JOIN acl_entry as ae ON ae.acl_object_identity = aoi.id " +
-                "LEFT JOIN acl_sid as asi ON asi.id = ae.sid " +
-//                "LEFT JOIN (SELECT * FROM uploaded_file) parent ON parent.id = uf.parent_id" +
-                "WHERE uf.parent_id is NULL " /*uf.content_type NOT similar to '%zip|ome%' "*/ +
-//                "AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') " +
-                "AND asi.sid = :username " +
+                "LEFT JOIN uploaded_file AS tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id) " +
+                "LEFT JOIN abstract_image AS ai ON ai.uploaded_file_id = uf.id " +
+                "LEFT JOIN uploaded_file AS parent ON parent.id = uf.parent_id " +
+                "WHERE EXISTS (SELECT 1 FROM acl_sid AS asi " +
+                    "LEFT JOIN acl_entry AS ae ON asi.id = ae.sid " +
+                    "LEFT JOIN acl_object_identity AS aoi ON ae.acl_object_identity = aoi.id " +
+                    "WHERE aoi.object_id_identity = uf.storage_id AND asi.sid = :username) " +
+                "AND (uf.parent_id IS NULL OR parent.content_type similar to '%zip%') " +
+                "AND uf.content_type NOT similar to '%zip%' " +
                 "AND uf.deleted IS NULL " +
                 "GROUP BY uf.id, ai.id " +
                 "ORDER BY uf.created DESC "
