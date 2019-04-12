@@ -114,20 +114,17 @@ class ImageInstanceService extends ModelService {
 
         boolean isAdmin = securityACLService.isAdminByNow(user)
 
-        //user_image already filter nested image
+        // user_image already filter nested image
         def sql = new Sql(dataSource)
-         sql.eachRow("select * from user_image where user_image_id = ? order by original_filename",[user.id]) {
-
-             if(it.project_blind) {
-                 def line = [id:it.id, blindedName:it.base_image_id, projectName:it.project_name,  project:it.project_id]
-                 if(isAdmin || it.user_project_manager) {
-                     line.filename = it.instance_filename;
-                     line.originalFilename = it.original_filename;
-                 }
-                 data << line
-             } else {
-                 data << [id:it.id, filename:it.instance_filename, originalFilename: it.original_filename, projectName:it.project_name,  project:it.project_id]
-             }
+        sql.eachRow("select * from user_image where user_image_id = ? order by instance_filename", [user.id]) {
+            def line = [id: it.id, projectName: it.project_name, project: it.project_id]
+            if(it.project_blind) {
+                line.blindedName = it.base_image_id
+            }
+            if(!it.project_blind || isAdmin || it.user_project_manager) {
+                line.instanceFilename = it.instance_filename
+            }
+            data << line
         }
         sql.close()
         return data
