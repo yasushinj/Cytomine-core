@@ -371,4 +371,8 @@ class SecurityACLService {
     }
 
 
+    public def isAdminByNow(SecUser user) {
+        return currentRoleServiceProxy.isAdminByNow(user)
+    }
+
 }

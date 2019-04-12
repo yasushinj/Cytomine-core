@@ -607,6 +607,11 @@ class ReviewedAnnotationTests  {
         def idReviewAnnotation = json.reviewedannotation.id
         assert 200 == result.code
 
+        annotation.refresh()
+        assert annotation.countReviewedAnnotations == 1
+        result = ReviewedAnnotationAPI.show(idReviewAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
         result = ReviewedAnnotationAPI.removeReviewAnnotation(annotation.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 

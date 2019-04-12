@@ -90,7 +90,7 @@ class OntologyTests  {
     }
   
     void testUpdateOntologyCorrect() {
-        Ontology ontologyToAdd = BasicInstanceBuilder.getOntology()
+        Ontology ontologyToAdd = BasicInstanceBuilder.getOntologyNotExist(true)
         def data = UpdateData.createUpdateSet(ontologyToAdd,[name: ["OLDNAME","NEWNAME"], user:[BasicInstanceBuilder.user1,BasicInstanceBuilder.user2]])
         def result = OntologyAPI.update(ontologyToAdd.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
