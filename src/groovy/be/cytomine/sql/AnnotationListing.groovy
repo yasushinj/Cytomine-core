@@ -207,9 +207,10 @@ abstract class AnnotationListing {
 
             return "SELECT DISTINCT a.*, at.term_id as term , at.id as annotationTerms, at.user_id as userTerm\n " +
                     "FROM ("+
-                    getSelect(sqlColumns) + getFrom() + whereRequest+
+                    getSelect(sqlColumns) + getFrom() + whereRequest +
                     " ) a \n" +
-                    "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id"
+                    "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id " +
+                    "ORDER BY a.id DESC"
         }
         return getSelect(sqlColumns) + getFrom() + whereRequest
 
