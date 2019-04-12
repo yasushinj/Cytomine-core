@@ -66,9 +66,17 @@ class ImageConsultationService extends ModelService {
 
             def result = db.persistentImageConsultation.aggregate(request)
 
+            LinkedHashMap<Long, ImageInstance> imageInstancesMap = new LinkedHashMap<>();
+
             result.results().each {
                 try {
-                    ImageInstance image = imageInstanceService.read(it['_id'])
+                    Long imageInstanceId = it['_id']
+                    ImageInstance image = imageInstancesMap.get(imageInstanceId)
+                    if(! image){
+                        image = imageInstanceService.read(imageInstanceId)
+                        imageInstancesMap.put(imageInstanceId, image)
+                    }
+
                     String filename;
                     filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
                     if(image.project.blindMode) filename = image.getBlindedName()
@@ -106,8 +114,15 @@ class ImageConsultationService extends ModelService {
                 [$group : [_id : '$user', created : [$max :'$created'], image : [$first: '$image'], imageName : [$first: '$imageName'], user : [$first: '$user']]]);
 
 
+        ImageInstance image;
+        String filename;
         images.results().each {
-            results << [user: it["_id"], created : it["created"], image : it["image"], imageName: it["imageName"]]
+            if(!image){
+                image = imageInstanceService.read(it["image"])
+                filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+                if(image.project.blindMode) filename = image.getBlindedName()
+            }
+            results << [user: it["_id"], created : it["created"], image : it["image"], imageName: filename]
         }
         return results
     }
@@ -134,8 +149,21 @@ class ImageConsultationService extends ModelService {
                 match,
                 [$sort : [created:-1]]
         );
+
+        LinkedHashMap<Long, ImageInstance> imageInstancesMap = new LinkedHashMap<>();
+
         images.results().each {
-            results << [user: it["user"], project: it["project"], created : it["created"], image : it["image"], imageName: it["imageName"], mode: it["mode"]]
+            Long imageInstanceId = it['image']
+            ImageInstance image = imageInstancesMap.get(imageInstanceId)
+            if(! image){
+                image = imageInstanceService.read(imageInstanceId)
+                imageInstancesMap.put(imageInstanceId, image)
+            }
+            String filename;
+            filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+            if(image.project.blindMode) filename = image.getBlindedName()
+
+            results << [user: it["user"], project: it["project"], created : it["created"], image : it["image"], imageName: filename, mode: it["mode"]]
         }
         return results
     }
@@ -203,7 +231,23 @@ class ImageConsultationService extends ModelService {
 
         def results = []
         consultations.results().each{
-            results << [project : it["_id"].project, user : it["_id"].user, image : it["_id"].image, time : it.time, countCreatedAnnotations : it.countCreatedAnnotations, first : it.first, last : it.last, frequency : it.frequency, imageName : it.imageName, imageThumb : it.imageThumb]
+
+            ImageInstance image = imageInstanceService.read(it["_id"].image)
+            String filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+            if(image.project.blindMode) filename = image.getBlindedName()
+
+
+            results << [project : it["_id"].project,
+                        user : it["_id"].user,
+                        image : it["_id"].image,
+                        time : it.time,
+                        countCreatedAnnotations : it.countCreatedAnnotations,
+                        first : it.first,
+                        last : it.last,
+                        frequency : it.frequency,
+                        imageName : filename,
+                        imageThumb : it.imageThumb
+            ]
         }
 
         return results;
