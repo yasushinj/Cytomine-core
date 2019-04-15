@@ -149,14 +149,14 @@ class AbstractImageService extends ModelService {
         imagePropertiesService.populate(domain)
         imagePropertiesService.extractUseful(domain)
 
-        log.info "Add to projects, stored in uploaded file."
-        //TODO: to improve to handle AbstractSlice -> SliceInstance
-        def currentUser = cytomineService.currentUser
-        domain.uploadedFile.projects?.each { projectId ->
-            Project project = projectService.read(projectId)
-            ImageInstance imageInstance = new ImageInstance( baseImage : domain, project:  project, user :currentUser)
-            imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
-        }
+//        log.info "Add to projects, stored in uploaded file."
+//        //TODO: to improve to handle AbstractSlice -> SliceInstance
+//        def currentUser = cytomineService.currentUser
+//        domain.uploadedFile.projects?.each { projectId ->
+//            Project project = projectService.read(projectId)
+//            ImageInstance imageInstance = new ImageInstance( baseImage : domain, project:  project, user :currentUser)
+//            imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
+//        }
     }
 
     /**
