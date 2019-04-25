@@ -144,10 +144,10 @@ class AbstractImageService extends ModelService {
     }
 
     def afterAdd(def domain, def response) {
-        log.info "Extract image properties"
-        imagePropertiesService.clear(domain)
-        imagePropertiesService.populate(domain)
-        imagePropertiesService.extractUseful(domain)
+//        log.info "Extract image properties"
+//        imagePropertiesService.clear(domain)
+//        imagePropertiesService.populate(domain)
+//        imagePropertiesService.extractUseful(domain)
 
 //        log.info "Add to projects, stored in uploaded file."
 //        //TODO: to improve to handle AbstractSlice -> SliceInstance
