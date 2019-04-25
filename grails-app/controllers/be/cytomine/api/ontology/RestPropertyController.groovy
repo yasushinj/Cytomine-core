@@ -314,6 +314,9 @@ class RestPropertyController extends RestController {
             if (json.domainClassName == null || json.domainClassName == "")
                 json.domainClassName = params.get("domainClassName")
 
+            if (json.domainIdent == null || json.domainIdent == "")
+                json.domainIdent = params.get("domainIdent")
+
             responseResult(addOne(propertyService, json))
         }
     }
