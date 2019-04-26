@@ -67,7 +67,7 @@ class AnnotationDomainTests {
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         UserAnnotation userAnnotation = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, true)
         UserAnnotation userAnnotation2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, true)
-        ArrayList<Long> users = new ArrayList<>();
+        ArrayList<Long> users = new ArrayList<>()
         users.add(userAnnotation.user.id)
         users.add(userAnnotation2.user.id)
 
@@ -77,6 +77,17 @@ class AnnotationDomainTests {
         assert json instanceof JSONObject
 
         assert json.collection.size() == 2
+
+        ArrayList<Long> images = new ArrayList<>()
+        images.add(userAnnotation.image.id)
+        result = AnnotationDomainAPI.listByImagesAndUsersByPOST(images,users, false, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 2
+
+
 
         result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

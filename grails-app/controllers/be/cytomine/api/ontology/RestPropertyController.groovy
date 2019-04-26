@@ -277,6 +277,7 @@ class RestPropertyController extends RestController {
     def addPropertyProject() {
         def json = request.JSON
         json.domainClassName = Project.getName()
+        if(!json.domainIdent) json.domainIdent = params.idProject
         securityACLService.check(json.domainIdent,json.domainClassName,"container",WRITE)
         add(propertyService, request.JSON)
     }
@@ -287,6 +288,7 @@ class RestPropertyController extends RestController {
     ])
     def addPropertyAnnotation()  {
         def json = request.JSON
+        if(!json.domainIdent) json.domainIdent = params.idAnnotation
         AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(json.domainIdent)
         json.domainClassName = annotation.class.getName()
         add(propertyService, request.JSON)
@@ -299,6 +301,7 @@ class RestPropertyController extends RestController {
     def addPropertyImageInstance()  {
         def json = request.JSON
         json.domainClassName = ImageInstance.getName()
+        if(!json.domainIdent) json.domainIdent = params.idImageInstance
         add(propertyService, request.JSON)
     }
 

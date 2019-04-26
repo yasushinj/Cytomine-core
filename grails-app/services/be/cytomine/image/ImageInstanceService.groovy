@@ -24,13 +24,16 @@ import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageSequence
+import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Property
+import be.cytomine.ontology.ReviewedAnnotation
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.Description
+import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
@@ -393,8 +396,6 @@ class ImageInstanceService extends ModelService {
         log.info "alreadyExist=${alreadyExist}"
         if(alreadyExist && alreadyExist.checkDeleted()) {
             //Image was previously deleted, restore it
-            securityACLService.check(alreadyExist.container(),ADMINISTRATION)
-            securityACLService.checkisNotReadOnly(alreadyExist.container())
             def jsonNewData = JSON.parse(alreadyExist.encodeAsJSON())
             jsonNewData.deleted = null
             Command c = new EditCommand(user: currentUser)
@@ -405,9 +406,6 @@ class ImageInstanceService extends ModelService {
                 return executeCommand(c,null,json)
             }
         }
-
-
-
     }
 
     /**
@@ -422,9 +420,38 @@ class ImageInstanceService extends ModelService {
         securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
         securityACLService.checkisNotReadOnly(domain.container())
         securityACLService.checkisNotReadOnly(jsonNewData.project,Project)
+        def attributes = JSON.parse(domain.encodeAsJSON())
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new EditCommand(user: currentUser)
-        executeCommand(c,domain,jsonNewData)
+
+        def res = executeCommand(c,domain,jsonNewData)
+        ImageInstance imageInstance = res.object
+
+        Double resolution = JSONUtils.getJSONAttrDouble(attributes,"resolution",null)
+
+        boolean resolutionUpdated = resolution != imageInstance.resolution
+
+        if(resolutionUpdated) {
+            def annotations;
+            annotations = UserAnnotation.findAllByImage(imageInstance)
+            annotations.each {
+                def json = JSON.parse(it.encodeAsJSON())
+                userAnnotationService.update(it, json)
+            }
+
+            annotations = AlgoAnnotation.findAllByImage(imageInstance)
+            annotations.each {
+                def json = JSON.parse(it.encodeAsJSON())
+                algoAnnotationService.update(it, json)
+            }
+
+            annotations = ReviewedAnnotation.findAllByImage(imageInstance)
+            annotations.each {
+                def json = JSON.parse(it.encodeAsJSON())
+                reviewedAnnotationService.update(it, json)
+            }
+        }
+        return res
     }
 
     /**

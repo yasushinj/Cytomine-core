@@ -17,6 +17,7 @@ package be.cytomine.api.security
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.server.Storage
@@ -561,8 +562,8 @@ class RestUserController extends RestController {
 
     @RestApiMethod(description="Change a user password for a user")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
-        @RestApiParam(name="password", type="string", paramType = RestApiParamType.QUERY, description = "The new password")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The user id"),
+            @RestApiParam(name="password", type="string", paramType = RestApiParamType.QUERY, description = "The new password")
     ])
     def resetPassword () {
         try {
@@ -586,6 +587,21 @@ class RestUserController extends RestController {
             responseError(e)
         }
 
+    }
+
+    @RestApiMethod(description="Check a user password for the current user")
+    @RestApiParams(params=[
+            @RestApiParam(name="password", type="string", paramType = RestApiParamType.QUERY, description = "The password")
+    ])
+    def checkPassword () {
+        String password = request.JSON.password
+        def result = springSecurityService.encodePassword(password).equals(cytomineService.currentUser.password)
+
+        if(result) {
+            responseSuccess([:])
+        } else {
+            response([success: false, errors: "No matching password"], 401)
+        }
     }
 
     /**
@@ -874,8 +890,24 @@ class RestUserController extends RestController {
         result["totalAnnotations"] = userAnnotationService.count(user, project)
         result["totalConnections"] = PersistentProjectConnection.countByUserAndProject(user.id, project.id)
         result["totalConsultations"] = PersistentImageConsultation.countByUserAndProject(user.id, project.id)
-        result["totalAnnotationActions"] = AnnotationAction.countByUserAndProject(user.id, project.id)
+        result["totalAnnotationSelections"] = AnnotationAction.countByUserAndProjectAndAction(user.id, project.id, "select")
 
         responseSuccess(result)
     }
+
+    @Override
+    protected boolean isFilterResponseEnabled() {
+        try{
+            securityACLService.checkAdmin(cytomineService.currentUser)
+            return false
+        } catch(ForbiddenException e){}
+        return true
+    }
+
+    @Override
+    protected void filterOneElement(JSONObject element){
+        if(element['id'] != cytomineService.currentUser.id)
+        element['email'] = null
+    }
+
 }

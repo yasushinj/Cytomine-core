@@ -1,5 +1,7 @@
 package be.cytomine.api.ontology
 
+import be.cytomine.Exception.InvalidRequestException
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -72,6 +74,7 @@ class RestTermController extends RestController {
      */
     @RestApiMethod(description="Add a term in an ontology")
     def add () {
+        if(!request.JSON.ontology) throw new InvalidRequestException("ontology not set")
         add(termService, request.JSON)
     }
 

@@ -134,7 +134,11 @@ class AnnotationTermSecurityTests extends SecurityTestsAbstract {
 
         //Add annotation-Term for annotation 1 with cytomine admin
         AnnotationTerm annotationTerm = BasicInstanceBuilder.getAnnotationTermNotExist(annotation)
-        def result = AnnotationTermAPI.createAnnotationTerm(annotationTerm.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        def result = AnnotationTermAPI.createAnnotationTerm(annotationTerm.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        // cannot create annotationTerm if not into the project
+        assert 403 == result.code
+
+        result = AnnotationTermAPI.createAnnotationTerm(annotationTerm.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
         annotationTerm = result.data
 

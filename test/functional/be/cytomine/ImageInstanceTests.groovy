@@ -29,13 +29,6 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 
-/**
- * Created by IntelliJ IDEA.
- * User: lrollus
- * Date: 18/05/11
- * Time: 9:11
- * To change this template use File | Settings | File Templates.
- */
 class ImageInstanceTests  {
 
 
@@ -215,6 +208,57 @@ class ImageInstanceTests  {
         BasicInstanceBuilder.compare(data.mapNew, json)
     }
 
+    void testEditMagnificationOfImageInstance() {
+
+        def image = BasicInstanceBuilder.getImageInstance()
+
+        def updatedImage = JSON.parse((String)image.encodeAsJSON())
+        updatedImage.resolution = 2.5d
+        updatedImage.magnification = 20
+        def result = ImageInstanceAPI.update(image.id, updatedImage.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.imageinstance.resolution == 2.5
+        assert json.imageinstance.magnification == 20
+
+        assert json.imageinstance.resolution != image.baseImage.resolution
+        assert json.imageinstance.magnification != image.baseImage.magnification
+    }
+
+    void testEditResolutionOfImageInstance() {
+
+        def image = BasicInstanceBuilder.getImageInstance()
+
+        UserAnnotation annot = BasicInstanceBuilder.getUserAnnotationNotExist()
+        annot.image = image
+        annot.save(true)
+
+        def result = UserAnnotationAPI.show(annot.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        Double perimeter = json.perimeter
+        Double area = json.area
+
+        def updatedImage = JSON.parse((String)image.encodeAsJSON())
+        updatedImage.resolution = 2.5d
+        result = ImageInstanceAPI.update(image.id, updatedImage.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.imageinstance.resolution == 2.5
+
+        result = UserAnnotationAPI.show(annot.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert perimeter != json.perimeter
+        assert area != json.area
+    }
+
     void testEditImageInstanceWithBadProject() {
         ImageInstance imageToEdit = BasicInstanceBuilder.getImageInstance()
         def jsonUpdate = JSON.parse(imageToEdit.encodeAsJSON())
@@ -295,6 +339,12 @@ class ImageInstanceTests  {
 
         result = ImageInstanceAPI.next(image1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+
+        ImageInstanceAPI.delete(image1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.next(image2.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert Long.parseLong(json.id+"") != image1.id
     }
 
     void testGetPreviousImageInstance() {
@@ -317,6 +367,12 @@ class ImageInstanceTests  {
 
         result = ImageInstanceAPI.previous(image2.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+
+        ImageInstanceAPI.delete(image2, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.previous(image1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.id == null
     }
 
 

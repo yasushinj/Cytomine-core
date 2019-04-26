@@ -144,5 +144,19 @@ class UrlMappings {
         "/ldap.$format" (controller: "restConfiguration") {
             action = [GET:"ldap"]
         }
+
+        //commands
+        "/api/command/undo.$format" (controller: "command") {
+            action = [GET:"undo"]
+        }
+        "/api/command/$id/undo.$format" (controller: "command") {
+            action = [GET:"undo"]
+        }
+        "/api/command/redo.$format" (controller: "command") {
+            action = [GET:"redo"]
+        }
+        "/api/command/$id/redo.$format" (controller: "command") {
+            action = [GET:"redo"]
+        }
     }
 }

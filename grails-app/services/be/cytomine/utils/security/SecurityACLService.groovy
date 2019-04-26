@@ -303,6 +303,18 @@ class SecurityACLService {
         }
     }
 
+    public def checkIsSameUserOrCreator(SecUser user,SecUser currentUser, CytomineDomain domain) {
+        boolean sameUser = (user.id == currentUser.id)
+        sameUser |= currentRoleServiceProxy.isAdminByNow(currentUser)
+        sameUser |= (currentUser instanceof UserJob && user.id==((UserJob)currentUser).user.id)
+
+        boolean creator = (currentRoleServiceProxy.isAdminByNow(currentUser) || (currentUser.id==domain.userDomainCreator().id))
+
+        if (!sameUser && !creator) {
+            throw new ForbiddenException("You don't have the right to read this resource!")
+        }
+    }
+
     public def checkIsAdminContainer(CytomineDomain domain,SecUser currentUser) {
         if (domain) {
             if (!domain.container().checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser))) {

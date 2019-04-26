@@ -231,7 +231,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def computeGIS() {
-        def image = this.image.baseImage
+        def image = this.image
 
         //compute unit
         if (image.resolution == null) {

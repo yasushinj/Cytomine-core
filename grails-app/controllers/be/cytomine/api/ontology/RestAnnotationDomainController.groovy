@@ -106,6 +106,8 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="userForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only user annotation link with a term added by this job id"),
         @RestApiParam(name="kmeansValue", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only used for GUI "),
         @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these users id"),
+        @RestApiParam(name="reviewed", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Get only reviewed annotations"),
+        @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation reviewed by these users"),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
         @RestApiParam(name="notReviewedOnly", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation not reviewed"),
@@ -122,6 +124,11 @@ class RestAnnotationDomainController extends RestController {
 
     ])
     def search() {
+
+        for(def parameter : request.JSON){
+            if(!params.containsKey(parameter.key)) params.put(parameter.key, parameter.value)
+        }
+
          try {
              def data = doSearch(params).result
                  responseSuccess(data)
@@ -358,6 +365,11 @@ class RestAnnotationDomainController extends RestController {
         def users = params.get('users')
         if(users) {
             al.users = params.get('users').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+
+        def reviewUsers = params.get('reviewUsers')
+        if(reviewUsers) {
+            al.reviewUsers = reviewUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
         }
 
         def images = params.get('images')
@@ -826,27 +838,39 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="JSON POST DATA: review", type="boolean", paramType = RestApiParamType.QUERY,description = "Only get reviewed annotation"),
         @RestApiParam(name="JSON POST DATA: image", type="long", paramType = RestApiParamType.QUERY,description = "The image id"),
         @RestApiParam(name="JSON POST DATA: remove", type="boolean", paramType = RestApiParamType.QUERY,description = "Add or remove Y"),
-        @RestApiParam(name="JSON POST DATA: layers", type="list", paramType = RestApiParamType.QUERY,description = "List of layers id")
+        @RestApiParam(name="JSON POST DATA: layers", type="list", paramType = RestApiParamType.QUERY,description = "List of layers id"),
+        @RestApiParam(name="JSON POST DATA: annotation", type="long", paramType = RestApiParamType.QUERY,description = "The annotation to correct (if specified, only this annotation will be changed; image and layers parameters will be ignored)")
     ])
     def addCorrection() {
         def json = request.JSON
         String location = json.location
         boolean review = json.review
-        long idImage = json.image
+        Long idImage = json.image
         boolean remove = json.remove
         def layers = json.layers
+        Long idAnnotation = json.annotation
         try {
             List<Long> idsReviewedAnnotation = []
             List<Long> idsUserAnnotation = []
 
-            //if review mode, priority is done to reviewed annotation correction
-            if (review) {
-                idsReviewedAnnotation = findAnnotationIdThatTouch(location, layers,idImage, "reviewed_annotation")
+            if(idAnnotation) {
+                if(review) {
+                    idsReviewedAnnotation = [idAnnotation]
+                }
+                else {
+                    idsUserAnnotation = [idAnnotation]
+                }
             }
+            else {
+                //if review mode, priority is done to reviewed annotation correction
+                if (review) {
+                    idsReviewedAnnotation = findAnnotationIdThatTouch(location, layers, idImage, "reviewed_annotation")
+                }
 
-            //there is no reviewed intersect annotation or user is not in review mode
-            if (idsReviewedAnnotation.isEmpty()) {
-                idsUserAnnotation = findAnnotationIdThatTouch(location, layers, idImage, "user_annotation")
+                //there is no reviewed intersect annotation or user is not in review mode
+                if (idsReviewedAnnotation.isEmpty()) {
+                    idsUserAnnotation = findAnnotationIdThatTouch(location, layers, idImage, "user_annotation")
+                }
             }
 
             log.info "idsReviewedAnnotation=$idsReviewedAnnotation"
@@ -858,9 +882,9 @@ class RestAnnotationDomainController extends RestController {
             }
 
             if (idsUserAnnotation.isEmpty()) {
-                responseResult(doCorrectReviewedAnnotation(idsReviewedAnnotation,location, remove))
+                responseResult(doCorrectReviewedAnnotation(idsReviewedAnnotation, location, remove))
             } else {
-                responseResult(doCorrectUserAnnotation(idsUserAnnotation,location, remove))
+                responseResult(doCorrectUserAnnotation(idsUserAnnotation, location, remove))
             }
 
         } catch (CytomineException e) {
@@ -1033,13 +1057,16 @@ class RestAnnotationDomainController extends RestController {
         }
 
         def result
+        def oldLocation = based.location
         if (remove) {
             //diff will be made
             //-remove the new geometry from the based annotation location
             //-remove the new geometry from all other annotation location
             based.location = based.location.difference(newGeometry)
             if (based.location.getNumPoints() < 2) throw new WrongArgumentException("You cannot delete an annotation with substract! Use reject or delete tool.")
-            result = reviewedAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+            result = reviewedAnnotationService.update(based,json)
             allAnnotationWithSameTerm.eachWithIndex { other, i ->
                 other.location = other.location.difference(newGeometry)
                 reviewedAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
@@ -1053,7 +1080,10 @@ class RestAnnotationDomainController extends RestController {
                 based.location = based.location.union(other.location)
                 reviewedAnnotationService.delete(other)
             }
-            result = reviewedAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+
+            result = reviewedAnnotationService.update(based,json)
         }
         return result
     }
@@ -1081,6 +1111,7 @@ class RestAnnotationDomainController extends RestController {
         }
 
         def result
+        def oldLocation = based.location
         if (remove) {
             log.info "doCorrectUserAnnotation : remove"
             //diff will be made
@@ -1088,7 +1119,10 @@ class RestAnnotationDomainController extends RestController {
             //-remove the new geometry from all other annotation location
             based.location = based.location.difference(newGeometry)
             if (based.location.getNumPoints() < 2) throw new WrongArgumentException("You cannot delete an annotation with substract! Use reject or delete tool.")
-            result = userAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+            result = userAnnotationService.update(based,json)
             allAnnotationWithSameTerm.eachWithIndex { other, i ->
                 other.location = other.location.difference(newGeometry)
                 userAnnotationService.update(other,JSON.parse(other.encodeAsJSON()))
@@ -1103,7 +1137,11 @@ class RestAnnotationDomainController extends RestController {
                 based.location = based.location.union(other.location)
                 userAnnotationService.delete(other)
             }
-            result = userAnnotationService.update(based,JSON.parse(based.encodeAsJSON()))
+
+            def json = JSON.parse(based.encodeAsJSON())
+            based.location = oldLocation
+
+            result = userAnnotationService.update(based,json)
         }
         return result
     }

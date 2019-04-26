@@ -51,7 +51,7 @@ class AnnotationActionService extends ModelService {
         }
     }
 
-    def countByProject(Project project, Long startDate = null, Long endDate = null) {
+    def countByProject(Project project, Long startDate = null, Long endDate = null, String type = null) {
         def result = AnnotationAction.createCriteria().get {
             eq("project", project)
             if(startDate) {
@@ -59,6 +59,9 @@ class AnnotationActionService extends ModelService {
             }
             if(endDate) {
                 lt("created", new Date(endDate))
+            }
+            if(type) {
+                eq("action", type)
             }
             projections {
                 rowCount()

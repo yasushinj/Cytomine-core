@@ -43,7 +43,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
 
     @RestApiObjectField(description = "Instance image filename", useForCreation = false)
     String instanceFilename
-    
+
     // ----- Annotation counts
     @RestApiObjectField(description = "The number of user annotation in the image", useForCreation = false, apiFieldName = "numberOfAnnotations")
     Long countImageAnnotations = 0L
@@ -54,7 +54,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The number of reviewed annotation in the image", useForCreation = false, apiFieldName = "numberOfReviewedAnnotations")
     Long countImageReviewedAnnotations = 0L
 
-    
+
     // ----- Image review
     @RestApiObjectField(description = "The start review date", useForCreation = false)
     Date reviewStart
@@ -65,8 +65,12 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The user who reviewed (or still reviewing) this image", useForCreation = false)
     SecUser reviewUser
 
-    
-    // ----- Herited properties from baseImage (abstract image)
+    @RestApiObjectField(description = "The image max zoom")
+    Integer magnification
+
+    @RestApiObjectField(description = "The image resolution (microm per pixel)")
+    Double resolution
+
     @RestApiObjectFields(params = [
             @RestApiObjectField(apiFieldName = "filename", description = "Abstract image filename (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "originalFilename", description = "Abstract image original filename (see Abstract Image)", allowedType = "string", useForCreation = false),
@@ -74,8 +78,6 @@ class ImageInstance extends CytomineDomain implements Serializable {
             @RestApiObjectField(apiFieldName = "sample", description = "Abstract image sample (see Abstract Image)", allowedType = "long", useForCreation = false),
             @RestApiObjectField(apiFieldName = "width", description = "Abstract image width (see Abstract Image)", allowedType = "int", useForCreation = false),
             @RestApiObjectField(apiFieldName = "height", description = "Abstract image height (see Abstract Image)", allowedType = "int", useForCreation = false),
-            @RestApiObjectField(apiFieldName = "resolution", description = "Abstract image resolution (see Abstract Image)", allowedType = "double", useForCreation = false),
-            @RestApiObjectField(apiFieldName = "magnification", description = "Abstract image magnification (see Abstract Image)", allowedType = "int", useForCreation = false),
             @RestApiObjectField(apiFieldName = "preview", description = "Abstract image preview (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "thumb", description = "Abstract image thumb (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "reviewed", description = "Image has been reviewed", allowedType = "boolean", useForCreation = false),
@@ -93,6 +95,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
         reviewStop nullable: true
         reviewUser nullable: true
         instanceFilename nullable: true
+        magnification nullable: true
+        resolution nullable: true
     }
 
     static mapping = {
@@ -126,19 +130,22 @@ class ImageInstance extends CytomineDomain implements Serializable {
         domain.created = JSONUtils.getJSONAttrDate(json, "created")
         domain.updated = JSONUtils.getJSONAttrDate(json, "updated")
         domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
-        
+
         domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), false)
         domain.baseImage = JSONUtils.getJSONAttrDomain(json, "baseImage", new AbstractImage(), false)
         domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), false)
         domain.instanceFilename = JSONUtils.getJSONAttrStr(json, "instanceFilename", false)
-        
+
         domain.reviewStart = JSONUtils.getJSONAttrDate(json, "reviewStart")
         domain.reviewStop = JSONUtils.getJSONAttrDate(json, "reviewStop")
         domain.reviewUser = JSONUtils.getJSONAttrDomain(json, "reviewUser", new User(), false)
-        
+
+        domain.magnification = JSONUtils.getJSONAttrInteger(json,'magnification',null)
+        domain.resolution = JSONUtils.getJSONAttrDouble(json,'resolution',null)
+
         //Check review constraint
-        if ((domain.reviewUser == null && domain.reviewStart != null) 
-                || (domain.reviewUser != null && domain.reviewStart == null) 
+        if ((domain.reviewUser == null && domain.reviewStart != null)
+                || (domain.reviewUser != null && domain.reviewStart == null)
                 || (domain.reviewStart == null && domain.reviewStop != null)) {
             throw new WrongArgumentException("Review data are not valid: user=${domain.reviewUser} " +
                     "start=${domain.reviewStart} stop=${domain.reviewStop}")
@@ -161,10 +168,11 @@ class ImageInstance extends CytomineDomain implements Serializable {
 
         returnArray['originalFilename'] = image?.blindOriginalFilename
         returnArray['filename'] = image?.baseImage?.filename
+        returnArray['blindedName'] = image?.getBlindedName()
         returnArray['path'] = image?.baseImage?.path
         returnArray['contentType'] = image?.baseImage?.uploadedFile?.contentType
         returnArray['sample'] = image?.baseImage?.sample?.id
-        
+
         returnArray['width'] = image?.baseImage?.width
         returnArray['height'] = image?.baseImage?.height
         returnArray['depth'] = image?.baseImage?.depth // /!!\ Breaking API : image?.baseImage?.getZoomLevels()?.max
@@ -178,8 +186,8 @@ class ImageInstance extends CytomineDomain implements Serializable {
 
         returnArray['zoom'] = image?.baseImage?.getZoomLevels()
 
-        returnArray['resolution'] = image?.baseImage?.resolution
-        returnArray['magnification'] = image?.baseImage?.magnification
+        returnArray['resolution'] = image?.resolution
+        returnArray['magnification'] = image.magnification
         returnArray['bitDepth'] = image?.baseImage?.bitDepth
         returnArray['colorspace'] = image?.baseImage?.colorspace
 
@@ -247,5 +255,23 @@ class ImageInstance extends CytomineDomain implements Serializable {
             return instanceFilename
         else
             return baseImage?.originalFilename
+    }
+
+    private String getBlindedName(){
+        if(project?.blindMode) return "[BLIND]"+baseImage.id
+        return null
+    }
+
+    public Double getResolution() {
+        if (resolution != null && resolution != 0) {
+            return resolution
+        }
+        return baseImage.resolution
+    }
+    public Integer getMagnification() {
+        if (magnification != null && magnification != 0) {
+            return magnification
+        }
+        return baseImage.magnification
     }
 }

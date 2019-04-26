@@ -53,6 +53,11 @@ class LastUserPosition extends CytomineDomain {
 
     float rotation
 
+    /**
+     * Whether or not the user has decided to broadcast its position
+     */
+    boolean broadcast
+
     static constraints = {
         project nullable: true
     }
@@ -81,6 +86,7 @@ class LastUserPosition extends CytomineDomain {
         returnArray.project = domain?.project?.id
         returnArray.zoom = domain?.zoom
         returnArray.rotation = domain?.rotation
+        returnArray.broadcast = domain?.broadcast
         com.vividsolutions.jts.geom.Polygon polygon = PersistentUserPosition.getPolygonFromMongo(domain?.location)
         returnArray.location = polygon.toString()
         returnArray.x = polygon.getCentroid().getX()

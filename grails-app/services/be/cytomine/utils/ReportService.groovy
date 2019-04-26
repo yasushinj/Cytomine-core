@@ -101,7 +101,7 @@ class ReportService {
             data.filename = annotation.originalfilename
             data.user = annotation.creator
             data.term = annotation.term.collect{termsName.get(it)}.join(", ")
-            data.cropURL = UrlApi.getAnnotationCropWithAnnotationId(annotation.id)
+            data.cropURL = UrlApi.getCompleteAnnotationCropDrawedWithAnnotationId(annotation.id)
             data.cropGOTO = UrlApi.getAnnotationURL(annotation.project, annotation.image, annotation.id)
             exportResult.add(data)
             annotation.term.each{termNameUsed << termsName.get(it)}
@@ -125,7 +125,7 @@ class ReportService {
                 data.filename = annotation.originalfilename
                 data.user = annotation.creator
                 data.term = annotation.term.collect{termsName.get(it)}.join(", ")
-                data.cropURL = UrlApi.getAnnotationCropWithAnnotationId(annotation.id)
+                data.cropURL = UrlApi.getCompleteAnnotationCropDrawedWithAnnotationId(annotation.id)
                 data.cropGOTO = UrlApi.getAnnotationURL(annotation.project, annotation.image, annotation.id)
                 exportResult.add(data)
                 annotation.term.each{termNameUsed << termsName.get(it)}
@@ -155,7 +155,7 @@ class ReportService {
                 data.filename = annotation.originalfilename
                 data.user = annotation.creator
                 data.term = annotation.term.collect{termsName.get(it)}.join(", ")
-                data.cropURL = UrlApi.getAnnotationCropWithAnnotationId(annotation.id)
+                data.cropURL = UrlApi.getCompleteAnnotationCropDrawedWithAnnotationId(annotation.id)
                 data.cropGOTO = UrlApi.getAnnotationURL(annotation.project, annotation.image, annotation.id)
                 exportResult.add(data)
                 annotation.term.each{termNameUsed << termsName.get(it)}

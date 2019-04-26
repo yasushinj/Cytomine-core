@@ -57,6 +57,7 @@ class RestProjectController extends RestController {
         Boolean withMembersCount = params.boolean("withMembersCount")
         Boolean withLastActivity = params.boolean("withLastActivity")
         Boolean withDescription = params.boolean("withDescription")
+        Boolean withCurrentUserRoles = params.boolean("withCurrentUserRoles")
 
         def projectList
         if(currentRoleServiceProxy.isAdminByNow(user)) {
@@ -69,6 +70,7 @@ class RestProjectController extends RestController {
         if(withMembersCount) extended.put("withMembersCount",withMembersCount)
         if(withLastActivity) extended.put("withLastActivity",withLastActivity)
         if (withDescription) extended.put("withDescription", withDescription)
+        if(withCurrentUserRoles) extended.put("withCurrentUserRoles",withCurrentUserRoles)
         if(extended.isEmpty()){
             projectList = projectService.list(user)
         } else {
@@ -126,7 +128,7 @@ class RestProjectController extends RestController {
             responseResult(result)
         } catch (CytomineException e) {
             log.error(e)
-            response([success: false, errors: e.msg], e.code)
+            response([success: false, errors: e.msg, errorValues: e.values], e.code)
         }
     }
 

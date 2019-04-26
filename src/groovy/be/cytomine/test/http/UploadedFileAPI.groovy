@@ -50,6 +50,10 @@ class UploadedFileAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?root="+rootId
         return doGET(URL, username, password)
     }
+    static def searchWithName(String name, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?detailed=true&original_filename[ilike]="+name
+        return doGET(URL, username, password)
+    }
 
     static def create(String json, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json"

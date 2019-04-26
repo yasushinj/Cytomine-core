@@ -41,7 +41,7 @@ class ImageInstanceUrlMappings {
         "/api/user/$user/imageinstance/light.$format"(controller: "restImageInstance"){
             action = [GET:"listByUser"]
         }
-        "/api/project/$id/imageinstance.$format"(controller: "restImageInstance"){
+        "/api/project/$project/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByProject"]
         }
         "/api/imageinstance/method/lastopened.$format"(controller :"restImageInstance") {
