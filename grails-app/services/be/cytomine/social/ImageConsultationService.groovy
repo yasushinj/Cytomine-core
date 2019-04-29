@@ -22,7 +22,6 @@ class ImageConsultationService extends ModelService {
     def dataSource
     def mongo
     def noSQLCollectionService
-    def imageInstanceService
     def projectService
 
     private getProjectConnectionService() {
@@ -33,7 +32,7 @@ class ImageConsultationService extends ModelService {
 
         SecUser user = cytomineService.getCurrentUser()
         Long imageId = JSONUtils.getJSONAttrLong(json,"image",-1)
-        ImageInstance image = imageInstanceService.read(imageId)
+        ImageInstance image = ImageInstance.read(imageId)
         closeLastImageConsultation(user.id, imageId, new Date())
         PersistentImageConsultation consultation = new PersistentImageConsultation()
         consultation.user = user.id
@@ -73,7 +72,7 @@ class ImageConsultationService extends ModelService {
                     Long imageInstanceId = it['_id']
                     ImageInstance image = imageInstancesMap.get(imageInstanceId)
                     if(! image){
-                        image = imageInstanceService.read(imageInstanceId)
+                        image = ImageInstance.read(imageInstanceId)
                         imageInstancesMap.put(imageInstanceId, image)
                     }
 
@@ -118,7 +117,7 @@ class ImageConsultationService extends ModelService {
         String filename;
         images.results().each {
             if(!image){
-                image = imageInstanceService.read(it["image"])
+                image = ImageInstance.read(it["image"])
                 filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
                 if(image.project.blindMode) filename = image.getBlindedName()
             }
@@ -156,7 +155,7 @@ class ImageConsultationService extends ModelService {
             Long imageInstanceId = it['image']
             ImageInstance image = imageInstancesMap.get(imageInstanceId)
             if(! image){
-                image = imageInstanceService.read(imageInstanceId)
+                image = ImageInstance.read(imageInstanceId)
                 imageInstancesMap.put(imageInstanceId, image)
             }
             String filename;
@@ -232,7 +231,7 @@ class ImageConsultationService extends ModelService {
         def results = []
         consultations.results().each{
 
-            ImageInstance image = imageInstanceService.read(it["_id"].image)
+            ImageInstance image = ImageInstance.read(it["_id"].image)
             String filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
             if(image.project.blindMode) filename = image.getBlindedName()
 
