@@ -162,7 +162,7 @@ class SecurityACLService {
         try {
             def domain = Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
             if (domain) {
-                checkFullOrRestrictedForOwner(domain, owner ? domain."$owner" : null)
+                checkFullOrRestrictedForOwner(domain, (owner && domain.hasProperty(owner)) ? domain."$owner" : null)
             } else {
                 throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
             }
