@@ -80,8 +80,12 @@ class ImageConsultationService extends ModelService {
                     }
 
                     String filename;
-                    filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                    if(image.project.blindMode) filename = image.getBlindedName()
+                    if(image) {
+                        filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+                        if(image.project.blindMode) filename = image.getBlindedName()
+                    } else {
+                        filename = "Image "+imageInstanceId
+                    }
                     data << [
                             created:it['date'],
                             user:user,
@@ -121,8 +125,12 @@ class ImageConsultationService extends ModelService {
         images.results().each {
             if(!image){
                 image = ImageInstance.read(it["image"])
-                filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                if(image.project.blindMode) filename = image.getBlindedName()
+                if(image) {
+                    filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+                    if(image.project.blindMode) filename = image.getBlindedName()
+                } else {
+                    filename = "Image "+it["image"]
+                }
             }
             results << [user: it["_id"], created : it["created"], image : it["image"], imageName: filename]
         }
@@ -162,8 +170,12 @@ class ImageConsultationService extends ModelService {
                 imageInstancesMap.put(imageInstanceId, image)
             }
             String filename;
-            filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-            if(image.project.blindMode) filename = image.getBlindedName()
+            if(image) {
+                filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+                if(image.project.blindMode) filename = image.getBlindedName()
+            } else {
+                filename = "Image "+imageInstanceId
+            }
 
             results << [user: it["user"], project: it["project"], created : it["created"], image : it["image"], imageName: filename, mode: it["mode"]]
         }
@@ -235,8 +247,13 @@ class ImageConsultationService extends ModelService {
         consultations.results().each{
 
             ImageInstance image = ImageInstance.read(it["_id"].image)
-            String filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-            if(image.project.blindMode) filename = image.getBlindedName()
+            String filename;
+            if(image) {
+                filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+                if(image.project.blindMode) filename = image.getBlindedName()
+            } else {
+                filename = "Image "+it["_id"].image
+            }
 
 
             results << [project : it["_id"].project,
