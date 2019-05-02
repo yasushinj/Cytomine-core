@@ -33,6 +33,9 @@ class ImageConsultationService extends ModelService {
         SecUser user = cytomineService.getCurrentUser()
         Long imageId = JSONUtils.getJSONAttrLong(json,"image",-1)
         ImageInstance image = ImageInstance.read(imageId)
+
+        securityACLService.check(image.project,READ)
+
         closeLastImageConsultation(user.id, imageId, new Date())
         PersistentImageConsultation consultation = new PersistentImageConsultation()
         consultation.user = user.id

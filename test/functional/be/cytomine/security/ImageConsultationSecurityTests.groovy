@@ -182,7 +182,7 @@ class ImageConsultationSecurityTests extends SecurityTestsAbstract{
       consultation.project = project.id
       consultation.image = image.id
 
-      //check if admin user can access/update/delete
+      //check if user not in project can access/update/delete
       result = ProjectConnectionAPI.create(project.id,consultation.encodeAsJSON(),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
       assert 403 == result.code
       result = ImageConsultationAPI.create(image.id,consultation.encodeAsJSON(),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
