@@ -92,7 +92,9 @@ class Infos {
         PermissionService service = grails.util.Holders.getGrailsApplication().mainContext.getBean('permissionService')
         service.addPermission(project,user.username,ADMINISTRATION,SecUser.findByUsername(Infos.SUPERADMINLOGIN))
         service.addPermission(project,user.username,READ,SecUser.findByUsername(Infos.SUPERADMINLOGIN))
-        service.addPermission(project.ontology,user.username,READ,SecUser.findByUsername(Infos.SUPERADMINLOGIN))
+        if(project.ontology) {
+            service.addPermission(project.ontology, user.username, READ, SecUser.findByUsername(Infos.SUPERADMINLOGIN))
+        }
     }
 
     static void addUserRight(String username, Ontology ontology) {

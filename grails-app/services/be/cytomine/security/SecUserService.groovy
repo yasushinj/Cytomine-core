@@ -451,23 +451,15 @@ class SecUserService extends ModelService {
         log.info "service.addUserToProject"
         if (project) {
             log.info "addUserToProject project=" + project + " username=" + user?.username + " ADMIN=" + admin
-            if(admin) {
-                synchronized (this.getClass()) {
-                    permissionService.addPermission(project,user.username,ADMINISTRATION)
-                    permissionService.addPermission(project,user.username,READ)
-                    permissionService.addPermission(project.ontology,user.username,READ)
+            synchronized (this.getClass()) {
+                if(admin) {
+                    permissionService.addPermission(project, user.username, ADMINISTRATION)
                 }
-            }
-            else {
-                synchronized (this.getClass()) {
-                    log.info "addUserToProject project=" + project + " username=" + user?.username + " ADMIN=" + admin
-                    permissionService.addPermission(project,user.username,READ)
-                    if(project.ontology) {
-                        log.info "addUserToProject ontology=" + project.ontology + " username=" + user?.username + " ADMIN=" + admin
-                        permissionService.addPermission(project.ontology, user.username, READ)
-                    }
+                permissionService.addPermission(project, user.username, READ)
+                if(project.ontology) {
+                    log.info "addUserToProject ontology=" + project.ontology + " username=" + user?.username + " ADMIN=" + admin
+                    permissionService.addPermission(project.ontology, user.username, READ)
                 }
-
             }
         }
         [data: [message: "OK"], status: 201]
@@ -486,13 +478,14 @@ class SecUserService extends ModelService {
         }
         if (project) {
             log.info "deleteUserFromProject project=" + project?.id + " username=" + user?.username + " ADMIN=" + admin
+            if(project.ontology) {
+                removeOntologyRightIfNecessary(project, user)
+            }
             if(admin) {
-                removeOntologyRightIfNecessary(project,user)
-                permissionService.deletePermission(project,user.username,ADMINISTRATION)
+                permissionService.deletePermission(project, user.username, ADMINISTRATION)
             }
             else {
-                removeOntologyRightIfNecessary(project,user)
-                permissionService.deletePermission(project,user.username,READ)
+                permissionService.deletePermission(project, user.username, READ)
             }
             ProjectRepresentativeUser representative = ProjectRepresentativeUser.findByUserAndProject(user, project)
             if(representative) {
