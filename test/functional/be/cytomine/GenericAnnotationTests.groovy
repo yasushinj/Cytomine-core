@@ -28,6 +28,7 @@ import be.cytomine.test.Infos
 import be.cytomine.test.http.AlgoAnnotationAPI
 import be.cytomine.test.http.AnnotationDomainAPI
 import be.cytomine.test.http.UserAnnotationAPI
+import be.cytomine.test.http.DomainAPI
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.UpdateData
 import com.vividsolutions.jts.io.WKTReader
@@ -153,6 +154,36 @@ class GenericAnnotationTests  {
         assert 200 == result.code
         def json = JSON.parse(result.data)
         //assert json.collection instanceof JSONArray
+    }
+
+    void testListAnnotationByProjectAndDates() {
+        UserAnnotation annot1 = BasicInstanceBuilder.getUserAnnotation()
+        def project = annot1.project
+        def creationTime = annot1.created.getTime()
+
+        UserAnnotation annot2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, annot1.image)
+        annot2.created = new Date(creationTime - 10000)
+        BasicInstanceBuilder.saveDomain(annot2)
+        println annot1.created
+        println annot2.created
+
+        def result = AnnotationDomainAPI.listByProjectAndDates(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, project.id, creationTime - 5000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert DomainAPI.containsInJSONList(annot1.id, json)
+        assert !DomainAPI.containsInJSONList(annot2.id, json)
+
+        result = AnnotationDomainAPI.listByProjectAndDates(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, project.id, null, creationTime - 5000)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert !DomainAPI.containsInJSONList(annot1.id, json)
+        assert DomainAPI.containsInJSONList(annot2.id, json)
+
+        result = AnnotationDomainAPI.listByProjectAndDates(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, project.id, creationTime - 6000, creationTime - 4000)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert !DomainAPI.containsInJSONList(annot1.id, json)
+        assert !DomainAPI.containsInJSONList(annot2.id, json)
     }
 
     void testDownloadAnnotationDocumentForAnnotationAlgo() {
