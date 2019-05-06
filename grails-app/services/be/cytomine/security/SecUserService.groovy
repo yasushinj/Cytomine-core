@@ -344,9 +344,8 @@ class SecUserService extends ModelService {
         def xSecondAgo = Utils.getDateMinusSecond(300)
         def results = LastConnection.withCriteria {
             ge('created', xSecondAgo)
-            distinct('user')
         }
-        return User.getAll(results.collect{it.user.id})
+        return User.getAll(results.collect{it.user.id}.unique())
     }
 
     /**
