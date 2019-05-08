@@ -18,7 +18,6 @@ package be.cytomine.api
 
 import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.ServerException
-import be.cytomine.test.HttpClient
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -304,10 +303,9 @@ class RestController {
 
     /**
      * Response an image as a HTTP response
-     * @param bufferedImage Image
+     * @param bytes Image
      */
-    protected def responseBufferedImage(BufferedImage bufferedImage) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+    protected def responseByteArray(byte[] bytes) {
         log.info params.format
         if (params.alphaMask || params.type == 'alphaMask')
             params.format = 'png'
@@ -318,13 +316,11 @@ class RestController {
                 render(text: "", contentType: "image/jpeg");
             }
             else {
-                ImageIO.write(bufferedImage, "jpg", baos)
-                byte[] bytesOut = baos.toByteArray()
-                response.contentLength = baos.size()
+                response.contentLength = bytes.length
                 response.setHeader("Connection", "Keep-Alive")
                 response.setHeader("Accept-Ranges", "bytes")
                 response.setHeader("Content-Type", "image/jpeg")
-                response.getOutputStream() << bytesOut
+                response.getOutputStream() << bytes
                 response.getOutputStream().flush()
             }
         }
@@ -333,13 +329,11 @@ class RestController {
                 render(text: "", contentType: "image/tiff")
             }
             else {
-                ImageIO.write(bufferedImage, "tiff", baos)
-                byte[] bytesOut = baos.toByteArray()
-                response.contentLength = baos.size()
+                response.contentLength = bytes.length
                 response.setHeader("Connection", "Keep-Alive")
                 response.setHeader("Accept-Ranges", "bytes")
                 response.setHeader("Content-Type", "image/tiff")
-                response.getOutputStream() << bytesOut
+                response.getOutputStream() << bytes
                 response.getOutputStream().flush()
             }
         }
@@ -348,17 +342,14 @@ class RestController {
                 render(text: "", contentType: "image/png")
             }
             else {
-                ImageIO.write(bufferedImage, "png", baos)
-                byte[] bytesOut = baos.toByteArray()
-                response.contentLength = baos.size()
+                response.contentLength = bytes.length
                 response.setHeader("Connection", "Keep-Alive")
                 response.setHeader("Accept-Ranges", "bytes")
                 response.setHeader("Content-Type", "image/png")
-                response.getOutputStream() << bytesOut
+                response.getOutputStream() << bytes
                 response.getOutputStream().flush()
             }
         }
-        baos.close()
     }
 
     static def allowedOperators = ["equals","like","ilike"]

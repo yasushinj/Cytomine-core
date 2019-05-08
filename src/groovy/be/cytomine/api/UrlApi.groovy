@@ -78,10 +78,10 @@ class UrlApi {
     }
 
     static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null, def format="png") {
-        if(label == "macro") {
-            AbstractImage abstractImage = AbstractImage.read(idAbstractImage)
-            if(["image/pyrtiff", "image/tiff", "image/tif", "image/jp2"].contains(abstractImage?.mimeType)) return null
-        }
+//        if(label == "macro") {
+//            AbstractImage abstractImage = AbstractImage.read(idAbstractImage)
+//            if(["image/pyrtiff", "image/tiff", "image/tif", "image/jp2"].contains(abstractImage?.mimeType)) return null
+//        }
         String size = maxSize ? "?maxWidth=$maxSize" : "";
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label.$format$size"
     }
@@ -100,10 +100,6 @@ class UrlApi {
 
     static def getImageGroupThumbUrlWithMaxSize(Long idImageGroup, def maxSize = 256, def format="png") {
         return "${serverUrl()}/api/imagegroup/$idImageGroup/thumb.$format?maxSize=$maxSize"
-    }
-
-    static def serverUrl() {
-        Holders.getGrailsApplication().config.grails.serverURL
     }
 
     static def getAnnotationURL(Long idProject, Long idImage, Long idAnnotation) {

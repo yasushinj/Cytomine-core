@@ -134,6 +134,7 @@
     <orderEntry type="module-library" exported="">
       <library name="Grails User Library (Cytomine-grailsPlugins)">
         <CLASSES>
+          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/rest-api-doc-0.6/lib" />
           <root url="jar://$MAVEN_REPOSITORY$/javax/mail/javax.mail-api/1.5.1/javax.mail-api-1.5.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/c3p0/c3p0/0.9.1.1/c3p0-0.9.1.1.jar!/" />
@@ -341,7 +342,6 @@
           <root url="jar://$USER_HOME$/.sdkman/candidates/grails/2.4.4/lib/org.apache.ant/ant-launcher/jars/ant-launcher-1.8.4.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/github/jai-imageio/jai-imageio-core/1.4.0/jai-imageio-core-1.4.0.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/json/json/20141113/json-20141113.jar!/" />
-          <root url="file://$USER_HOME$/.grails/2.4.4/projects/cytomine/plugins/rest-api-doc-0.6/lib" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -61,7 +61,7 @@ class NotificationService {
         String thumbURL = UrlApi.getAbstractImageThumbUrlWithMaxSize(abstractImage.id, 256)
         if (thumbURL) {
             macroCID = UUID.randomUUID().toString()
-            BufferedImage bufferedImage = imageServerService.thumb(abstractImage, [maxSize: 256])
+            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageServerService.thumb(abstractImage, [maxSize: 256])))
             if (bufferedImage != null) {
                 File macroFile = File.createTempFile("temp", ".jpg")
                 macroFile.deleteOnExit()

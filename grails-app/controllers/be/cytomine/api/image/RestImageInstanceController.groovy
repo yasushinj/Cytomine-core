@@ -20,29 +20,20 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.api.RestController
-import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
-import be.cytomine.image.multidim.ImageGroup
-import be.cytomine.ontology.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.sql.ReviewedAnnotationListing
-import be.cytomine.test.HttpClient
-import be.cytomine.utils.Description
 import be.cytomine.utils.GeometryUtils
-import be.cytomine.utils.Task
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.geom.GeometryCollection
 import com.vividsolutions.jts.geom.GeometryFactory
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
-import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
-
-import java.awt.image.BufferedImage
 
 @RestApi(name = "Image | image instance services", description = "Methods for managing an image instance : abstract image linked to a project")
 class RestImageInstanceController extends RestController {
@@ -330,7 +321,7 @@ class RestImageInstanceController extends RestController {
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
             parameters.refresh = params.boolean('refresh', false)
-            responseBufferedImage(imageServerService.thumb(imageInstance, parameters))
+            responseByteArray(imageServerService.thumb(imageInstance, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -358,7 +349,7 @@ class RestImageInstanceController extends RestController {
             parameters.contrast = params.double('contrast')
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
-            responseBufferedImage(imageServerService.thumb(imageInstance, parameters))
+            responseByteArray(imageServerService.thumb(imageInstance, parameters))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -394,7 +385,7 @@ class RestImageInstanceController extends RestController {
             parameters.label = params.label
             parameters.maxSize = params.int('maxSize', 256)
             def associatedImage = imageServerService.label(imageInstance, parameters)
-            responseBufferedImage(associatedImage)
+            responseByteArray(associatedImage)
         } else {
             responseNotFound("Image", params.id)
         }
@@ -403,7 +394,7 @@ class RestImageInstanceController extends RestController {
     def crop() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            responseBufferedImage(imageServerService.crop(imageInstance, params))
+            responseByteArray(imageServerService.crop(imageInstance, params))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -426,7 +417,7 @@ class RestImageInstanceController extends RestController {
         if (imageInstance) {
             if (params.mask || params.alphaMask || params.draw || params.type in ['draw', 'mask', 'alphaMask'])
                 params.location = getWKTGeometry(imageInstance, params)
-            responseBufferedImage(imageServerService.window(imageInstance.baseImage, params, false))
+            responseByteArray(imageServerService.window(imageInstance.baseImage, params, false))
         } else {
             responseNotFound("Image", params.id)
         }
@@ -447,7 +438,7 @@ class RestImageInstanceController extends RestController {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
             params.withExterior = false
-            responseBufferedImage(imageServerService.window(imageInstance.baseImage, params, false))
+            responseByteArray(imageServerService.window(imageInstance.baseImage, params, false))
         } else {
             responseNotFound("Image", params.id)
         }

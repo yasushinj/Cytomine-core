@@ -205,7 +205,7 @@ class  RestAlgoAnnotationController extends RestController {
     def crop() {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))
         if (annotation) {
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("AlgoAnnotation", params.id)
         }
@@ -230,7 +230,7 @@ class  RestAlgoAnnotationController extends RestController {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("AlgoAnnotation", params.id)
         }
@@ -254,7 +254,7 @@ class  RestAlgoAnnotationController extends RestController {
         AlgoAnnotation annotation = AlgoAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("AlgoAnnotation", params.id)
         }

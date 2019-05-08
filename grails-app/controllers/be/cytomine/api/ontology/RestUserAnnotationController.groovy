@@ -26,8 +26,6 @@ import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import grails.converters.JSON
-import groovyx.net.http.HTTPBuilder
-import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
@@ -239,7 +237,7 @@ class RestUserAnnotationController extends RestController {
     def crop() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
@@ -264,7 +262,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
@@ -288,7 +286,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("UserAnnotation", params.id)
         }

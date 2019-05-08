@@ -138,7 +138,7 @@ class RestRoiAnnotationController extends RestController {
         RoiAnnotation annotation = RoiAnnotation.read(params.long("id"))
         if (annotation) {
             params.geometry = annotation.location
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("RoiAnnotation", params.id)
         }
@@ -164,7 +164,7 @@ class RestRoiAnnotationController extends RestController {
         if (annotation) {
             params.mask = true
             params.geometry = annotation.location
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("RoiAnnotation", params.id)
         }
@@ -189,7 +189,7 @@ class RestRoiAnnotationController extends RestController {
         if (annotation) {
             params.alphaMask = true
             params.geometry = annotation.location
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("RoiAnnotation", params.id)
         }

@@ -13,9 +13,7 @@ import grails.converters.JSON
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import org.apache.http.HttpEntity
-
-import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
+import org.apache.http.util.EntityUtils
 
 class ImageServerService extends ModelService {
     /* TODO: delete dependent objects - do we want to allow this ?
@@ -257,26 +255,26 @@ class ImageServerService extends ModelService {
         return "$server$uri?$query"
     }
 
-    private static BufferedImage makeRequest(def uri, def server, def parameters, def getOnly=false) {
+    private static byte[] makeRequest(def uri, def server, def parameters, def getOnly=false) {
         def final GET_URL_MAX_LENGTH = 1
         parameters = filterParameters(parameters)
         def url = makeGetUrl(uri, server, parameters)
         def http = new HTTPBuilder(server)
         if (url.size() < GET_URL_MAX_LENGTH || getOnly) {
-            (BufferedImage) http.get(path: uri, requestContentType: ContentType.URLENC, query: parameters) { response ->
+            (byte[]) http.get(path: uri, requestContentType: ContentType.URLENC, query: parameters) { response ->
                 HttpEntity entity = response.getEntity()
                 if (entity != null) {
-                    return ImageIO.read(entity.getContent())
+                    return EntityUtils.toByteArray(entity)
                 }
                 else
                     return null
             }
         }
         else {
-            (BufferedImage) http.post(path: uri, requestContentType: ContentType.URLENC, body: parameters) { response ->
+            (byte[]) http.post(path: uri, requestContentType: ContentType.URLENC, body: parameters) { response ->
                 HttpEntity entity = response.getEntity()
                 if (entity != null) {
-                    return ImageIO.read(entity.getContent())
+                    return EntityUtils.toByteArray(entity)
                 }
                 else
                     return null

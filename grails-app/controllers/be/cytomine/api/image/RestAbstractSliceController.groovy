@@ -158,7 +158,7 @@ class RestAbstractSliceController extends RestController {
             parameters.gamma = params.double('gamma')
             parameters.bits = (params.bits == "max") ? "max" : params.int('bits')
             parameters.refresh = params.boolean('refresh', false)
-            responseBufferedImage(imageServerService.thumb(abstractSlice, parameters))
+            responseByteArray(imageServerService.thumb(abstractSlice, parameters))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -167,7 +167,7 @@ class RestAbstractSliceController extends RestController {
     def crop() {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
-            responseBufferedImage(imageServerService.crop(abstractSlice, params))
+            responseByteArray(imageServerService.crop(abstractSlice, params))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -186,7 +186,7 @@ class RestAbstractSliceController extends RestController {
     def window() {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
-            responseBufferedImage(imageServerService.window(abstractSlice, params, false))
+            responseByteArray(imageServerService.window(abstractSlice, params, false))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }
@@ -207,7 +207,7 @@ class RestAbstractSliceController extends RestController {
         AbstractSlice abstractSlice = abstractSliceService.read(params.long("id"))
         if (abstractSlice) {
             params.withExterior = false
-            responseBufferedImage(imageServerService.window(abstractSlice, params, false))
+            responseByteArray(imageServerService.window(abstractSlice, params, false))
         } else {
             responseNotFound("AbstractSlice", params.id)
         }

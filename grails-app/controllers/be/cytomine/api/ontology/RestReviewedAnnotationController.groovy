@@ -549,7 +549,7 @@ class RestReviewedAnnotationController extends RestController {
     def crop() {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
         if (annotation) {
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("ReviewedAnnotation", params.id)
         }
@@ -574,7 +574,7 @@ class RestReviewedAnnotationController extends RestController {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("ReviewedAnnotation", params.id)
         }
@@ -598,7 +598,7 @@ class RestReviewedAnnotationController extends RestController {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            responseBufferedImage(imageServerService.crop(annotation, params))
+            responseByteArray(imageServerService.crop(annotation, params))
         } else {
             responseNotFound("ReviewedAnnotation", params.id)
         }
