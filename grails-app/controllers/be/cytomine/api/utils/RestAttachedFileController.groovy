@@ -132,7 +132,7 @@ class RestAttachedFileController extends RestController {
             } else if(recipientDomain instanceof Project || !recipientDomain.container() instanceof Project) {
                 securityACLService.check(domainIdent,domainClassName,"container",WRITE)
             } else {
-                securityACLService.checkFullOrRestrictedForOwner(domainIdent,domainClassName)
+                securityACLService.checkFullOrRestrictedForOwner(domainIdent,domainClassName, "user")
             }
             def result = attachedFileService.add(filename,f.getBytes(),domainIdent,domainClassName)
             responseSuccess(result)
@@ -180,7 +180,7 @@ class RestAttachedFileController extends RestController {
         } else if(recipientDomain instanceof Project || !recipientDomain.container() instanceof Project) {
             securityACLService.check(domain.domainIdent,domain.domainClassName,"container",DELETE)
         } else {
-            securityACLService.checkFullOrRestrictedForOwner(domain.domainIdent,domain.domainClassName)
+            securityACLService.checkFullOrRestrictedForOwner(domain.domainIdent,domain.domainClassName, "user")
         }
 
         delete(attachedFileService, JSON.parse("{id : $params.id}"),null)

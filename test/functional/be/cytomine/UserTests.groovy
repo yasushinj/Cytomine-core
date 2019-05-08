@@ -366,6 +366,28 @@ class UserTests  {
         assert 200 == resAddUser.code
     }
 
+    void testAddDeleteUserToProjectNoOntology() {
+        def project = BasicInstanceBuilder.getProjectNotExist(null, true)
+
+        //Add project right for user 1
+        def resAddUser = ProjectAPI.addUserProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == resAddUser.code
+
+        resAddUser = ProjectAPI.deleteUserProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == resAddUser.code
+    }
+
+    void testAddDeleteAdminToProjectNoOntology() {
+        def project = BasicInstanceBuilder.getProjectNotExist(null, true)
+
+        //Add project right for user 1
+        def resAddUser = ProjectAPI.addAdminProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == resAddUser.code
+
+        resAddUser = ProjectAPI.deleteAdminProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == resAddUser.code
+    }
+
     // SHOW USER JOB
 
     void testShowUserJob() {

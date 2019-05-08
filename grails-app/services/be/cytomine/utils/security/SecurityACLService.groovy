@@ -162,7 +162,7 @@ class SecurityACLService {
         try {
             def domain = Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
             if (domain) {
-                checkFullOrRestrictedForOwner(domain, owner ? domain."$owner" : null)
+                checkFullOrRestrictedForOwner(domain, (owner && domain.hasProperty(owner)) ? domain."$owner" : null)
             } else {
                 throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
             }
@@ -214,14 +214,14 @@ class SecurityACLService {
 
     public List<Ontology> getOntologyList(SecUser user) {
         //faster method
-        if (currentRoleServiceProxy.isAdminByNow(user)) return Ontology.list()
+        if (currentRoleServiceProxy.isAdminByNow(user)) return Ontology.findAllByDeletedIsNull()
         else {
             return Ontology.executeQuery(
                     "select distinct ontology "+
                             "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Ontology as ontology "+
                             "where aclObjectId.objectId = ontology.id " +
                             "and aclEntry.aclObjectIdentity = aclObjectId.id "+
-                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"'")
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"' and ontology.deleted is null")
         }
     }
 
@@ -370,5 +370,9 @@ class SecurityACLService {
             throw new ForbiddenException("User must be in this group!")
     }
 
+
+    public def isAdminByNow(SecUser user) {
+        return currentRoleServiceProxy.isAdminByNow(user)
+    }
 
 }

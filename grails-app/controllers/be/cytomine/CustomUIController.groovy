@@ -106,6 +106,10 @@ class CustomUIController extends RestController {
 
     private def getProjectConfig(Project project) {
         def config = grailsApplication.config.cytomine.customUI.project
+        def result = [:] // clone config so that the default configuration is not updated
+        config.each {
+            result[it.key] = it.value
+        }
 
         List<Property> properties = Property.findAllByDomainIdentAndKey(project.id,CUSTOM_UI_PROJECT,[max: 1,sort:"created", order:"desc" ])
 
@@ -113,10 +117,10 @@ class CustomUIController extends RestController {
         if(!properties.isEmpty()) {
             def configProject = JSON.parse(properties.first().value)
             configProject.each {
-                config[it.key] = it.value
+                result[it.key] = it.value
             }
         }
-        return config
+        return result
     }
 
     private getProjectConfigCurrentUser(Project project) {

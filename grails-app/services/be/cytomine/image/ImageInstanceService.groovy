@@ -112,10 +112,19 @@ class ImageInstanceService extends ModelService {
         securityACLService.checkIsSameUser(user,cytomineService.currentUser)
         def data = []
 
-        //user_image already filter nested image
+        boolean isAdmin = securityACLService.isAdminByNow(user)
+
+        // user_image already filter nested image
         def sql = new Sql(dataSource)
-         sql.eachRow("select * from user_image where user_image_id = ? order by original_filename",[user.id]) {
-            data << [id:it.id, filename:it.filename, originalFilename: it.original_filename, projectName:it.project_name,  project:it.project_id]
+        sql.eachRow("select * from user_image where user_image_id = ? order by instance_filename", [user.id]) {
+            def line = [id: it.id, projectName: it.project_name, project: it.project_id]
+            if(it.project_blind) {
+                line.blindedName = it.base_image_id
+            }
+            if(!it.project_blind || isAdmin || it.user_project_manager) {
+                line.instanceFilename = it.instance_filename
+            }
+            data << line
         }
         sql.close()
         return data

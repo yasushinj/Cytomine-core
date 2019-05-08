@@ -595,13 +595,14 @@ class RestImageInstanceController extends RestController {
     }
 
 
-    protected void filterOneElement(JSONObject element, boolean manager){
-        element['filename'] = null
-        element['originalFilename'] = null
-        element['path'] = null
-        element['fullPath'] = null
-
-        if(!manager) element['instanceFilename'] = null
+    protected void filterOneElement(JSONObject element, boolean manager) {
+        if(!manager) {
+            element['instanceFilename'] = null
+            element['filename'] = null
+            element['originalFilename'] = null
+            element['path'] = null
+            element['fullPath'] = null
+        }
     }
 
 }

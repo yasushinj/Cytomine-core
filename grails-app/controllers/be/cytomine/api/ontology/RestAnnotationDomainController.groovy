@@ -118,10 +118,9 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="bbox", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotations having intersection with the bbox (WKT)"),
         @RestApiParam(name="bboxAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotations having intersection with this annotation"),
         @RestApiParam(name="baseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) The base annotation for spatial request (annotation id or wkt location)"),
-        @RestApiParam(name="maxDistanceBaseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation inside the max distance")
-
-
-
+        @RestApiParam(name="maxDistanceBaseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation inside the max distance"),
+        @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+        @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
     ])
     def search() {
 
@@ -222,8 +221,8 @@ class RestAnnotationDomainController extends RestController {
             result.addAll(createRequest(al, params))
             params.suggestedTerm = params.term
             params.term = null
-            params.usersForTermAlgo = params.users
-            params.users = null
+            params.usersForTermAlgo = null
+
             al = new UserAnnotationListing() //if algo, we look for user_annotation JOIN algo_annotation_term  too
             result.addAll(createRequest(al, params))
         } else {
@@ -328,11 +327,8 @@ class RestAnnotationDomainController extends RestController {
            def idUsers = params.get('users')
             if(idUsers) {
                 def ids= idUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
-                def user = SecUser.read(ids.first())
-                if(!user) {
-                    throw new ObjectNotFoundException("User $user not exist!")
-                }
-                return !ids.isEmpty() && user.algo()
+
+                return (UserJob.countByIdInList(ids) > 0)
             }
         }
         //if no other filter, just take user annotation
@@ -416,6 +412,14 @@ class RestAnnotationDomainController extends RestController {
         if(params.get('maxDistanceBaseAnnotation')) {
             al.maxDistanceBaseAnnotation = params.getLong('maxDistanceBaseAnnotation')
         }
+
+        if(params.afterThan) {
+            al.afterThan = new Date(params.long('afterThan'))
+        }
+        if(params.beforeThan) {
+            al.beforeThan = new Date(params.long('beforeThan'))
+        }
+
         annotationListingService.listGeneric(al)
     }
 
@@ -430,7 +434,9 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
         @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users). If reviewed flag is false then if first user is software, get algo annotation otherwise if first user is human, get user annotation. "),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
-        @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
+        @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+        @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
+        @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)"),
     ])
     def downloadDocumentByProject() {
 

@@ -513,12 +513,17 @@ class RestReviewedAnnotationController extends RestController {
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
-        @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users)"),
+        @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY,description = "The annotation reviewers id (if empty: all users)"),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
+        @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+        @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
         @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
     ])
     def downloadDocumentByProject() {
-        reportService.createAnnotationDocuments(params.long('id'),params.terms,params.noTerm,params.multipleTerms,params.users,params.images,params.format,response,"REVIEWEDANNOTATION")
+        Long afterThan = params.getLong('afterThan')
+        Long beforeThan = params.getLong('beforeThan')
+        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.noTerm, params.multipleTerms,
+                params.reviewUsers, params.images, afterThan, beforeThan, params.format, response, "REVIEWEDANNOTATION")
     }
 
 

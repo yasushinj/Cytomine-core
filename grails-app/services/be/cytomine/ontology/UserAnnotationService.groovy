@@ -433,7 +433,7 @@ class UserAnnotationService extends ModelService {
     }
 
     def getStringParamsI18n(def domain) {
-        return [domain.user.toString(), domain.image?.getBlindInstanceFilename()]
+        return [cytomineService.getCurrentUser().toString(), domain.image?.getBlindInstanceFilename(), domain.user.toString()]
     }
 
 

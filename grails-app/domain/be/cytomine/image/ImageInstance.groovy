@@ -258,7 +258,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
     }
 
     private String getBlindedName(){
-        if(project?.blindMode) return "[BLIND]"+baseImage.id
+        if(project?.blindMode) return baseImage.id
         return null
     }
 

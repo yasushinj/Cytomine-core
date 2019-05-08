@@ -18,6 +18,8 @@ package be.cytomine.test.http
 
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.UserAnnotation
+import be.cytomine.project.Project
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import grails.converters.JSON
@@ -88,7 +90,7 @@ class UserAnnotationAPI extends DomainAPI {
 
 
     static def listByProjectAndTerm(Long idProject, Long idTerm, Long idUser,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/annotation.json?term=$idTerm&project=$idProject&users="+idUser
+        String URL = Infos.CYTOMINEURL + "api/annotation.json?term=$idTerm&project=$idProject&user="+idUser
         return doGET(URL, username, password)
     }
 
@@ -153,7 +155,7 @@ class UserAnnotationAPI extends DomainAPI {
     }
 
     static def buildBasicUserAnnotation(String username, String password) {
-        def project = BasicInstanceBuilder.getProjectNotExist()
+        Project project = BasicInstanceBuilder.getProjectNotExist()
         Infos.addUserRight(username,project.ontology)
         //Create project with user 1
         def result = ProjectAPI.create(project.encodeAsJSON(), username, password)
@@ -161,16 +163,14 @@ class UserAnnotationAPI extends DomainAPI {
         project = result.data
 
         //Add image with user 1
-        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
-        image.project = project
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project)
         result = ImageInstanceAPI.create(image.encodeAsJSON(), username, password)
         assert 200==result.code
         image = result.data
 
         //Add annotation 1 with cytomine admin
-        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
-        annotation.image = image
-        annotation.project = image.project
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(project, image)
+        annotation.user = User.findByUsername(username)
         result = UserAnnotationAPI.create(annotation.encodeAsJSON(), username, password)
         assert 200==result.code
         annotation = result.data
