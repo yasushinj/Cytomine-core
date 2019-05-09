@@ -18,6 +18,8 @@
 import be.cytomine.ldap.CustomUserContextMapper
 import be.cytomine.security.CASLdapUserDetailsService
 import be.cytomine.security.SimpleUserDetailsService
+import be.cytomine.spring.CustomAjaxAwareAuthenticationEntryPoint
+import be.cytomine.spring.CustomSavedRequestAwareAuthenticationSuccessHandler
 import be.cytomine.web.CytomineMultipartHttpServletRequest
 import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.cache.ehcache.EhCacheFactoryBean
@@ -46,6 +48,20 @@ beans = {
     SpringSecurityUtils.loadSecondaryConfig 'DefaultLdapSecurityConfig'
     config = SpringSecurityUtils.securityConfig
 
+
+    successRedirectHandler(CustomSavedRequestAwareAuthenticationSuccessHandler) {
+        alwaysUseDefaultTargetUrl = false
+        //defaultTargetUrl = '/'
+    }
+
+    authenticationEntryPoint(CustomAjaxAwareAuthenticationEntryPoint, config.auth.loginFormUrl) {
+        grailsApplication = ref('grailsApplication')
+        ajaxLoginFormUrl = '/login/authAjax'
+        forceHttps = false
+        useForward = false
+        portMapper = ref('portMapper')
+        portResolver = ref('portResolver')
+    }
 
     if(config.ldap.active){
         initialDirContextFactory(org.springframework.security.ldap.DefaultSpringSecurityContextSource,
