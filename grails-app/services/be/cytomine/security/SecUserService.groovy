@@ -184,13 +184,14 @@ class SecUserService extends ModelService {
 
     def listUsers(Project project, boolean showUserJob = false) {
         securityACLService.check(project,READ)
-        List<User> users = User.executeQuery("select distinct secUser " +
-                "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
+        List<SecUser> users = SecUser.executeQuery("select distinct secUser " +
+                "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, SecUser as secUser "+
                 "where aclObjectId.objectId = "+project.id+" " +
                 "and aclEntry.aclObjectIdentity = aclObjectId.id " +
                 "and aclEntry.sid = aclSid.id " +
                 "and aclSid.sid = secUser.username " +
                 "and secUser.class = 'be.cytomine.security.User'")
+
         if(showUserJob) {
             //TODO:: should be optim (see method head comment)
             List<Job> allJobs = Job.findAllByProject(project, [sort: 'created', order: 'desc'])
@@ -310,7 +311,8 @@ class SecUserService extends ModelService {
     def listLayers(Project project, ImageInstance image = null) {
         securityACLService.check(project,READ)
         SecUser currentUser = cytomineService.getCurrentUser()
-        def users = listUsers(project)
+        def users = []
+        def humans = listUsers(project)
 
         if(image) {
             humans.each {
@@ -320,15 +322,19 @@ class SecUserService extends ModelService {
             def jobs = getUserJobImage(image)
             users.addAll(jobs)
         }
-        def admins = listAdmins(project)
+        else {
+            users.addAll(humans)
+        }
 
+        def  admins = listAdmins(project)
 
         if(project.checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(currentUser))) {
             return users
         } else if(project.hideAdminsLayers && project.hideUsersLayers && humans.contains(currentUser)) {
             return [currentUser]
         } else if(project.hideAdminsLayers && !project.hideUsersLayers && humans.contains(currentUser)) {
-            users.removeAll(admins)
+            def adminsId = admins.collect{it.id}
+            users.removeAll{adminsId.contains(it.id)}
             return users
         } else if(!project.hideAdminsLayers && project.hideUsersLayers && humans.contains(currentUser)) {
             admins.add(currentUser)
@@ -709,7 +715,7 @@ class SecUserService extends ModelService {
 
     def deleteDependentStorage(SecUser user,Transaction transaction, Task task = null) {
         for (storage in Storage.findAllByUser(user)) {
-            if (UploadedFile.countByStoragesInList([storage]) > 0) {
+            if (UploadedFile.countByStorage(storage) > 0) {
                 throw new ConstraintException("Storage contains data, cannot delete user. Remove or assign storage to an another user first")
             } else {
                 storage.delete()
