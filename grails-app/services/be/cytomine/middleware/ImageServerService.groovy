@@ -42,7 +42,7 @@ class ImageServerService extends ModelService {
     }
 
     def storageSpace(ImageServer is) {
-        return makeGetUrl("/storage/size.json", is.url, [:])
+        return JSON.parse(new URL(makeGetUrl("/storage/size.json", is.url, [:])).text)
     }
 
     def downloadUri(UploadedFile uploadedFile) {
