@@ -181,7 +181,7 @@ class ImageInstanceService extends ModelService {
         return tree
     }
 
-    def list(Project project, String sortColumn, String sortDirection, String search) {
+    def list(Project project, String sortColumn, String sortDirection, String search, boolean light=false) {
         securityACLService.check(project,READ)
 
         String abstractImageAlias = "ai"
@@ -189,7 +189,7 @@ class ImageInstanceService extends ModelService {
         _sortColumn = AbstractImage.hasProperty(sortColumn) ? abstractImageAlias + "." + sortColumn : "created"
         String _search = (search != null && search != "") ? "%"+search+"%" : "%"
 
-        return ImageInstance.createCriteria().list() {
+        def images = ImageInstance.createCriteria().list() {
             createAlias("baseImage", abstractImageAlias)
             eq("project", project)
             isNull("parent")
@@ -199,7 +199,15 @@ class ImageInstanceService extends ModelService {
             order(_sortColumn, sortDirection)
         }
 
+        if(!light) {
+            return images
+        }
 
+        def data = []
+        images.each { image ->
+            data << [id: image.id, instanceFilename: image.instanceFilename, blindedName: image.blindedName]
+        }
+        return data
     }
 
     def listExtended(Project project, String sortColumn, String sortDirection, String search, def extended) {
