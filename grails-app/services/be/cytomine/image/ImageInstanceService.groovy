@@ -384,6 +384,10 @@ class ImageInstanceService extends ModelService {
 //
 //    }
 
+    def getReferenceSlice(def id) {
+        def image = read(id)
+        return image.referenceSlice
+    }
 
 
     /**
@@ -417,7 +421,13 @@ class ImageInstanceService extends ModelService {
         }
     }
 
-    /**
+    def afterAdd(ImageInstance domain, def response) {
+        def abstractSlices = AbstractSlice.findAllByImage(domain.baseImage)
+        abstractSlices.each {
+            new SliceInstance(baseSlice: it, image: domain, project: domain.project).save()
+        }
+    }
+/**
      * Update this domain with new data from json
      * @param domain Domain to update
      * @param jsonNewData New domain datas

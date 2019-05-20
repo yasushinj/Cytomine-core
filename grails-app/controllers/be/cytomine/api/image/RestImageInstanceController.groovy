@@ -21,6 +21,7 @@ import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.sql.ReviewedAnnotationListing
@@ -537,6 +538,16 @@ class RestImageInstanceController extends RestController {
         }
     }
 
+    def getReferenceSlice() {
+        SliceInstance slice = imageInstanceService.getReferenceSlice(params.long("id"))
+        if (slice) {
+            responseSuccess(slice)
+        }
+        else {
+            responseNotFound("SliceInstance", "ImageInstance", params.id)
+        }
+    }
+
     // as I have one field that I override differently if I am a manager, I overrided all the response method until the super method is more flexible
     @Override
     protected def response(data) {
@@ -550,7 +561,7 @@ class RestImageInstanceController extends RestController {
                 if(params.project){
                     project = Project.read(params.long("project"))
                     filterEnabled = project.blindMode
-                } else if(params.id && params.action.GET != "windowUrl"){
+                } else if(params.id && !(["windowUrl", "cameraUrl", "getReferenceSlice"].contains(params.action.GET))){
                     project = ImageInstance.read(params.long("id"))?.project
                     if(project) filterEnabled = project.blindMode
                 }

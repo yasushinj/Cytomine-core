@@ -66,6 +66,10 @@ class ImageInstanceUrlMappings {
             action = [GET:"show", PUT:"update", DELETE:"delete"]
         }
 
+        "/api/imageinstance/$id/sliceinstance/reference.$format"(controller: "restImageInstance"){
+            action = [GET: "getReferenceSlice"]
+        }
+
 
         "/api/imageinstance/$id/download"(controller: "restImageInstance"){
             action = [GET:"download"]

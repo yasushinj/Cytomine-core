@@ -207,6 +207,19 @@ class ImageInstance extends CytomineDomain implements Serializable {
         return returnArray
     }
 
+    def getSliceCoordinates() {
+        return this.baseImage?.getSliceCoordinates()
+    }
+
+    def getReferenceSliceCoordinate() {
+        return this.baseImage?.getReferenceSliceCoordinate()
+    }
+
+    def getReferenceSlice() {
+        def base = this.baseImage?.getReferenceSlice()
+        return SliceInstance.findByBaseSliceAndImage(base, this)
+    }
+
     /**
      * Flag to control if image is beeing review, and not yet validated
      * @return True if image is review but not validate, otherwise false
