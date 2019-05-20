@@ -131,7 +131,7 @@ class UploadedFileService extends ModelService {
             throw new ForbiddenException("UploadedFile not found")
         }
         securityACLService.checkAtLeastOne(root, READ)
-        String request = "SELECT uf.id, uf.created, uf.original_filename, " +
+        String request = "SELECT uf.id, uf.created, uf.original_filename, uf.content_type, " +
                 "uf.l_tree, uf.parent_id as parent, " +
                 "uf.size, uf.status, " +
                 "array_agg(ai.id) as image, array_agg(asl.id) as slices, array_agg(cf.id) as companion_file " +
@@ -159,7 +159,7 @@ class UploadedFileService extends ModelService {
             row.thumbURL =  null
             if(row.image) {
                 row.thumbURL = UrlApi.getAbstractImageThumbUrl(row.image as Long)
-                row.macroURL = UrlApi.getAssociatedImage(row.image as Long, "macro", 256)
+                row.macroURL = UrlApi.getAssociatedImage(row.image as Long, "macro", row.content_type as String, 256)
             } else if (row.slices.size() > 0) {
                 row.thumbURL = UrlApi.getAbstractSliceThumbUrl(row.slices[0] as Long)
             }

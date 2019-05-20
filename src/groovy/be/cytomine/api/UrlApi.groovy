@@ -77,11 +77,13 @@ class UrlApi {
         return "${serverUrl()}/api/annotation/$idAnnotation/crop.png?" + params
     }
 
-    static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null, def format="png") {
-//        if(label == "macro") {
-//            AbstractImage abstractImage = AbstractImage.read(idAbstractImage)
-//            if(["image/pyrtiff", "image/tiff", "image/tif", "image/jp2"].contains(abstractImage?.mimeType)) return null
-//        }
+    static def getAssociatedImage(Long idAbstractImage, String label, String contentType = null, def maxSize = null, def format="png") {
+        def formatsWithMacro = [
+                "openslide/ndpi", "openslide/vms", "openslide/mrxs", "openslide/svs", "openslide/scn", "ventana/bif", "ventana/tif", "philips/tif"
+        ]
+        if(label == "macro" && contentType && !formatsWithMacro.contains(contentType)) {
+            return null
+        }
         String size = maxSize ? "?maxWidth=$maxSize" : "";
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label.$format$size"
     }
