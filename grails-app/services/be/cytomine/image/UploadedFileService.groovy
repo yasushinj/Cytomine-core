@@ -1,5 +1,7 @@
 package be.cytomine.image
 
+import be.cytomine.Exception.ConstraintException
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -230,45 +232,44 @@ class UploadedFileService extends ModelService {
         return [domain.id, domain.filename]
     }
 
-
-    def downloadURI(UploadedFile uploadedFile) {
-        securityACLService.checkAtLeastOne(uploadedFile, WRITE)
-
-        //TODO: merge with ImageServer service
-        return "${uploadedFile.imageServer.url}/image/download?fif=${uploadedFile.path}"
-        // "&mimeType=${uploadedFile.image.mimeType}"
-    }
-
     def deleteDependentAbstractImage(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
-        //TODO
-//        if(uploadedFile.image) abstractImageService.delete(uploadedFile.image,transaction,null,false)
+        AbstractImage.findAllByUploadedFile(uploadedFile).each {
+            abstractImageService.delete(it, transaction, task, false)
+        }
     }
 
+    def abstractSliceService
     def deleteDependentAbstractSlice(UploadedFile uploadedFile, Transaction transaction, Task task = null) {
-        //TODO
+        AbstractSlice.findAllByUploadedFile(uploadedFile).each {
+            abstractSliceService.delete(it, transaction, task, false)
+        }
     }
 
+    def companionFileService
     def deleteDependentCompanionFile(UploadedFile uploadedFile, Transaction transaction, Task task = null) {
-        //TODO
+        CompanionFile.findAllByUploadedFile(uploadedFile).each {
+            companionFileService.delete(it, transaction, task, false)
+        }
     }
 
     def deleteDependentUploadedFile(UploadedFile uploadedFile, Transaction transaction,Task task=null) {
         taskService.updateTask(task,task? "Delete ${UploadedFile.countByParent(uploadedFile)} uploadedFile parents":"")
 
-        UploadedFile.findAllByParent(uploadedFile).each {
-            it.parent = uploadedFile.parent
-            this.update(it,JSON.parse(it.encodeAsJSON()), transaction)
+        // Update all children so that their parent is the grandfather
+        UploadedFile.findAllByParent(uploadedFile).each { child ->
+            child.parent = uploadedFile.parent
+            this.update(child, JSON.parse(child.encodeAsJSON()), transaction)
         }
 
-        String currentTree = uploadedFile.lTree
-        String parentTree = (uploadedFile?.parent?.lTree)?:""
+        String currentTree = uploadedFile?.lTree ?: ""
+        String request = "UPDATE uploaded_file SET l_tree = '' WHERE id= "+uploadedFile.id+";\n"
 
-        //1. Set ltree à null de uf
-        //2. update tree SET  path = ltree du parent || subpath(path, nlevel('A.C'))  where path <@ 'A.C';
-        String request =
-                "UPDATE uploaded_file SET l_tree = '' WHERE id= "+uploadedFile.id+";\n" +
-                        "UPDATE uploaded_file \n" +
-                        "SET l_tree = '"+parentTree+"' || subpath(l_tree, nlevel('"+currentTree+"'))  where l_tree <@ '"+currentTree+"';"
+        String parentTree = (uploadedFile?.parent?.lTree)?:""
+        if (!parentTree.isEmpty()) {
+            request += "UPDATE uploaded_file " +
+                    "SET l_tree = ' " +parentTree +"' || subpath(l_tree, nlevel(' " +currentTree +"')) " +
+                    "WHERE l_tree <@ ' " +currentTree +"';"
+        }
 
         def sql = new Sql(dataSource)
         sql.execute(request)

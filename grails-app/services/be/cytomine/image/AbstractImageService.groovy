@@ -1,5 +1,7 @@
 package be.cytomine.image
 
+import be.cytomine.Exception.ConstraintException
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -21,6 +23,7 @@ import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.server.Storage
@@ -275,31 +278,18 @@ class AbstractImageService extends ModelService {
         securityACLService.checkAtLeastOne(domain,WRITE)
 
         if (!isUsed(domain.id)) {
-            def jsonNewData = JSON.parse(domain.encodeAsJSON())
-            jsonNewData.deleted = new Date().time
             SecUser currentUser = cytomineService.getCurrentUser()
-            Command c = new EditCommand(user: currentUser)
-            c.delete = true
-            return executeCommand(c,domain,jsonNewData)
+            Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+            return executeCommand(c,domain,null)
         } else{
             def instances = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain)
-            throw new ForbiddenException("Abstract Image has instances in active projects : "+instances.collect{it.project.name}.join(",")
-                    +" with the following names : "+instances.collect{it.instanceFilename}.unique().join(","), [projectNames:instances.collect{it.project.name},imageNames:instances.collect{it.instanceFilename}.unique()]);
+            throw new ForbiddenException("Abstract Image has instances in active projects : " +
+                    instances.collect{it.project.name}.join(",") +
+                    " with the following names : " +
+                    instances.collect{it.instanceFilename}.unique().join(","),
+                    [projectNames:instances.collect{it.project.name},
+                     imageNames:instances.collect{it.instanceFilename}.unique()]);
         }
-    }
-
-    def deleteFile(AbstractImage ai){
-//        UploadedFile uf = UploadedFile.findByImage(ai)
-//        uploadedFileService.delete(uf)
-//
-//        while(uf.parent){
-//            if(UploadedFile.countByParentAndDeletedIsNull(uf.parent) == 0){
-//                uploadedFileService.delete(uf.parent)
-//                uf = uf.parent
-//            } else {
-//                break
-//            }
-//        }
     }
 
     /**
@@ -323,10 +313,26 @@ class AbstractImageService extends ModelService {
         return [domain.id, domain.originalFilename]
     }
 
+    def abstractSliceService
+    def deleteDependentAbstractSlice(AbstractImage ai, Transaction transaction, Task task = null) {
+        def slices = AbstractSlice.findAllByImage(ai)
+        slices.each {
+            abstractSliceService.delete(it, transaction, task)
+        }
+    }
+
     def deleteDependentImageInstance(AbstractImage ai, Transaction transaction,Task task=null) {
         def images = ImageInstance.findAllByBaseImageAndDeletedIsNull(ai);
         if(!images.isEmpty()) {
-            throw new WrongArgumentException("You cannot delete this image, it has already been insert in projects " + images.collect{it.project.name})
+            throw new ConstraintException("This image $ai cannot be deleted as it has already been insert " +
+                    "in projects " + images.collect{it.project.name})
+        }
+    }
+
+    def companionFileService
+    def deleteDependentCompanionFile(AbstractImage ai, Transaction transaction, Task task = null) {
+        CompanionFile.findAllByImage(ai).each {
+            companionFileService.delete(it, transaction, task)
         }
     }
 
@@ -335,14 +341,6 @@ class AbstractImageService extends ModelService {
             attachedFileService.delete(it,transaction,null,false)
         }
     }
-
-    def deleteDependentNestedFile(AbstractImage ai, Transaction transaction,Task task=null) {
-        //TODO: implement this with command (nestedFileService should be create)
-        CompanionFile.findAllByAbstractImage(ai).each {
-            it.delete(flush: true)
-        }
-    }
-
 
     def deleteDependentNestedImageInstance(AbstractImage ai, Transaction transaction,Task task=null) {
         NestedImageInstance.findAllByBaseImage(ai).each {

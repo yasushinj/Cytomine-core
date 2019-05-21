@@ -20,11 +20,13 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.ontology.AlgoAnnotation
+import be.cytomine.ontology.AnnotationIndex
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.ReviewedAnnotation
@@ -32,6 +34,10 @@ import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
+import be.cytomine.social.AnnotationAction
+import be.cytomine.social.LastUserPosition
+import be.cytomine.social.PersistentImageConsultation
+import be.cytomine.social.PersistentUserPosition
 import be.cytomine.utils.Description
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
@@ -39,6 +45,8 @@ import be.cytomine.utils.Task
 import grails.converters.JSON
 import groovy.sql.Sql
 import org.hibernate.FetchMode
+
+import java.awt.Image
 
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -482,72 +490,94 @@ class ImageInstanceService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(ImageInstance domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-//        securityACLService.check(domain.container(),READ)
-//        securityACLService.checkisNotReadOnly(domain.container())
-//        SecUser currentUser = cytomineService.getCurrentUser()
-//        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-//        return executeCommand(c,domain,null)
+        securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
+        SecUser currentUser = cytomineService.getCurrentUser()
+        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+        return executeCommand(c,domain,null)
 
         //We don't delete domain, we juste change a flag
-        securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
-        def jsonNewData = JSON.parse(domain.encodeAsJSON())
-        jsonNewData.deleted = new Date().time
-        SecUser currentUser = cytomineService.getCurrentUser()
-        Command c = new EditCommand(user: currentUser)
-        c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+//        def jsonNewData = JSON.parse(domain.encodeAsJSON())
+//        jsonNewData.deleted = new Date().time
+//        Command c = new EditCommand(user: currentUser)
+//        c.delete = true
+//        return executeCommand(c,domain,jsonNewData)
+    }
+
+    def deleteDependentAlgoAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+        AlgoAnnotation.findAllByImage(image).each {
+            algoAnnotationService.delete(it,transaction)
+        }
+    }
+
+    def deleteDependentReviewedAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+        ReviewedAnnotation.findAllByImage(image).each {
+            reviewedAnnotationService.delete(it,transaction,null,false)
+        }
+    }
+
+    def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+        UserAnnotation.findAllByImage(image).each {
+            userAnnotationService.delete(it,transaction,null,false)
+        }
+    }
+
+    def deleteDependentAnnotationIndex(ImageInstance image,Transaction transaction, Task task = null) {
+        AnnotationIndex.findAllByImage(image).each {
+            it.delete()
+        }
+    }
+
+    def deleteDependentAnnotationAction(ImageInstance image, Transaction transaction, Task task = null) {
+        AnnotationAction.findAllByImage(image).each {
+            it.delete()
+        }
+    }
+
+    def deleteDependentImageSequence(ImageInstance image, Transaction transaction, Task task = null) {
+        ImageSequence.findAllByImage(image).each {
+            imageSequenceService.delete(it,transaction,null,false)
+        }
+    }
+
+    def deleteDependentLastUserPosition(ImageInstance image,Transaction transaction, Task task = null) {
+        LastUserPosition.findAllByImage(image).each {
+            it.delete()
+        }
+    }
+
+    def deleteDependentPersistentUserPosition(ImageInstance image, Transaction transaction, Task task = null) {
+        PersistentUserPosition.findAllByImage(image).each {
+            it.delete()
+        }
+    }
+
+    def deleteDependentPersistentImageConsultation(ImageInstance image, Transaction transaction, Task task = null) {
+        PersistentImageConsultation.findAllByImage(image.id).each {
+            it.delete()
+        }
+    }
+
+    def deleteDependentProperty(ImageInstance image, Transaction transaction, Task task = null) {
+        Property.findAllByDomainIdent(image.id).each {
+            propertyService.delete(it,transaction,null,false)
+        }
+
+    }
+
+    def deleteDependentNestedImageInstance(ImageInstance image, Transaction transaction,Task task=null) {
+        NestedImageInstance.findAllByParent(image).each {
+            it.delete(flush: true)
+        }
+    }
+
+    def sliceInstanceService
+    def deleteDependentSliceInstance(ImageInstance image, Transaction transaction, Task task = null) {
+        SliceInstance.findAllByImage(image).each {
+            sliceInstanceService.delete(it, transaction, task)
+        }
     }
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.blindInstanceFilename, domain.project.name]
     }
-
-//    def deleteDependentAlgoAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-//        AlgoAnnotation.findAllByImage(image).each {
-//            algoAnnotationService.delete(it,transaction)
-//        }
-//    }
-//
-//    def deleteDependentReviewedAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-//        ReviewedAnnotation.findAllByImage(image).each {
-//            reviewedAnnotationService.delete(it,transaction,null,false)
-//        }
-//    }
-//
-//    def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-//        UserAnnotation.findAllByImage(image).each {
-//            userAnnotationService.delete(it,transaction,null,false)
-//        }
-//    }
-//
-//    def deleteDependentUserPosition(ImageInstance image,Transaction transaction, Task task = null) {
-//        UserPosition.findAllByImage(image).each {
-//            it.delete()
-//        }
-//    }
-//
-//    def deleteDependentAnnotationIndex(ImageInstance image,Transaction transaction, Task task = null) {
-//        AnnotationIndex.findAllByImage(image).each {
-//            it.delete()
-//         }
-//    }
-//
-//    def deleteDependentImageSequence(ImageInstance image, Transaction transaction, Task task = null) {
-//        ImageSequence.findAllByImage(image).each {
-//            imageSequenceService.delete(it,transaction,null,false)
-//        }
-//    }
-//
-//    def deleteDependentProperty(ImageInstance image, Transaction transaction, Task task = null) {
-//        Property.findAllByDomainIdent(image.id).each {
-//            propertyService.delete(it,transaction,null,false)
-//        }
-//
-//    }
-//
-//    def deleteDependentNestedImageInstance(ImageInstance image, Transaction transaction,Task task=null) {
-//        NestedImageInstance.findAllByParent(image).each {
-//            it.delete(flush: true)
-//        }
-//    }
 }

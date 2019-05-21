@@ -1,5 +1,6 @@
 package be.cytomine.image
 
+import be.cytomine.Exception.ConstraintException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
@@ -70,6 +71,14 @@ class AbstractSliceService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser, transaction: transaction)
         executeCommand(c, slice, null)
+    }
+
+    def deleteDependentSliceInstance(AbstractSlice slice, Transaction transaction,Task task=null) {
+        def images = SliceInstance.findAllByBaseSlice(slice);
+        if(!images.isEmpty()) {
+            throw new ConstraintException("This slice $slice cannot be deleted as it has already been insert " +
+                    "in projects " + images.collect{it.project.name})
+        }
     }
 
     def getUploaderOfImage(def id){
