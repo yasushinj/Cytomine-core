@@ -46,7 +46,8 @@ class ImageServerService extends ModelService {
     }
 
     def downloadUri(UploadedFile uploadedFile) {
-        makeGetUrl("/image/download", uploadedFile.imageServer.url, [fif: uploadedFile.path])
+        makeGetUrl("/image/download", uploadedFile.imageServer.url,
+                [fif: uploadedFile.path, mimeType: uploadedFile.contentType])
     }
 
     def downloadUri(AbstractImage image, UploadedFile uf) {
@@ -56,7 +57,7 @@ class ImageServerService extends ModelService {
     }
 
     def properties(AbstractImage image) {
-        def (server, parameters) = imsParametersFromAbstractSlice(image.referenceSlice)
+        def (server, parameters) = imsParametersFromAbstractImage(image)
         return JSON.parse(new URL(makeGetUrl("/image/properties.json", server, parameters)).text)
     }
 
@@ -65,7 +66,7 @@ class ImageServerService extends ModelService {
     }
 
     def associated(AbstractImage image) {
-        def (server, parameters) = imsParametersFromAbstractSlice(image.referenceSlice)
+        def (server, parameters) = imsParametersFromAbstractImage(image)
         return JSON.parse(new URL(makeGetUrl("/image/associated.json", server, parameters)).text)
     }
 
@@ -74,7 +75,7 @@ class ImageServerService extends ModelService {
     }
 
     def label(AbstractImage image, def params) {
-        def (server, parameters) = imsParametersFromAbstractSlice(image.referenceSlice)
+        def (server, parameters) = imsParametersFromAbstractImage(image)
         def format = checkFormat(params.format, ['jpg', 'png'])
         parameters.maxSize = params.maxSize
         parameters.label = params.label
@@ -82,11 +83,15 @@ class ImageServerService extends ModelService {
     }
 
     def thumb(ImageInstance image, def params) {
-        thumb(image.baseImage.referenceSlice, params)
+        thumb(image.referenceSlice, params)
     }
 
     def thumb(SliceInstance slice, def params) {
         thumb(slice.baseSlice, params)
+    }
+
+    def thumb(AbstractImage image, def params) {
+        thumb(image.referenceSlice, params)
     }
 
     def thumb(AbstractSlice slice, def params) {
@@ -110,7 +115,7 @@ class ImageServerService extends ModelService {
 //            return bufferedImage
 //        }
 
-        return makeRequest("/image/thumb.$format", server, parameters)
+        return makeRequest("/slice/thumb.$format", server, parameters)
     }
 
     def crop(AnnotationDomain annotation, def params, def urlOnly = false, def parametersOnly = false) {
@@ -155,6 +160,8 @@ class ImageServerService extends ModelService {
         parameters.maxSize = params.int('maxSize')
         parameters.zoom = (!params.int('maxSize')) ? params.int('zoom') : null
         parameters.increaseArea = params.double('increaseArea')
+        parameters.safe = params.boolean('safe')
+        parameters.square = params.boolean('square')
 
 //        if(location instanceof com.vividsolutions.jts.geom.Point && !params.point.equals("false")) {
 //            boundaries.point = true
@@ -179,11 +186,11 @@ class ImageServerService extends ModelService {
         parameters.gamma = params.double('gamma')
         parameters.bits = (params.bits == "max") ? (slice.image.bitDepth ?: 8) : params.int('bits')
         parameters.alpha = params.int('alpha')
-        parameters.strokeWidth = params.int('strokeWidth')
-        parameters.strokeColor = params.strokeColor
+        parameters.thickness = params.int('thickness')
+        parameters.color = params.color
         parameters.jpegQuality = params.int('jpegQuality')
 
-        def uri = "/image/crop.$format"
+        def uri = "/slice/crop.$format"
 
         if (parametersOnly)
             return [server:server, uri:uri, parameters:parameters]
@@ -226,7 +233,8 @@ class ImageServerService extends ModelService {
     private static def imsParametersFromAbstractImage(AbstractImage image) {
         def server = image.getImageServerUrl()
         def parameters = [
-                fif: image.path
+                fif: image.path,
+                mimeType: image.uploadedFile.contentType
         ]
         return [server, parameters]
     }
