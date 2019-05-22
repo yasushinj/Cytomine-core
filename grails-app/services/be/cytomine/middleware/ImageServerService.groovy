@@ -50,10 +50,8 @@ class ImageServerService extends ModelService {
                 [fif: uploadedFile.path, mimeType: uploadedFile.contentType])
     }
 
-    def downloadUri(AbstractImage image, UploadedFile uf) {
-        def (server, parameters) = imsParametersFromAbstractImage(image)
-        parameters.fif = uf.path
-        return makeGetUrl("/image/download", server, parameters)
+    def downloadUri(AbstractImage image) {
+        downloadUri(image.uploadedFile)
     }
 
     def properties(AbstractImage image) {

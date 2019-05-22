@@ -530,8 +530,7 @@ class RestImageInstanceController extends RestController {
     def download() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            def uf = abstractImageService.getMainUploadedFile(imageInstance.baseImage)
-            String url = imageServerService.downloadUri(imageInstance.baseImage, uf)
+            String url = imageServerService.downloadUri(imageInstance.baseImage)
             redirect(url: url)
         } else {
             responseNotFound("Image", params.id)

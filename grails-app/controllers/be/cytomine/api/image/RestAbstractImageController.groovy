@@ -37,35 +37,19 @@ class RestAbstractImageController extends RestController {
     def abstractImageService
     def cytomineService
     def projectService
-    def imageSequenceService
-    def dataTablesService
     def imageServerService
     def uploadedFileService
 
-    /**
-     * List all abstract image available on cytomine
-     */
     @RestApiMethod(description="Get all image available for the current user", listing = true)
     @RestApiParams(params=[
         @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "If set, check if image is in project or not", required=false),
-        @RestApiParam(name="sortColumn", type="string", paramType = RestApiParamType.QUERY, description = "Column sort (created by default)", required=false),
-        @RestApiParam(name="sortDirection", type="string", paramType = RestApiParamType.QUERY, description = "Sort direction (desc by default)", required=false),
-        @RestApiParam(name="search", type="string", paramType = RestApiParamType.QUERY, description = "Original filename search filter (all by default)", required=false),
-        @RestApiParam(name="datatables", type="boolean", paramType=RestApiParamType.QUERY, description="", required=false),
     ])
     def list() {
         SecUser user = cytomineService.getCurrentUser()
         Project project = projectService.read(params.long("project"))
-        if (params.datatables) {
-            responseSuccess(dataTablesService.process(params, AbstractImage, null, [],project))
-        }  else {
-            responseSuccess(abstractImageService.list(user, project))
-        }
+        responseSuccess(abstractImageService.list(user, project))
     }
 
-    /**
-     * List all abstract images for a project
-     */
     @RestApiMethod(description="Get all image having an instance in a project", listing = true)
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id")
@@ -93,9 +77,6 @@ class RestAbstractImageController extends RestController {
         }
     }
 
-    /**
-     * Get a single image
-     */
     @RestApiMethod(description="Get an image")
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The image id")
@@ -109,31 +90,22 @@ class RestAbstractImageController extends RestController {
         }
     }
 
-    /**
-     * Add a new image
-     */
-    @RestApiMethod(description="Add a new image in the software. See 'upload file service' to upload an image")
+    @RestApiMethod(description="Add a new image in the software. See IMS to upload an image")
     def add() {
         add(abstractImageService, request.JSON)
     }
 
-    /**
-     * Update a new image
-     */
     @RestApiMethod(description="Update an image in the software")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image sequence id")
+        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
     ])
     def update() {
         update(abstractImageService, request.JSON)
     }
 
-    /**
-     * Delete a new image
-     */
     @RestApiMethod(description="Delete an abstract image)")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image sequence id")
+        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id")
     ])
     def delete() {
         delete(abstractImageService, JSON.parse("{id : $params.id}"),null)
@@ -308,13 +280,8 @@ class RestAbstractImageController extends RestController {
 
     def download() {
         AbstractImage abstractImage = abstractImageService.read(params.long("id"))
-        def uf = abstractImage?.uploadedFile
-        if (uf) {
-            String url = imageServerService.downloadUri(abstractImage, uf)
-            redirect(url: url)
-        } else {
-            responseNotFound("Image", params.id)
-        }
+        String url = imageServerService.downloadUri(abstractImage)
+        redirect(url: url)
     }
 
     /**
