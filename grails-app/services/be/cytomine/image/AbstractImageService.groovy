@@ -147,22 +147,6 @@ class AbstractImageService extends ModelService {
         domain?.sample = sample
     }
 
-    def afterAdd(def domain, def response) {
-//        log.info "Extract image properties"
-//        imagePropertiesService.clear(domain)
-//        imagePropertiesService.populate(domain)
-//        imagePropertiesService.extractUseful(domain)
-
-//        log.info "Add to projects, stored in uploaded file."
-//        //TODO: to improve to handle AbstractSlice -> SliceInstance
-//        def currentUser = cytomineService.currentUser
-//        domain.uploadedFile.projects?.each { projectId ->
-//            Project project = projectService.read(projectId)
-//            ImageInstance imageInstance = new ImageInstance( baseImage : domain, project:  project, user :currentUser)
-//            imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
-//        }
-    }
-
     /**
      * Update this domain with new data from json
      * @param domain Domain to update
@@ -274,7 +258,6 @@ class AbstractImageService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(AbstractImage domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        //We don't delete domain, we juste change a flag
         securityACLService.checkAtLeastOne(domain,WRITE)
 
         if (!isUsed(domain.id)) {
