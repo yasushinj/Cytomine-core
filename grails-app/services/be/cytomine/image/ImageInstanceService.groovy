@@ -113,7 +113,7 @@ class ImageInstanceService extends ModelService {
                 line.blindedName = it.base_image_id
             }
             if (!it.project_blind || isAdmin || it.user_project_manager) {
-                line.instanceFilename = it.instance_filename
+                line.instanceFilename = it.instance_filename ?: it.original_filename
             }
             data << line
         }
