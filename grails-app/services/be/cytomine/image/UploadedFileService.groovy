@@ -161,7 +161,7 @@ class UploadedFileService extends ModelService {
             row.thumbURL =  null
             if(row.image) {
                 row.thumbURL = UrlApi.getAbstractImageThumbUrl(row.image as Long)
-                row.macroURL = UrlApi.getAssociatedImage(row.image as Long, "macro", row.content_type as String, 256)
+                row.macroURL = UrlApi.getAssociatedImage(row.image as Long, "macro", row.contentType as String, 256)
             } else if (row.slices.size() > 0) {
                 row.thumbURL = UrlApi.getAbstractSliceThumbUrl(row.slices[0] as Long)
             }
