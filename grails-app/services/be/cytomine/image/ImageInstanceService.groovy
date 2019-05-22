@@ -68,7 +68,6 @@ class ImageInstanceService extends ModelService {
         image
     }
 
-
     def list(Project project) {
         securityACLService.check(project, READ)
 
@@ -185,8 +184,6 @@ class ImageInstanceService extends ModelService {
             ilike(abstractImageAlias + ".originalFilename", _search)
             order(_sortColumn, sortDirection)
         }
-
-
     }
 
     def listExtended(Project project, String sortColumn, String sortDirection, String search, def extended) {
@@ -392,26 +389,24 @@ class ImageInstanceService extends ModelService {
     def add(def json) {
         securityACLService.check(json.project, Project, READ)
         securityACLService.checkisNotReadOnly(json.project, Project)
+
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id
-        log.info "json=$json"
+
         def project = Project.read(json.project)
         def baseImage = AbstractImage.read(json.baseImage)
-        log.info "project=$project baseImage=$baseImage"
         def alreadyExist = ImageInstance.findByProjectAndBaseImage(project, baseImage)
 
-        log.info "alreadyExist=${alreadyExist}"
         if (alreadyExist && alreadyExist.checkDeleted()) {
             //Image was previously deleted, restore it
             def jsonNewData = JSON.parse(alreadyExist.encodeAsJSON())
             jsonNewData.deleted = null
             Command c = new EditCommand(user: currentUser)
             return executeCommand(c, alreadyExist, jsonNewData)
-        } else {
-            synchronized (this.getClass()) {
-                Command c = new AddCommand(user: currentUser)
-                return executeCommand(c, null, json)
-            }
+        }
+        else {
+            Command c = new AddCommand(user: currentUser)
+            return executeCommand(c, null, json)
         }
     }
 
@@ -421,12 +416,13 @@ class ImageInstanceService extends ModelService {
             new SliceInstance(baseSlice: it, image: domain, project: domain.project).save()
         }
     }
-/**
- * Update this domain with new data from json
- * @param domain Domain to update
- * @param jsonNewData New domain datas
- * @return Response structure (new domain data, old domain data..)
- */
+
+    /**
+     * Update this domain with new data from json
+     * @param domain Domain to update
+     * @param jsonNewData New domain datas
+     * @return Response structure (new domain data, old domain data..)
+     */
     def update(ImageInstance domain, def jsonNewData) {
         securityACLService.check(domain.container(), READ)
         securityACLService.check(jsonNewData.project, Project, READ)
