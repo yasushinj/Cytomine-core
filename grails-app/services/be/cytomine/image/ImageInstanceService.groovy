@@ -1,5 +1,7 @@
 package be.cytomine.image
 
+import be.cytomine.Exception.CytomineException
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -16,21 +18,10 @@ package be.cytomine.image
 * limitations under the License.
 */
 
-import be.cytomine.Exception.CytomineException
 import be.cytomine.api.UrlApi
-import be.cytomine.command.AddCommand
-import be.cytomine.command.Command
-import be.cytomine.command.DeleteCommand
-import be.cytomine.command.EditCommand
-import be.cytomine.command.Transaction
-import be.cytomine.image.multidim.ImageGroup
+import be.cytomine.command.*
 import be.cytomine.image.multidim.ImageSequence
-import be.cytomine.ontology.AlgoAnnotation
-import be.cytomine.ontology.AnnotationIndex
-import be.cytomine.ontology.AnnotationTerm
-import be.cytomine.ontology.Property
-import be.cytomine.ontology.ReviewedAnnotation
-import be.cytomine.ontology.UserAnnotation
+import be.cytomine.ontology.*
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
@@ -38,7 +29,6 @@ import be.cytomine.social.AnnotationAction
 import be.cytomine.social.LastUserPosition
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentUserPosition
-import be.cytomine.utils.Description
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
@@ -46,14 +36,8 @@ import grails.converters.JSON
 import groovy.sql.Sql
 import org.hibernate.FetchMode
 
-import java.awt.Image
-
-import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
 
-/**
- * TODO:: refactor + doc!!!!!!!
- */
 class ImageInstanceService extends ModelService {
 
     static transactional = true
@@ -77,7 +61,7 @@ class ImageInstanceService extends ModelService {
 
     def read(def id) {
         ImageInstance image = ImageInstance.read(id)
-        if(image) {
+        if (image) {
             securityACLService.check(image.container(), READ)
             checkDeleted(image)
         }
@@ -86,7 +70,7 @@ class ImageInstanceService extends ModelService {
 
 
     def list(Project project) {
-        securityACLService.check(project,READ)
+        securityACLService.check(project, READ)
 
         def images = ImageInstance.createCriteria().list {
             eq("project", project)
@@ -102,11 +86,11 @@ class ImageInstanceService extends ModelService {
     /**
      * Get all image id from project
      */
-    public List<Long> getAllImageId(Project project) {
-        securityACLService.check(project,READ)
+    List<Long> getAllImageId(Project project) {
+        securityACLService.check(project, READ)
 
         //better perf with sql request
-        String request = "SELECT a.id FROM image_instance a WHERE project_id="+project.id  + " AND parent_id IS NULL AND deleted IS NULL"
+        String request = "SELECT a.id FROM image_instance a WHERE project_id=" + project.id + " AND parent_id IS NULL AND deleted IS NULL"
         def data = []
         def sql = new Sql(dataSource)
         sql.eachRow(request) {
@@ -117,7 +101,7 @@ class ImageInstanceService extends ModelService {
     }
 
     def list(User user) {
-        securityACLService.checkIsSameUser(user,cytomineService.currentUser)
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         def data = []
 
         boolean isAdmin = securityACLService.isAdminByNow(user)
@@ -126,10 +110,10 @@ class ImageInstanceService extends ModelService {
         def sql = new Sql(dataSource)
         sql.eachRow("select * from user_image where user_image_id = ? order by instance_filename", [user.id]) {
             def line = [id: it.id, projectName: it.project_name, project: it.project_id]
-            if(it.project_blind) {
+            if (it.project_blind) {
                 line.blindedName = it.base_image_id
             }
-            if(!it.project_blind || isAdmin || it.user_project_manager) {
+            if (!it.project_blind || isAdmin || it.user_project_manager) {
                 line.instanceFilename = it.instance_filename
             }
             data << line
@@ -139,39 +123,39 @@ class ImageInstanceService extends ModelService {
     }
 
     def listLastOpened(User user, Long offset = null, Long max = null) {
-        securityACLService.checkIsSameUser(user,cytomineService.currentUser)
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         def data = []
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
         db.persistentImageConsultation.aggregate(
-                [$match : [ user : user.id]],
-                [$group : [_id : '$image', "date":[$max:'$created']]],
-                [$sort : [ date : -1]],
-                [$limit: (max==null? 5 : max)]
+                [$match: [user: user.id]],
+                [$group: [_id: '$image', "date": [$max: '$created']]],
+                [$sort: [date: -1]],
+                [$limit: (max == null ? 5 : max)]
         ).results().each {
             try {
                 ImageInstance image = read(it['_id'])
 
-                 data << [id:it['_id'],
-                          date:it['date'],
-                          thumb: UrlApi.getAbstractImageThumbUrl(image.baseImage.id),
-                          instanceFilename:image.blindInstanceFilename,
-                          project:image.project.id
-                 ]
-            } catch(CytomineException e) {
-               //if user has data but has no access to picture,  ImageInstance.read will throw a forbiddenException
+                data << [id              : it['_id'],
+                         date            : it['date'],
+                         thumb           : UrlApi.getAbstractImageThumbUrl(image.baseImage.id),
+                         instanceFilename: image.blindInstanceFilename,
+                         project         : image.project.id
+                ]
+            } catch (CytomineException e) {
+                //if user has data but has no access to picture,  ImageInstance.read will throw a forbiddenException
             }
         }
-        data = data.sort{-it.date.getTime()}
+        data = data.sort { -it.date.getTime() }
         return data
     }
 
     def listTree(Project project) {
-        securityACLService.check(project,READ)
+        securityACLService.check(project, READ)
 
         def children = []
-        list(project).each { image->
-            children << [ id : image.id, key : image.id, title : image.instanceFilename, isFolder : false, children : []]
+        list(project).each { image ->
+            children << [id: image.id, key: image.id, title: image.instanceFilename, isFolder: false, children: []]
         }
         def tree = [:]
         tree.isFolder = true
@@ -185,12 +169,12 @@ class ImageInstanceService extends ModelService {
     }
 
     def list(Project project, String sortColumn, String sortDirection, String search) {
-        securityACLService.check(project,READ)
+        securityACLService.check(project, READ)
 
         String abstractImageAlias = "ai"
         String _sortColumn = ImageInstance.hasProperty(sortColumn) ? sortColumn : "created"
         _sortColumn = AbstractImage.hasProperty(sortColumn) ? abstractImageAlias + "." + sortColumn : "created"
-        String _search = (search != null && search != "") ? "%"+search+"%" : "%"
+        String _search = (search != null && search != "") ? "%" + search + "%" : "%"
 
         return ImageInstance.createCriteria().list() {
             createAlias("baseImage", abstractImageAlias)
@@ -215,13 +199,15 @@ class ImageInstanceService extends ModelService {
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
         def result = db.persistentImageConsultation.aggregate(
-                [$match : [ user : user.id]],
-                [$sort : [ created : -1]],
-                [$group : [_id : '$image', created:[$max:'$created'], user:[$first: '$user']]],
-                [$sort : [ _id : 1]]
+                [$match: [user: user.id]],
+                [$sort: [created: -1]],
+                [$group: [_id: '$image', created: [$max: '$created'], user: [$first: '$user']]],
+                [$sort: [_id: 1]]
         )
 
-        def consultations = result.results().collect{[imageId : it['_id'],lastActivity:it['created'], user:it['user']]}
+        def consultations = result.results().collect {
+            [imageId: it['_id'], lastActivity: it['created'], user: it['user']]
+        }
 
         // we sorted to apply binary search instead of a simple "find" method. => performance
         def binSearchI = { aList, property, target ->
@@ -230,7 +216,7 @@ class ImageInstanceService extends ModelService {
             while (!a.empty) {
                 def n = a.size()
                 def m = n.intdiv(2)
-                if(a[m]."$property" > target) {
+                if (a[m]."$property" > target) {
                     a = a[0..<m]
                 } else if (a[m]."$property" < target) {
                     a = a[(m + 1)..<n]
@@ -245,9 +231,9 @@ class ImageInstanceService extends ModelService {
         images.each { image ->
             def index
             def line = ImageInstance.getDataFromDomain(image)
-            if(extended.withLastActivity) {
+            if (extended.withLastActivity) {
                 index = binSearchI(consultations, "imageId", image.id)
-                if(index >= 0){
+                if (index >= 0) {
                     line.putAt("lastActivity", consultations[index].lastActivity)
                 } else {
                     line.putAt("lastActivity", null)
@@ -404,27 +390,27 @@ class ImageInstanceService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
-        securityACLService.check(json.project,Project,READ)
-        securityACLService.checkisNotReadOnly(json.project,Project)
+        securityACLService.check(json.project, Project, READ)
+        securityACLService.checkisNotReadOnly(json.project, Project)
         SecUser currentUser = cytomineService.getCurrentUser()
         json.user = currentUser.id
         log.info "json=$json"
         def project = Project.read(json.project)
         def baseImage = AbstractImage.read(json.baseImage)
         log.info "project=$project baseImage=$baseImage"
-        def alreadyExist = ImageInstance.findByProjectAndBaseImage(project,baseImage)
+        def alreadyExist = ImageInstance.findByProjectAndBaseImage(project, baseImage)
 
         log.info "alreadyExist=${alreadyExist}"
-        if(alreadyExist && alreadyExist.checkDeleted()) {
+        if (alreadyExist && alreadyExist.checkDeleted()) {
             //Image was previously deleted, restore it
             def jsonNewData = JSON.parse(alreadyExist.encodeAsJSON())
             jsonNewData.deleted = null
             Command c = new EditCommand(user: currentUser)
-            return executeCommand(c,alreadyExist,jsonNewData)
+            return executeCommand(c, alreadyExist, jsonNewData)
         } else {
             synchronized (this.getClass()) {
                 Command c = new AddCommand(user: currentUser)
-                return executeCommand(c,null,json)
+                return executeCommand(c, null, json)
             }
         }
     }
@@ -436,30 +422,30 @@ class ImageInstanceService extends ModelService {
         }
     }
 /**
-     * Update this domain with new data from json
-     * @param domain Domain to update
-     * @param jsonNewData New domain datas
-     * @return  Response structure (new domain data, old domain data..)
-     */
+ * Update this domain with new data from json
+ * @param domain Domain to update
+ * @param jsonNewData New domain datas
+ * @return Response structure (new domain data, old domain data..)
+ */
     def update(ImageInstance domain, def jsonNewData) {
-        securityACLService.check(domain.container(),READ)
-        securityACLService.check(jsonNewData.project,Project,READ)
-        securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
+        securityACLService.check(domain.container(), READ)
+        securityACLService.check(jsonNewData.project, Project, READ)
+        securityACLService.checkFullOrRestrictedForOwner(domain.container(), domain.user)
         securityACLService.checkisNotReadOnly(domain.container())
-        securityACLService.checkisNotReadOnly(jsonNewData.project,Project)
+        securityACLService.checkisNotReadOnly(jsonNewData.project, Project)
         def attributes = JSON.parse(domain.encodeAsJSON())
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new EditCommand(user: currentUser)
 
-        def res = executeCommand(c,domain,jsonNewData)
+        def res = executeCommand(c, domain, jsonNewData)
         ImageInstance imageInstance = res.object
 
-        Double resolution = JSONUtils.getJSONAttrDouble(attributes,"resolution",null)
+        Double resolution = JSONUtils.getJSONAttrDouble(attributes, "resolution", null)
 
         boolean resolutionUpdated = resolution != imageInstance.resolution
 
-        if(resolutionUpdated) {
-            def annotations;
+        if (resolutionUpdated) {
+            def annotations
             annotations = UserAnnotation.findAllByImage(imageInstance)
             annotations.each {
                 def json = JSON.parse(it.encodeAsJSON())
@@ -490,10 +476,10 @@ class ImageInstanceService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(ImageInstance domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
+        securityACLService.checkFullOrRestrictedForOwner(domain.container(), domain.user)
         SecUser currentUser = cytomineService.getCurrentUser()
-        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-        return executeCommand(c,domain,null)
+        Command c = new DeleteCommand(user: currentUser, transaction: transaction)
+        return executeCommand(c, domain, null)
 
         //We don't delete domain, we juste change a flag
 //        def jsonNewData = JSON.parse(domain.encodeAsJSON())
@@ -503,25 +489,25 @@ class ImageInstanceService extends ModelService {
 //        return executeCommand(c,domain,jsonNewData)
     }
 
-    def deleteDependentAlgoAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+    def deleteDependentAlgoAnnotation(ImageInstance image, Transaction transaction, Task task = null) {
         AlgoAnnotation.findAllByImage(image).each {
-            algoAnnotationService.delete(it,transaction)
+            algoAnnotationService.delete(it, transaction)
         }
     }
 
-    def deleteDependentReviewedAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+    def deleteDependentReviewedAnnotation(ImageInstance image, Transaction transaction, Task task = null) {
         ReviewedAnnotation.findAllByImage(image).each {
-            reviewedAnnotationService.delete(it,transaction,null,false)
+            reviewedAnnotationService.delete(it, transaction, null, false)
         }
     }
 
-    def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
+    def deleteDependentUserAnnotation(ImageInstance image, Transaction transaction, Task task = null) {
         UserAnnotation.findAllByImage(image).each {
-            userAnnotationService.delete(it,transaction,null,false)
+            userAnnotationService.delete(it, transaction, null, false)
         }
     }
 
-    def deleteDependentAnnotationIndex(ImageInstance image,Transaction transaction, Task task = null) {
+    def deleteDependentAnnotationIndex(ImageInstance image, Transaction transaction, Task task = null) {
         AnnotationIndex.findAllByImage(image).each {
             it.delete()
         }
@@ -535,11 +521,11 @@ class ImageInstanceService extends ModelService {
 
     def deleteDependentImageSequence(ImageInstance image, Transaction transaction, Task task = null) {
         ImageSequence.findAllByImage(image).each {
-            imageSequenceService.delete(it,transaction,null,false)
+            imageSequenceService.delete(it, transaction, null, false)
         }
     }
 
-    def deleteDependentLastUserPosition(ImageInstance image,Transaction transaction, Task task = null) {
+    def deleteDependentLastUserPosition(ImageInstance image, Transaction transaction, Task task = null) {
         LastUserPosition.findAllByImage(image).each {
             it.delete()
         }
@@ -559,12 +545,12 @@ class ImageInstanceService extends ModelService {
 
     def deleteDependentProperty(ImageInstance image, Transaction transaction, Task task = null) {
         Property.findAllByDomainIdent(image.id).each {
-            propertyService.delete(it,transaction,null,false)
+            propertyService.delete(it, transaction, null, false)
         }
 
     }
 
-    def deleteDependentNestedImageInstance(ImageInstance image, Transaction transaction,Task task=null) {
+    def deleteDependentNestedImageInstance(ImageInstance image, Transaction transaction, Task task = null) {
         NestedImageInstance.findAllByParent(image).each {
             it.delete(flush: true)
         }
