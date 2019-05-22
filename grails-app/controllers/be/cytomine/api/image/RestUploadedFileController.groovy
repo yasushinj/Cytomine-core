@@ -59,8 +59,10 @@ class RestUploadedFileController extends RestController {
             root = params.long('root')
             uploadedFiles = uploadedFileService.listHierarchicalTree((User) cytomineService.getCurrentUser(), root)
         } else if (params.onlyRootsWithDetails) {
-            //TODO add search from original filename
-            uploadedFiles = uploadedFileService.listWithDetails((User) cytomineService.getCurrentUser())
+            def allowedSearchParameters = [
+                    [field: "originalFilename", allowedOperators: equalsAndLikeAndIlikeOperators]
+            ]
+            uploadedFiles = uploadedFileService.listWithDetails((User) cytomineService.getCurrentUser(), getSearchParameters(allowedSearchParameters))
         } else if (params.all) {
             uploadedFiles = uploadedFileService.list()
         } else {

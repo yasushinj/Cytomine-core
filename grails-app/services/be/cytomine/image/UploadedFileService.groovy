@@ -86,8 +86,13 @@ class UploadedFileService extends ModelService {
         return uploadedFiles
     }
 
-    def listWithDetails(User user) {
+    def listWithDetails(User user, def searchParameters = []) {
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+
+        String search = ""
+        searchParameters.each {
+            search += "AND uf.${SQLUtils.toSnakeCase(it.field)} ${it.sqlOperator} '${it.value}' "
+        }
 
         String request = "SELECT uf.id, " +
                 "uf.content_type, " +
@@ -112,6 +117,7 @@ class UploadedFileService extends ModelService {
                 "AND (uf.parent_id IS NULL OR parent.content_type similar to '%zip%') " +
                 "AND uf.content_type NOT similar to '%zip%' " +
                 "AND uf.deleted IS NULL " +
+                search +
                 "GROUP BY uf.id, ai.id " +
                 "ORDER BY uf.created DESC "
 
@@ -223,6 +229,7 @@ class UploadedFileService extends ModelService {
      */
     def delete(UploadedFile domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
+        securityACLService.checkUser(currentUser)
         securityACLService.checkAtLeastOne(domain, WRITE)
         Command c = new DeleteCommand(user: currentUser,transaction:transaction)
         return executeCommand(c,domain,null)

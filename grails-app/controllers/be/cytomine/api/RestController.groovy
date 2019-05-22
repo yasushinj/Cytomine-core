@@ -352,15 +352,35 @@ class RestController {
         }
     }
 
-    static def allowedOperators = ["equals","like","ilike"]
-    protected def getSearchParameters(){
+    private static String SEARCH_PARAM_EQUALS = "equals"
+    private static String SEARCH_PARAM_LIKE = "like"
+    private static String SEARCH_PARAM_ILIKE = "ilike"
+
+    static def equalsOperators = [SEARCH_PARAM_EQUALS]
+    static def likeOperators = [SEARCH_PARAM_LIKE]
+    static def ilikeOperators = [SEARCH_PARAM_ILIKE]
+    static def equalsAndLikeOperators = [SEARCH_PARAM_EQUALS, SEARCH_PARAM_LIKE]
+    static def equalsAndIlikeOperators = [SEARCH_PARAM_EQUALS, SEARCH_PARAM_ILIKE]
+    static def likeAndIlikeOperators = [SEARCH_PARAM_LIKE, SEARCH_PARAM_ILIKE]
+    static def equalsAndLikeAndIlikeOperators = [SEARCH_PARAM_EQUALS, SEARCH_PARAM_LIKE, SEARCH_PARAM_ILIKE]
+
+    protected def getSearchParameters(def allowedParameters){
         def searchParameters = []
         for(def param : params){
             if (param.key ==~ /.+\[.+\]/) {
                 String[] tmp = param.key.split('\\[')
                 String operator = tmp[1].substring(0,tmp[1].length()-1)
+                String field = tmp[0]
 
-                if(allowedOperators.contains(operator)) searchParameters << [operator : operator, field : tmp[0], values : param.value]
+                def allowedParameter = allowedParameters.find { it.field = field }
+                if (allowedParameter?.allowedOperators?.contains(operator)) {
+                    String value = param.value
+                    if (operator == SEARCH_PARAM_LIKE || operator == SEARCH_PARAM_ILIKE)
+                        value = "%$value%"
+
+                    def sqlOperator = (operator == SEARCH_PARAM_EQUALS) ? "=" : operator
+                    searchParameters << [operator: operator, field: field, value: value, sqlOperator: sqlOperator]
+                }
             }
         }
         return searchParameters

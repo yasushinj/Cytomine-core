@@ -14,4 +14,8 @@ class SQLUtils {
         }
         return newMap
     }
+
+    static String toSnakeCase(String text) {
+        return text.replaceAll("(.)(\\p{Upper})", { Object[] it -> "${it[1]}_${it[2]}"}).toLowerCase();
+    }
 }
