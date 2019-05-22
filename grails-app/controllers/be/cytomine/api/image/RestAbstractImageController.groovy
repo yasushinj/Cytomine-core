@@ -292,6 +292,7 @@ class RestAbstractImageController extends RestController {
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The image id"),
     ])
     @RestApiResponseObject(objectIdentifier = "URL list")
+    @Deprecated
     def imageServers() {
         try {
             def id = params.long('id')

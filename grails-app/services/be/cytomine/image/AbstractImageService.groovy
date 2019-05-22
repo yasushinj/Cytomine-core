@@ -295,18 +295,11 @@ class AbstractImageService extends ModelService {
     /**
      * Get all image servers for an image id
      */
+    @Deprecated
     def imageServers(def id) {
         AbstractImage image = read(id)
-        return [imageServersURLs : [image?.uploadedFile?.imageServer?.url]]
-    }
-
-    def getMainUploadedFile(AbstractImage abstractImage) {
-        def file = abstractImage.uploadedFile
-        while(file.parent) {
-            file = file.parent
-        }
-
-        return file
+        AbstractSlice slice = image.getReferenceSlice()
+        return [imageServersURLs : [slice?.uploadedFile?.imageServer?.url + "/slice/tile?zoomify=" + slice?.path]]
     }
 
     def getStringParamsI18n(def domain) {
