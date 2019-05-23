@@ -45,7 +45,6 @@ public class CustomAjaxAwareAuthenticationEntryPoint extends AjaxAwareAuthentica
 
         String redirectUrl = null;
         if (this.useForward) {
-            println "ici"
             if (this.forceHttps && "http".equals(req.getScheme())) {
                 redirectUrl = this.buildHttpsRedirectUrlForRequest(req);
             }
@@ -62,7 +61,6 @@ public class CustomAjaxAwareAuthenticationEntryPoint extends AjaxAwareAuthentica
             }
         } else {
             //redirectUrl = this.buildRedirectUrlToLoginPage(req, res, e);
-            println "la"
             redirectUrl = grailsApplication.config.grails.serverURL + loginFormUrl
         }
 
