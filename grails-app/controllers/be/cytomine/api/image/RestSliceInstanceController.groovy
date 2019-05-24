@@ -36,12 +36,18 @@ class RestSliceInstanceController extends RestController {
 
     @RestApiMethod(description = "Get all slice instances for the given image instance", listing = true)
     @RestApiParams(params = [
-            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image instance id")
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image instance id"),
+            @RestApiParam(name = "withRank", type = "boolean", paramType = RestApiParamType.QUERY, description = "True if rank of slice dimensions have to be returned", required = false)
     ])
     def listByImageInstance() {
         ImageInstance image = ImageInstance.read(params.long("id"))
         if (image) {
-            responseSuccess(sliceInstanceService.list(image))
+            if (params.boolean("withRank", false)) {
+                responseSuccess(sliceInstanceService.listWithRank(image))
+            }
+            else {
+                responseSuccess(sliceInstanceService.list(image))
+            }
         }
         else {
             responseNotFound("SliceInstance", "ImageInstance", params.id)
