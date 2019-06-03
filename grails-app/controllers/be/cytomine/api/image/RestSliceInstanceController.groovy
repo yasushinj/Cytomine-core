@@ -42,12 +42,7 @@ class RestSliceInstanceController extends RestController {
     def listByImageInstance() {
         ImageInstance image = ImageInstance.read(params.long("id"))
         if (image) {
-            if (params.boolean("withRank", false)) {
-                responseSuccess(sliceInstanceService.listWithRank(image))
-            }
-            else {
-                responseSuccess(sliceInstanceService.list(image))
-            }
+            responseSuccess(sliceInstanceService.list(image))
         }
         else {
             responseNotFound("SliceInstance", "ImageInstance", params.id)

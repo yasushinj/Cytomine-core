@@ -43,6 +43,18 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The timestamp t of the slice")
     Double time
 
+    @RestApiObjectField(description = "The rank of the slice computed as ['channelRank' + 'image.channels' * ('zStackRank' + 'image.depth' * 'timeRank')]", useForCreation = false)
+    Integer rank
+
+    @RestApiObjectField(description = "The rank of the slice among other channels", useForCreation = false)
+    Integer channelRank
+
+    @RestApiObjectField(description = "The rank of the slice among other zStacks", useForCreation = false)
+    Integer zStackRank
+
+    @RestApiObjectField(description = "The rank of the slice among other frames", useForCreation = false)
+    Integer timeRank
+
     static belongsTo = [AbstractImage]
 
     static mapping = {
@@ -53,6 +65,10 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     }
 
     static constraints = {
+        rank nullable: true
+        channelRank nullable: true
+        zStackRank nullable: true
+        timeRank nullable: true
     }
 
     void checkAlreadyExist() {
@@ -86,9 +102,15 @@ class AbstractSlice extends CytomineDomain implements Serializable {
         returnArray['path'] = domain?.path
         returnArray['image'] = domain?.image?.id
         returnArray['mime'] = domain?.mime?.mimeType
+
         returnArray['channel'] = domain?.channel
         returnArray['zStack'] = domain?.zStack
         returnArray['time'] = domain?.time
+
+        returnArray['channelRank'] = domain?.channelRank
+        returnArray['zStackRank'] = domain?.zStackRank
+        returnArray['timeRank'] = domain?.timeRank
+        returnArray['rank'] = domain?.rank
 
         returnArray
     }
