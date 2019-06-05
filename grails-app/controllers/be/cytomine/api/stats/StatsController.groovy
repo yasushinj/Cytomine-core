@@ -123,10 +123,13 @@ class StatsController extends RestController {
         responseSuccess(statsService.statTerm(project, startDate, endDate, leafsOnly))
     }
 
-    /**
-     * Compute the number of annotation for each sample and for each term
-     */
-    def statTermSlide = {
+    @RestApiMethod(description="Compute for each term the number of samples having at least one annotation associated with this term")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Annotations before this date will not be counted [Optional]"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Annotations after this date will not be counted [Optional]"),
+    ])
+    def statTermSlide() {
 
         //Get project
         Project project = Project.read(params.id)
@@ -134,23 +137,30 @@ class StatsController extends RestController {
             responseNotFound("Project", params.id)
             return
         }
-
         securityACLService.check(project,READ)
-        responseSuccess(statsService.statTermSlide(project))
+
+        Date startDate = params.startDate ? new Date(params.long("startDate")) : null
+        Date endDate = params.endDate ? new Date(params.long("endDate")) : null
+        responseSuccess(statsService.statTermSlide(project, startDate, endDate))
     }
 
-    /**
-     * For each user, compute the number of sample where he made annotation
-     */
-    def statUserSlide = {
+    @RestApiMethod(description="Compute for each user the number of samples in which (s)he created annotation")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Annotations before this date will not be counted [Optional]"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Annotations after this date will not be counted [Optional]"),
+    ])
+    def statUserSlide() {
         Project project = Project.read(params.id)
         if (!project) {
             responseNotFound("Project", params.id)
             return
         }
-
         securityACLService.check(project,READ)
-        responseSuccess(statsService.statUserSlide(project))
+
+        Date startDate = params.startDate ? new Date(params.long("startDate")) : null
+        Date endDate = params.endDate ? new Date(params.long("endDate")) : null
+        responseSuccess(statsService.statUserSlide(project, startDate, endDate))
     }
 
     /**

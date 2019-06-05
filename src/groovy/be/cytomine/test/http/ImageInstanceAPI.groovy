@@ -65,6 +65,11 @@ class ImageInstanceAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def listByProjectLight(Long id, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?light=true"
+        return doGET(URL, username, password)
+    }
+
     static def show(Long id, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/imageinstance/" + id + ".json"
         return doGET(URL, username, password)

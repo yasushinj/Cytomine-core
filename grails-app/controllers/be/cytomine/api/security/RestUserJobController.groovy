@@ -235,8 +235,8 @@ class RestUserJobController extends RestController {
                         item.created = job.created.getTime()
                         item.algo = true
                         item.isDeleted = job.dataDeleted
+                        userJobs << item
                     }
-                    userJobs << item
                 }
                 responseSuccess(userJobs)
             }

@@ -255,9 +255,17 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         assert 200 == result.code
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
+        result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
 
         project.mode = Project.EditingMode.READ_ONLY
         BasicInstanceBuilder.saveDomain(project)
+
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 403 == result.code
 
         result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
@@ -269,12 +277,19 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         project.mode = Project.EditingMode.RESTRICTED
         BasicInstanceBuilder.saveDomain(project)
 
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
         result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
+        assert 200 == result.code
+
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
 
         project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
@@ -403,29 +418,41 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
 
-        project.mode = Project.EditingMode.RESTRICTED
-        BasicInstanceBuilder.saveDomain(project)
-
-        result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-        result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-        result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
-
         project.mode = Project.EditingMode.READ_ONLY
         BasicInstanceBuilder.saveDomain(project)
 
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 403 == result.code
         result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 403 == result.code
+
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
+        result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
 
         project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
 
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
+        result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
 

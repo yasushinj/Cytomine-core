@@ -95,6 +95,12 @@ class AnnotationDomainAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def listByProjectAndDates(String username, String password, Long idProject, Long afterThan=null, Long beforeThan=null) {
+        String URL = Infos.CYTOMINEURL+"api/annotation.json?project=$idProject" +
+                (afterThan ? "&afterThan=$afterThan" : "") +
+                (beforeThan ? "&beforeThan=$beforeThan" : "")
+        return doGET(URL, username, password)
+    }
 
     static def downloadDocumentByProject(Long idProject,Long idUser, Long idTerm, Long idImageInstance, String username, String password) {
         String URL = Infos.CYTOMINEURL+"api/project/"+ idProject +"/annotation/download?users=" +idUser + "&terms=" + idTerm +"&images=" + idImageInstance + "&format=pdf"

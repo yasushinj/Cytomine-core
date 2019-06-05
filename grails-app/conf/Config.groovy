@@ -105,6 +105,7 @@ environments {
         grails.retrievalServerURL = []
     }
     development {
+        grails.UIURL = "http://localhost:8080"
         grails.serverURL = "http://localhost:8080"
         grails.uploadURL = "http://localhost-upload"
         grails.imageServerURL = ["http://localhost:9080"]

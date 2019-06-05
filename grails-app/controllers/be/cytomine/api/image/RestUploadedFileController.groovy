@@ -67,7 +67,7 @@ class RestUploadedFileController extends RestController {
         } else if (params.datatables) {
             uploadedFiles = dataTablesService.process(params, UploadedFile, null, null, null)
         } else if (params.detailed) {
-            String searchRequest = getSearchParameters().find {it.field == "original_filename" && it.operator == "ilike"}?.values
+            String searchRequest = getSearchParameters().find {it.field == "originalFilename" && it.operator == "ilike"}?.values
             searchRequest = searchRequest ? "%"+searchRequest+"%" : "%"
 
             uploadedFiles = dataTablesService.getUploadedFilesTable(null, searchRequest, null, params.order, params.sort)

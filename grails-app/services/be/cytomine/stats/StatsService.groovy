@@ -134,27 +134,24 @@ class StatsService extends ModelService {
         return data
     }
 
-    def statUserSlide(Project project){
-        def terms = Term.findAllByOntology(project.getOntology())
-        if(terms.isEmpty()) {
-            return []
-        }
-        Map<Long, Object> result = new HashMap<Long, Object>()
-
-        //numberOfAnnotationsByUserAndImage[0] = id image, numberOfAnnotationsByUserAndImage[1] = user, numberOfAnnotationsByUserAndImage[2] = number of annotation
-        def numberOfAnnotationsByUserAndImage = AnnotationTerm.createCriteria().list {
-            inList("term", terms)
-            join("userAnnotation")
-            createAlias("userAnnotation", "a")
+    def statUserSlide(Project project, Date startDate, Date endDate) {
+        //numberOfAnnotatedImagesByUser[0] = user id, numberOfAnnotatedImagesByUser[1] = number of annotated images
+        def numberOfAnnotatedImagesByUser = UserAnnotation.createCriteria().list {
+            eq("project", project)
+            if(startDate) {
+                gt("created", startDate)
+            }
+            if(endDate) {
+                lt("created", endDate)
+            }
             projections {
-                eq("a.project", project)
-                groupProperty("a.image.id")
-                groupProperty("a.user")
-                count("a.user")
+                groupProperty("user.id")
+                countDistinct("image.id")
             }
         }
 
-        //build empty result table
+        // Build empty result table
+        Map<Long, Object> result = new HashMap<Long, Object>()
         secUserService.listLayers(project).each { user ->
             def item = [:]
             item.id = user.id
@@ -163,38 +160,19 @@ class StatsService extends ModelService {
             result.put(item.id, item)
         }
 
-        //Fill result table
-        numberOfAnnotationsByUserAndImage.each { item ->
-            def user = result.get(item[1].id)
-            if(user) user.value++;
+        // Fill result table
+        numberOfAnnotatedImagesByUser.each { item ->
+            def user = result.get(item[0])
+            if(user) user.value = item[1]
         }
 
         return result.values()
     }
 
-    def statTermSlide(Project project){
+    def statTermSlide(Project project, Date startDate, Date endDate) {
         Map<Long, Object> result = new HashMap<Long, Object>()
         //Get project term
         def terms = Term.findAllByOntology(project.getOntology())
-
-        //Check if there are user layers
-        def userLayers = secUserService.listLayers(project)
-        if(terms.isEmpty() || userLayers.isEmpty()) {
-            return []
-        }
-
-        def annotationsNumber = AnnotationTerm.createCriteria().list {
-            inList("term", terms)
-            inList("user", userLayers)
-            join("userAnnotation")
-            createAlias("userAnnotation", "a")
-            projections {
-                eq("a.project", project)
-                groupProperty("a.image.id")
-                groupProperty("term.id")
-                count("term.id")
-            }
-        }
 
         //build empty result table
         terms.each { term ->
@@ -206,11 +184,23 @@ class StatsService extends ModelService {
             result.put(item.id, item)
         }
 
-        //Fill result table
-        annotationsNumber.each { item ->
-            def term = item[1]
-            result.get(term).value++;
+        //add an item for the annotations not associated to any term
+        result[null] = [id: null, value: 0]
+
+        //Get the number of annotation for each term
+        def sql = new Sql(dataSource)
+        sql.eachRow("" +
+                "SELECT at.term_id, count(DISTINCT ua.image_id) " +
+                "FROM user_annotation ua " +
+                "LEFT JOIN annotation_term at " +
+                "ON at.user_annotation_id = ua.id " +
+                "WHERE ua.project_id = $project.id " +
+                (startDate ? "AND ua.created > '$startDate' " : "") +
+                (endDate ? "AND ua.created < '$endDate' " : "") +
+                "GROUP BY at.term_id ") {
+            result.get(it[0]).value = it[1]
         }
+
         return result.values()
     }
 
