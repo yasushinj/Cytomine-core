@@ -92,7 +92,8 @@ class RestImageInstanceController extends RestController {
     @RestApiParam(name="sortColumn", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Column sort (created by default)"),
     @RestApiParam(name="sortDirection", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Sort direction (desc by default)"),
     @RestApiParam(name="search", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Original filename search filter (all by default)"),
-    @RestApiParam(name="withLastActivity", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Return the last consultation of current user in each image. Not compatible with tree and datatables parameters ")
+    @RestApiParam(name="withLastActivity", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Return the last consultation of current user in each image. Not compatible with tree, excludeimagegroup and datatables parameters "),
+    @RestApiParam(name="light", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional, default false) If true, the returned list will only contain id, instanceFilename and blindedName properties. Not compatible with tree, excludeimagegroup, datatables and withLastActivity parameters")
     ])
     def listByProject() {
         Project project = projectService.read(params.long('project'))
@@ -108,8 +109,9 @@ class RestImageInstanceController extends RestController {
             def extended = [:]
             if(params.withLastActivity) extended.put("withLastActivity",params.withLastActivity)
             def imageList
-            if(extended.isEmpty()){
-                imageList = imageInstanceService.list(project, sortColumn, sortDirection, search)
+            if(extended.isEmpty()) {
+                boolean light = params.getBoolean("light")
+                imageList = imageInstanceService.list(project, sortColumn, sortDirection, search, light)
             } else {
                 imageList = imageInstanceService.listExtended(project, sortColumn, sortDirection, search, extended)
             }

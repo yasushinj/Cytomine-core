@@ -118,9 +118,9 @@ class StatsTests  {
     }
 
 
-    void testStatsTermslide() {
+    void testStatsTermSlide() {
         Project project = BasicInstanceBuilder.getProject()
-        def result;
+        def result
 
         result = StatsAPI.statTermSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -129,13 +129,10 @@ class StatsTests  {
 
         int total = json.collection.size()
 
-        // we add a terme with an annotation
-
+        // we add a term with an annotation
         Term termToAdd = BasicInstanceBuilder.getTermNotExist()
         result = TermAPI.create(termToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-
-
 
         def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist(project)
         Term term2 = BasicInstanceBuilder.getTermNotExist()
@@ -149,20 +146,23 @@ class StatsTests  {
         assert 200 == result.code
 
 
-
-
         result = StatsAPI.statTermSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
-
         assert json.collection.size() == total+1
-
 
         result = StatsAPI.statTermSlide(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
 
+        // test with dates parameters
+        Long startTime = new Date().getTime()
+        result = StatsAPI.statTermSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startTime, startTime + 1000)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
     }
+
 
     void testStatsUserAnnotation() {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
@@ -231,7 +231,12 @@ class StatsTests  {
         result = StatsAPI.statUser(-1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
 
-
+        // test with dates parameters
+        Long startTime = new Date().getTime()
+        result = StatsAPI.statTermSlide(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startTime, startTime + 1000)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
     }
 
     void testStatsUserAnnotationEvolution() {

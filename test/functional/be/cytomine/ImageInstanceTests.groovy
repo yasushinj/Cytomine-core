@@ -94,8 +94,17 @@ class ImageInstanceTests  {
         assert json.collection instanceof JSONArray
     }
 
+    void testListImagesInstanceByProjectLight() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        def result = ImageInstanceAPI.listByProjectLight(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
 
-    void testListImagesInstanceByUserLigh() {
+
+    void testListImagesInstanceByUserLight() {
         BasicInstanceBuilder.getImageInstance()
         def result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

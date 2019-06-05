@@ -200,8 +200,8 @@ class SecUserService extends ModelService {
                 def userJob = UserJob.findByJob(job);
                 if (userJob) {
                     userJob.username = job.software.name + " " + job.created
+                    users << userJob
                 }
-                users << userJob
             }
         }
         return users

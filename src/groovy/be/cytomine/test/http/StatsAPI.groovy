@@ -32,13 +32,17 @@ class StatsAPI  extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def statTermSlide(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/termslide.json"
+    static def statTermSlide(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/termslide.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 
-    static def statUserSlide(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/userslide.json"
+    static def statUserSlide(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "api/project/" + id + "/stats/userslide.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 
