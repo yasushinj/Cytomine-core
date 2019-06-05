@@ -5,6 +5,7 @@ import be.cytomine.Exception.AlreadyExistException
 import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
+import org.restapidoc.annotation.RestApiObjectFields
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -34,26 +35,18 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The Cytomine internal slice mime type.")
     Mime mime
 
-    @RestApiObjectField(description = "The channel c of the slice")
-    Double channel
+    @RestApiObjectField(description = "The channel this plane is for. No unit. This is numbered from 0.")
+    Integer channel
 
-    @RestApiObjectField(description = "The depth z of the slice")
-    Double zStack
+    @RestApiObjectField(description = "The Z-section this plane is for. No unit. This is numbered from 0.")
+    Integer zStack
 
-    @RestApiObjectField(description = "The timestamp t of the slice")
-    Double time
+    @RestApiObjectField(description = "The timepoint this plane is for. No unit. This is numbered from 0.")
+    Integer time
 
-    @RestApiObjectField(description = "The rank of the slice computed as ['channelRank' + 'image.channels' * ('zStackRank' + 'image.depth' * 'timeRank')]", useForCreation = false)
-    Integer rank
-
-    @RestApiObjectField(description = "The rank of the slice among other channels", useForCreation = false)
-    Integer channelRank
-
-    @RestApiObjectField(description = "The rank of the slice among other zStacks", useForCreation = false)
-    Integer zStackRank
-
-    @RestApiObjectField(description = "The rank of the slice among other frames", useForCreation = false)
-    Integer timeRank
+    @RestApiObjectFields(params = [
+            @RestApiObjectField(apiFieldName = "rank", description = "The rank of the slice computed as ['channel' + 'image.channels' * ('zStack' + 'image.depth' * 'time')]", useForCreation = false)
+    ])
 
     static belongsTo = [AbstractImage]
 
@@ -65,10 +58,6 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     }
 
     static constraints = {
-        rank nullable: true
-        channelRank nullable: true
-        zStackRank nullable: true
-        timeRank nullable: true
     }
 
     void checkAlreadyExist() {
@@ -89,9 +78,9 @@ class AbstractSlice extends CytomineDomain implements Serializable {
         domain.image = JSONUtils.getJSONAttrDomain(json, "image", new AbstractImage(), true)
         domain.mime = JSONUtils.getJSONAttrDomain(json,"mime",new Mime(),'mimeType','String',true)
 
-        domain.channel = JSONUtils.getJSONAttrDouble(json, "channel", 0)
-        domain.zStack = JSONUtils.getJSONAttrDouble(json, "zStack", 0)
-        domain.time = JSONUtils.getJSONAttrDouble(json, "time", 0)
+        domain.channel = JSONUtils.getJSONAttrInteger(json, "channel", 0)
+        domain.zStack = JSONUtils.getJSONAttrInteger(json, "zStack", 0)
+        domain.time = JSONUtils.getJSONAttrInteger(json, "time", 0)
 
         domain
     }
@@ -107,9 +96,6 @@ class AbstractSlice extends CytomineDomain implements Serializable {
         returnArray['zStack'] = domain?.zStack
         returnArray['time'] = domain?.time
 
-        returnArray['channelRank'] = domain?.channelRank
-        returnArray['zStackRank'] = domain?.zStackRank
-        returnArray['timeRank'] = domain?.timeRank
         returnArray['rank'] = domain?.rank
 
         returnArray
@@ -125,6 +111,10 @@ class AbstractSlice extends CytomineDomain implements Serializable {
 
     def getMimeType(){
         return mime?.mimeType
+    }
+
+    def getRank() {
+        return this.channel + this.image.channels * (this.zStack + this.image.depth * this.time)
     }
 
     CytomineDomain[] containers() {
