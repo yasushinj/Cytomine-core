@@ -22,7 +22,7 @@ import be.cytomine.security.User
 import be.cytomine.security.UserJob
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
-import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -101,8 +101,11 @@ class JobParameterService extends ModelService {
      * Add a job parameter for a job
      */
     def addJobParameter(def idJob, def idSoftwareParameter, def value,User currentUser,Transaction transaction) {
-        def json = JSON.parse("{softwareParameter: $idSoftwareParameter, value: $value, job: $idJob}")
-        return executeCommand(new AddCommand(user: currentUser,transaction:transaction),null,json)
+        JSONObject json = new JSONObject()
+        json.put("softwareParameter", idSoftwareParameter)
+        json.put("value", value)
+        json.put("job", idJob)
+        return executeCommand(new AddCommand(user: currentUser,transaction:transaction), null, json)
     }
 
     def getStringParamsI18n(def domain) {
