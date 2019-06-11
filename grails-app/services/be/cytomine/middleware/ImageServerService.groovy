@@ -42,7 +42,7 @@ class ImageServerService extends ModelService {
     }
 
     def storageSpace(ImageServer is) {
-        return JSON.parse(new URL(makeGetUrl("/storage/size.json", is.url, [:])).text)
+        return JSON.parse(new URL(makeGetUrl("/storage/size.json", is.internalUrl, [:])).text)
     }
 
     def downloadUri(UploadedFile uploadedFile) {
@@ -229,7 +229,7 @@ class ImageServerService extends ModelService {
     }
 
     private static def imsParametersFromAbstractImage(AbstractImage image) {
-        def server = image.getImageServerUrl()
+        def server = image.getImageServerInternalUrl()
         def parameters = [
                 fif: image.path,
                 mimeType: image.uploadedFile.contentType
@@ -238,7 +238,7 @@ class ImageServerService extends ModelService {
     }
 
     private static def imsParametersFromAbstractSlice(AbstractSlice slice) {
-        def server = slice.getImageServerUrl()
+        def server = slice.getImageServerInternalUrl()
         def parameters = [
                 fif: slice.path,
                 mimeType: slice.mimeType
@@ -262,7 +262,7 @@ class ImageServerService extends ModelService {
     }
 
     private static byte[] makeRequest(def uri, def server, def parameters, def getOnly=false) {
-        def final GET_URL_MAX_LENGTH = 1
+        def final GET_URL_MAX_LENGTH = 512
         parameters = filterParameters(parameters)
         def url = makeGetUrl(uri, server, parameters)
         def http = new HTTPBuilder(server)

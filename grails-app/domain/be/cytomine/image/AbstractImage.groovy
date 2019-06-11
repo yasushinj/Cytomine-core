@@ -227,6 +227,10 @@ class AbstractImage extends CytomineDomain implements Serializable {
         return uploadedFile?.imageServer?.url
     }
 
+    def getImageServerInternalUrl() {
+        return uploadedFile?.imageServer?.internalUrl
+    }
+
     def getZoomLevels() {
         if (!width || !height)
             return 1

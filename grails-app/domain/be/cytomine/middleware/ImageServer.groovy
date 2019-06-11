@@ -74,4 +74,8 @@ class ImageServer extends CytomineDomain {
     CytomineDomain container() {
         this
     }
+
+    String getInternalUrl() {
+        return this.url.replace("https", "http")
+    }
 }
