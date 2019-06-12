@@ -97,10 +97,6 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
      */
     String wktLocation  //speedup listing
 
-    /* Transients values for JSON/XML rendering */
-    //TODO:: remove from here, use custom SQL request with these info
-    @RestApiObjectField(description = "The similarity rate for this annotation compare to another annotation (from retrieval)", useForCreation = false)
-    Double similarity
 
     @RestApiObjectField(description = "The reliability value estimated by the software for the mapping between annotation and term", useForCreation = false)
     Double rate

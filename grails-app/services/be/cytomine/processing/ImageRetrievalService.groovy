@@ -245,7 +245,8 @@ class ImageRetrievalService {
             try {
                 UserAnnotation annotation = UserAnnotation.read(annotationjson.id)
                 if (annotation && annotation.id != searchAnnotation.id) {
-                    annotation.similarity = new Double(annotationjson.similarities)
+                    def item = UserAnnotation.getDataFromDomain(annotation)
+                    item.similarity = new Double(annotationjson.similarities)
                     data << annotation
                 }
             }
