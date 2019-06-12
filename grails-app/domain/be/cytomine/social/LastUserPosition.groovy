@@ -18,6 +18,7 @@ package be.cytomine.social
 
 import be.cytomine.CytomineDomain
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 
@@ -33,10 +34,11 @@ class LastUserPosition extends CytomineDomain {
 
     static transients = ['id','updated','deleted','class']
 
-    static belongsTo = [user : SecUser, image : ImageInstance, project: Project]
+    static belongsTo = [user: SecUser, image: ImageInstance, slice: SliceInstance, project: Project]
 
     SecUser user
     ImageInstance image
+    SliceInstance slice
     Project project
 
     String imageName
@@ -60,6 +62,7 @@ class LastUserPosition extends CytomineDomain {
 
     static constraints = {
         project nullable: true
+        slice nullable: true
     }
 
     static mapping = {
@@ -83,6 +86,7 @@ class LastUserPosition extends CytomineDomain {
         returnArray.created = domain?.created
         returnArray.user = domain?.user?.id
         returnArray.image = domain?.image?.id
+        returnArray.slice = domain?.slice?.id
         returnArray.project = domain?.project?.id
         returnArray.zoom = domain?.zoom
         returnArray.rotation = domain?.rotation
