@@ -20,6 +20,7 @@ import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.ReviewedAnnotation
 import be.cytomine.ontology.Term
@@ -66,6 +67,9 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
      */
     @RestApiObjectField(description = "The image id of the annotation")
     ImageInstance image
+
+    @RestApiObjectField(description = "The slice id on which the annotation is drawn")
+    SliceInstance slice
 
     /**
      * Annotation project
@@ -120,7 +124,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     Integer perimeterUnit
 
 
-    static belongsTo = [ImageInstance, Project]
+    static belongsTo = [ImageInstance, Project, SliceInstance]
 
     @RestApiObjectFields(params=[
             @RestApiObjectField(apiFieldName = "centroid", description = "X,Y coord of the annotation centroid",allowedType = "map(x,y)",useForCreation = false),
@@ -137,6 +141,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         perimeter(nullable:true)
         areaUnit(nullable:true)
         perimeterUnit(nullable:true)
+        slice(nullable: true)
     }
 
     static mapping = {
@@ -156,6 +161,11 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         if(!project) {
             project = image.project
         }
+
+        if (!slice) {
+            slice = image.referenceSlice
+        }
+
         this.makeValid()
         wktLocation = location.toText()
     }
@@ -373,6 +383,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['location'] = domain?.location?.toString()
         returnArray['image'] = domain?.image?.id
+        returnArray['slice'] = domain?.slice?.id
         returnArray['geometryCompression'] = domain?.geometryCompression
         returnArray['project'] = domain?.project?.id
         returnArray['container'] = domain?.project?.id

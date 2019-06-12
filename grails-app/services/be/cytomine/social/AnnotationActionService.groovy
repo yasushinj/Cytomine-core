@@ -30,6 +30,7 @@ class AnnotationActionService extends ModelService {
         AnnotationAction action = new AnnotationAction()
         action.user = user
         action.image = image
+        action.slice = annotation.slice
         action.project = image.project
         action.created = new Date()
         action.action = JSONUtils.getJSONAttrStr(json,"action",true)
