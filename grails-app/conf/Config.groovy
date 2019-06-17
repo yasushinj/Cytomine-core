@@ -97,7 +97,7 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/js/*']
     }
     production {
-        grails.UIURL = "http://localhost"
+        grails.UIURL = null
         grails.serverURL = "http://localhost-core"
         grails.uploadURL = "http://localhost:9090"
         grails.plugin.springsecurity.useBasicAuth = false
