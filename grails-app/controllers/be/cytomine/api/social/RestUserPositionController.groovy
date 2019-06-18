@@ -47,8 +47,8 @@ class RestUserPositionController extends RestController {
 
     @RestApiMethod(description="Record the position of the current user on an image.")
     @RestApiParams(params=[
-            @RestApiParam(name="image", type="long", paramType = RestApiParamType.QUERY, description = "The image id (Mandatory)"),
-            @RestApiParam(name="slice", type="long", paramType = RestApiParamType.QUERY, description = "The slice id (Mandatory)"),
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The image id (Mandatory if slice not used)"),
+            @RestApiParam(name="slice", type="long", paramType = RestApiParamType.PATH, description = "The slice id (Mandatory if image not used)"),
             @RestApiParam(name="topLeftX", type="double", paramType = RestApiParamType.QUERY, description = "Top Left X coordinate of the user viewport"),
             @RestApiParam(name="topRightX", type="double", paramType = RestApiParamType.QUERY, description = "Top Right X coordinate of the user viewport"),
             @RestApiParam(name="bottomLeftX", type="double", paramType = RestApiParamType.QUERY, description = "Bottom Left X coordinate of the user viewport"),

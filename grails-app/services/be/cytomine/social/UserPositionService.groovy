@@ -24,8 +24,19 @@ class UserPositionService extends ModelService {
     def add(def json){
 
         SecUser user = cytomineService.getCurrentUser()
-        SliceInstance slice = SliceInstance.read(JSONUtils.getJSONAttrLong(json, "slice", 0))
-        ImageInstance image = slice.image
+        SliceInstance slice = null
+        ImageInstance image = null
+
+        def sliceId = JSONUtils.getJSONAttrLong(json, "slice", 0)
+        def imageId = JSONUtils.getJSONAttrLong(json, "image", 0)
+        if (sliceId) {
+            slice = SliceInstance.read(sliceId)
+            image = slice.image
+        }
+        else if (imageId) {
+            image = ImageInstance.read(imageId)
+            slice = image.referenceSlice
+        }
 
         def position = new LastUserPosition()
         position.user = user
