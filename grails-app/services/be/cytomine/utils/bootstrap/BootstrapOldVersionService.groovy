@@ -52,7 +52,8 @@ class BootstrapOldVersionService {
     def storageService
     def tableService
     def executorService
-
+    def mongo
+    def noSQLCollectionService
 
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
@@ -91,6 +92,15 @@ class BootstrapOldVersionService {
 
         }
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
+    }
+
+    void initv1_2_2() {
+        log.info "1.2.2"
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        db.annotationAction.update([:], [$rename:[annotation:'annotationIdent']], false, true)
+        db.annotationAction.update([:], [$set:[annotationClassName: 'be.cytomine.ontology.UserAnnotation']], false, true)
+        db.annotationAction.update([:], [$unset:[annotation:'']], false, true)
+
     }
 
     void initv1_2_1() {

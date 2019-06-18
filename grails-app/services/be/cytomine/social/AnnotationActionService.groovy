@@ -16,7 +16,7 @@ class AnnotationActionService extends ModelService {
 
     def add(def json){
 
-        AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(JSONUtils.getJSONAttrLong(json,"annotation",0))
+        AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(JSONUtils.getJSONAttrLong(json,"annotationIdent",0))
 
         securityACLService.check(annotation,READ)
         ImageInstance image = annotation.image
@@ -27,7 +27,8 @@ class AnnotationActionService extends ModelService {
         action.project = image.project
         action.action = JSONUtils.getJSONAttrStr(json,"action",true)
         action.created = new Date()
-        action.annotation = annotation
+        action.annotationClassName = annotation.class.getName()
+        action.annotationIdent = annotation.id
         action.annotationCreator = annotation.user
         action.insert(flush:true) //don't use save (stateless collection)
 
