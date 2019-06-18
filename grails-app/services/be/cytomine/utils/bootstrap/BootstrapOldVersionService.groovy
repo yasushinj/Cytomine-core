@@ -52,7 +52,8 @@ class BootstrapOldVersionService {
     def storageService
     def tableService
     def executorService
-
+    def mongo
+    def noSQLCollectionService
 
     void execChangeForOldVersion() {
         def methods = this.metaClass.methods*.name.sort().unique()
@@ -105,6 +106,12 @@ class BootstrapOldVersionService {
 
         new Sql(dataSource).executeUpdate("DROP VIEW user_image;")
         tableService.initTable()
+
+        def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
+        db.annotationAction.update([:], [$rename:[annotation:'annotationIdent']], false, true)
+        db.annotationAction.update([:], [$set:[annotationClassName: 'be.cytomine.ontology.UserAnnotation']], false, true)
+        db.annotationAction.update([:], [$unset:[annotation:'']], false, true)
+
     }
 
     void initv1_2_1() {
