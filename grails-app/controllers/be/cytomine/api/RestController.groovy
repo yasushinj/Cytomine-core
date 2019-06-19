@@ -382,7 +382,7 @@ class RestController {
     }
 
     static def allowedOperators = ["equals","like","ilike"]
-    protected def getSearchParameters(){
+    final protected def getSearchParameters(){
         def searchParameters = []
         for(def param : params){
             if (param.key ==~ /.+\[.+\]/) {

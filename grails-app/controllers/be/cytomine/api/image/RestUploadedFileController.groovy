@@ -70,7 +70,8 @@ class RestUploadedFileController extends RestController {
             String searchRequest = getSearchParameters().find {it.field == "originalFilename" && it.operator == "ilike"}?.values
             searchRequest = searchRequest ? "%"+searchRequest+"%" : "%"
 
-            uploadedFiles = dataTablesService.getUploadedFilesTable(null, searchRequest, null, params.order, params.sort)
+            def result = dataTablesService.getUploadedFilesTable(params, searchRequest, null, params.order, params.sort)
+            uploadedFiles = [collection : result.data, size : result.total]
         } else {
             Boolean onlyRoots
             if(params.onlyRoots) {
