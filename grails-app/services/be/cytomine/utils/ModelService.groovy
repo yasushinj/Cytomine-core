@@ -413,4 +413,18 @@ abstract class ModelService {
         return false
     }
 
+    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure selection, String sortedProperty = null, String sortDirection = null){
+        def total = domain.createCriteria().count(selection)
+
+        sortedProperty = (sortedProperty != null && domain.hasProperty(sortedProperty)) ? sortedProperty : "created"
+        if(!sortDirection.equals("asc") && !sortDirection.equals("desc")) sortDirection = "asc"
+
+        Closure sorting = {
+            order(sortedProperty, sortDirection)
+        }
+        Closure c = selection >> sorting
+        def data = domain.createCriteria().list(max:max, offset:offset,c)
+        return [data : data, total : total]
+    }
+
 }
