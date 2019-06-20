@@ -198,33 +198,25 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def computeGIS() {
-        def image = this.image
-
-        //compute unit
-        if (image.resolution == null) {
-            perimeterUnit = GisUtils.PIXELv
-            areaUnit = GisUtils.PIXELS2v
-        } else {
-            perimeterUnit = GisUtils.MMv
-            areaUnit = GisUtils.MICRON2v
-        }
-
-        if (image.resolution == null) {
+        if (this.image.resolution == null) {
             area = Math.round(this.location.getArea())
+            areaUnit = GisUtils.PIXELS2v
+
             perimeter = Math.round(this.location.getLength())
-        } else {
+            perimeterUnit = GisUtils.PIXELv
+        }
+        else {
             area = this.location.getArea() * image.resolution * image.resolution
+            areaUnit = GisUtils.MICRON2v
+
             perimeter = this.location.getLength() * image.resolution / 1000
+            perimeterUnit = GisUtils.MMv
         }
     }
 
     def getCentroid() {
-        if (location.area < 1) return null
         def centroid = location.getCentroid()
-        def response = [:]
-        response.x = centroid.x
-        response.y = centroid.y
-        return response
+        return [x: centroid.x, y: centroid.y]
     }
 
     def getCallBack() {

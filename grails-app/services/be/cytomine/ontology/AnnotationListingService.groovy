@@ -111,13 +111,12 @@ class AnnotationListingService extends ModelService {
                     item['userByTerm'] = (it.term ? [[id: it.annotationTerms, term: it.term, user: [it.userTerm]]] : [])
                 }
 
-                if(al.columnToPrint.contains('image')) {
-                    item['originalfilename'] = (it.originalfilename ? it.originalfilename : null)
-                }
-
                 if(al.columnToPrint.contains('gis')) {
                     item['perimeterUnit'] = (it.perimeterUnit != null? GisUtils.retrieveUnit(it.perimeterUnit) : null)
                     item['areaUnit'] = (it.areaUnit ? GisUtils.retrieveUnit(it.areaUnit) : null)
+                    item['centroid'] = [x: item['x'], y: item['y']]
+                    item.remove('x')
+                    item.remove('y')
                 }
 
                 if(al.columnToPrint.contains('meta')) {
