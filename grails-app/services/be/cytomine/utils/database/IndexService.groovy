@@ -131,12 +131,14 @@ class IndexService {
 
             // Annotation
             createIndex("user_annotation", "image_id");
+            createIndex("user_annotation", "slice_id");
             createIndex("user_annotation", "user_id");
             createIndex("user_annotation", "created");
             createIndex("user_annotation", "project_id");
             createIndex("user_annotation", "location", "GIST");
 
             createIndex("algo_annotation", "image_id");
+            createIndex("algo_annotation", "slice_id");
             createIndex("algo_annotation", "user_id");
             createIndex("algo_annotation", "created");
             createIndex("algo_annotation", "project_id");
@@ -145,11 +147,13 @@ class IndexService {
             createIndex("reviewed_annotation", "project_id");
             createIndex("reviewed_annotation", "user_id");
             createIndex("reviewed_annotation", "image_id");
+            createIndex("reviewed_annotation", "slice_id");
             createIndex("reviewed_annotation", "location", "GIST");
 
             // Annotation term
             createIndex("annotation_term", "user_annotation_id");
             createIndex("annotation_term", "term_id");
+            createIndex("annotation_term", "user_id");
 
             // Algo_annotation_term
             createIndex("algo_annotation_term","annotation_ident")
