@@ -16,21 +16,18 @@ package be.cytomine.api.ontology
 * limitations under the License.
 */
 
-import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.RestController
-import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.SharedAnnotation
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import grails.converters.JSON
-import org.codehaus.groovy.grails.web.json.JSONArray
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
-import static org.springframework.security.acls.domain.BasePermission.READ
 
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Controller for annotation created by user
@@ -53,37 +50,37 @@ class RestUserAnnotationController extends RestController {
     /**
      * List all annotation with light format
      */
-    @RestApiMethod(description="List all annotation (very light format)", listing = true)
+    @RestApiMethod(description = "List all annotation (very light format)", listing = true)
     def list() {
         responseSuccess(userAnnotationService.listLightForRetrieval())
     }
 
-    @RestApiMethod(description="Count the number of annotation for the current user")
+    @RestApiMethod(description = "Count the number of annotation for the current user")
     @RestApiResponseObject(objectIdentifier = "[total:x]")
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The user id (mandatory)"),
-            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The user id (mandatory)"),
+            @RestApiParam(name = "project", type = "long", paramType = RestApiParamType.PATH, description = "The project id"),
     ])
     def countByUser() {
         SecUser user = secUserService.read(params.id)
         Project project = projectService.read(params.project)
 
-        if(params.project && !project) throw new ObjectNotFoundException("ACL error: domain is null! Unable to process project auth checking")
+        if (params.project && !project) throw new ObjectNotFoundException("ACL error: domain is null! Unable to process project auth checking")
 
-        if(project){
+        if (project) {
             securityACLService.checkIsSameUserOrAdminContainer(project, user, cytomineService.currentUser)
         } else {
             securityACLService.checkIsSameUser(user, cytomineService.currentUser)
         }
-        responseSuccess([total:userAnnotationService.count(user, project)])
+        responseSuccess([total: userAnnotationService.count(user, project)])
     }
 
-    @RestApiMethod(description="Count the number of annotation in the project")
+    @RestApiMethod(description = "Count the number of annotation in the project")
     @RestApiResponseObject(objectIdentifier = "[total:x]")
-    @RestApiParams(params=[
-            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
-            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created after this date (optional)"),
-            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created before this date (optional)")
+    @RestApiParams(params = [
+            @RestApiParam(name = "project", type = "long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name = "startDate", type = "long", paramType = RestApiParamType.QUERY, description = "Only count the annotations created after this date (optional)"),
+            @RestApiParam(name = "endDate", type = "long", paramType = RestApiParamType.QUERY, description = "Only count the annotations created before this date (optional)")
     ])
     def countByProject() {
         Project project = projectService.read(params.project)
@@ -96,16 +93,16 @@ class RestUserAnnotationController extends RestController {
     /**
      * Download report with annotation
      */
-    @RestApiMethod(description="Download a report (pdf, xls,...) with user annotation data from a specific project")
-    @RestApiResponseObject(objectIdentifier =  "file")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
-    @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
-    @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users)"),
-    @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
-    @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
-    @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
-    @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
+    @RestApiMethod(description = "Download a report (pdf, xls,...) with user annotation data from a specific project")
+    @RestApiResponseObject(objectIdentifier = "file")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name = "terms", type = "list", paramType = RestApiParamType.QUERY, description = "The annotation terms id (if empty: all terms)"),
+            @RestApiParam(name = "users", type = "list", paramType = RestApiParamType.QUERY, description = "The annotation users id (if empty: all users)"),
+            @RestApiParam(name = "images", type = "list", paramType = RestApiParamType.QUERY, description = "The annotation images id (if empty: all images)"),
+            @RestApiParam(name = "afterThan", type = "Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+            @RestApiParam(name = "beforeThan", type = "Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
+            @RestApiParam(name = "format", type = "string", paramType = RestApiParamType.QUERY, description = "The report format (pdf, xls,...)")
     ])
     def downloadDocumentByProject() {
         Long afterThan = params.getLong('afterThan')
@@ -114,29 +111,28 @@ class RestUserAnnotationController extends RestController {
                 params.users, params.images, afterThan, beforeThan, params.format, response, "USERANNOTATION")
     }
 
-    def bootstrapUtilsService
     def sharedAnnotationService
     /**
      * Add comment on an annotation to other user
      */
-    @RestApiMethod(description="Add comment on an annotation to other user and send a mail to users")
+    @RestApiMethod(description = "Add comment on an annotation to other user and send a mail to users")
     @RestApiResponseObject(objectIdentifier = "empty")
-    @RestApiParams(params=[
-            @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
-            @RestApiParam(name="POST JSON: comment", type="string", paramType = RestApiParamType.QUERY,description = "The comment"),
-            @RestApiParam(name="POST JSON: sender", type="long", paramType = RestApiParamType.QUERY,description = "The user id who share the annotation"),
-            @RestApiParam(name="POST JSON: subject", type="string", paramType = RestApiParamType.QUERY,description = "The subject of the mail that will be send"),
-            @RestApiParam(name="POST JSON: from", type="string", paramType = RestApiParamType.QUERY,description = "The username of the user who send the mail"),
-            @RestApiParam(name="POST JSON: receivers", type="list", paramType = RestApiParamType.QUERY,description = "The list of user (id) to send the mail"),
-            @RestApiParam(name="POST JSON: emails", type="list", paramType = RestApiParamType.QUERY,required = false, description = "The list of emails to send the mail. Used if receivers is null"),
-            @RestApiParam(name="POST JSON: annotationURL ", type="string", paramType = RestApiParamType.QUERY,description = "The URL of the annotation in the image viewer"),
-            @RestApiParam(name="POST JSON: shareAnnotationURL", type="string", paramType = RestApiParamType.QUERY,description = "The URL of the comment"),
+    @RestApiParams(params = [
+            @RestApiParam(name = "annotation", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id"),
+            @RestApiParam(name = "POST JSON: comment", type = "string", paramType = RestApiParamType.QUERY, description = "The comment"),
+            @RestApiParam(name = "POST JSON: sender", type = "long", paramType = RestApiParamType.QUERY, description = "The user id who share the annotation"),
+            @RestApiParam(name = "POST JSON: subject", type = "string", paramType = RestApiParamType.QUERY, description = "The subject of the mail that will be send"),
+            @RestApiParam(name = "POST JSON: from", type = "string", paramType = RestApiParamType.QUERY, description = "The username of the user who send the mail"),
+            @RestApiParam(name = "POST JSON: receivers", type = "list", paramType = RestApiParamType.QUERY, description = "The list of user (id) to send the mail"),
+            @RestApiParam(name = "POST JSON: emails", type = "list", paramType = RestApiParamType.QUERY, required = false, description = "The list of emails to send the mail. Used if receivers is null"),
+            @RestApiParam(name = "POST JSON: annotationURL ", type = "string", paramType = RestApiParamType.QUERY, description = "The URL of the annotation in the image viewer"),
+            @RestApiParam(name = "POST JSON: shareAnnotationURL", type = "string", paramType = RestApiParamType.QUERY, description = "The URL of the comment"),
     ])
     def addComment() {
 
         UserAnnotation annotation = userAnnotationService.read(params.getLong('annotation'))
         def result = sharedAnnotationService.add(request.JSON, annotation, params)
-        if(result) {
+        if (result) {
             responseResult(result)
         }
     }
@@ -145,10 +141,10 @@ class RestUserAnnotationController extends RestController {
      * Show a single comment for an annotation
      */
     //TODO : duplicated code in AlgoAnnotation
-    @RestApiMethod(description="Get a specific comment")
-    @RestApiParams(params=[
-    @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id"),
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The comment id"),
+    @RestApiMethod(description = "Get a specific comment")
+    @RestApiParams(params = [
+            @RestApiParam(name = "annotation", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id"),
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The comment id"),
     ])
     def showComment() {
         UserAnnotation annotation = userAnnotationService.read(params.long('annotation'))
@@ -166,9 +162,9 @@ class RestUserAnnotationController extends RestController {
     /**
      * List all comments for an annotation
      */
-    @RestApiMethod(description="Get all comments on annotation", listing=true)
-    @RestApiParams(params=[
-    @RestApiParam(name="annotation", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
+    @RestApiMethod(description = "Get all comments on annotation", listing = true)
+    @RestApiParams(params = [
+            @RestApiParam(name = "annotation", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id")
     ])
     def listComments() {
         UserAnnotation annotation = userAnnotationService.read(params.long('annotation'))
@@ -182,16 +178,15 @@ class RestUserAnnotationController extends RestController {
     /**
      * Get a single annotation
      */
-    @RestApiMethod(description="Get a user annotation")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
+    @RestApiMethod(description = "Get a user annotation")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id")
     ])
     def show() {
         UserAnnotation annotation = userAnnotationService.read(params.long('id'))
         if (annotation) {
             responseSuccess(annotation)
-        }
-        else responseNotFound("Annotation", params.id)
+        } else responseNotFound("Annotation", params.id)
     }
 
 
@@ -216,24 +211,24 @@ class RestUserAnnotationController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Get a crop of a user annotation (image area framing annotation)", extensions=["png", "jpg", "tiff"])
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The annotation id"),
-            @RestApiParam(name="type", type="String", paramType=RestApiParamType.QUERY, description="Type of crop. Allowed values are 'crop' (default behavior if not set), 'draw' (the shape is drawn in the crop), 'mask' (annotation binary mask), 'alphaMask (part of crop outside annotation is transparent, requires png format)", required=false),
-            @RestApiParam(name="draw", type="boolean", paramType=RestApiParamType.QUERY, description="Equivalent to set type='draw'", required=false),
-            @RestApiParam(name="mask", type="boolean", paramType=RestApiParamType.QUERY, description="Equivalent to set type='mask'", required=false),
-            @RestApiParam(name="alphaMask", type="boolean", paramType=RestApiParamType.QUERY, description="Equivalent to set type='alphaMask'", required=false),
-            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY, description="Maximum crop size in width and height", required = false),
-            @RestApiParam(name="zoom", type="int", paramType=RestApiParamType.QUERY, description="Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
-            @RestApiParam(name="increaseArea", type="double", paramType=RestApiParamType.QUERY, description="Increase crop area by multiplying original crop size by this factor.", required = false),
-            @RestApiParam(name="complete", type="boolean", paramType = RestApiParamType.QUERY,description = "Do not simplify the annotation shape.", required=false),
-            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
-            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
-            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
-            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
-            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
+    @RestApiMethod(description = "Get a crop of a user annotation (image area framing annotation)", extensions = ["png", "jpg", "tiff"])
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id"),
+            @RestApiParam(name = "type", type = "String", paramType = RestApiParamType.QUERY, description = "Type of crop. Allowed values are 'crop' (default behavior if not set), 'draw' (the shape is drawn in the crop), 'mask' (annotation binary mask), 'alphaMask (part of crop outside annotation is transparent, requires png format)", required = false),
+            @RestApiParam(name = "draw", type = "boolean", paramType = RestApiParamType.QUERY, description = "Equivalent to set type='draw'", required = false),
+            @RestApiParam(name = "mask", type = "boolean", paramType = RestApiParamType.QUERY, description = "Equivalent to set type='mask'", required = false),
+            @RestApiParam(name = "alphaMask", type = "boolean", paramType = RestApiParamType.QUERY, description = "Equivalent to set type='alphaMask'", required = false),
+            @RestApiParam(name = "maxSize", type = "int", paramType = RestApiParamType.QUERY, description = "Maximum crop size in width and height", required = false),
+            @RestApiParam(name = "zoom", type = "int", paramType = RestApiParamType.QUERY, description = "Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
+            @RestApiParam(name = "increaseArea", type = "double", paramType = RestApiParamType.QUERY, description = "Increase crop area by multiplying original crop size by this factor.", required = false),
+            @RestApiParam(name = "complete", type = "boolean", paramType = RestApiParamType.QUERY, description = "Do not simplify the annotation shape.", required = false),
+            @RestApiParam(name = "colormap", type = "String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required = false),
+            @RestApiParam(name = "inverse", type = "int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required = false),
+            @RestApiParam(name = "contrast", type = "float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required = false),
+            @RestApiParam(name = "gamma", type = "float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required = false),
+            @RestApiParam(name = "bits", type = "int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required = false)
     ])
-    @RestApiResponseObject(objectIdentifier ="image (bytes)")
+    @RestApiResponseObject(objectIdentifier = "image (bytes)")
     def crop() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
@@ -244,21 +239,21 @@ class RestUserAnnotationController extends RestController {
 
     }
 
-    @RestApiMethod(description="Get a binary mask of a user annotation (image area framing annotation). Equivalent to crop with 'mask' type.", extensions=["png", "jpg", "tiff"])
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The annotation id"),
-            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY, description="Maximum crop size in width and height", required = false),
-            @RestApiParam(name="zoom", type="int", paramType=RestApiParamType.QUERY, description="Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
-            @RestApiParam(name="increaseArea", type="double", paramType=RestApiParamType.QUERY, description="Increase crop area by multiplying original crop size by this factor.", required = false),
-            @RestApiParam(name="complete", type="boolean", paramType = RestApiParamType.QUERY,description = "Do not simplify the annotation shape.", required=false),
-            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
-            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
-            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
-            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
-            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
+    @RestApiMethod(description = "Get a binary mask of a user annotation (image area framing annotation). Equivalent to crop with 'mask' type.", extensions = ["png", "jpg", "tiff"])
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id"),
+            @RestApiParam(name = "maxSize", type = "int", paramType = RestApiParamType.QUERY, description = "Maximum crop size in width and height", required = false),
+            @RestApiParam(name = "zoom", type = "int", paramType = RestApiParamType.QUERY, description = "Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
+            @RestApiParam(name = "increaseArea", type = "double", paramType = RestApiParamType.QUERY, description = "Increase crop area by multiplying original crop size by this factor.", required = false),
+            @RestApiParam(name = "complete", type = "boolean", paramType = RestApiParamType.QUERY, description = "Do not simplify the annotation shape.", required = false),
+            @RestApiParam(name = "colormap", type = "String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required = false),
+            @RestApiParam(name = "inverse", type = "int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required = false),
+            @RestApiParam(name = "contrast", type = "float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required = false),
+            @RestApiParam(name = "gamma", type = "float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required = false),
+            @RestApiParam(name = "bits", type = "int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required = false)
     ])
-    @RestApiResponseObject(objectIdentifier ="image (bytes)")
-    def cropMask () {
+    @RestApiResponseObject(objectIdentifier = "image (bytes)")
+    def cropMask() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.mask = true
@@ -268,21 +263,21 @@ class RestUserAnnotationController extends RestController {
         }
     }
 
-    @RestApiMethod(description="Get an alpha mask of a user annotation (image area framing annotation). Equivalent to crop with 'alphaMask' type.", extensions=["png"])
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType=RestApiParamType.PATH, description="The annotation id"),
-            @RestApiParam(name="maxSize", type="int", paramType=RestApiParamType.QUERY, description="Maximum crop size in width and height", required = false),
-            @RestApiParam(name="zoom", type="int", paramType=RestApiParamType.QUERY, description="Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
-            @RestApiParam(name="increaseArea", type="double", paramType=RestApiParamType.QUERY, description="Increase crop area by multiplying original crop size by this factor.", required = false),
-            @RestApiParam(name="complete", type="boolean", paramType = RestApiParamType.QUERY,description = "Do not simplify the annotation shape.", required=false),
-            @RestApiParam(name="colormap", type="String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required=false),
-            @RestApiParam(name="inverse", type="int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required=false),
-            @RestApiParam(name="contrast", type="float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required=false),
-            @RestApiParam(name="gamma", type="float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required=false),
-            @RestApiParam(name="bits", type="int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required=false)
+    @RestApiMethod(description = "Get an alpha mask of a user annotation (image area framing annotation). Equivalent to crop with 'alphaMask' type.", extensions = ["png"])
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id"),
+            @RestApiParam(name = "maxSize", type = "int", paramType = RestApiParamType.QUERY, description = "Maximum crop size in width and height", required = false),
+            @RestApiParam(name = "zoom", type = "int", paramType = RestApiParamType.QUERY, description = "Zoom level in which crop is extracted. Ignored if maxSize is set.", required = false),
+            @RestApiParam(name = "increaseArea", type = "double", paramType = RestApiParamType.QUERY, description = "Increase crop area by multiplying original crop size by this factor.", required = false),
+            @RestApiParam(name = "complete", type = "boolean", paramType = RestApiParamType.QUERY, description = "Do not simplify the annotation shape.", required = false),
+            @RestApiParam(name = "colormap", type = "String", paramType = RestApiParamType.QUERY, description = "The absolute path of a colormap file", required = false),
+            @RestApiParam(name = "inverse", type = "int", paramType = RestApiParamType.QUERY, description = "True if colors have to be inversed", required = false),
+            @RestApiParam(name = "contrast", type = "float", paramType = RestApiParamType.QUERY, description = "Multiply pixels by contrast", required = false),
+            @RestApiParam(name = "gamma", type = "float", paramType = RestApiParamType.QUERY, description = "Apply gamma correction", required = false),
+            @RestApiParam(name = "bits", type = "int", paramType = RestApiParamType.QUERY, description = "Output bit depth per channel", required = false)
     ])
-    @RestApiResponseObject(objectIdentifier ="image (bytes)")
-    def cropAlphaMask () {
+    @RestApiResponseObject(objectIdentifier = "image (bytes)")
+    def cropAlphaMask() {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true

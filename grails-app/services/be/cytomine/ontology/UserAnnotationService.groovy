@@ -23,6 +23,7 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.image.server.RetrievalServer
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
@@ -44,10 +45,8 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.hibernate.criterion.Restrictions
 import org.hibernate.spatial.criterion.SpatialRestrictions
 
-
 import static org.springframework.security.acls.domain.BasePermission.READ
 
-//import org.hibernatespatial.criterion.SpatialRestrictions
 class UserAnnotationService extends ModelService {
 
     static transactional = true
@@ -67,6 +66,8 @@ class UserAnnotationService extends ModelService {
     def currentRoleServiceProxy
     def sharedAnnotationService
     def imageInstanceService
+    def abstractImageService
+    def sliceInstanceService
 
     def currentDomain() {
         return UserAnnotation
@@ -75,56 +76,29 @@ class UserAnnotationService extends ModelService {
     UserAnnotation read(def id) {
         def annotation = UserAnnotation.read(id)
         if (annotation) {
-            securityACLService.check(annotation.container(),READ)
+            securityACLService.check(annotation.container(), READ)
         }
         annotation
     }
 
-    def list(Project project,def propertiesToShow = null) {
-        securityACLService.check(project.container(),READ)
-        annotationListingService.executeRequest(new UserAnnotationListing(project: project.id, columnToPrint: propertiesToShow))
+    def list(Project project, def propertiesToShow = null) {
+        securityACLService.check(project.container(), READ)
+        annotationListingService.executeRequest(new UserAnnotationListing(
+                project: project.id,
+                columnToPrint: propertiesToShow
+        ))
     }
 
-    def listIncluded(ImageInstance image, String geometry, SecUser user,  List<Long> terms, AnnotationDomain annotation = null,def propertiesToShow = null) {
-        securityACLService.check(image.container(),READ)
-        AnnotationListing al = new UserAnnotationListing(
+    def listIncluded(ImageInstance image, String geometry, SecUser user, List<Long> terms, AnnotationDomain annotation = null, def propertiesToShow = null) {
+        securityACLService.check(image.container(), READ)
+        annotationListingService.executeRequest(new UserAnnotationListing(
                 columnToPrint: propertiesToShow,
-                image : image.id,
-                user : user.id,
-                terms : terms,
+                image: image.id,
+                user: user.id,
+                terms: terms,
                 excludedAnnotation: annotation?.id,
                 bbox: geometry
-        )
-        annotationListingService.executeRequest(al)
-    }
-
-    def count(User user, Project project = null) {
-        if(project) return UserAnnotation.countByUserAndProject(user, project)
-        return UserAnnotation.countByUser(user)
-    }
-
-    def countByProject(Project project, Date startDate, Date endDate) {
-        String request = "SELECT COUNT(*) FROM UserAnnotation WHERE project = $project.id " +
-                (startDate ? "AND created > '$startDate' " : "") +
-                (endDate ? "AND created < '$endDate' " : "")
-        def result = UserAnnotation.executeQuery(request)
-        return result[0]
-    }
-
-    /**
-     * List all annotation with a very light strcuture: id, project and crop url
-     * Use for retrieval server (suggest term)
-     */
-    def listLightForRetrieval() {
-        securityACLService.checkAdmin(cytomineService.currentUser)
-        //String request = "SELECT a.id as id, a.project_id as project FROM user_annotation a WHERE GeometryType(a.location) != 'POINT' ORDER BY id desc"
-        extractAnnotationForRetrieval(dataSource)
-    }
-
-    static def extractAnnotationForRetrieval(def dataSource) {
-        String request = "" +
-                "SELECT a.id as id, a.project_id as project FROM user_annotation a, image_instance ii, abstract_image ai WHERE a.image_id = ii.id AND ii.base_image_id = ai.id AND ai.original_filename not like '%ndpi%svs%' AND GeometryType(a.location) != 'POINT' AND st_area(a.location) < 1500000 ORDER BY st_area(a.location) DESC"
-        return selectUserAnnotationLightForRetrieval(dataSource,request)
+        ))
     }
 
     /**
@@ -136,25 +110,20 @@ class UserAnnotationService extends ModelService {
      * @param job Job that make prediction
      * @return
      */
-    def list(Project project, List<Long> userList, Term realTerm, Term suggestedTerm, Job job,def propertiesToShow = null) {
-        securityACLService.check(project.container(),READ)
-        log.info "list with suggestedTerm"
+    def list(Project project, List<Long> userList, Term realTerm, Term suggestedTerm, Job job, def propertiesToShow = null) {
+        securityACLService.check(project.container(), READ)
         if (userList.isEmpty()) {
             return []
         }
-        //Get last userjob
-        SecUser user = UserJob.findByJob(job)
-        AnnotationListing al = new UserAnnotationListing(
+        annotationListingService.executeRequest(new UserAnnotationListing(
                 columnToPrint: propertiesToShow,
-                project : project.id,
-                users : userList,
-                term : realTerm.id,
+                project: project.id,
+                users: userList,
+                term: realTerm.id,
                 suggestedTerm: suggestedTerm.id,
-                userForTermAlgo: user.id
-        )
-        annotationListingService.executeRequest(al)
+                userForTermAlgo: UserJob.findByJob(job)
+        ))
     }
-
 
     /**
      * List annotations according to some filters parameters (rem : use list light if you only need the response, not
@@ -170,7 +139,7 @@ class UserAnnotationService extends ModelService {
         Collection<UserAnnotation> annotations = UserAnnotation.createCriteria()
                 .add(Restrictions.in("user.id", userIDS))
                 .add(Restrictions.eq("image.id", image.id))
-                .add(SpatialRestrictions.intersects("location",bbox))
+                .add(SpatialRestrictions.intersects("location", bbox))
                 .list()
 
         if (!annotations.isEmpty() && termsIDS.size() > 0) {
@@ -179,13 +148,26 @@ class UserAnnotationService extends ModelService {
                 join("userAnnotation")
                 createAlias("userAnnotation", "a")
                 projections {
-                    inList("a.id", annotations.collect{it.id})
+                    inList("a.id", annotations.collect { it.id })
                     groupProperty("userAnnotation")
                 }
             }
         }
 
         return annotations
+    }
+
+    def count(User user, Project project = null) {
+        if (project) return UserAnnotation.countByUserAndProject(user, project)
+        return UserAnnotation.countByUser(user)
+    }
+
+    def countByProject(Project project, Date startDate, Date endDate) {
+        String request = "SELECT COUNT(*) FROM UserAnnotation WHERE project = $project.id " +
+                (startDate ? "AND created > '$startDate' " : "") +
+                (endDate ? "AND created < '$endDate' " : "")
+        def result = UserAnnotation.executeQuery(request)
+        return result[0]
     }
 
     /**
@@ -370,16 +352,27 @@ class UserAnnotationService extends ModelService {
 //        return [status:200,data:[]]
     }
 
-    def abstractImageService
+
+    /**
+     * List all annotation with a very light strcuture: id, project and crop url
+     * Use for retrieval server (suggest term)
+     */
+    def listLightForRetrieval() {
+        securityACLService.checkAdmin(cytomineService.currentUser)
+        //String request = "SELECT a.id as id, a.project_id as project FROM user_annotation a WHERE GeometryType(a.location) != 'POINT' ORDER BY id desc"
+        extractAnnotationForRetrieval(dataSource)
+    }
+
+    static def extractAnnotationForRetrieval(def dataSource) {
+        String request = "" +
+                "SELECT a.id as id, a.project_id as project FROM user_annotation a, image_instance ii, abstract_image ai WHERE a.image_id = ii.id AND ii.base_image_id = ai.id AND ai.original_filename not like '%ndpi%svs%' AND GeometryType(a.location) != 'POINT' AND st_area(a.location) < 1500000 ORDER BY st_area(a.location) DESC"
+        return selectUserAnnotationLightForRetrieval(dataSource, request)
+    }
+
     /**
      * Add annotation to retrieval server for similar annotation listing and term suggestion
      */
-    private indexRetrievalAnnotation(Long id) {
-        //index in retrieval
-
-        log.info "index userAnnotation $id"
-        AnnotationDomain annotation = UserAnnotation.read(id)
-
+    private indexRetrievalAnnotation(def annotation) {
         //TODO
 //        def url = annotation.urlImageServerCrop(abstractImageService)
 //        log.info "urlCrop=${url}"
@@ -394,12 +387,12 @@ class UserAnnotationService extends ModelService {
     /**
      * Add annotation from retrieval server
      */
-    private deleteRetrievalAnnotation(Long id,Long project) {
+    private deleteRetrievalAnnotation(Long id, Long project) {
         RetrievalServer retrieval = RetrievalServer.findByDeletedIsNull()
         log.info "userAnnotation.id=" + id + " retrieval-server=" + retrieval
         if (id && retrieval) {
             log.info "delete userAnnotation " + id + " on  " + retrieval.getFullURL()
-            imageRetrievalService.deleteAnnotationAsynchronous(id, project+"")
+            imageRetrievalService.deleteAnnotationAsynchronous(id, project + "")
         }
     }
 
@@ -416,31 +409,10 @@ class UserAnnotationService extends ModelService {
         }
     }
 
-    def afterAdd(def domain, def response) {
-        response.data['annotation'] = response.data.userannotation
-        response.data.remove('userannotation')
-
-    }
-
-    def afterDelete(def domain, def response) {
-        response.data['annotation'] = response.data.userannotation
-        response.data.remove('userannotation')
-    }
-
-    def afterUpdate(def domain, def response) {
-        response.data['annotation'] = response.data.userannotation
-        response.data.remove('userannotation')
-    }
-
-    def getStringParamsI18n(def domain) {
-        return [cytomineService.getCurrentUser().toString(), domain.image?.getBlindInstanceFilename(), domain.user.toString()]
-    }
-
-
     /**
      * Execute request and format result into a list of map
      */
-    private static def selectUserAnnotationLightForRetrieval(def dataSource,String request) {
+    private static def selectUserAnnotationLightForRetrieval(def dataSource, String request) {
         def data = []
         def sql = new Sql(dataSource)
         sql.eachRow(request) {
@@ -452,47 +424,6 @@ class UserAnnotationService extends ModelService {
         }
         sql.close()
         data
-    }
-
-    def deleteDependentAlgoAnnotationTerm(UserAnnotation ua, Transaction transaction, Task task = null) {
-        AlgoAnnotationTerm.findAllByAnnotationIdent(ua.id).each {
-            algoAnnotationTermService.delete(it,transaction,null,false)
-        }
-    }
-
-    def deleteDependentAnnotationTerm(UserAnnotation ua, Transaction transaction, Task task = null) {
-        AnnotationTerm.findAllByUserAnnotation(ua).each {
-            try {
-                annotationTermService.delete(it,transaction,null,false)
-            } catch (ForbiddenException fe) {
-                throw new ForbiddenException("This annotation has been linked to the term "+it.term+" by "+it.userDomainCreator()+". "+it.userDomainCreator()+" must unlink its term before you can delete this annotation.")
-            }
-        }
-    }
-
-    def deleteDependentReviewedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
-//        ReviewedAnnotation.findAllByParentIdent(ua.id).each {
-//            reviewedAnnotationService.delete(it,transaction,null,false)
-//        }
-     }
-
-    def deleteDependentSharedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
-        //TODO: we should implement a full service for sharedannotation and delete them if annotation is deleted
-//        if(SharedAnnotation.findByUserAnnotation(ua)) {
-//            throw new ConstraintException("There are some comments on this annotation. Cannot delete it!")
-//        }
-
-        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
-            sharedAnnotationService.delete(it,transaction,null,false)
-        }
-
-    }
-
-    def deleteDependentProperty(UserAnnotation ua, Transaction transaction, Task task = null) {
-        Property.findAllByDomainIdent(ua.id).each {
-            propertyService.delete(it,transaction,null,false)
-        }
-
     }
 
 }

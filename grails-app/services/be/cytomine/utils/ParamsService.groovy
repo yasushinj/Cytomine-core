@@ -124,7 +124,17 @@ class ParamsService {
             def propertiesToPrint = []
 
             //map group properties and the url params name
-            def assoc = [showBasic:'basic',showMeta:'meta',showWKT:'wkt',showGIS:'gis',showTerm:'term',showImage:'image',showAlgo:'algo', showUser: 'user']
+            def assoc = [
+                    showBasic:'basic',
+                    showMeta:'meta',
+                    showWKT:'wkt',
+                    showGIS:'gis',
+                    showTerm:'term',
+                    showImage:'image',
+                    showAlgo:'algo',
+                    showUser: 'user',
+                    showSlice: 'slice'
+            ]
 
             //show if ask
             assoc.each { show, group ->

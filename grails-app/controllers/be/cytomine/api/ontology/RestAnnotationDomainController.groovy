@@ -102,6 +102,7 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="jobForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with a term added by this job id"),
         @RestApiParam(name="term", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with this term id"),
         @RestApiParam(name="image", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this image id"),
+        @RestApiParam(name="slice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this slice id"),
         @RestApiParam(name="suggestedTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for this term by a job"),
         @RestApiParam(name="userForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only user annotation link with a term added by this job id"),
         @RestApiParam(name="kmeansValue", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only used for GUI "),
@@ -109,6 +110,7 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="reviewed", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Get only reviewed annotations"),
         @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation reviewed by these users"),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
+        @RestApiParam(name="slices", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these slices id"),
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
         @RestApiParam(name="notReviewedOnly", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation not reviewed"),
         @RestApiParam(name="noTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term"),
@@ -130,7 +132,7 @@ class RestAnnotationDomainController extends RestController {
 
          try {
              def data = doSearch(params).result
-                 responseSuccess(data)
+             responseSuccess(data)
         } catch (CytomineException e) {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
@@ -213,19 +215,23 @@ class RestAnnotationDomainController extends RestController {
         if(isReviewedAnnotationAsked(params)) {
             al = new ReviewedAnnotationListing()
             result = createRequest(al, params)
-        } else if(isRoiAnnotationAsked(params)) {
+        }
+        else if(isRoiAnnotationAsked(params)) {
             al = new RoiAnnotationListing()
             result = createRequest(al, params)
-        } else if(isAlgoAnnotationAsked(params)) {
+        }
+        else if(isAlgoAnnotationAsked(params)) {
             al = new AlgoAnnotationListing()
             result.addAll(createRequest(al, params))
+
+            //if algo, we look for user_annotation JOIN algo_annotation_term  too
             params.suggestedTerm = params.term
             params.term = null
             params.usersForTermAlgo = null
-
-            al = new UserAnnotationListing() //if algo, we look for user_annotation JOIN algo_annotation_term  too
+            al = new UserAnnotationListing()
             result.addAll(createRequest(al, params))
-        } else {
+        }
+        else {
             al = new UserAnnotationListing()
             result = createRequest(al, params)
         }
@@ -341,71 +347,97 @@ class RestAnnotationDomainController extends RestController {
     private def createRequest(AnnotationListing al, def params) {
 
         al.columnToPrint = paramsService.getPropertyGroupToShow(params)
+        
+        // Project
         al.project = params.getLong('project')
-        al.user = params.getLong('user')
-        if(params.getLong("job")) {
-            al.user = UserJob.findByJob(Job.read(params.getLong("job")))?.id
-        }
-        if(params.getLong("jobForTermAlgo")) {
-            al.userForTermAlgo = UserJob.findByJob(Job.read(params.getLong("jobForTermAlgo")))?.id
-        }
-
-        al.term = params.getLong('term')
+        
+        // Images
         al.image = params.getLong('image')
-        al.suggestedTerm = params.getLong('suggestedTerm')
-        al.userForTermAlgo = params.getLong('userForTermAlgo')
+        def images = params.get('images')
+        if(images) {
+            al.images = params.get('images').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+        
+        // Slices
+        al.slice = params.getLong('slice')
+        def slices = params.get('slices')
+        if(slices) {
+            al.slices = params.get('slices').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
 
-        al.kmeansValue = params.getLong('kmeansValue')
-        al.excludedAnnotation = params.getLong('excludedAnnotation')
-
+        // Users
+        al.user = params.getLong('user')
         def users = params.get('users')
         if(users) {
             al.users = params.get('users').replace("_",",").split(",").collect{Long.parseLong(it)}
         }
 
-        def reviewUsers = params.get('reviewUsers')
-        if(reviewUsers) {
-            al.reviewUsers = reviewUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
-        }
-
-        def images = params.get('images')
-        if(images) {
-            al.images = params.get('images').replace("_",",").split(",").collect{Long.parseLong(it)}
-        }
-
-        def terms = params.get('terms')
-        if(terms) {
-            al.terms = params.get('terms').replace("_",",").split(",").collect{Long.parseLong(it)}
-        }
-
+        // Users for term
+        //TODO user for term ?
         def usersForTerm = params.get('usersForTerm')
         if(usersForTerm) {
             al.usersForTerm = params.get('usersForTerm').split(",").collect{Long.parseLong(it)}
         }
 
-        def suggestedTerms = params.get('suggestedTerms')
-        if(suggestedTerms) {
-            al.suggestedTerms = params.get('suggestedTerms').split(",").collect{Long.parseLong(it)}
-        }
-
+        // Users for term algo
+        al.userForTermAlgo = params.getLong('userForTermAlgo')
         def usersForTermAlgo = params.get('usersForTermAlgo')
         if(usersForTermAlgo) {
             al.usersForTermAlgo = params.get('usersForTermAlgo').split(",").collect{Long.parseLong(it)}
         }
 
-        al.notReviewedOnly = params.getBoolean('notReviewedOnly')
+        // Jobs
+        if(params.getLong("job")) {
+            al.user = UserJob.findByJob(Job.read(params.getLong("job")))?.id
+        }
+
+        // Jobs for term algo
+        if(params.getLong("jobForTermAlgo")) {
+            al.userForTermAlgo = UserJob.findByJob(Job.read(params.getLong("jobForTermAlgo")))?.id
+        }
+
+        // Terms
+        al.term = params.getLong('term')
+        def terms = params.get('terms')
+        if(terms) {
+            al.terms = params.get('terms').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+
+        // Suggested terms
+        al.suggestedTerm = params.getLong('suggestedTerm')
+        def suggestedTerms = params.get('suggestedTerms')
+        if(suggestedTerms) {
+            al.suggestedTerms = params.get('suggestedTerms').split(",").collect{Long.parseLong(it)}
+        }
+
+        // Boolean for terms
         al.noTerm = params.getBoolean('noTerm')
         al.noAlgoTerm = params.getBoolean('noAlgoTerm')
         al.multipleTerm = params.getBoolean('multipleTerm')
-        al.kmeans = params.getBoolean('kmeans')
 
+        // Review
+        al.notReviewedOnly = params.getBoolean('notReviewedOnly')
+
+        // Review users
+        // TODO: reviewUser ?
+        def reviewUsers = params.get('reviewUsers')
+        if(reviewUsers) {
+            al.reviewUsers = reviewUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+
+        // Kmeans
+        al.kmeans = params.getBoolean('kmeans')
+        al.kmeansValue = params.getLong('kmeansValue')
+
+        // BBOX
         if(params.get('bbox')) {
             al.bbox = GeometryUtils.createBoundingBox(params.get('bbox')).toText()
         }
-
         if(params.get('bboxAnnotation')) {
             al.bboxAnnotation = AnnotationDomain.getAnnotationDomain(params.getLong('bboxAnnotation')).wktLocation
         }
+
+        // Base annotation
         if(params.get('baseAnnotation')) {
             al.baseAnnotation = params.baseAnnotation
         }
@@ -413,12 +445,15 @@ class RestAnnotationDomainController extends RestController {
             al.maxDistanceBaseAnnotation = params.getLong('maxDistanceBaseAnnotation')
         }
 
+        // Date
         if(params.afterThan) {
             al.afterThan = new Date(params.long('afterThan'))
         }
         if(params.beforeThan) {
             al.beforeThan = new Date(params.long('beforeThan'))
         }
+
+        al.excludedAnnotation = params.getLong('excludedAnnotation') // TODO ?
 
         annotationListingService.listGeneric(al)
     }

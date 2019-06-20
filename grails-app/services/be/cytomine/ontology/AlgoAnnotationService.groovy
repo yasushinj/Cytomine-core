@@ -76,8 +76,10 @@ class AlgoAnnotationService extends ModelService {
 
     def list(Project project,def propertiesToShow = null) {
         securityACLService.check(project,READ)
-        AnnotationListing al = new AlgoAnnotationListing(columnToPrint: propertiesToShow,project : project.id)
-        annotationListingService.executeRequest(al)
+        annotationListingService.executeRequest(new AlgoAnnotationListing(
+                columnToPrint: propertiesToShow,
+                project : project.id
+        ))
     }
 
     def list(Job job,def propertiesToShow = null) {
@@ -85,29 +87,25 @@ class AlgoAnnotationService extends ModelService {
         List<UserJob> users = UserJob.findAllByJob(job);
         List algoAnnotations = []
         users.each { user ->
-            AnnotationListing al = new AlgoAnnotationListing(columnToPrint: propertiesToShow,user : user.id)
-            algoAnnotations.addAll(annotationListingService.executeRequest(al))
+            algoAnnotations.addAll(new AlgoAnnotationListing(
+                    columnToPrint: propertiesToShow,
+                    user : user.id
+            ))
         }
         return algoAnnotations
     }
 
     def listIncluded(ImageInstance image, String geometry, SecUser user,  List<Long> terms, AnnotationDomain annotation = null,def propertiesToShow = null) {
         securityACLService.check(image.container(),READ)
-
-        def annotations = []
-        AnnotationListing al = new AlgoAnnotationListing(
+        annotationListingService.executeRequest(new AlgoAnnotationListing(
                 columnToPrint: propertiesToShow,
                 image : image.id,
                 user : user.id,
                 suggestedTerms : terms,
                 excludedAnnotation : annotation?.id,
                 bbox: geometry
-        )
-        annotations.addAll(annotationListingService.executeRequest(al))
-        return annotations
+        ))
     }
-
-
 
     /**
      * Add the new domain with JSON data

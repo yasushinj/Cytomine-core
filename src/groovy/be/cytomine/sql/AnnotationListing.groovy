@@ -21,6 +21,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.ontology.Term
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -49,42 +50,57 @@ abstract class AnnotationListing {
     def columnToPrint
 
     def project = null
-    def user = null
-    def term = null
     def image = null
-    def suggestedTerm = null
+    def images = null
+
+    def slice = null
+    def slices = null
+
+    def user = null
     def userForTermAlgo = null
+    def usersForTermAlgo = null
+
+    def term = null
+    def terms = null
+
+    def suggestedTerm = null
+    def suggestedTerms = null
+
     def users = null //for user that draw annotation
     def usersForTerm = null //for user that add a term to annotation
-    def usersForTermAlgo = null
+
+
+
     def reviewUsers
-    def terms = null
-    def images = null
+
+
+
     def afterThan = null
     def beforeThan = null
 
-    def suggestedTerms = null
+
 
     def notReviewedOnly = false
     def noTerm = false
     def noAlgoTerm = false
     def multipleTerm = false
 
+    def bbox = null
     def bboxAnnotation = null
 
     def baseAnnotation = null
     def maxDistanceBaseAnnotation = null
 
 
-    def bbox = null
+
 
     def parents
 
     //not used for search critera (just for specific request
     def avoidEmptyCentroid = false
     def excludedAnnotation = null
-    def kmeans = false
 
+    def kmeans = false
     def kmeansValue = 3
 
     abstract def getFrom()
@@ -155,7 +171,15 @@ abstract class AnnotationListing {
             }
             return projectList.first()
         }
-        throw new WrongArgumentException("There is no project or image filter. We cannot check acl!")
+        if (slice) return SliceInstance.read(slice)?.container()
+        if (slices) {
+            def projectList = slices.collect { SliceInstance.read(it).project }.unique()
+            if (projectList.size() > 1) {
+                throw new WrongArgumentException("Slices from filter must all be from the same project!")
+            }
+            return projectList.first()
+        }
+        throw new WrongArgumentException("There is no project or image or slice filter. We cannot check acl!")
     }
 
     /**
@@ -179,25 +203,36 @@ abstract class AnnotationListing {
 
         String whereRequest =
                 getProjectConst() +
+                        getUserConst() +
                         getUsersConst() +
-                        getReviewUsersConst() +
-                        getImagesConst() +
+
                         getImageConst() +
+                        getImagesConst() +
+                        
+                        getSliceConst() +
+                        getSlicesConst() +
+
                         getTermConst() +
                         getTermsConst() +
-                        getUserConst() +
-                        getParentsConst() +
-                        getUsersForTermAlgoConst() +
-                        getExcludedAnnotationConst() +
+
+                        getUsersForTermConst() +
+
                         getUserForTermAlgoConst() +
+                        getUsersForTermAlgoConst() +
+
                         getSuggestedTermConst() +
                         getSuggestedTermsConst() +
+
                         getNotReviewedOnlyConst() +
-                        getUsersForTermConst() +
+                        getParentsConst() +
                         getAvoidEmptyCentroidConst() +
+                        getReviewUsersConst() +
+
                         getIntersectConst() +
                         getIntersectAnnotationConst() +
                         getMaxDistanceAnnotationConst() +
+                        getExcludedAnnotationConst() +
+
                         getBeforeThan() +
                         getAfterThan() +
                         createOrderBy()
@@ -283,6 +318,31 @@ abstract class AnnotationListing {
                 throw new ObjectNotFoundException("Image $image not exist!")
             }
             return "AND a.image_id = ${image.id}\n"
+        } else {
+            return ""
+        }
+    }
+
+    def getSlicesConst() {
+
+//        if (slices && image && slices.size() == Project.read(project).countSlices) {
+//            return "" //slices number equals to image slice number, no const needed
+//        } else
+        if (slices && slices.isEmpty()) {
+            throw new ObjectNotFoundException("The slice has been deleted!")
+        } else {
+            return (slices ? "AND a.slice_id IN (${slices.join(",")})\n" : "")
+        }
+
+    }
+
+    def getSliceConst() {
+        if (slice) {
+            def slice = SliceInstance.read(slice)
+            if (!slice || slice.checkDeleted()) {
+                throw new ObjectNotFoundException("Slice $slice not exist!")
+            }
+            return "AND a.slice_id = ${slice.id}\n"
         } else {
             return ""
         }
@@ -431,6 +491,7 @@ project = $project
 user = $user
 term = $term
 image = $image
+slice = $slice
 suggestedTerm = $suggestedTerm
 userForTermAlgo = $userForTermAlgo
 users = $users
@@ -439,6 +500,7 @@ usersForTermAlgo = $usersForTermAlgo
 reviewUsers = $reviewUsers
 terms = $terms
 images = $images
+slices = $slices
 afterThan = $afterThan
 beforeThan = $beforeThan
 suggestedTerms = $suggestedTerms
@@ -469,43 +531,74 @@ class UserAnnotationListing extends AnnotationListing {
      *  all properties group available, each value is a list of assoc [propertyName, SQL columnName/methodName)
      *  If value start with #, don't use SQL column, its a "trensiant property"
      */
-    def availableColumn =
-            [
-                    basic: [id: 'a.id'],
-                    meta: [
-                            countReviewedAnnotations: 'a.count_reviewed_annotations',
-                            reviewed: '(a.count_reviewed_annotations>0)',
-                            image: 'a.image_id',
-                            project: 'a.project_id',
-                            container: "a.project_id",
-                            created: 'extract(epoch from a.created)*1000',
-                            updated: 'extract(epoch from a.updated)*1000',
-                            user: 'a.user_id',
-                            countComments: 'a.count_comments',
-                            geometryCompression: 'a.geometry_compression',
-                            cropURL: '#cropURL',
-                            smallCropURL: '#smallCropURL',
-                            url: '#url',
-                            imageURL: '#imageURL'
+    def availableColumn = [
+        basic: [
+                id: 'a.id'
+        ],
+        meta: [
+                created: 'extract(epoch from a.created)*1000',
+                updated: 'extract(epoch from a.updated)*1000',
+                image: 'a.image_id',
+                slice: 'a.slice_id',
+                project: 'a.project_id',
+                user: 'a.user_id',
 
-                    ],
-                    wkt: [location: 'a.wkt_location'],
-                    gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
-                    term: [term: 'at.term_id', annotationTerms: 'at.id', userTerm: 'at.user_id'],
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
-                    algo: [id: 'aat.id', rate: 'aat.rate', idTerm: 'aat.term_id', idExpectedTerm: 'aat.expected_term_id'],
-                    user: [creator: 'u.username', lastname: 'u.lastname', firstname: 'u.firstname']
-            ]
+                nbComments: 'a.count_comments',
+
+                countReviewedAnnotations: 'a.count_reviewed_annotations', // not in single annot marshaller
+                reviewed: '(a.count_reviewed_annotations>0)',
+
+                cropURL: '#cropURL',
+                smallCropURL: '#smallCropURL',
+                url: '#url',
+                imageURL: '#imageURL'
+        ],
+        wkt: [
+                location: 'a.wkt_location',
+                geometryCompression: 'a.geometry_compression',
+        ],
+        gis: [
+                area: 'area',
+                areaUnit: 'area_unit',
+                perimeter: 'perimeter',
+                perimeterUnit: 'perimeter_unit',
+                x: 'ST_X(ST_centroid(a.location))',
+                y: 'ST_Y(ST_centroid(a.location))'
+        ],
+        term: [
+                term: 'at.term_id',
+                annotationTerms: 'at.id', // not in single annot marshaller
+                userTerm: 'at.user_id' // not in single annot marshaller
+        ],
+        image: [
+                originalFilename: 'ai.original_filename', // not in single annot marshaller
+                instanceFilename: 'ii.instance_filename' // not in single annot marshaller
+        ],
+        slice: [
+                channel: 'asl.channel',
+                zStack: 'asl.z_stack',
+                time: 'asl.time'
+        ],
+        algo: [
+                id: 'aat.id', // not in single annot marshaller
+                rate: 'aat.rate', // not in single annot marshaller
+                idTerm: 'aat.term_id', // not in single annot marshaller
+                idExpectedTerm: 'aat.expected_term_id' // not in single annot marshaller
+        ],
+        user: [
+                creator: 'u.username', // not in single annot marshaller
+                lastname: 'u.lastname', // not in single annot marshaller
+                firstname: 'u.firstname' // not in single annot marshaller
+        ]
+    ]
 
     /**
      * Generate SQL string for FROM
      * FROM depends on data to print (if image name is aksed, need to join with imageinstance+abstractimage,...)
      */
     def getFrom() {
-
         def from = "FROM user_annotation a "
         def where = "WHERE true\n"
-
 
         if (multipleTerm) {
             from = "$from, annotation_term at, annotation_term at2 "
@@ -514,33 +607,33 @@ class UserAnnotationListing extends AnnotationListing {
                     " AND a.id = at2.user_annotation_id\n" +
                     " AND at.id <> at2.id \n" +
                     " AND at.term_id <> at2.term_id \n"
-        } else if (noTerm) {
-            from = "$from LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
-            where = "$where AND at.id IS NULL \n"
-        } else if (noAlgoTerm) {
-            from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
-            where = "$where AND aat.id IS NULL \n"
-        } else {
-            if (columnToPrint.contains('term')) {
-                from = "$from LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id"
-            }
-
+        }
+        else if (noTerm) {
+            from += "LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
+            where += "AND at.id IS NULL \n"
+        }
+        else if (noAlgoTerm) {
+            from += "LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
+            where += "AND aat.id IS NULL \n"
+        }
+        else if (columnToPrint.contains('term')) {
+            from += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
         }
 
         if (columnToPrint.contains('user')) {
-            from = "$from, sec_user u "
-            where = "$where AND a.user_id = u.id \n"
+            from += "INNER JOIN sec_user u ON a.user_id = u.id "
         }
 
         if (columnToPrint.contains('image')) {
-            from = "$from, abstract_image ai, image_instance ii "
-            where = "$where AND a.image_id = ii.id \n" +
-                    "AND ii.base_image_id = ai.id\n"
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
         }
 
         if (columnToPrint.contains('algo')) {
-            from = "$from, algo_annotation_term aat "
-            where = "$where AND aat.annotation_ident = a.id\n"
+            from += "INNER JOIN algo_annotation_term aat ON aat.annotation_ident = a.id "
+        }
+
+        if (columnToPrint.contains('slice')) {
+            from += "INNER JOIN slice_instance si ON a.slice_id = si.id INNER JOIN abstract_slice asl ON si.base_slice_id = asl.id "
         }
 
         return from + "\n" + where
