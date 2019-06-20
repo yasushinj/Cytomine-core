@@ -93,8 +93,8 @@ class RoiAnnotationService extends ModelService {
 
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),minPoint,maxPoint)
-            json.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(annotationForm,minPoint,maxPoint)
+            json.location = data.geometry
             json.geometryCompression = data.rate
         } catch (Exception e) {
             log.error("Cannot simplify:" + e)

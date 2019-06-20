@@ -25,6 +25,7 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.UserJob
 import be.cytomine.utils.JSONUtils
+import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
@@ -150,11 +151,16 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
         domain.user = JSONUtils.getJSONAttrDomain(json, "user", new UserJob(), true)
 
         domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
-        try {
-            domain.location = new WKTReader().read(json.location)
+        if (json.location && json.location instanceof Geometry) {
+            domain.location = json.location
         }
-        catch (com.vividsolutions.jts.io.ParseException ex) {
-            throw new WrongArgumentException(ex.toString())
+        else {
+            try {
+                domain.location = new WKTReader().read(json.location)
+            }
+            catch (com.vividsolutions.jts.io.ParseException ex) {
+                throw new WrongArgumentException(ex.toString())
+            }
         }
 
         if (!domain.location) {
