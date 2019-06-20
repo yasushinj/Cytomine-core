@@ -24,6 +24,7 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.UserJob
 import be.cytomine.utils.JSONUtils
+import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
@@ -142,26 +143,33 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
      * @return Domain with json data filled
      */
     static AlgoAnnotation insertDataIntoDomain(def json, def domain = new AlgoAnnotation()) {
-        try {
-            domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
-            domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
-            domain.created = JSONUtils.getJSONAttrDate(json, 'created')
-            domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
-            domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
-            domain.location = new WKTReader().read(json.location)
-            domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
-            domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
-            domain.user = JSONUtils.getJSONAttrDomain(json, "user", new UserJob(), true)
+        domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
+        domain.created = JSONUtils.getJSONAttrDate(json, 'created')
+        domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
 
-            if (!domain.location) {
-                throw new WrongArgumentException("Geo is null: 0 points")
-            }
-            if (domain.location.getNumPoints() < 1) {
-                throw new WrongArgumentException("Geometry is empty:" + domain.location.getNumPoints() + " points")
-            }
+        domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
+        domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
+        domain.user = JSONUtils.getJSONAttrDomain(json, "user", new UserJob(), true)
 
-        } catch (com.vividsolutions.jts.io.ParseException ex) {
-            throw new WrongArgumentException(ex.toString())
+        domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
+        if (json.location && json.location instanceof Geometry) {
+            domain.location = json.location
+        }
+        else {
+            try {
+                domain.location = new WKTReader().read(json.location)
+            }
+            catch (com.vividsolutions.jts.io.ParseException ex) {
+                throw new WrongArgumentException(ex.toString())
+            }
+        }
+
+        if (!domain.location) {
+            throw new WrongArgumentException("Geo is null: 0 points")
+        }
+        if (domain.location.getNumPoints() < 1) {
+            throw new WrongArgumentException("Geometry is empty:" + domain.location.getNumPoints() + " points")
         }
         return domain;
     }

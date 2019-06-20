@@ -69,7 +69,7 @@ class UnionGeometryService {
             try {
                 def annotation = AnnotationDomain.getAnnotationDomain(idAnnotation)
                 if(annotation && annotation.location.getNumPoints()>10000) {
-                    def simplified = simplifyGeometryService.simplifyPolygon(annotation.location.toText())
+                    def simplified = simplifyGeometryService.simplifyPolygon(annotation.location)
                     annotation.location = simplified.geometry
                     algoAnnotationService.saveDomain(annotation)
                 }

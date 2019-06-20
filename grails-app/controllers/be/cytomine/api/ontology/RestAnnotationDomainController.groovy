@@ -709,7 +709,7 @@ class RestAnnotationDomainController extends RestController {
             AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(idAnnotation)
 
             //apply simplify
-            def result = simplifyGeometryService.simplifyPolygon(annotation.location.toText(),minPoint,maxPoint)
+            def result = simplifyGeometryService.simplifyPolygon(annotation.location,minPoint,maxPoint)
             annotation.location = result.geometry
             annotation.geometryCompression = result.rate
             userAnnotationService.saveDomain(annotation)  //saveDomain is same method in algo/reviewedannotationservice
