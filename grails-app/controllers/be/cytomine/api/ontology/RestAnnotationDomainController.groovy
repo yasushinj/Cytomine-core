@@ -79,50 +79,74 @@ class RestAnnotationDomainController extends RestController {
     @RestApiMethod(description="Search service for all annotation type. By default All fields are not visible (optim), you need to select fields using show/hideXXX query parameters.", listing = true)
     @RestApiResponseObject(objectIdentifier = "[annotation listing]")
     @RestApiParams(params=[
-        @RestApiParam(name="showDefault", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show 'basic', 'meta', and 'term' properties group. See showBasic/Meta/... for more information (default: true ONLY IF NO OTHER show/hideXXX are set)"),
-        @RestApiParam(name="showBasic", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show basic properties group (id, class...)"),
-        @RestApiParam(name="showMeta", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show meta properties group (urls, image id, project id,...)"),
-        @RestApiParam(name="showWKT", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the location WKT properties. This may slow down the request!."),
-        @RestApiParam(name="showGIS", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the form GIS field (area, centroid,...). This may slow down the request!."),
-        @RestApiParam(name="showTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the term properties (id, user who add the term,...). This may slow down the request."),
-        @RestApiParam(name="showAlgo", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the algo details (job,...). This may slow down the request."),
-        @RestApiParam(name="showUser", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation user details (username,...). This may slow down the request."),
-        @RestApiParam(name="showImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation image details (filename,...). This may slow down the request."),
-        @RestApiParam(name="hideBasic", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide basic properties group (id, class...)"),
-        @RestApiParam(name="hideMeta", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide meta properties group (urls, image id, project id,...)"),
-        @RestApiParam(name="hideWKT", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the location WKT properties. This may slow down the request!."),
-        @RestApiParam(name="hideGIS", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the form GIS field (area, centroid,...). This may slow down the request!."),
-        @RestApiParam(name="hideTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the term properties (id, user who add the term,...). This may slow down the request."),
-        @RestApiParam(name="hideAlgo", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the algo details (job,...). This may slow down the request."),
-        @RestApiParam(name="hideUser", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation user details (username,...). This may slow down the request."),
-        @RestApiParam(name="hideImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation image details (filename,...). This may slow down the request."),
-        @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this project id"),
-        @RestApiParam(name="job", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this job id"),
-        @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this user id"),
-        @RestApiParam(name="jobForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with a term added by this job id"),
-        @RestApiParam(name="term", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with this term id"),
-        @RestApiParam(name="image", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this image id"),
-        @RestApiParam(name="slice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this slice id"),
-        @RestApiParam(name="suggestedTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for this term by a job"),
-        @RestApiParam(name="userForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only user annotation link with a term added by this job id"),
-        @RestApiParam(name="kmeansValue", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only used for GUI "),
-        @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these users id"),
-        @RestApiParam(name="reviewed", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Get only reviewed annotations"),
-        @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation reviewed by these users"),
-        @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
-        @RestApiParam(name="slices", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these slices id"),
-        @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
-        @RestApiParam(name="notReviewedOnly", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation not reviewed"),
-        @RestApiParam(name="noTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term"),
-        @RestApiParam(name="noAlgoTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term from a job"),
-        @RestApiParam(name="multipleTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with multiple terms"),
-        @RestApiParam(name="kmeans", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Enable or not kmeans (only for GUI)"),
-        @RestApiParam(name="bbox", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotations having intersection with the bbox (WKT)"),
-        @RestApiParam(name="bboxAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotations having intersection with this annotation"),
-        @RestApiParam(name="baseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) The base annotation for spatial request (annotation id or wkt location)"),
-        @RestApiParam(name="maxDistanceBaseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation inside the max distance"),
-        @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
-        @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
+
+            @RestApiParam(name="showDefault", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show 'basic', 'meta', and 'term' properties group. See showBasic/Meta/... for more information (default: true ONLY IF NO OTHER show/hideXXX are set)"),
+
+            @RestApiParam(name="showBasic", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show basic properties group (id, class...)"),
+            @RestApiParam(name="hideBasic", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide basic properties group (id, class...)"),
+
+            @RestApiParam(name="showMeta", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show meta properties group (urls, image id, project id,...)"),
+            @RestApiParam(name="hideMeta", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide meta properties group (urls, image id, project id,...)"),
+
+            @RestApiParam(name="showWKT", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the location WKT properties."),
+            @RestApiParam(name="hideWKT", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the location WKT properties."),
+
+            @RestApiParam(name="showGIS", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the form GIS field (area, centroid,...). This may slow down the request!."),
+            @RestApiParam(name="hideGIS", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the form GIS field (area, centroid,...). This may slow down the request!."),
+
+            @RestApiParam(name="showTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the term properties (id, user who add the term,...). This may slow down the request."),
+            @RestApiParam(name="hideTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the term properties (id, user who add the term,...). This may slow down the request."),
+
+            @RestApiParam(name="showAlgo", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the algo details (job,...). This may slow down the request."),
+            @RestApiParam(name="hideAlgo", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the algo details (job,...). This may slow down the request."),
+
+            @RestApiParam(name="showUser", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation user details (username,...). This may slow down the request."),
+            @RestApiParam(name="hideUser", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation user details (username,...). This may slow down the request."),
+
+            @RestApiParam(name="showImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation image details (filename,...). This may slow down the request."),
+            @RestApiParam(name="hideImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation image details (filename,...). This may slow down the request."),
+
+            @RestApiParam(name="showSlice", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation slice details (c,z,t,...). This may slow down the request."),
+            @RestApiParam(name="hideSlice", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation slice details (c,z,t,...). This may slow down the request."),
+
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this project id"),
+
+            @RestApiParam(name="job", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this job id"),
+            @RestApiParam(name="user", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this user id"),
+            @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these users id"),
+
+            @RestApiParam(name="term", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with this term id"),
+            @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
+            @RestApiParam(name="noTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term"),
+            @RestApiParam(name="noAlgoTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term from a job"),
+            @RestApiParam(name="multipleTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with multiple terms"),
+
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this image id"),
+            @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
+            @RestApiParam(name="slice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this slice id"),
+            @RestApiParam(name="slices", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these slices id"),
+
+            @RestApiParam(name="suggestedTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for this term by a job"),
+            @RestApiParam(name="suggestedTerms", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for these terms by a job"),
+
+            @RestApiParam(name="userForTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only user annotation link with a term added by this user id"),
+            @RestApiParam(name="userForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only user annotation link with a term added by this job id"),
+            @RestApiParam(name="jobForTermAlgo", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with a term added by this job id"),
+
+            @RestApiParam(name="reviewed", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Get only reviewed annotations"),
+            @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation reviewed by these users"),
+            @RestApiParam(name="notReviewedOnly", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation not reviewed"),
+
+            @RestApiParam(name="kmeans", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Enable or not kmeans (only for GUI)"),
+            @RestApiParam(name="kmeansValue", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only used for GUI "),
+            @RestApiParam(name="bbox", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotations having intersection with the bbox (WKT)"),
+            @RestApiParam(name="bboxAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotations having intersection with this annotation"),
+
+            @RestApiParam(name="baseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) The base annotation for spatial request (annotation id or wkt location)"),
+            @RestApiParam(name="maxDistanceBaseAnnotation", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation inside the max distance"),
+
+            @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+            @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
     ])
     def search() {
 

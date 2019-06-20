@@ -575,9 +575,9 @@ class UserAnnotationListing extends AnnotationListing {
                 instanceFilename: 'ii.instance_filename' // not in single annot marshaller
         ],
         slice: [
-                channel: 'asl.channel',
-                zStack: 'asl.z_stack',
-                time: 'asl.time'
+                channel: 'asl.channel', // not in single annot marshaller
+                zStack: 'asl.z_stack', // not in single annot marshaller
+                time: 'asl.time' // not in single annot marshaller
         ],
         algo: [
                 id: 'aat.id', // not in single annot marshaller
@@ -674,42 +674,69 @@ class AlgoAnnotationListing extends AnnotationListing {
      *  all properties group available, each value is a list of assoc [propertyName, SQL columnName/methodName)
      *  If value start with #, don't use SQL column, its a "trensiant property"
      */
-    def availableColumn =
-            [
-                    basic: [id: 'a.id'],
-                    meta: [
-                            countReviewedAnnotations: 'a.count_reviewed_annotations',
-                            reviewed: '(a.count_reviewed_annotations>0)',
-                            image: 'a.image_id',
-                            project: 'a.project_id',
-                            container: "a.project_id",
-                            created: 'extract(epoch from a.created)*1000',
-                            updated: 'extract(epoch from a.updated)*1000',
-                            user: 'a.user_id',
-                            countComments: 'a.count_comments',
-                            geometryCompression: 'a.geometry_compression',
-                            cropURL: '#cropURL',
-                            smallCropURL: '#smallCropURL',
-                            url: '#url',
-                            imageURL: '#imageURL'
+    def availableColumn = [
+        basic: [
+                id: 'a.id'
+        ],
+        meta: [
+                created: 'extract(epoch from a.created)*1000',
+                updated: 'extract(epoch from a.updated)*1000',
+                image: 'a.image_id',
+                slice: 'a.slice_id',
+                project: 'a.project_id',
+                user: 'a.user_id',
 
-                    ],
-                    wkt: [location: 'a.wkt_location'],
-                    gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
-                    term: [term: 'aat.term_id', annotationTerms: 'aat.id', userTerm: 'aat.user_job_id', rate: 'aat.rate'],
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
-                    user: [creator: 'u.username', software: 's.name', job: 'j.created']
-            ]
+                nbComments: 'a.count_comments',
+
+                countReviewedAnnotations: 'a.count_reviewed_annotations', // not in single annot marshaller
+                reviewed: '(a.count_reviewed_annotations>0)',
+
+                cropURL: '#cropURL',
+                smallCropURL: '#smallCropURL',
+                url: '#url',
+                imageURL: '#imageURL'
+        ],
+        wkt: [
+                location: 'a.wkt_location',
+                geometryCompression: 'a.geometry_compression',
+        ],
+        gis: [
+                area: 'area',
+                areaUnit: 'area_unit',
+                perimeter: 'perimeter',
+                perimeterUnit: 'perimeter_unit',
+                x: 'ST_X(ST_centroid(a.location))',
+                y: 'ST_Y(ST_centroid(a.location))'
+        ],
+        term: [
+                term: 'aat.term_id',
+                annotationTerms: 'aat.id',
+                userTerm: 'aat.user_job_id',
+                rate: 'aat.rate'
+        ],
+        image: [
+                originalFilename: 'ai.original_filename', // not in single annot marshaller
+                instanceFilename: 'ii.instance_filename' // not in single annot marshaller
+        ],
+        slice: [
+                channel: 'asl.channel', // not in single annot marshaller
+                zStack: 'asl.z_stack', // not in single annot marshaller
+                time: 'asl.time' // not in single annot marshaller
+        ],
+        user: [
+                creator: 'u.username', // not in single annot marshaller
+                software: 's.name', // not in single annot marshaller
+                job: 'j.id' // not in single annot marshaller
+        ]
+    ]
 
     /**
      * Generate SQL string for FROM
      * FROM depends on data to print (if image name is aksed, need to join with imageinstance+abstractimage,...)
      */
     def getFrom() {
-
         def from = "FROM algo_annotation a "
         def where = "WHERE true\n"
-
 
         if (multipleTerm) {
             from = "$from, algo_annotation_term aat, algo_annotation_term aat2 "
@@ -718,26 +745,25 @@ class AlgoAnnotationListing extends AnnotationListing {
                     " AND a.id = aat2.annotation_ident\n" +
                     " AND aat.id <> aat2.id \n" +
                     " AND aat.term_id <> aat2.term_id \n"
-        } else if (noTerm || noAlgoTerm) {
+        }
+        else if (noTerm || noAlgoTerm) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_job_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
             where = "$where AND aat.id IS NULL \n"
 
-        } else {
-            if (columnToPrint.contains('term')) {
-                from = "$from LEFT OUTER JOIN algo_annotation_term aat ON a.id = aat.annotation_ident"
-            }
+        } else if (columnToPrint.contains('term')) {
+            from += "LEFT JOIN algo_annotation_term aat ON a.id = aat.annotation_ident "
         }
+
         if (columnToPrint.contains('image')) {
-            from = "$from, abstract_image ai, image_instance ii "
-            where = "$where AND a.image_id = ii.id \n" +
-                    "AND ii.base_image_id = ai.id\n"
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+        }
+
+        if (columnToPrint.contains('slice')) {
+            from += "INNER JOIN slice_instance si ON a.slice_id = si.id INNER JOIN abstract_slice asl ON si.base_slice_id = asl.id "
         }
 
         if (columnToPrint.contains('user')) {
-            from = "$from, sec_user u, job j, software s "
-            where = "$where AND a.user_id = u.id \n" +
-                    "AND u.job_id = j.id\n" +
-                    "AND j.software_id = s.id\n"
+            from += "INNER JOIN sec_user u ON a.user_id = u.id INNER JOIN job j ON u.job_id = j.id INNER JOIN software s ON j.software_id = s.id "
         }
 
         return from + "\n" + where
@@ -801,54 +827,74 @@ class ReviewedAnnotationListing extends AnnotationListing {
      *  all properties group available, each value is a list of assoc [propertyName, SQL columnName/methodName)
      *  If value start with #, don't use SQL column, its a "trensiant property"
      */
-    def availableColumn =
-            [
-                    basic: [id: 'a.id'],
-                    meta: [
-                            reviewed: 'true',
-                            image: 'a.image_id',
-                            project: 'a.project_id',
-                            container: "a.project_id",
-                            created: 'extract(epoch from a.created)*1000',
-                            updated: 'extract(epoch from a.updated)*1000',
-                            user: 'a.user_id',
-                            reviewUser: 'a.review_user_id',
-                            countComments: 'a.count_comments',
-                            geometryCompression: 'a.geometry_compression',
-                            cropURL: '#cropURL',
-                            smallCropURL: '#smallCropURL',
-                            url: '#url',
-                            imageURL: '#imageURL',
-                            parentIdent: 'parent_ident'
-                    ],
-                    wkt: [location: 'a.wkt_location'],
-                    gis: [
-                            area: 'area',
-                            areaUnit: 'area_unit',
-                            perimeter: 'perimeter',
-                            perimeterUnit: 'perimeter_unit',
-                            x: 'ST_X(ST_centroid(a.location))',
-                            y: 'ST_Y(ST_centroid(a.location))'
-                    ],
-                    term: [
-                            term: 'at.term_id',
-                            annotationTerms: "0",
-                            userTerm: 'a.user_id'
-                    ],//user who add the term, is the user that create reviewedannotation (a.user_id)
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
-                    algo: [id: 'aat.id', rate: 'aat.rate'],
-                    user: [creator: 'u.username', lastname: 'u.lastname', firstname: 'u.firstname']
-            ]
+    def availableColumn = [
+        basic: [
+                id: 'a.id'
+        ],
+        meta: [
+                created: 'extract(epoch from a.created)*1000',
+                updated: 'extract(epoch from a.updated)*1000',
+                image: 'a.image_id',
+                slice: 'a.slice_id',
+                project: 'a.project_id',
+                user: 'a.user_id',
+
+                nbComments: 'a.count_comments',
+
+                reviewed: 'true',
+                reviewUser: 'a.review_user_id',
+                parentIdent: 'parent_ident',
+
+                cropURL: '#cropURL',
+                smallCropURL: '#smallCropURL',
+                url: '#url',
+                imageURL: '#imageURL',
+
+        ],
+        wkt: [
+                location: 'a.wkt_location',
+                geometryCompression: 'a.geometry_compression',
+        ],
+        gis: [
+                area: 'area',
+                areaUnit: 'area_unit',
+                perimeter: 'perimeter',
+                perimeterUnit: 'perimeter_unit',
+                x: 'ST_X(ST_centroid(a.location))',
+                y: 'ST_Y(ST_centroid(a.location))'
+        ],
+        term: [
+                term: 'at.term_id',
+                annotationTerms: "0",
+                userTerm: 'a.user_id' //user who add the term, is the user that create reviewedannotation (a.user_id)
+        ],
+        image: [
+                originalFilename: 'ai.original_filename', // not in single annot marshaller
+                instanceFilename: 'ii.instance_filename' // not in single annot marshaller
+        ],
+        slice: [
+                channel: 'asl.channel', // not in single annot marshaller
+                zStack: 'asl.z_stack', // not in single annot marshaller
+                time: 'asl.time' // not in single annot marshaller
+        ],
+        algo: [
+                id: 'aat.id',
+                rate: 'aat.rate'
+        ],
+        user: [
+                creator: 'u.username', // not in single annot marshaller
+                lastname: 'u.lastname', // not in single annot marshaller
+                firstname: 'u.firstname' // not in single annot marshaller
+        ]
+    ]
 
     /**
      * Generate SQL string for FROM
      * FROM depends on data to print (if image name is aksed, need to join with imageinstance+abstractimage,...)
      */
     def getFrom() {
-
         def from = "FROM reviewed_annotation a "
         def where = "WHERE true\n"
-
 
         if (multipleTerm) {
             from = "$from, reviewed_annotation_term at, reviewed_annotation_term at2 "
@@ -856,25 +902,25 @@ class ReviewedAnnotationListing extends AnnotationListing {
                     "AND a.id = at.reviewed_annotation_terms_id\n" +
                     " AND a.id = at2.reviewed_annotation_terms_id\n" +
                     " AND at.term_id <> at2.term_id \n"
-        } else if (noTerm) {
+        }
+        else if (noTerm) {
             from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
             where = "$where AND at.reviewed_annotation_terms_id IS NULL \n"
-        } else {
-            if (columnToPrint.contains('term')) {
-                from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id"
-            }
-
+        }
+        else if (columnToPrint.contains('term')) {
+            from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id"
         }
 
         if (columnToPrint.contains('image')) {
-            from = "$from, abstract_image ai, image_instance ii "
-            where = "$where AND a.image_id = ii.id \n" +
-                    "AND ii.base_image_id = ai.id\n"
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+        }
+
+        if (columnToPrint.contains('slice')) {
+            from += "INNER JOIN slice_instance si ON a.slice_id = si.id INNER JOIN abstract_slice asl ON si.base_slice_id = asl.id "
         }
 
         if (columnToPrint.contains('user')) {
-            from = "$from, sec_user u "
-            where = "$where AND a.user_id = u.id \n"
+            from += "INNER JOIN sec_user u ON a.user_id = u.id "
         }
 
         return from + "\n" + where
@@ -956,28 +1002,50 @@ class RoiAnnotationListing extends AnnotationListing {
      *  all properties group available, each value is a list of assoc [propertyName, SQL columnName/methodName)
      *  If value start with #, don't use SQL column, its a "trensiant property"
      */
-    def availableColumn =
-            [
-                    basic: [id: 'a.id'],
-                    meta: [
-                            reviewed: 'false',
-                            image: 'a.image_id',
-                            project: 'a.project_id',
-                            container: "a.project_id",
-                            created: 'extract(epoch from a.created)*1000',
-                            updated: 'extract(epoch from a.updated)*1000',
-                            user: 'a.user_id',
-                            geometryCompression: 'a.geometry_compression',
-                            cropURL: '#cropURL',
-                            smallCropURL: '#smallCropURL',
-                            url: '#url',
-                            imageURL: '#imageURL',
-                    ],
-                    wkt: [location: 'a.wkt_location'],
-                    gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
-                    user: [creator: 'u.username', lastname: 'u.lastname', firstname: 'u.firstname']
+    def availableColumn = [
+            basic: [
+                    id: 'a.id'
+            ],
+            meta: [
+                    created: 'extract(epoch from a.created)*1000',
+                    updated: 'extract(epoch from a.updated)*1000',
+                    image: 'a.image_id',
+                    slice: 'a.slice_id',
+                    project: 'a.project_id',
+                    user: 'a.user_id',
+
+                    cropURL: '#cropURL',
+                    smallCropURL: '#smallCropURL',
+                    url: '#url',
+                    imageURL: '#imageURL'
+            ],
+            wkt: [
+                    location: 'a.wkt_location',
+                    geometryCompression: 'a.geometry_compression',
+            ],
+            gis: [
+                    area: 'area',
+                    areaUnit: 'area_unit',
+                    perimeter: 'perimeter',
+                    perimeterUnit: 'perimeter_unit',
+                    x: 'ST_X(ST_centroid(a.location))',
+                    y: 'ST_Y(ST_centroid(a.location))'
+            ],
+            image: [
+                    originalFilename: 'ai.original_filename', // not in single annot marshaller
+                    instanceFilename: 'ii.instance_filename' // not in single annot marshaller
+            ],
+            slice: [
+                    channel: 'asl.channel', // not in single annot marshaller
+                    zStack: 'asl.z_stack', // not in single annot marshaller
+                    time: 'asl.time' // not in single annot marshaller
+            ],
+            user: [
+                    creator: 'u.username', // not in single annot marshaller
+                    lastname: 'u.lastname', // not in single annot marshaller
+                    firstname: 'u.firstname' // not in single annot marshaller
             ]
+    ]
 
     /**
      * Generate SQL string for FROM
@@ -988,15 +1056,16 @@ class RoiAnnotationListing extends AnnotationListing {
         def from = "FROM roi_annotation a "
         def where = "WHERE true\n"
 
-        if (columnToPrint.contains('image')) {
-            from = "$from, abstract_image ai, image_instance ii "
-            where = "$where AND a.image_id = ii.id \n" +
-                    "AND ii.base_image_id = ai.id\n"
+        if (columnToPrint.contains('user')) {
+            from += "INNER JOIN sec_user u ON a.user_id = u.id "
         }
 
-        if (columnToPrint.contains('user')) {
-            from = "$from, sec_user u "
-            where = "$where AND a.user_id = u.id \n"
+        if (columnToPrint.contains('image')) {
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+        }
+
+        if (columnToPrint.contains('slice')) {
+            from += "INNER JOIN slice_instance si ON a.slice_id = si.id INNER JOIN abstract_slice asl ON si.base_slice_id = asl.id "
         }
 
         return from + "\n" + where
