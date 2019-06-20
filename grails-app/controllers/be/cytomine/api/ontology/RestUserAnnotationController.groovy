@@ -193,22 +193,50 @@ class RestUserAnnotationController extends RestController {
     /**
      * Add annotation created by user
      */
-    @RestApiMethod(description="Add an annotation created by user")
-    @RestApiParams(params=[
-            @RestApiParam(name="POST JSON: project", type="long", paramType = RestApiParamType.PATH, description = "The project id where this annotation belongs"),
-            @RestApiParam(name="POST JSON: image", type="long", paramType = RestApiParamType.QUERY, description = "The image instance id where this annotation belongs"),
-            @RestApiParam(name="POST JSON: location", type="string", paramType = RestApiParamType.QUERY, description = "The WKT geometrical description of the annotation"),
-            @RestApiParam(name="POST JSON: term", type="long", paramType = RestApiParamType.QUERY, required = false, description = "Term id to associate with this annotation"),
-            @RestApiParam(name="POST JSON: minPoint", type="int", paramType = RestApiParamType.QUERY, required = false, description = "Minimum number of point that constitute the annotation"),
-            @RestApiParam(name="POST JSON: maxPoint", type="int", paramType = RestApiParamType.QUERY, required = false, description = "Maximum number of point that constitute the annotation")
+    @RestApiMethod(description = "Add an annotation created by user")
+    @RestApiParams(params = [
+            @RestApiParam(name = "POST JSON: project", type = "long", paramType = RestApiParamType.PATH, description = "The project id where this annotation belongs"),
+            @RestApiParam(name = "POST JSON: image", type = "long", paramType = RestApiParamType.QUERY, description = "The image instance id where this annotation belongs"),
+            @RestApiParam(name = "POST JSON: location", type = "string", paramType = RestApiParamType.QUERY, description = "The WKT geometrical description of the annotation"),
+            @RestApiParam(name = "POST JSON: term", type = "long", paramType = RestApiParamType.QUERY, required = false, description = "Term id to associate with this annotation"),
+            @RestApiParam(name = "POST JSON: minPoint", type = "int", paramType = RestApiParamType.QUERY, required = false, description = "Minimum number of point that constitute the annotation"),
+            @RestApiParam(name = "POST JSON: maxPoint", type = "int", paramType = RestApiParamType.QUERY, required = false, description = "Maximum number of point that constitute the annotation")
     ])
-    def add(){
-        def json = request.JSON
-        if (json instanceof JSONArray) {
-            responseResult(addMultiple(userAnnotationService, json))
-        } else {
-            responseResult(addOne(userAnnotationService, json))
+    def add() {
+        add(userAnnotationService, request.JSON)
+    }
+
+    Object addOne(def service, def json) {
+        if (json.isNull('location')) {
+            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
         }
+        def minPoint = params.getLong('minPoint')
+        def maxPoint = params.getLong('maxPoint')
+
+        def result = userAnnotationService.add(json, minPoint, maxPoint)
+        return result
+    }
+
+    /**
+     * Update annotation created by user
+     */
+    @RestApiMethod(description = "Update an annotation")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id")
+    ])
+    def update() {
+        update(userAnnotationService, request.JSON)
+    }
+
+    /**
+     * Delete annotation created by user
+     */
+    @RestApiMethod(description = "Delete an annotation")
+    @RestApiParams(params = [
+            @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The annotation id")
+    ])
+    def delete() {
+        delete(userAnnotationService, JSON.parse("{id : $params.id}"), null)
     }
 
     @RestApiMethod(description = "Get a crop of a user annotation (image area framing annotation)", extensions = ["png", "jpg", "tiff"])
@@ -285,54 +313,5 @@ class RestUserAnnotationController extends RestController {
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
-    }
-
-    public Object addOne(def service, def json) {
-        if (!json.project || json.isNull('project')) {
-            ImageInstance image = ImageInstance.read(json.image)
-            if (image) json.project = image.project.id
-        }
-        if (json.isNull('project')) {
-            throw new WrongArgumentException("Annotation must have a valid project:" + json.project)
-        }
-        if (json.isNull('location')) {
-            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
-        }
-        def minPoint = params.getLong('minPoint')
-        def maxPoint = params.getLong('maxPoint')
-
-        def result = userAnnotationService.add(json,minPoint,maxPoint)
-        return result
-    }
-
-    /**
-     * Update annotation created by user
-     */
-    @RestApiMethod(description="Update an annotation")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
-    ])
-    def update() {
-        def json = request.JSON
-        try {
-            def domain = userAnnotationService.retrieve(json)
-            def result = userAnnotationService.update(domain,json)
-            responseResult(result)
-        } catch (CytomineException e) {
-            log.error(e)
-            response([success: false, errors: e.msg], e.code)
-        }
-    }
-
-    /**
-     * Delete annotation created by user
-     */
-    @RestApiMethod(description="Delete an annotation")
-    @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The annotation id")
-    ])
-    def delete() {
-        def json = JSON.parse("{id : $params.id}")
-        delete(userAnnotationService, json,null)
     }
 }

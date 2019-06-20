@@ -175,153 +175,140 @@ class UserAnnotationService extends ModelService {
      * @param json New domain data
      * @return Response structure (created domain data,..)
      */
-    def add(def json,def minPoint = null, def maxPoint = null) {
-        log.info "log.addannotation1"
+    def add(def json, def minPoint = null, def maxPoint = null) {
+        SliceInstance slice = null
+        ImageInstance image = null
+        Project project = null
 
-        if (!json.project || json.isNull('project')) {
-            ImageInstance image = ImageInstance.read(json.image)
-            if (image) json.project = image.project.id
+        if (json.slice) {
+            slice = sliceInstanceService.read(json.slice)
+            image = slice?.image
+            project = slice?.project
         }
-        if (json.isNull('project')) {
-            throw new WrongArgumentException("Annotation must have a valide project:" + json.project)
-        }
-        if (json.isNull('location')) {
-            throw new WrongArgumentException("Annotation must have a valide geometry:" + json.location)
+        else if (json.image) {
+            image = imageInstanceService.read(json.image)
+            slice = image?.referenceSlice
+            project = image?.project
         }
 
-        securityACLService.check(json.project, Project,READ)
-        securityACLService.checkisNotReadOnly(json.project,Project)
+        if (!project) {
+            throw new WrongArgumentException("Annotation does not have a valid project.")
+        }
+
+        json.slice = slice.id
+        json.image = image.id
+        json.project = project.id
+
+        securityACLService.check(project, READ)
+        securityACLService.checkisNotReadOnly(project)
+
         SecUser currentUser = cytomineService.getCurrentUser()
-        //Add annotation user
-        if(!json.user || json.user instanceof JSONObject.Null){
+        if (!json.user) {
             json.user = currentUser.id
-        } else {
-            if(json.user != currentUser.id){
-                securityACLService.checkFullOrRestrictedForOwner(json.project, Project)
-            }
+        }
+        else if (json.user != currentUser.id) {
+            securityACLService.checkFullOrRestrictedForOwner(project)
         }
 
-        Geometry annotationForm
+        Geometry annotationShape
         try {
-            annotationForm = new WKTReader().read(json.location);
-        } catch (ParseException e){
-            throw new WrongArgumentException("Annotation location not valid")
+            annotationShape = new WKTReader().read(json.location)
+        }
+        catch (ParseException ignored) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
 
-        if(!annotationForm.isValid()){
-            throw new WrongArgumentException("Annotation location not valid")
+        if (!annotationShape.isValid()) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
-
-
-        ImageInstance im = imageInstanceService.read(json.image)
-        if(!im){
-            throw new WrongArgumentException("Annotation not associated with a valid image")
-        }
-        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
-
-        annotationForm = annotationForm.intersection(imageBounds)
 
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),minPoint,maxPoint)
-            json.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(annotationShape, minPoint, maxPoint)
+            json.location = data.geometry
             json.geometryCompression = data.rate
         } catch (Exception e) {
-            log.error("add : Cannot simplify:" + e)
+            log.error("Cannot simplify annotation location:" + e)
         }
 
         //Start transaction
         Transaction transaction = transactionService.start()
-        def annotationID
-        def result
+        def result = executeCommand(new AddCommand(user: currentUser, transaction: transaction), null, json)
+        def addedAnnotation = result?.object
 
-        //Add Annotation
-        log.debug this.toString()
-        //def image = ImageInstance.lock(Long.parseLong(json["image"].toString()))
-        result = executeCommand(new AddCommand(user: currentUser, transaction: transaction),null,json)
-
-        annotationID = result?.data?.annotation?.id
-        log.info "userAnnotation=" + annotationID + " json.term=" + json.term
-
-        if (annotationID) {
-            //Add annotation-term if term
-            def term = JSONUtils.getJSONList(json.term);
-            if (term) {
-                def terms = []
-                term.each { idTerm ->
-                    def annotationTermResult = annotationTermService.addAnnotationTerm(annotationID, idTerm, null, currentUser.id, currentUser, transaction)
-                    terms << annotationTermResult.data.annotationterm.term
-                }
-                result.data.annotation.term = terms
-            }
-
-            def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
-            if (properties) {
-                properties.each {
-                    def key = it.key as String
-                    def value = it.value as String
-                    propertyService.add(JSON.parse("""{"domainClassName": "be.cytomine.ontology.UserAnnotation", "domainIdent": "$annotationID", "key": "$key", "value": "$value" }"""), transaction)
-                }
-            }
-
+        if (!addedAnnotation) {
+            return result
         }
 
-        //add annotation on the retrieval
-        log.info "annotationID=$annotationID"
-        if (annotationID && UserAnnotation.read(annotationID).location.getNumPoints() >= 3) {
-            if (!currentUser.algo()) {
-                try {
-                    log.info "log.addannotation2"
-                    if (annotationID) {
-                        indexRetrievalAnnotation(annotationID)
-                    }
-                } catch (CytomineException ex) {
-                    log.error "CytomineException index in retrieval:" + ex.toString()
-                }
+        // Add annotation-term if any
+        def termIds = JSONUtils.getJSONList(json.term) + JSONUtils.getJSONList(json.terms)
+        def terms = termIds.collect { id ->
+            def r = annotationTermService.addAnnotationTerm(addedAnnotation.id, id, null, currentUser.id, currentUser, transaction)
+            return r?.data?.annotationterm?.term
+        }
+        result.data.annotation.term = terms
+
+        // Add properties if any
+        def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
+        properties.each {
+            def key = it.key as String
+            def value = it.value as String
+            propertyService.addProperty("be.cytomine.ontology.UserAnnotation", addedAnnotation.id, key, value, currentUser, transaction)
+        }
+
+        // Add to retrieval index
+        if (addedAnnotation.location.getNumPoints() >= 3 && !currentUser.algo()) {
+            try {
+                indexRetrievalAnnotation(addedAnnotation)
+            }
+            catch (CytomineException ex) {
+                log.error "CytomineException index in retrieval:" + ex.toString()
             }
         }
 
         return result
     }
 
+    def afterAdd(def domain, def response) {
+        response.data['annotation'] = response.data.userannotation
+        response.data.remove('userannotation')
+    }
+
     /**
      * Update this domain with new data from json
      * @param domain Domain to update
      * @param jsonNewData New domain datas
-     * @return  Response structure (new domain data, old domain data..)
+     * @return Response structure (new domain data, old domain data..)
      */
     def update(UserAnnotation annotation, def jsonNewData) {
         SecUser currentUser = cytomineService.getCurrentUser()
         //securityACLService.checkIsSameUserOrAdminContainer(annotation,annotation.user,currentUser)
-        securityACLService.checkFullOrRestrictedForOwner(annotation,annotation.user)
+        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
 
-        Geometry annotationForm
+        // TODO: what about image/project ??
+
+        Geometry annotationShape
         try {
-            annotationForm = new WKTReader().read(jsonNewData.location);
-        } catch (ParseException e){
-            throw new WrongArgumentException("Annotation location not valid")
+            annotationShape = new WKTReader().read(jsonNewData.location)
         }
-        if(!annotationForm.isValid()){
-            throw new WrongArgumentException("Annotation location not valid")
+        catch (ParseException ignored) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
-        ImageInstance im = imageInstanceService.read(jsonNewData.image)
-        if (!im) {
-            throw new WrongArgumentException("Annotation must have a valid image" + json.image)
-        }
-        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
 
-        annotationForm = annotationForm.intersection(imageBounds)
+        if (!annotationShape.isValid()) {
+            throw new WrongArgumentException("Annotation location is not valid")
+        }
 
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(), jsonNewData.geometryCompression)
-            jsonNewData.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(annotationShape, jsonNewData.geometryCompression)
+            jsonNewData.location = data.geometry
+            jsonNewData.geometryCompression = data.rate
         } catch (Exception e) {
-            log.error("update : Cannot simplify:" + e)
+            log.error("Cannot simplify annotation location:" + e)
         }
 
-        def result = executeCommand(new EditCommand(user: currentUser),annotation,jsonNewData)
-
+        def result = executeCommand(new EditCommand(user: currentUser), annotation, jsonNewData)
         if (result.success) {
             Long id = result.userannotation.id
             try {
@@ -330,7 +317,13 @@ class UserAnnotationService extends ModelService {
                 log.error "Cannot update in retrieval:" + e.toString()
             }
         }
+
         return result
+    }
+
+    def afterUpdate(def domain, def response) {
+        response.data['annotation'] = response.data.userannotation
+        response.data.remove('userannotation')
     }
 
     /**
@@ -344,12 +337,60 @@ class UserAnnotationService extends ModelService {
     def delete(UserAnnotation domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         SecUser currentUser = cytomineService.getCurrentUser()
         //securityACLService.checkIsSameUserOrAdminContainer(domain,domain.user,currentUser)
-        securityACLService.checkFullOrRestrictedForOwner(domain,domain.user)
-        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-        return executeCommand(c,domain,null)
-//        new Sql(dataSource).execute("delete from annotation_term where user_annotation_id=${domain.id}",[])
-//        new Sql(dataSource).execute("delete from user_annotation where id=${domain.id}",[])
-//        return [status:200,data:[]]
+        securityACLService.checkFullOrRestrictedForOwner(domain, domain.user)
+        Command c = new DeleteCommand(user: currentUser, transaction: transaction)
+        return executeCommand(c, domain, null)
+    }
+
+    def afterDelete(def domain, def response) {
+        response.data['annotation'] = response.data.userannotation
+        response.data.remove('userannotation')
+    }
+
+    def getStringParamsI18n(def domain) {
+        return [cytomineService.getCurrentUser().toString(), domain.image?.getBlindInstanceFilename(), domain.user.toString()]
+    }
+
+
+    def deleteDependentAlgoAnnotationTerm(UserAnnotation ua, Transaction transaction, Task task = null) {
+        AlgoAnnotationTerm.findAllByAnnotationIdent(ua.id).each {
+            algoAnnotationTermService.delete(it, transaction, null, false)
+        }
+    }
+
+    def deleteDependentAnnotationTerm(UserAnnotation ua, Transaction transaction, Task task = null) {
+        AnnotationTerm.findAllByUserAnnotation(ua).each {
+            try {
+                annotationTermService.delete(it, transaction, null, false)
+            } catch (ForbiddenException fe) {
+                throw new ForbiddenException("This annotation has been linked to the term " + it.term + " by " + it.userDomainCreator() + ". " + it.userDomainCreator() + " must unlink its term before you can delete this annotation.")
+            }
+        }
+    }
+
+    def deleteDependentReviewedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
+//        ReviewedAnnotation.findAllByParentIdent(ua.id).each {
+//            reviewedAnnotationService.delete(it,transaction,null,false)
+//        }
+    }
+
+    def deleteDependentSharedAnnotation(UserAnnotation ua, Transaction transaction, Task task = null) {
+        //TODO: we should implement a full service for sharedannotation and delete them if annotation is deleted
+//        if(SharedAnnotation.findByUserAnnotation(ua)) {
+//            throw new ConstraintException("There are some comments on this annotation. Cannot delete it!")
+//        }
+
+        SharedAnnotation.findAllByAnnotationClassNameAndAnnotationIdent(ua.class.name, ua.id).each {
+            sharedAnnotationService.delete(it, transaction, null, false)
+        }
+
+    }
+
+    def deleteDependentProperty(UserAnnotation ua, Transaction transaction, Task task = null) {
+        Property.findAllByDomainIdent(ua.id).each {
+            propertyService.delete(it, transaction, null, false)
+        }
+
     }
 
 
