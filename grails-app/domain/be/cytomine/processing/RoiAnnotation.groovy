@@ -20,6 +20,7 @@ import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.ontology.Term
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -127,25 +128,31 @@ class RoiAnnotation extends AnnotationDomain implements Serializable {
      * @return Domain with json data filled
      */
     static RoiAnnotation insertDataIntoDomain(def json, def domain = new RoiAnnotation()) {
-        try {
-            domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
-            domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
-            domain.created = JSONUtils.getJSONAttrDate(json, 'created')
-            domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
-            domain.location = new WKTReader().read(json.location)
-            domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
-            domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
-            domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
+        domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
+        domain.created = JSONUtils.getJSONAttrDate(json, 'created')
+        domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
 
-            if (!domain.location) {
-                throw new WrongArgumentException("Geo is null: 0 points")
-            }
-            if (domain.location.getNumPoints() < 1) {
-                throw new WrongArgumentException("Geometry is empty:" + domain.location.getNumPoints() + " points")
-            }
-        } catch (com.vividsolutions.jts.io.ParseException ex) {
+        domain.slice = JSONUtils.getJSONAttrDomain(json, "slice", new SliceInstance(), true)
+        domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
+        domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
+        domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
+
+        domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
+        try {
+            domain.location = new WKTReader().read(json.location)
+        }
+        catch (com.vividsolutions.jts.io.ParseException ex) {
             throw new WrongArgumentException(ex.toString())
         }
+
+        if (!domain.location) {
+            throw new WrongArgumentException("Geo is null: 0 points")
+        }
+
+        if (domain.location.getNumPoints() < 1) {
+            throw new WrongArgumentException("Geometry is empty:" + domain.location.getNumPoints() + " points")
+        }
+
         return domain;
     }
 
@@ -154,13 +161,13 @@ class RoiAnnotation extends AnnotationDomain implements Serializable {
      * @param domain Domain source for json value
      * @return Map with fields (keys) and their values
      */
-    static def getDataFromDomain(def domain) {
+    static def getDataFromDomain(RoiAnnotation domain) {
         def returnArray = AnnotationDomain.getDataFromDomain(domain)
         ImageInstance imageinstance = domain?.image
         returnArray['cropURL'] = UrlApi.getROIAnnotationCropWithAnnotationId(domain?.id)
         returnArray['smallCropURL'] = UrlApi.getROIAnnotationCropWithAnnotationIdWithMaxSize(domain?.id, 256)
         returnArray['url'] = UrlApi.getROIAnnotationCropWithAnnotationId(domain?.id)
-        returnArray['imageURL'] = UrlApi.getAnnotationURL(imageinstance?.project?.id, imageinstance?.id, domain?.id)
+        returnArray['imageURL'] = UrlApi.getAnnotationURL(imageinstance?.project?.id, imageinstance?.id, domain?.id) //TODO slice
         returnArray['reviewed'] = domain?.hasReviewedAnnotation()
         return returnArray
     }
