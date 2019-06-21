@@ -231,7 +231,7 @@ abstract class AnnotationListing {
             }
             return "SELECT " + requestHeadList.join(', ') + " \n"
         } else {
-            return "SELECT kmeans(ARRAY[ST_X(st_centroid(location)), ST_Y(st_centroid(location))], 5) OVER (), location\n"
+            return "SELECT ST_ClusterKMeans(location, 5) OVER () AS kmeans, location\n"
         }
 
     }
