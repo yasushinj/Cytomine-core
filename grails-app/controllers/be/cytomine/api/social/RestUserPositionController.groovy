@@ -97,7 +97,11 @@ class RestUserPositionController extends RestController {
         Long afterThan = params.long("afterThan")
         Long beforeThan = params.long("beforeThan")
         if(params.getBoolean("showDetails")){
-            responseSuccess(userPositionService.list(image, user, afterThan, beforeThan))
+            Long max = params.long('max')
+            Long offset = params.long('offset')
+            params.max = 0
+            params.offset = 0
+            responseSuccess(userPositionService.list(image, user, afterThan, beforeThan, max, offset))
         } else {
             responseSuccess(userPositionService.summarize(image, user, afterThan, beforeThan))
         }
