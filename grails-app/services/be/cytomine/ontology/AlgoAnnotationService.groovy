@@ -20,6 +20,7 @@ import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -53,6 +54,7 @@ class AlgoAnnotationService extends ModelService {
     def securityACLService
     def sharedAnnotationService
     def imageInstanceService
+    def sliceInstanceService
 
     def currentDomain() {
         return AlgoAnnotation
@@ -113,83 +115,83 @@ class AlgoAnnotationService extends ModelService {
      * @return Response structure (created domain data,..)
      */
     def add(def json) {
-        if (json.isNull('location')) {
-            throw new WrongArgumentException("Annotation must have a valid geometry:" + json.location)
+        SliceInstance slice = null
+        ImageInstance image = null
+        Project project = null
+
+        if (json.slice) {
+            slice = sliceInstanceService.read(json.slice)
+            image = slice?.image
+            project = slice?.project
         }
-        if ((!json.project || json.isNull('project'))) {
-            //fill project id thanks to image info
-            ImageInstance image = ImageInstance.read(json.image)
-            if (image) {
-                json.project = image.project.id
-            } else {
-                throw new WrongArgumentException("Annotation must have a valid project:" + json.project)
-            }
+        else if (json.image) {
+            image = imageInstanceService.read(json.image)
+            slice = image?.referenceSlice
+            project = image?.project
         }
-        securityACLService.check(json.project, Project, READ)
+
+        if (!project) {
+            throw new WrongArgumentException("Annotation does not have a valid project.")
+        }
+
+        json.slice = slice.id
+        json.image = image.id
+        json.project = project.id
+
+        securityACLService.check(project, READ)
+        securityACLService.checkisNotReadOnly(project)
+
         SecUser currentUser = cytomineService.getCurrentUser()
+        json.user = currentUser.id
+        //TODO: check current user is algo
 
         def minPoint = json.minPoint
         def maxPoint = json.maxPoint
 
-        Geometry annotationForm
+        Geometry annotationShape
         try {
-            annotationForm = new WKTReader().read(json.location)
-        } catch(ParseException e) {
-            throw new WrongArgumentException("Annotation location not valid")
+            annotationShape = new WKTReader().read(json.location)
+        }
+        catch (ParseException ignored) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
 
-        if(!annotationForm.isValid()){
-            throw new WrongArgumentException("Annotation location not valid")
+        if (!annotationShape.isValid()) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
-
-        ImageInstance im = imageInstanceService.read(json.image)
-        if (!im) {
-            throw new WrongArgumentException("Annotation must have a valid image" + json.image)
-        }
-        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
-
-        annotationForm = annotationForm.intersection(imageBounds)
 
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationForm,minPoint,maxPoint)
+            def data = simplifyGeometryService.simplifyPolygon(annotationShape, minPoint, maxPoint)
             json.location = data.geometry
             json.geometryCompression = data.rate
         } catch (Exception e) {
-            log.error("Cannot simplify:" + e)
+            log.error("Cannot simplify annotation location:" + e)
         }
+
         //Start transaction
         Transaction transaction = transactionService.start()
+        def result = executeCommand(new AddCommand(user: currentUser, transaction: transaction), null, json)
+        def addedAnnotation = result?.object
 
-        //Add annotation user
-        json.user = currentUser.id
-        //Add Annotation
-        log.debug this.toString()
-        Command command = new AddCommand(user: currentUser, transaction: transaction)
-        def result = executeCommand(command,null,json)
+        if (!addedAnnotation) {
+            return result
+        }
 
-        def annotationID = result?.data?.annotation?.id
-        log.info "algoAnnotation=" + annotationID + " json.term=" + json.term
-        //Add annotation-term if term
-        if (annotationID) {
-            def term = JSONUtils.getJSONList(json.term);
-            if (term) {
-                def terms = []
-                term.each { idTerm ->
-                    def annotationTermResult = algoAnnotationTermService.addAlgoAnnotationTerm(annotationID, idTerm, currentUser.id, currentUser, transaction)
-                    terms << annotationTermResult.data.algoannotationterm.term
-                }
-                result.data.annotation.term = terms
-            }
+        // Add annotation-term if any
+        def termIds = JSONUtils.getJSONList(json.term) + JSONUtils.getJSONList(json.terms)
+        def terms = termIds.collect { id ->
+            def r = algoAnnotationTermService.addAlgoAnnotationTerm(addedAnnotation, id, null, currentUser.id, currentUser, transaction)
+            return r?.data?.algoannotationterm?.term
+        }
+        result.data.annotation.term = terms
 
-            def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
-            if (properties) {
-                properties.each {
-                    def key = it.key as String
-                    def value = it.value as String
-                    propertyService.add(JSON.parse("""{"domainClassName": "be.cytomine.ontology.AlgoAnnotation", "domainIdent": "$annotationID", "key": "$key", "value": "$value" }"""), transaction)
-                }
-            }
+        // Add properties if any
+        def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
+        properties.each {
+            def key = it.key as String
+            def value = it.value as String
+            propertyService.addProperty("be.cytomine.ontology.AlgoAnnotation", addedAnnotation.id, key, value, currentUser, transaction)
         }
 
         return result
@@ -205,35 +207,30 @@ class AlgoAnnotationService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkFullOrRestrictedForOwner(annotation,annotation.user)
 
-        Geometry annotationForm
+        // TODO: what about image/project ??
+
+        Geometry annotationShape
         try {
-            annotationForm = new WKTReader().read(jsonNewData.location)
-        } catch(ParseException e) {
-            throw new WrongArgumentException("Annotation location not valid")
+            annotationShape = new WKTReader().read(jsonNewData.location)
         }
-        if(!annotationForm.isValid()){
-            throw new WrongArgumentException("Annotation location not valid")
+        catch (ParseException ignored) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
 
-        ImageInstance im = imageInstanceService.read(jsonNewData.image)
-        if (!im) {
-            throw new WrongArgumentException("Annotation must have a valid image" + json.image)
+        if (!annotationShape.isValid()) {
+            throw new WrongArgumentException("Annotation location is not valid")
         }
-        Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
-
-        annotationForm = annotationForm.intersection(imageBounds)
 
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),annotation?.geometryCompression)
-            jsonNewData.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(annotationShape, jsonNewData.geometryCompression)
+            jsonNewData.location = data.geometry
+            jsonNewData.geometryCompression = data.rate
         } catch (Exception e) {
-            log.error("Cannot simplify:" + e)
+            log.error("Cannot simplify annotation location:" + e)
         }
 
-        def result = executeCommand(new EditCommand(user: currentUser),annotation,jsonNewData)
-
-        return result
+        return executeCommand(new EditCommand(user: currentUser),annotation,jsonNewData)
     }
 
     /**

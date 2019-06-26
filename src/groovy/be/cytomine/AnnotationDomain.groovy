@@ -229,9 +229,9 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
      * @param id Annotation id
      * @return Annotation
      */
-    public static AnnotationDomain getAnnotationDomain(String id) {
+    public static AnnotationDomain getAnnotationDomain(String id, String className = null) {
         try {
-            getAnnotationDomain(Long.parseLong(id))
+            getAnnotationDomain(Long.parseLong(id), className)
         } catch(NumberFormatException e) {
             throw new ObjectNotFoundException("Annotation ${id} not found")
         }
@@ -243,23 +243,40 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
      * @param id Annotation id
      * @return Annotation
      */
-    public static AnnotationDomain getAnnotationDomain(long id) {
-        AnnotationDomain basedAnnotation = UserAnnotation.read(id)
-        if (!basedAnnotation) {
-            basedAnnotation = AlgoAnnotation.read(id)
+    public static AnnotationDomain getAnnotationDomain(long id, String className = null) {
+        def domain = null
+        switch (className) {
+            case "be.cytomine.ontology.UserAnnotation":
+                domain = UserAnnotation
+                break
+            case "be.cytomine.ontology.AlgoAnnotation":
+                domain = AlgoAnnotation
+                break
+            case "be.cytomine.ontology.ReviewedAnnotation":
+                domain = ReviewedAnnotation
+                break
+            case "be.cytomine.processing.RoiAnnotation":
+                domain = RoiAnnotation
+                break
         }
 
-        if (!basedAnnotation) {
-            basedAnnotation = ReviewedAnnotation.read(id)
+        AnnotationDomain annotation
+        if (domain) {
+            annotation = domain.read(id)
+        }
+        else {
+            annotation = UserAnnotation.read(id)
+            if (!annotation) annotation = AlgoAnnotation.read(id)
+            if (!annotation) annotation = ReviewedAnnotation.read(id)
+            if (!annotation) annotation = RoiAnnotation.read(id)
         }
 
-        if (!basedAnnotation) {
-            basedAnnotation = RoiAnnotation.read(id)
+        if (annotation) {
+            return annotation
         }
-
-        if (basedAnnotation) return basedAnnotation
-        else throw new ObjectNotFoundException("Annotation ${id} not found")
-
+        else {
+            throw new ObjectNotFoundException("Annotation ${id} not found")
+        }
     }
 
     public void makeValid() {
