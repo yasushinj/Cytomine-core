@@ -25,10 +25,12 @@ import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.UserAnnotation
+import org.springframework.util.ReflectionUtils
 import grails.util.GrailsNameUtils
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
+import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 
@@ -412,6 +414,38 @@ abstract class ModelService {
         }
         return false
     }
+
+    protected def getDomainAssociatedSearchParameters(Class<? extends CytomineDomain> domain, ArrayList searchParameters) {
+        def result = []
+        def translated = []
+
+        for (def parameter : searchParameters){
+
+            Field field = ReflectionUtils.findField(domain, parameter.field)
+
+            if(field) {
+                def value
+
+                if (field.type == Integer) {
+                    value = Integer.parseInt(parameter.values)
+                } else if (field.type == Long) {
+                    value = Long.parseLong(parameter.values)
+                } else {
+                    value = parameter.values
+                }
+
+                result << [operator: parameter.operator, property: field.name, value: value]
+
+                translated << parameter
+            }
+
+        }
+
+        searchParameters.removeAll(translated)
+
+        return result
+    }
+
 
     protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure selection, String sortedProperty = null, String sortDirection = null){
         sortedProperty = (sortedProperty != null && domain.hasProperty(sortedProperty)) ? sortedProperty : "created"
