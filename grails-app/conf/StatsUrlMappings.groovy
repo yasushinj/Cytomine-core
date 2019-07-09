@@ -58,10 +58,6 @@ class StatsUrlMappings {
             action = [GET:"statAnnotationTermedByProject"]
         }
         // social
-        // project connection
-        "/api/total/project/connections.$format"(controller:"stats") {
-            action = [GET:"totalNumberOfConnectionsByProject"]
-        }
 
         "/api/project/$project/stats/connectionsevolution.$format"(controller:"stats") {
             action = [GET:"statConnectionsEvolution"]
@@ -105,6 +101,11 @@ class StatsUrlMappings {
             action = [GET:"statRetrievalEvolutionByTerm"]
         }
 
+
+        // project connection
+        "/api/total/project/connections.$format"(controller:"stats") {
+            action = [GET:"totalNumberOfConnectionsByProject"]
+        }
         // global
         "/api/total/$domain.$format"(controller:"stats"){
             action = [GET:"totalDomains"]
@@ -114,6 +115,14 @@ class StatsUrlMappings {
         }
         "/api/stats/currentStats.$format"(controller:"stats"){
             action = [GET:"statsOfCurrentActions"]
+        }
+
+        //bounds
+        "/api/project/$projectId/bounds/$domain.$format"(controller:"stats"){
+            action = [GET:"bounds"]
+        }
+        "/api/bounds/$domain.$format"(controller:"stats"){
+            action = [GET:"bounds"]
         }
 
 

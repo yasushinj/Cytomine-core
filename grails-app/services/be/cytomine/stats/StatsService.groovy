@@ -2,6 +2,7 @@ package be.cytomine.stats
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ServerException
+import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
@@ -23,7 +24,7 @@ class StatsService extends ModelService {
     def imageServerService
     def dataSource
 
-    def total(def domain){
+    def total(Class domain){
         return ["total" : CytomineDomain.isAssignableFrom(domain)? domain.countByDeletedIsNull() : domain.count];
     }
 
@@ -455,6 +456,31 @@ class StatsService extends ModelService {
         }
 
         return data
+    }
+
+    def bounds(Class domain, def objects) {
+        def result = [:]
+        def min
+        def max
+
+        domain.gormPersistentEntity.persistentProperties.each { field ->
+            if(!CytomineDomain.isAssignableFrom(field.type) &&
+                    Comparable.isAssignableFrom(field.type)) {
+
+                min = objects.min{it[field.name]}[field.name]
+                max = objects.max{it[field.name]}[field.name]
+                result.put(field.name, [min : min, max : max])
+            }
+        }
+
+        //domain-specific supplementary values
+        if(domain.equals(ImageInstance)) {
+            def images = objects.collect{it.baseImage}
+            result.put("width", [min : images.min{it.width}.width, max : images.max{it.width}.width])
+            result.put("height", [min : images.min{it.height}.height, max : images.max{it.height}.height])
+        }
+
+        return result
     }
 
 }
