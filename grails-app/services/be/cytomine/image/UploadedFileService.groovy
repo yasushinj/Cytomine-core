@@ -274,8 +274,8 @@ class UploadedFileService extends ModelService {
         String parentTree = (uploadedFile?.parent?.lTree)?:""
         if (!parentTree.isEmpty()) {
             request += "UPDATE uploaded_file " +
-                    "SET l_tree = ' " +parentTree +"' || subpath(l_tree, nlevel(' " +currentTree +"')) " +
-                    "WHERE l_tree <@ ' " +currentTree +"';"
+                    "SET l_tree = '" +parentTree +"' || subpath(l_tree, nlevel('" +currentTree +"')) " +
+                    "WHERE l_tree <@ '" +currentTree +"';"
         }
 
         def sql = new Sql(dataSource)
