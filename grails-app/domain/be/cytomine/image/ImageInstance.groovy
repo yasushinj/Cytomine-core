@@ -187,7 +187,7 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['zoom'] = image?.baseImage?.getZoomLevels()
 
         returnArray['resolution'] = image?.resolution
-        returnArray['magnification'] = image.magnification
+        returnArray['magnification'] = image?.magnification
         returnArray['bitDepth'] = image?.baseImage?.bitDepth
         returnArray['colorspace'] = image?.baseImage?.colorspace
 
