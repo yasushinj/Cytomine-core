@@ -471,6 +471,7 @@ class RestReviewedAnnotationController extends RestController {
         review.user = annotation.user
         review.location = annotation.location
         review.image = annotation.image
+        review.slice = annotation.slice
         review.project = annotation.project
         review.geometryCompression = annotation.geometryCompression
 
