@@ -480,6 +480,9 @@ abstract class ModelService {
                     }
                 }
             }
+            if(t.operator.equals("equals")) {
+                t.operator = "eq"
+            }
         }
 
         Closure selection = preselection >> {
