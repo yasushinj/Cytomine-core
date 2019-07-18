@@ -174,26 +174,31 @@ class ImageInstanceService extends ModelService {
         securityACLService.check(project,READ)
 
         String abstractImageAlias = "ai"
+        String mimeAlias = "mime"
 
         String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? sortColumn : null
-        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : "created"
+        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
+        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : "created"
 
         def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters)
 
 
         def images = criteriaRequestWithPagination(ImageInstance, max, offset, {
-            createAlias("baseImage", abstractImageAlias)
             eq("project", project)
             isNull("parent")
             isNull("deleted")
 
-            //TODO : improvment : useful only if search or ordered on abstractimage fields
-            fetchMode 'baseImage', FetchMode.JOIN
-
-            for(def t : validatedSearchParameters) {
-                "${t.operator}" t.property,t.value
+            if(validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")){
+                createAlias("baseImage", abstractImageAlias)
+                createAlias("baseImage.mime", "mime")
+                //fetchMode 'baseImage', FetchMode.JOIN
+                //fetchMode 'mime', FetchMode.JOIN
+            } else if(validatedSearchParameters.any {it.property.contains(abstractImageAlias+".")} || sortedProperty.contains(abstractImageAlias+".")){
+                createAlias("baseImage", abstractImageAlias)
+                //fetchMode 'baseImage', FetchMode.JOIN
             }
-        }, {
+
+        }, validatedSearchParameters , {
             order(sortedProperty, sortDirection)
         })
 
@@ -629,6 +634,7 @@ class ImageInstanceService extends ModelService {
 
         String abstractImageAlias = "ai"
         validParameters.addAll(getDomainAssociatedSearchParameters(AbstractImage, searchParameters).collect {[operator:it.operator, property:abstractImageAlias+"."+it.property, value:it.value]})
+        validParameters.addAll(getDomainAssociatedSearchParameters(Mime, searchParameters).collect {[operator:it.operator, property:"mime."+it.property, value:it.value]})
 
         if(searchParameters.size() > 0){
             log.debug "The following search parameters have not been validated: "+searchParameters
