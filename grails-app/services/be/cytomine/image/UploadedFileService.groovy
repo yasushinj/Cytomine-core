@@ -50,7 +50,7 @@ class UploadedFileService extends ModelService {
 
         return criteriaRequestWithPagination(UploadedFile, max, offset, {
             isNull("deleted")
-        }, sortedProperty, sortDirection)
+        }, [], sortedProperty, sortDirection)
 
     }
 
@@ -66,7 +66,7 @@ class UploadedFileService extends ModelService {
                 eq("parent.id", parentId)
             }
             isNull("deleted")
-        }, sortedProperty, sortDirection)
+        }, [], sortedProperty, sortDirection)
 
     }
 
