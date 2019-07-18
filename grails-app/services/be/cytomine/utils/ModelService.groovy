@@ -424,15 +424,26 @@ abstract class ModelService {
             Field field = ReflectionUtils.findField(domain, parameter.field)
 
             if(field) {
-                def value
 
-                if (field.type == Integer) {
-                    value = Integer.parseInt(parameter.values)
-                } else if (field.type == Long) {
-                    value = Long.parseLong(parameter.values)
-                } else {
-                    value = parameter.values
+                def convert = { input ->
+
+                    if(input == null || input.equals("null")) return null
+                    def output
+
+                    if (field.type == Integer) {
+                        output = Integer.parseInt(input)
+                    } else if (field.type == Long) {
+                        output = Long.parseLong(input)
+                    } else if (field.type == Double) {
+                        output = Double.parseDouble(input)
+                    } else {
+                        output = input
+                    }
+                    return output
                 }
+                def value;
+
+                value = parameter.values.class.isArray() ? parameter.values.collect{convert(it)} : convert(parameter.values)
 
                 result << [operator: parameter.operator, property: field.name, value: value]
 
@@ -447,7 +458,7 @@ abstract class ModelService {
     }
 
 
-    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure selection, String sortedProperty = null, String sortDirection = null){
+    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure preselection, def searchParameters, String sortedProperty = null, String sortDirection = null){
         sortedProperty = (sortedProperty != null && domain.hasProperty(sortedProperty)) ? sortedProperty : "created"
         if(!sortDirection.equals("asc") && !sortDirection.equals("desc")) sortDirection = "asc"
 
@@ -455,10 +466,50 @@ abstract class ModelService {
             order(sortedProperty, sortDirection)
         }
 
-        return criteriaRequestWithPagination(domain, max, offset, selection, sorting)
+        return criteriaRequestWithPagination(domain, max, offset, preselection, searchParameters, sorting)
     }
 
-    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure selection, Closure sorting){
+    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure preselection, def searchParameters, Closure sorting){
+
+        for(def t : searchParameters) {
+            if(["in"].contains(t.operator)) {
+                if(t.value && (t.value.class.isArray() || (t.value instanceof List))){
+                    t.value = t.value.unique()
+                    if(t.value.size() == 1 && t.value[0] == null){
+                        t.value = null
+                    }
+                }
+            }
+        }
+
+        Closure selection = preselection >> {
+
+            for(def t : searchParameters) {
+                if(["in"].contains(t.operator)){
+
+                    if(t.value == null) {
+                        isNull t.property
+                        continue
+                    }
+
+                    if(!t.value.class.isArray() && !(t.value instanceof List)){
+                        t.value = [t.value]
+                    }
+
+                    if(t.value.contains(null) || t.value.contains("null")){
+                        or {
+                            inList t.property, t.value
+                            isNull t.property
+                        }
+                    } else {
+                        inList t.property, t.value
+                    }
+                } else {
+                    "${t.operator}" t.property,t.value
+                }
+            }
+        }
+
         def total = domain.createCriteria().count(selection)
 
         Closure c = selection >> sorting
