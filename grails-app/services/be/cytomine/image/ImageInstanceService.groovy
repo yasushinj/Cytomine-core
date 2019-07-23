@@ -1,7 +1,5 @@
 package be.cytomine.image
 
-import be.cytomine.CytomineDomain
-
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -180,23 +178,42 @@ class ImageInstanceService extends ModelService {
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : "created"
 
-        def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters)
+        def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters, project.blindMode)
 
+        boolean joinAI = validatedSearchParameters.any {it.property.contains(abstractImageAlias+".")} || sortedProperty.contains(abstractImageAlias+".")
+        boolean joinMime = validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")
+
+        def blindedNameSearch
+        for (def parameter : searchParameters){
+            if(parameter.field.equals("blindedName") && parameter.operator.equals("ilike")){
+                parameter.field = "ai.id"
+                blindedNameSearch = parameter
+                break
+            }
+        }
+
+        if(blindedNameSearch) {
+            validatedSearchParameters.remove(blindedNameSearch)
+            joinAI = true
+            blindedNameSearch = blindedNameSearch.values
+        }
 
         def images = criteriaRequestWithPagination(ImageInstance, max, offset, {
             eq("project", project)
             isNull("parent")
             isNull("deleted")
 
-            if(validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")){
+            if(joinMime){
                 createAlias("baseImage", abstractImageAlias)
                 createAlias("baseImage.mime", "mime")
                 //fetchMode 'baseImage', FetchMode.JOIN
                 //fetchMode 'mime', FetchMode.JOIN
-            } else if(validatedSearchParameters.any {it.property.contains(abstractImageAlias+".")} || sortedProperty.contains(abstractImageAlias+".")){
+            } else if(joinAI){
                 createAlias("baseImage", abstractImageAlias)
                 //fetchMode 'baseImage', FetchMode.JOIN
             }
+
+            if(blindedNameSearch) sqlRestriction(abstractImageAlias+"1_.id::text like '"+blindedNameSearch.replace("'", "''")+"'")
 
         }, validatedSearchParameters , {
             order(sortedProperty, sortDirection)
@@ -617,10 +634,12 @@ class ImageInstanceService extends ModelService {
 
     }
 
-    private def getDomainAssociatedSearchParameters(ArrayList searchParameters) {
+    private def getDomainAssociatedSearchParameters(ArrayList searchParameters, boolean blinded) {
 
         for (def parameter : searchParameters){
-            if(parameter.field.equals("name")) parameter.field = "instanceFilename"
+            if(parameter.field.equals("name")){
+                parameter.field = blinded ? "blindedName" : "instanceFilename"
+            }
             if(parameter.field.equals("numberOfJobAnnotations")) parameter.field = "countImageJobAnnotations"
             if(parameter.field.equals("numberOfReviewedAnnotations")) parameter.field = "countImageReviewedAnnotations"
             if(parameter.field.equals("numberOfAnnotations")) parameter.field = "countImageAnnotations"
