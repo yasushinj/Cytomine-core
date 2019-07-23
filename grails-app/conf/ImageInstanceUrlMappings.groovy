@@ -85,5 +85,8 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$idImage/nested/$id.$format"(controller: "restNestedImageInstance"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]
         }
+        "/api/project/$projectId/bounds/imageinstance.$format"(controller:"restImageInstance"){
+            action = [GET:"bounds"]
+        }
     }
 }

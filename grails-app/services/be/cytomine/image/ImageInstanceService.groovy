@@ -17,6 +17,7 @@ package be.cytomine.image
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
@@ -150,11 +151,12 @@ class ImageInstanceService extends ModelService {
 
 
 
-    def listTree(Project project) {
+    def listTree(Project project, Long max  = 0, Long offset = 0) {
         securityACLService.check(project,READ)
 
         def children = []
-        list(project).each { image->
+        def images = list(project, null, null, [], max, offset)
+        images.data.each { image->
             children << [ id : image.id, key : image.id, title : image.instanceFilename, isFolder : false, children : []]
         }
         def tree = [:]
@@ -165,15 +167,18 @@ class ImageInstanceService extends ModelService {
         tree.key = project.getId()
         tree.id = project.getId()
         tree.children = children
+        tree.size = images.total
         return tree
     }
 
-    def list(Project project, String sortColumn = null, String sortDirection = null, def searchParameters = null, Long max  = 0, Long offset = 0, boolean light=false) {
+    def list(Project project, String sortColumn = 'created', String sortDirection = "asc", def searchParameters = [], Long max  = 0, Long offset = 0, boolean light=false) {
         securityACLService.check(project,READ)
 
         String abstractImageAlias = "ai"
         String mimeAlias = "mime"
 
+        if(!sortColumn)  sortColumn = "created"
+        if(!sortDirection)  sortDirection = "asc"
         String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : "created"
@@ -184,6 +189,7 @@ class ImageInstanceService extends ModelService {
         boolean joinMime = validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")
 
         def blindedNameSearch
+        boolean manager = false
         for (def parameter : searchParameters){
             if(parameter.field.equals("blindedName") && parameter.operator.equals("ilike")){
                 parameter.field = "ai.id"
@@ -196,7 +202,13 @@ class ImageInstanceService extends ModelService {
             validatedSearchParameters.remove(blindedNameSearch)
             joinAI = true
             blindedNameSearch = blindedNameSearch.values
+
+            try{
+                securityACLService.checkIsAdminContainer(project, cytomineService.currentUser)
+                manager = true
+            } catch(ForbiddenException e){}
         }
+
 
         def images = criteriaRequestWithPagination(ImageInstance, max, offset, {
             eq("project", project)
@@ -213,7 +225,12 @@ class ImageInstanceService extends ModelService {
                 //fetchMode 'baseImage', FetchMode.JOIN
             }
 
-            if(blindedNameSearch) sqlRestriction(abstractImageAlias+"1_.id::text like '"+blindedNameSearch.replace("'", "''")+"'")
+            if(blindedNameSearch && manager) {
+                or {
+                    sqlRestriction(abstractImageAlias + "1_.id::text like '" + blindedNameSearch.replace("'", "''") + "'")
+                    ilike "instanceFilename", blindedNameSearch
+                }
+            } else if(blindedNameSearch) sqlRestriction(abstractImageAlias+"1_.id::text like '"+blindedNameSearch.replace("'", "''")+"'")
 
         }, validatedSearchParameters , {
             order(sortedProperty, sortDirection)
@@ -231,10 +248,10 @@ class ImageInstanceService extends ModelService {
         return images
     }
 
-    def listExtended(Project project, String sortColumn, String sortDirection, def searchParameters, def extended) {
+    def listExtended(Project project, String sortColumn, String sortDirection, def searchParameters, Long max  = 0, Long offset = 0, def extended) {
 
         def data = []
-        def images = list(project, sortColumn, sortDirection, searchParameters)
+        def images = list(project, sortColumn, sortDirection, searchParameters, max, offset)
 
         //get last activity grouped by images
         def user = cytomineService.currentUser

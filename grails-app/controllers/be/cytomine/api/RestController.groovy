@@ -381,7 +381,7 @@ class RestController {
         }
     }
 
-    static def allowedOperators = ["equals","like","ilike","lte", "in"]
+    static def allowedOperators = ["equals","like","ilike","lte", "gte", "in"]
     final protected def getSearchParameters(){
         def searchParameters = []
         for(def param : params){
@@ -391,7 +391,7 @@ class RestController {
 
                 def values = param.value
                 if(operator.equals("in")) {
-                    if(values.contains(",")) values = values.split(",")
+                    if(values.contains(",")) values = values.split(",") as List
                 }
 
                 if(allowedOperators.contains(operator)) searchParameters << [operator : operator, field : tmp[0], values : values]

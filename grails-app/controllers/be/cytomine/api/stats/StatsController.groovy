@@ -379,25 +379,4 @@ class StatsController extends RestController {
         responseSuccess(statsService.statAnnotationActionsEvolution(project, daysRange, startDate, endDate, accumulate, params.type))
     }
 
-    def bounds() {
-        Project project
-        def domain
-        def images
-
-        //git show a9a8bbac305ef87cda12860385ab1b59c3d74842 (ModelService) when url normalized
-        if(params.domain.equals("imageinstance")) {
-            domain = ImageInstance
-        } else throw new CytomineMethodNotYetImplementedException("Not yet implemented for this domain")
-
-        if(params.projectId){
-            project = Project.read(params.projectId)
-            securityACLService.check(project, READ)
-            images = domain.findAllByProject(project)
-        } else {
-            securityACLService.checkAdmin(cytomineService.getCurrentUser())
-            images = domain.findAll()
-        }
-
-        responseSuccess(statsService.bounds(domain, images))
-    }
 }

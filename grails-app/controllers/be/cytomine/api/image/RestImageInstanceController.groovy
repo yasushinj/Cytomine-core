@@ -43,6 +43,7 @@ import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
 import java.awt.image.BufferedImage
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Created by IntelliJ IDEA.
@@ -71,6 +72,7 @@ class RestImageInstanceController extends RestController {
     def propertyService
     def securityACLService
     def imageGroupService
+    def statsService
 
     final static int MAX_SIZE_WINDOW_REQUEST = 5000 * 5000 //5k by 5k pixels
 
@@ -151,14 +153,14 @@ class RestImageInstanceController extends RestController {
                 def result = imageInstanceService.list(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), light)
                 imageList = [collection : result.data, size : result.total]
             } else {
-                def result = imageInstanceService.listExtended(project, sortColumn, sortDirection, searchParameters, extended)
+                def result = imageInstanceService.listExtended(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), extended)
                 imageList = [collection : result.data, size : result.total]
             }
 
             responseSuccess(imageList)
         }
         else if (project && params.tree && params.boolean("tree"))  {
-            responseSuccess(imageInstanceService.listTree(project))
+            responseSuccess(imageInstanceService.listTree(project, params.long('max'), params.long('offset')))
         }
         else {
             responseNotFound("ImageInstance", "Project", params.project)
@@ -439,7 +441,7 @@ class RestImageInstanceController extends RestController {
             Project project = projectService.read(params.long('project'))
             if(image) {
                 securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
-                def layers =  imageInstanceService.getLayersFromAbstractImage(image.baseImage,image, projectService.list(cytomineService.currentUser).collect{it.id},secUserService.listUsers(image.project).collect{it.id},project)
+                def layers =  imageInstanceService.getLayersFromAbstractImage(image.baseImage,image, projectService.list(cytomineService.currentUser).data.collect{it.id},secUserService.listUsers(image.project).collect{it.id},project)
                 responseSuccess(layers)
             } else {
                 responseNotFound("Abstract Image",params.id)
@@ -538,6 +540,27 @@ class RestImageInstanceController extends RestController {
         log.info "response $url"
         responseSuccess([url : url.url])
     }
+
+    def bounds() {
+        def images
+
+        Project project = Project.read(params.projectId)
+        securityACLService.check(project, READ)
+        images = ImageInstance.findAllByProject(project)
+
+        def bounds = statsService.bounds(ImageInstance, images)
+
+        def abstractImages = images.collect{it.baseImage}
+        bounds.put("width", [min : abstractImages.min{it.width}.width, max : abstractImages.max{it.width}.width])
+        bounds.put("height", [min : abstractImages.min{it.height}.height, max : abstractImages.max{it.height}.height])
+        bounds.put("magnification", [list : images.collect{it.magnification}.unique(), min : bounds["magnification"].min, max : bounds["magnification"].max])
+        bounds.put("resolution", [list : images.collect{it.resolution}.unique(), min : bounds["resolution"].min, max : bounds["resolution"].max])
+        bounds.put("format", [list : abstractImages.collect{it.mime?.extension}.unique()])
+        bounds.put("mimeType", [list : abstractImages.collect{it.mime?.mimeType}.unique()])
+
+        responseSuccess(bounds)
+    }
+
 
     // as I have one field that I override differently if I am a manager, I overrided all the response method until the super method is more flexible
     @Override

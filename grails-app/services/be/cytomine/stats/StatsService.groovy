@@ -473,18 +473,6 @@ class StatsService extends ModelService {
             }
         }
 
-        //domain-specific supplementary values
-        if(domain.equals(ImageInstance)) {
-            def images = objects.collect{it.baseImage}
-            result.put("width", [min : images.min{it.width}.width, max : images.max{it.width}.width])
-            result.put("height", [min : images.min{it.height}.height, max : images.max{it.height}.height])
-
-            result.put("magnification", [list : objects.collect{it.magnification}.unique()])
-            result.put("resolution", [list : objects.collect{it.resolution}.unique()])
-            result.put("format", [list : images.collect{it.mime?.extension}.unique()])
-            result.put("mimeType", [list : images.collect{it.mime?.mimeType}.unique()])
-        }
-
         return result
     }
 

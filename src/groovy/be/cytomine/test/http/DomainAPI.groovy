@@ -240,7 +240,11 @@ class DomainAPI {
         return [data: data]
     }
 
-
+    static String convertSearchParameters(def parameters){
+        return parameters.collect{p->
+            p.field + "["+p.operator+"]=" + p.value
+        }.join("&")
+    }
 
 
 

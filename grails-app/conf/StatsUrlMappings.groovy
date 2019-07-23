@@ -117,14 +117,5 @@ class StatsUrlMappings {
             action = [GET:"statsOfCurrentActions"]
         }
 
-        //bounds
-        "/api/project/$projectId/bounds/$domain.$format"(controller:"stats"){
-            action = [GET:"bounds"]
-        }
-        "/api/bounds/$domain.$format"(controller:"stats"){
-            action = [GET:"bounds"]
-        }
-
-
     }
 }
