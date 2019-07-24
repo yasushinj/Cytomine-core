@@ -64,6 +64,7 @@ class ImageInstanceSearchTests {
         assert json.countImageAnnotations.max == annots.max()
     }
 
+    //search
     void testGetSearch(){
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
         ImageInstance img1 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)

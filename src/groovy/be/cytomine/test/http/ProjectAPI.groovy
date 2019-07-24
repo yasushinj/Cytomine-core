@@ -33,23 +33,27 @@ class ProjectAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def list(String username, String password, Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null) {
+    static def list(def searchParameters=[], Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, String username, String password) {
+        return list(withMembersCount, withLastActivity,withCurrentUserRoles, 0,0,username, password)
+    }
+
+    static def list(Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, Long max , Long offset, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/project.json"
+        URL += "?max=$max&offset=$offset"
         if(withMembersCount || withLastActivity || withCurrentUserRoles) {
-            URL += "?"
-            URL += "withMembersCount="+withMembersCount
+            URL += "&withMembersCount="+withMembersCount
             URL += "&withLastActivity="+withLastActivity
             URL += "&withCurrentUserRoles="+withCurrentUserRoles
         }
         return doGET(URL, username, password)
     }
 
-    static def listByUser(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/user/$id/project.json"
+    static def listByUser(Long id, Long max  = 0, Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/user/$id/project.json?max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
-    static def listByUserLight(Long id, String type, String username, String password) {
+    static def listByUserLight(Long id, String type, Long max  = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/user/$id/project/light.json?$type=true"
         return doGET(URL, username, password)
     }
@@ -59,12 +63,12 @@ class ProjectAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def listBySoftware(Long id, String username, String password) {
+    static def listBySoftware(Long id, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/software/$id/project.json"
         return doGET(URL, username, password)
     }
 
-    static def listByOntology(Long id, String username, String password) {
+    static def listByOntology(Long id, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/ontology/$id/project.json"
         return doGET(URL, username, password)
     }
@@ -144,5 +148,8 @@ class ProjectAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-
+    static def getBounds(String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/bounds/project.json"
+        return doGET(URL, username, password)
+    }
 }

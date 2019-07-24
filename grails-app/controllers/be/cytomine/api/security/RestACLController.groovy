@@ -69,7 +69,7 @@ class RestACLController extends RestController {
     }
 
     def listDomain() {
-        List<Project> projects = projectService.list()
+        List<Project> projects = projectService.list().data
         List<Ontology> ontologies = ontologyService.list()
         List<Software> softwares = softwareService.list()
         List<Storage> storages = storageService.list()

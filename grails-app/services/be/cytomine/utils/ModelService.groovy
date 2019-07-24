@@ -416,6 +416,8 @@ abstract class ModelService {
     }
 
     protected def getDomainAssociatedSearchParameters(Class<? extends CytomineDomain> domain, ArrayList searchParameters) {
+        if(!searchParameters) return []
+
         def result = []
         def translated = []
 
@@ -457,6 +459,63 @@ abstract class ModelService {
         return result
     }
 
+    protected def searchParametersToSQLConstraints(def parameters) {
+        for (def parameter : parameters){
+            String regex = "([a-z])([A-Z]+)"
+            String replacement = "\$1_\$2"
+            parameter.property =parameter.property.replaceAll(regex, replacement).toLowerCase()
+
+            String sql
+            switch(parameter.operator){
+                case "equals":
+                    if(parameter.value != null) sql = parameter.property+" == "+parameter.value
+                    else sql = parameter.property+" IS NULL "
+                    break
+                case "nequals":
+                    if(parameter.value != null) sql = parameter.property+" != "+parameter.value
+                    else sql = parameter.property+" IS NOT NULL "
+                    break
+                case "like":
+                    sql = parameter.property+" LIKE '"+parameter.value+"'"
+                    break
+                case "ilike":
+                    sql = parameter.property+" ILIKE '"+parameter.value+"'"
+                    break
+                case "lte":
+                    sql = parameter.property+" <= "+parameter.value
+                    break
+                case "gte":
+                    sql = parameter.property+" >= "+parameter.value
+                    break
+                case "in":
+
+                    if(parameter.value && (parameter.value.class.isArray() || (parameter.value instanceof List))){
+                        parameter.value = parameter.value.unique()
+                    }
+
+                    if(parameter.value == null || (parameter.value.size() == 1 && parameter.value[0] == null)) {
+                        sql = parameter.property+" IS NULL "
+                        break
+                    }
+
+                    if(!parameter.value.class.isArray() && !(parameter.value instanceof List)){
+                        parameter.value = [parameter.value]
+                    }
+
+                    if(parameter.value.contains(null) || parameter.value.contains("null")){
+                        sql = "("+parameter.property+" IN ("+parameter.value.join(",")+") OR "+parameter.property+" IS NULL) "
+                    } else {
+                        sql = parameter.property+" IN ("+parameter.value.join(",")+") "
+                        break
+                    }
+
+                    break
+                //case "":
+            }
+            parameter.sql = sql
+        }
+        return parameters
+    }
 
     protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure preselection, def searchParameters, String sortedProperty = null, String sortDirection = null){
         sortedProperty = (sortedProperty != null && domain.hasProperty(sortedProperty)) ? sortedProperty : "created"

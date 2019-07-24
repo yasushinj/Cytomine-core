@@ -61,7 +61,7 @@ class RestReviewedAnnotationController extends RestController {
     @RestApiMethod(description="List all reviewed annotation available for the user", listing=true)
     def list() {
         def annotations = []
-        def projects = projectService.list()
+        def projects = projectService.list().data
         projects.each {
             annotations.addAll(reviewedAnnotationService.list(it,paramsService.getPropertyGroupToShow(params)))
         }

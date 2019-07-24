@@ -71,7 +71,7 @@ class RestJobController extends RestController {
         if (projects_id) {
             projects = projectService.readMany(projects_id)
         } else {
-            projects = projectService.list(cytomineService.currentUser)
+            projects = projectService.list(cytomineService.currentUser).data
         }
 
         Collection<Software> softwares

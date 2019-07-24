@@ -59,7 +59,7 @@ class  RestAlgoAnnotationController extends RestController {
     def list() {
         def annotations = []
         //get all user's project and list all algo annotation
-        def projects = projectService.list()
+        def projects = projectService.list().data
         projects.each {
             annotations.addAll(algoAnnotationService.list(it,paramsService.getPropertyGroupToShow(params)))
         }
