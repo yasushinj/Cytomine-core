@@ -171,4 +171,132 @@ class UploadedFileSearchTests {
         assert json.collection instanceof JSONArray
         assert json.collection.size() == previousSize + 1
     }
+
+    //sort
+    void testSortUploadedFile() {
+
+        //creation
+        UploadedFile uploadedfileToAdd = BasicInstanceBuilder.getUploadedFileNotExist()
+        def result = UploadedFileAPI.create(uploadedfileToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        int idUploadedFile = result.data.id
+
+        UploadedFile uploadedfileChildToAdd = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedfileChildToAdd.parent = UploadedFile.get(idUploadedFile)
+        UploadedFileAPI.create(uploadedfileChildToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        UploadedFile uploadedfileChildToAdd2 = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedfileChildToAdd2.parent = UploadedFile.get(idUploadedFile)
+        uploadedfileChildToAdd2.size += 200
+        uploadedfileChildToAdd2.originalFilename += "s"
+        uploadedfileChildToAdd2.status = 9
+        UploadedFileAPI.create(uploadedfileChildToAdd2.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        UploadedFile uploadedfileToAdd2 = BasicInstanceBuilder.getUploadedFileNotExist()
+        UploadedFileAPI.create(uploadedfileToAdd2.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+
+        //sorts
+
+        result = UploadedFileAPI.listOnlyRoots("created", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        Long id1 = json.collection[0].id
+        Long id2 = json.collection[-1].id
+
+        result = UploadedFileAPI.listOnlyRoots("created", "desc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+        assert json.collection[0].id == id2
+        assert json.collection[-1].id == id1
+
+
+        result = UploadedFileAPI.listChilds(idUploadedFile, "originalFilename", "asc" , Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+        id1 = json.collection[0].id
+        id2 = json.collection[-1].id
+
+        result = UploadedFileAPI.listChilds(idUploadedFile, "originalFilename", "desc" , Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+        assert json.collection[0].id == id2
+        assert json.collection[-1].id == id1
+
+
+        result = UploadedFileAPI.list("size", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+
+
+        long sizeU = json.collection[0].size
+
+        result = UploadedFileAPI.list("size", "desc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert sizeU != json.collection[0].size
+
+
+        result = UploadedFileAPI.list("contentType", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+
+        result = UploadedFileAPI.list("contentType", "desc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+
+        result = UploadedFileAPI.list(true, "globalSize", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+        sizeU = json.collection[0].globalSize
+
+        result = UploadedFileAPI.list(true, "globalSize", "desc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert sizeU != json.collection[0].globalSize
+
+
+        long status
+        result = UploadedFileAPI.list("status", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+        status = json.collection[0].status
+
+        result = UploadedFileAPI.list("status", "desc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert status != json.collection[0].status
+
+
+        result = UploadedFileAPI.list("parentFilename", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() > 1
+
+        result = UploadedFileAPI.list("parentFilename", "desc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
+
 }

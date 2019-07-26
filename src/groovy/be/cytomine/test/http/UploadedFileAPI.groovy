@@ -33,19 +33,40 @@ class UploadedFileAPI extends DomainAPI {
     }
 
     static def list(Long max = 0, Long offset = 0, String username, String password) {
+        return list(false, null, null, max, offset, username, password)
+    }
+    static def list(boolean detailed, Long max = 0, Long offset = 0, String username, String password) {
+        return list(detailed, null, null, max, offset, username, password)
+    }
+    static def list(boolean detailed = false, String sort, String order, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?max=$max&offset=$offset"
+        URL += detailed ? "&detailed=true" : ""
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
 
-    static def listOnlyRoots(Long max = 0, Long offset = 0, String username, String password) {
+    static def listOnlyRoots(Long max , Long offset, String username, String password) {
+        return listOnlyRoots(null, null, max , offset, username, password)
+    }
+
+    static def listOnlyRoots(String sort = null, String order = null, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?onlyRoots=true&max=$max&offset=$offset"
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
 
     static def listChilds(Long parentId, Long max = 0, Long offset = 0, String username, String password) {
+        return listChilds(parentId, null, null, max, offset, username, password)
+    }
+    static def listChilds(Long parentId, String sort, String order, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?parent=$parentId&max=$max&offset=$offset"
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
+
     static def hierarchicalList(Long rootId, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/uploadedfile.json?root=$rootId&max=$max&offset=$offset"
         return doGET(URL, username, password)
