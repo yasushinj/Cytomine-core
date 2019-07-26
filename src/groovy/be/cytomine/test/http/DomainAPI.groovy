@@ -242,7 +242,10 @@ class DomainAPI {
 
     static String convertSearchParameters(def parameters){
         return parameters.collect{p->
-            p.field + "["+p.operator+"]=" + p.value
+            String value
+            if(p.value instanceof Date) value = ((Date)p.value).time
+            else value = p.value.toString()
+            return p.field + "["+p.operator+"]=" + value
         }.join("&")
     }
 

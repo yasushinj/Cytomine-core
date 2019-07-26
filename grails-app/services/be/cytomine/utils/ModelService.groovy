@@ -432,12 +432,14 @@ abstract class ModelService {
                     if(input == null || input.equals("null")) return null
                     def output
 
-                    if (field.type == Integer) {
+                    if (field.type == Integer || field.type == int) {
                         output = Integer.parseInt(input)
-                    } else if (field.type == Long) {
+                    } else if (field.type == Long || field.type == long) {
                         output = Long.parseLong(input)
-                    } else if (field.type == Double) {
+                    } else if (field.type == Double || field.type == double) {
                         output = Double.parseDouble(input)
+                    } else if (field.type == Date) {
+                        output = new Date(Long.parseLong(input))
                     } else {
                         output = input
                     }
