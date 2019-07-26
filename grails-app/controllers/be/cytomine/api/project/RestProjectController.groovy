@@ -218,7 +218,8 @@ class RestProjectController extends RestController {
     def listByUser() {
         User user = User.read(params.long('id'))
         if(user) {
-            responseSuccess(projectService.list(user).data)
+            def result = projectService.list(user,params.long('max',0),params.long('offset',0))
+            responseSuccess([collection : result.data, size : result.total])
         } else {
             responseNotFound("User", params.id)
         }

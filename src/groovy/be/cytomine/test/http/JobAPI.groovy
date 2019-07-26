@@ -33,8 +33,19 @@ class JobAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def list(String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/job.json"
+    static def list(Long max = 0, Long offset = 0, String username, String password) {
+        return list(null, null, max, offset, username, password)
+    }
+
+    static def list(def searchParameters, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/job.json?${convertSearchParameters(searchParameters)}"
+        return doGET(URL, username, password)
+    }
+
+    static def list(String sort, String order, Long max = 0, Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/job.json?max=$max&offset=$offset"
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
 
@@ -43,8 +54,30 @@ class JobAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def listBySoftwareAndProject(Long idSoftware, Long idProject,String username, String password, boolean light) {
-        String URL = Infos.CYTOMINEURL + "api/job.json?software=$idSoftware&project=$idProject&light=$light"
+    static def listBySoftwareAndProject(Long idSoftware, Long idProject, String username, String password, boolean light) {
+        return listBySoftwareAndProject(idSoftware, idProject, null, null, 0, 0, username, password, light)
+    }
+
+    static def listBySoftwareAndProject(Long idSoftware, Long idProject, String sort, String order, String username, String password, boolean light) {
+        return listBySoftwareAndProject(idSoftware, idProject, sort, order, 0, 0, username, password, light)
+    }
+
+    static def listBySoftwareAndProject(Long idSoftware, Long idProject, Long max = 0, Long offset = 0, String username, String password, boolean light = false) {
+        return listBySoftwareAndProject(idSoftware, idProject, null, null, max, offset, [], username, password, light)
+    }
+
+    static def listBySoftwareAndProject(Long idSoftware, Long idProject, String sort, String order, Long max = 0, Long offset = 0, String username, String password, boolean light = false) {
+        return listBySoftwareAndProject(idSoftware, idProject, sort, order, max, offset, [], username, password, light)
+    }
+
+    static def listBySoftwareAndProject(Long idSoftware, Long idProject, Long max = 0, Long offset = 0, def searchParameters, String username, String password, boolean light = false) {
+        return listBySoftwareAndProject(idSoftware, idProject, null, null, max, offset, searchParameters, username, password, light)
+    }
+
+    static def listBySoftwareAndProject(Long idSoftware, Long idProject, String sort, String order, Long max = 0, Long offset = 0, def searchParameters, String username, String password, boolean light = false) {
+        String URL = Infos.CYTOMINEURL + "api/job.json?software=$idSoftware&project=$idProject&light=$light&${convertSearchParameters(searchParameters)}&max=$max&offset=$offset"
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
 
@@ -65,13 +98,18 @@ class JobAPI extends DomainAPI {
         return doDELETE(URL,username,password)
     }
 
+    static def getBounds(Long projectId, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$projectId/bounds/job.json"
+        return doGET(URL, username, password)
+    }
+
     static def deleteAllJobData(def id, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/job/" + id + "/alldata.json"
         return doDELETE(URL,username,password)
     }
 
     static def deleteAllJobData(def id, def task,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/job/" + id + "/alldata.json?task="+task
+        String URL = Infos.CYTOMINEURL + "api/job/" + id + "/all0data.json?task="+task
         return doDELETE(URL,username,password)
     }
 

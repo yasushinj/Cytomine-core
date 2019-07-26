@@ -71,7 +71,7 @@ class RestJobController extends RestController {
         if (projects_id) {
             projects = projectService.readMany(projects_id)
         } else {
-            projects = projectService.list(cytomineService.currentUser).data
+            projects = projectService.list(cytomineService.currentUser)
         }
 
         Collection<Software> softwares
@@ -81,7 +81,9 @@ class RestJobController extends RestController {
             softwares = Software.list() //implement security ?
         }
 
-        responseSuccess(jobService.list(softwares, projects, light))
+        def result = jobService.list(softwares, projects, params.sort, params.order, searchParameters, params.long('max',0), params.long('offset',0), light)
+
+        responseSuccess([collection : result.data, size:result.total])
     }
 
     /**
