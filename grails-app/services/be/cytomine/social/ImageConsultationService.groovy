@@ -11,6 +11,7 @@ import be.cytomine.sql.UserAnnotationListing
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
+import org.hibernate.criterion.Projections
 import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -107,17 +108,26 @@ class ImageConsultationService extends ModelService {
         }
     }
 
-    def lastImageOfUsersByProject(Project project){
+    def lastImageOfUsersByProject(Project project, def searchParameters = [], String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
 
         securityACLService.check(project,READ)
 
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
 
         def results = []
-        def images = db.persistentImageConsultation.aggregate(
-                [$match:[project : project.id]],
-                [$sort : [created:-1]],
-                [$group : [_id : '$user', created : [$max :'$created'], image : [$first: '$image'], imageName : [$first: '$imageName'], user : [$first: '$user']]]);
+        def match = [project : project.id]
+        def sp = searchParameters.find{it.operator.equals("in") && it.property.equals("user")}
+        if(sp) match << [user : [$in :sp.value]]
+
+        def aggregation = [
+                [$match:match],
+                [$sort : ["$sortProperty": sortDirection.equals("desc") ? -1 : 1]],
+                [$group : [_id : '$user', created : [$max :'$created'], image : [$first: '$image'], imageName : [$first: '$imageName'], user : [$first: '$user']]],
+                [$skip : offset]
+        ]
+        if(max > 0) aggregation.push([$limit : max])
+
+        def images = db.persistentImageConsultation.aggregate(aggregation)
 
 
         ImageInstance image;
@@ -133,6 +143,51 @@ class ImageConsultationService extends ModelService {
                 }
             }
             results << [user: it["_id"], created : it["created"], image : it["image"], imageName: filename]
+        }
+        return results
+    }
+
+    /**
+     * return the last Image Of users in a Project. If a user (in the userIds array) doesn't have consulted an image yet, null values will be associated to the user id.
+     */
+    // Improve : Can be improved if we can do this in mongo directly
+    def lastImageOfGivenUsersByProject(Project project, def userIds, String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
+
+        def results = []
+
+        def connected = PersistentImageConsultation.createCriteria().list(sort: "user", order: sortDirection) {
+            eq("project", project)
+            projections {
+                Projections.groupProperty("user")
+                property("user")
+            }
+        }
+
+        def unconnected = userIds - connected
+        unconnected = unconnected.collect{[user: it , created : null, image : null, imageName: null]}
+
+        if(max == 0) max = unconnected.size() + connected.size() - offset
+
+        if(sortDirection.equals("desc")){
+            //if o+l <= #connected ==> return connected with o et l
+            // if o+l > #c c then return connected with o et l and append enough "nulls"
+
+            if(offset < connected.size()){
+                results = lastImageOfUsersByProject(project, [], sortProperty, sortDirection, max, offset)
+            }
+            int maxOfUnconnected = Math.max(max - results.size(),0)
+            int offsetOfUnconnected = Math.max(offset - connected.size(),0)
+            if (maxOfUnconnected > 0 ) results.addAll(unconnected.subList(offsetOfUnconnected,offsetOfUnconnected+maxOfUnconnected))
+        } else {
+            if(offset + max <= unconnected.size()){
+                results = unconnected.subList((int)offset,(int)(offset+max))
+            }
+            else if(offset + max > unconnected.size() && offset <= unconnected.size()) {
+                results = unconnected.subList((int)offset,unconnected.size())
+                results.addAll(lastImageOfUsersByProject(project, [], sortProperty, sortDirection, max-(unconnected.size()-offset), 0))
+            } else {
+                results.addAll(lastImageOfUsersByProject(project, [], sortProperty, sortDirection, max, offset - unconnected.size()))
+            }
         }
         return results
     }

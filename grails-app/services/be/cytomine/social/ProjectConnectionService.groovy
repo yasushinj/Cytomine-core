@@ -9,6 +9,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import grails.transaction.Transactional
 import groovy.time.TimeCategory
+import org.hibernate.criterion.Projections
 import org.springframework.web.context.request.RequestContextHolder
 
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -42,7 +43,10 @@ class ProjectConnectionService extends ModelService {
         return connection
     }
 
-    def lastConnectionInProject(Project project, Long userId = null){
+    def lastConnectionInProject(Project project, def searchParameters = [], String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
+        lastConnectionInProject(project, null, searchParameters, sortProperty, sortDirection, max, offset)
+    }
+    def lastConnectionInProject(Project project, Long userId, def searchParameters = [], String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
         if(userId) {
             SecUser user = secUserService.read(userId)
             securityACLService.checkIsSameUserOrAdminContainer(project, user , cytomineService.currentUser)
@@ -51,18 +55,72 @@ class ProjectConnectionService extends ModelService {
         }
 
         if (userId) {
-            return PersistentProjectConnection.findAllByUserAndProject(userId, project.id, [sort: 'created', order: 'desc', max: 1])
+            return PersistentProjectConnection.findAllByUserAndProject(userId, project.id, [sort: sortProperty, order: sortDirection, max: 1])
         }
 
         def results = []
         def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
-        def match = [$match:[project : project.id]]
-        def connection = db.persistentProjectConnection.aggregate(
-                match,
-                [$group : [_id : '$user', created : [$max :'$created']]])
+
+        def match = [project : project.id]
+        def sp = searchParameters.find{it.operator.equals("in") && it.property.equals("user")}
+        if(sp) match << [user : [$in :sp.value]]
+
+        def aggregation = [
+                [$match:match],
+                [$sort : ["$sortProperty": sortDirection.equals("desc") ? -1 : 1]],
+                [$group : [_id : '$user', created : [$max :'$created']]],
+                [$skip : offset]
+        ]
+        if(max > 0) aggregation.push([$limit : max])
+
+        def connection = db.persistentProjectConnection.aggregate(aggregation)
 
         connection.results().each {
             results << [user: it["_id"], created : it["created"]]
+        }
+        return results
+    }
+
+    /**
+     * return the last connection in a project by user. If a user (in the userIds array) doesn't have a connection yet, null values will be associated to the user id.
+     */
+    // Improve : Can be improved if we can do this in mongo directly
+    def lastConnectionOfGivenUsersInProject(Project project, def userIds, String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
+        def results = []
+
+        def connected = PersistentProjectConnection.createCriteria().list(sort: "user", order: sortDirection) {
+            eq("project", project)
+            projections {
+                Projections.groupProperty("user")
+                property("user")
+            }
+        }
+
+        def unconnected = userIds - connected
+        unconnected = unconnected.collect{[user: it , created : null]}
+
+        if(max == 0) max = unconnected.size() + connected.size() - offset
+
+        if(sortDirection.equals("desc")){
+            //if o+l <= #connected ==> return connected with o et l
+            // if o+l > #c c then return connected with o et l and append enough "nulls"
+
+            if(offset < connected.size()){
+                results = lastConnectionInProject(project, [], sortProperty, sortDirection, max, offset)
+            }
+            int maxOfUnconnected = Math.max(max - results.size(),0)
+            int offsetOfUnconnected = Math.max(offset - connected.size(),0)
+            if (maxOfUnconnected > 0 ) results.addAll(unconnected.subList(offsetOfUnconnected,offsetOfUnconnected+maxOfUnconnected))
+        } else {
+            if(offset + max <= unconnected.size()){
+                results = unconnected.subList((int)offset,(int)(offset+max))
+            }
+            else if(offset + max > unconnected.size() && offset <= unconnected.size()) {
+                results = unconnected.subList((int)offset,unconnected.size())
+                results.addAll(lastConnectionInProject(project, [], sortProperty, sortDirection, max-(unconnected.size()-offset), 0))
+            } else {
+                results.addAll(lastConnectionInProject(project, [], sortProperty, sortDirection, max, offset - unconnected.size()))
+            }
         }
         return results
     }
@@ -144,7 +202,10 @@ class ProjectConnectionService extends ModelService {
         return connections
     }
 
-    def numberOfConnectionsByProjectAndUser(Project project, User user = null){
+    def numberOfConnectionsByProjectAndUser(Project project, def searchParameters = [], String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
+        numberOfConnectionsByProjectAndUser(project, null, searchParameters, sortProperty , sortDirection , max, offset)
+    }
+    def numberOfConnectionsByProjectAndUser(Project project, User user, def searchParameters = [], String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
 
         securityACLService.check(project,WRITE)
         def result;
@@ -163,10 +224,19 @@ class ProjectConnectionService extends ModelService {
 
             def db = mongo.getDB(noSQLCollectionService.getDatabaseName())
 
-            result = db.persistentProjectConnection.aggregate(
-                    [$match : [ project : project.id]],
-                    [$group : [_id : [ user: '$user'], "frequency":[$sum:1]]]
-            )
+            def match = [project : project.id]
+            def sp = searchParameters.find{it.operator.equals("in") && it.property.equals("user")}
+            if(sp) match << [user : [$in :sp.value]]
+
+            def aggregation = [
+                    [$match : match],
+                    [$group : [_id : [ user: '$user'], "frequency":[$sum:1]]],
+                    [$sort : ["$sortProperty": sortDirection.equals("desc") ? -1 : 1]],
+                    [$skip : offset]
+            ]
+            if(max > 0) aggregation.push([$limit : max])
+
+            result = db.persistentProjectConnection.aggregate(aggregation)
 
             def usersConnections = []
             result.results().each {
@@ -177,6 +247,50 @@ class ProjectConnectionService extends ModelService {
             result = usersConnections
         }
         return result
+    }
+
+    /**
+     * return the number of project connections by user in a Project. If a user (in the userIds array) doesn't have a connection yet, null values will be associated to the user id.
+     */
+    // Improve : Can be improved if we can do this in mongo directly
+    def numberOfConnectionsOfGivenByProject(Project project, def userIds, String sortProperty = "created", String sortDirection = "desc", Long max = 0, Long offset = 0){
+        def results = []
+
+        def connected = PersistentProjectConnection.createCriteria().list(sort: "user", order: sortDirection) {
+            eq("project", project)
+            projections {
+                Projections.groupProperty("user")
+                property("user")
+            }
+        }
+
+        def unconnected = userIds - connected
+        unconnected = unconnected.collect{[user: it , frequency : null]}
+
+        if(max == 0) max = unconnected.size() + connected.size() - offset
+
+        if(sortDirection.equals("desc")){
+            //if o+l <= #connected ==> return connected with o et l
+            // if o+l > #c c then return connected with o et l and append enough "nulls"
+
+            if(offset < connected.size()){
+                results = numberOfConnectionsByProjectAndUser(project, [], sortProperty, sortDirection, max, offset)
+            }
+            int maxOfUnconnected = Math.max(max - results.size(),0)
+            int offsetOfUnconnected = Math.max(offset - connected.size(),0)
+            if (maxOfUnconnected > 0 ) results.addAll(unconnected.subList(offsetOfUnconnected,offsetOfUnconnected+maxOfUnconnected))
+        } else {
+            if(offset + max <= unconnected.size()){
+                results = unconnected.subList((int)offset,(int)(offset+max))
+            }
+            else if(offset + max > unconnected.size() && offset <= unconnected.size()) {
+                results = unconnected.subList((int)offset,unconnected.size())
+                results.addAll(numberOfConnectionsByProjectAndUser(project, [], sortProperty, sortDirection, max-(unconnected.size()-offset), 0))
+            } else {
+                results.addAll(numberOfConnectionsByProjectAndUser(project, [], sortProperty, sortDirection, max, offset - unconnected.size()))
+            }
+        }
+        return results
     }
 
     def totalNumberOfConnectionsByProject(){

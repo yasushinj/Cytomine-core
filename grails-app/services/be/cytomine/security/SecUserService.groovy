@@ -20,6 +20,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ConstraintException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.NestedImageInstance
@@ -35,12 +36,14 @@ import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.social.LastConnection
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.News
+import be.cytomine.utils.SearchUtils
 import be.cytomine.utils.Task
 import be.cytomine.utils.Utils
 import grails.converters.JSON
 import grails.plugin.springsecurity.acl.AclSid
 import groovy.sql.Sql
 import org.apache.commons.collections.ListUtils
+import org.springframework.util.ReflectionUtils
 
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -71,6 +74,8 @@ class SecUserService extends ModelService {
     def projectDefaultLayerService
     def storageService
     def projectRepresentativeUserService
+    def imageConsultationService
+    def projectConnectionService
 
     def currentDomain() {
         User
@@ -127,9 +132,19 @@ class SecUserService extends ModelService {
         cytomineService.getCurrentUser()
     }
 
-    def list() {
+    def list(def searchParameters = [], Long max = 0, Long offset = 0) {
+        list(null, null, searchParameters, max, offset)
+    }
+    def list(String sortColumn, String sortDirection, def searchParameters = [], Long max = 0, Long offset = 0) {
         securityACLService.checkGuest(cytomineService.currentUser)
-        User.list(sort: "username", order: "asc")
+        if(!sortColumn) sortColumn = "username"
+        if(!sortDirection) sortDirection = "asc"
+
+        def users = criteriaRequestWithPagination(User, max, offset, {}, searchParameters , {
+            order(sortColumn, sortDirection)
+        })
+
+        return users
     }
 
     def lock(SecUser user){
@@ -181,6 +196,139 @@ class SecUserService extends ModelService {
         //TODO: could be optim!!!
         data.addAll(UserJob.findAllByJobInList(Job.findAllByProject(project)))
         data
+    }
+
+    def listUsersExtendedByProject(Project project, def extended, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0) {
+
+        if (sortColumn.equals("lastImageName") && !extended.withLastImage) throw new WrongArgumentException("Cannot sort on lastImageName without argument withLastImage")
+        if (sortColumn.equals("lastConnection") && !extended.withLastConsultation) throw new WrongArgumentException("Cannot sort on lastConnection without argument withLastConsultation")
+        if (sortColumn.equals("frequency") && !extended.withNumberConsultations) throw new WrongArgumentException("Cannot sort on frequency without argument withNumberConsultations")
+
+        if (!extended || extended.isEmpty()) return listUsersByProject(project, searchParameters, sortColumn, sortDirection, max, offset)
+
+        def results = []
+        def users = []
+        def images = []
+        def connections = []
+        def frequencies = []
+
+        def binSearchI = SearchUtils.binarySearch()
+
+        boolean usersFetched = false
+        boolean consultationsFetched = false
+        boolean connectionsFetched = false
+        boolean frequenciessFetched = false
+
+        // si online, on replira le in in avec les users ids des connectés
+
+        def userIds
+        long total
+
+        if (ReflectionUtils.findField(User, sortColumn)) {
+            users = this.listUsersByProject(project, searchParameters, sortColumn, sortDirection, max, offset)
+            total = users.total
+            users = users.data
+            results = users.collect{User.getDataFromDomain(it)}
+            usersFetched = true
+        } else {
+            users = this.listUsersByProject(project, searchParameters, "id", "asc").data
+            total = users.size()
+        }
+        userIds = users.collect { it.id }
+
+
+        switch (sortColumn) {
+            case "lastImageName":
+                images = imageConsultationService.lastImageOfGivenUsersByProject(project, userIds, "name", sortDirection, max, offset)
+                results = images.collect { i -> [id: i.user, lastImage: i.image] }
+                userIds = results.collect { it.id }
+                consultationsFetched = true
+                break
+            case "lastConnection":
+                connections = projectConnectionService.lastConnectionOfGivenUsersInProject(project, userIds, "created", sortDirection, max, offset)
+                results = connections.collect { c -> [id: c.user, lastConnection: c.created] }
+                userIds = results.collect { it.id }
+                connectionsFetched = true
+                break
+            case "frequency":
+                frequencies = projectConnectionService.numberOfConnectionsOfGivenByProject(project, userIds, "frequency", sortDirection, max, offset)
+                results = frequencies.collect { f -> [id: f.user, numberConsultations: f.frequency] }
+                userIds = results.collect { it.id }
+                frequenciessFetched = true
+                break
+        }
+
+        if(!usersFetched){
+            for (def entry : results) {
+                int index = binSearchI(users, "id", entry.id)
+                def user = users[index]
+                def userInfo = User.getDataFromDomain(user)
+                entry << userInfo
+            }
+        }
+        if (!consultationsFetched) {
+            images = imageConsultationService.lastImageOfUsersByProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
+            for (def user : results) {
+                int index = binSearchI(images, "user", user.id)
+                def image = index >= 0 ? images[index] : null
+                user.lastImage = image?.image
+            }
+            consultationsFetched = true
+        }
+        if (!connectionsFetched) {
+            connections = projectConnectionService.lastConnectionInProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
+            for (def user : results) {
+                int index = binSearchI(connections, "user", user.id)
+                def connection = index >= 0 ? connections[index] : null
+                user.lastConnection = connection?.created
+            }
+            connectionsFetched = true
+        }
+        if (!frequenciessFetched) {
+            frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
+            for (def user : results) {
+                int index = binSearchI(frequencies, "user", user.id)
+                def frequency = index >= 0 ? frequencies[index] : null
+                user.numberConnection = frequency?.frequency
+            }
+            frequenciessFetched = true
+        }
+
+        return [data: results, total: total]
+    }
+
+    def listUsersByProject(Project project, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0){
+
+        def multiSearch = searchParameters.find{it.field == "fullName"}
+
+        String select = "select distinct secUser "
+        String request = "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
+                "where aclObjectId.objectId = "+project.id+" " +
+                "and aclEntry.aclObjectIdentity = aclObjectId.id " +
+                "and aclEntry.sid = aclSid.id " +
+                "and aclSid.sid = secUser.username " +
+                "and secUser.class = 'be.cytomine.security.User' ";
+
+        if(multiSearch) {
+            String value = ((String) multiSearch.values).toLowerCase()
+            request += " and (lower(secUser.firstname) like '%$value%' or lower(secUser.lastname) like '%$value%' or lower(secUser.email) like '%$value%') "
+        }
+        //for (def t : searchParameters) {
+            // TODO parameters to HQL constraints
+        //}
+        String order = "order by secUser.$sortColumn $sortDirection "
+
+
+        List<User> users = User.executeQuery(select + request + order, [offset:offset, max:max])
+
+        long total;
+        if(max == 0 && offset == 0) total = users.size()
+        else {
+            def list = User.executeQuery("select count(distinct secUser.id) " + request /*"select count(distinct secUser.id) from User secUser"*/ )
+            total = list[0]
+        }
+
+        return [data: users, total: total]
     }
 
     def listUsers(Project project, boolean showUserJob = false) {

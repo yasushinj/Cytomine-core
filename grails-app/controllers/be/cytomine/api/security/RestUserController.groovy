@@ -72,9 +72,28 @@ class RestUserController extends RestController {
             @RestApiParam(name="withNumberConsultations", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the number of consultations of this project by each user"),
     ])
     def showByProject() {
-        boolean online = params.boolean('online')
-        boolean showUserJob = params.boolean('showJob')
+
         Project project = projectService.read(params.long('id'))
+        def extended = [:]
+        if(params.withLastImage) extended.put("withLastImage",params.withLastImage)
+        if(params.withLastConsultation) extended.put("withLastConsultation",params.withLastConsultation)
+        if(params.withNumberConsultations) extended.put("withNumberConsultations",params.withNumberConsultations)
+        if(params.withUserJob) extended.put("withUserJob",params.withUserJob)
+        String sortColumn = params.sort ?: "created"
+        String sortDirection = params.order ?: "desc"
+
+        //still TODO : online and project role filter
+        //boolean online = params.boolean('online')
+
+        def results
+
+
+        results = secUserService.listUsersExtendedByProject(project, extended, searchParameters, sortColumn, sortDirection, params.long('max'), params.long('offset'))
+
+        responseSuccess([collection : results.data, size:results.total])
+
+/*
+        boolean showUserJob = params.boolean('showJob')
         List<SecUser> users
         if(!project){
             responseNotFound("User", "Project", params.id)
@@ -151,6 +170,7 @@ class RestUserController extends RestController {
 
             responseSuccess(results)
         }
+        */
     }
 
     /**
@@ -267,12 +287,15 @@ class RestUserController extends RestController {
         @RestApiParam(name="publicKey", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) If set, get only user with the public key in param"),
     ])
     def list() {
+        def result
+
         if (params.publicKey != null) {
             responseSuccess(secUserService.getByPublicKey(params.publicKey))
         } else if (params.getBoolean("withRoles")) {
             responseSuccess(secUserService.listWithRoles())
         } else {
-            responseSuccess(secUserService.list())
+            result = secUserService.list(searchParameters, params.long("max",0), params.long("offset",0))
+            responseSuccess([collection : result.data, size : result.total])
         }
     }
 
