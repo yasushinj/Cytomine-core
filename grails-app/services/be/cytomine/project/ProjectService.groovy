@@ -139,7 +139,23 @@ class ProjectService extends ModelService {
         return data
     }
 
-    def list(SecUser user = null, def extended = [], def searchParameters = null, String sortColumn = null, String sortDirection = null, Long max  = 0, Long offset = 0) {
+    def list(SecUser user = null) {
+        if (user) {
+            return Project.executeQuery(
+                    "select distinct project " +
+                            "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Project as project " +
+                            "where aclObjectId.objectId = project.id " +
+                            "and aclEntry.aclObjectIdentity = aclObjectId.id " +
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '" + user.humanUsername() + "' and project.deleted is null")
+        } else {
+            Project.findAllByDeletedIsNull()
+        }
+    }
+
+    def list(SecUser user = null, Long max , Long offset) {
+        return list(user, [:], [], null, null, max , offset)
+    }
+    def list(SecUser user = null, LinkedHashMap extended, List searchParameters = [], String sortColumn = null, String sortDirection = null, Long max  = 0, Long offset = 0) {
 
         for (def parameter : searchParameters){
             if(parameter.field.equals("numberOfImages")) parameter.field = "countImages"

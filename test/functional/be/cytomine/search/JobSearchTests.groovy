@@ -201,7 +201,7 @@ class JobSearchTests {
         assert json.collection[0].id == id2
     }
 
-    //pagination
+    //sort
     void testSortJob() {
         Job job = BasicInstanceBuilder.getJobNotExist(true, BasicInstanceBuilder.getSoftwareNotExist(true), BasicInstanceBuilder.getProjectNotExist(true))
         Date old = new Date().parse("dd.MM.yyy", '20.05.1988')
