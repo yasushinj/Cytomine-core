@@ -17,6 +17,7 @@ package be.cytomine.search
 */
 
 import be.cytomine.security.User
+import be.cytomine.social.LastConnection
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.ProjectAPI
@@ -97,15 +98,26 @@ class UserSearchTests {
         assert UserAPI.containsInJSONList(u2.id,json)
 
 
-        searchParameters = [[operator : "in", field : "status", value:"offline"]]
+        searchParameters = [[operator : "in", field : "status", value:"online"]]
 
         result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
-        assert json.size == 3
+        assert json.size == 0
+
+
+        new LastConnection(user: u1, project:project).insert(flush: true, failOnError: true)
+
+        searchParameters = [[operator : "in", field : "status", value:"online"]]
+
+        result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
         assert UserAPI.containsInJSONList(u1.id,json)
-        assert UserAPI.containsInJSONList(u2.id,json)
+
     }
 
 

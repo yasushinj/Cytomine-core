@@ -219,8 +219,6 @@ class SecUserService extends ModelService {
         boolean connectionsFetched = false
         boolean frequenciessFetched = false
 
-        // si online, on replira le in in avec les users ids des connectés
-
         def userIds
         long total
 
@@ -299,6 +297,7 @@ class SecUserService extends ModelService {
 
     def listUsersByProject(Project project, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0){
 
+        def onlineUserSearch = searchParameters.find{it.field == "status" && it.values == "online"}
         def multiSearch = searchParameters.find{it.field == "fullName"}
 
         String select = "select distinct secUser "
@@ -312,6 +311,13 @@ class SecUserService extends ModelService {
         if(multiSearch) {
             String value = ((String) multiSearch.values).toLowerCase()
             request += " and (lower(secUser.firstname) like '%$value%' or lower(secUser.lastname) like '%$value%' or lower(secUser.email) like '%$value%') "
+        }
+        if(onlineUserSearch) {
+            def onlineUsers = getAllOnlineUserIds(project)
+            if(onlineUsers.isEmpty())
+                return [data: [], total: 0]
+
+            request += " and secUser.id in ("+getAllOnlineUserIds(project).join(",")+") "
         }
         //for (def t : searchParameters) {
             // TODO parameters to HQL constraints
@@ -497,18 +503,25 @@ class SecUserService extends ModelService {
     }
 
     /**
+     * Get all online userIds for a project
+     */
+    List<Long> getAllOnlineUserIds(Project project) {
+        securityACLService.check(project,READ)
+        //if(!project) return getAllOnlineUsers()
+        def xSecondAgo = Utils.getDateMinusSecond(300)
+        def results = LastConnection.withCriteria {
+            if(project) eq('project',project)
+            ge('created', xSecondAgo)
+            distinct('user')
+        }
+        return results.collect{it.user.id}
+    }
+    /**
      * Get all online user for a project
      */
     List<SecUser> getAllOnlineUsers(Project project) {
         securityACLService.check(project,READ)
-        if(!project) return getAllOnlineUsers()
-        def xSecondAgo = Utils.getDateMinusSecond(300)
-        def results = LastConnection.withCriteria {
-            eq('project',project)
-            ge('created', xSecondAgo)
-            distinct('user')
-        }
-        return User.getAll(results.collect{it.user.id})
+        return User.getAll(getAllOnlineUserIds(project))
     }
 
     /**
