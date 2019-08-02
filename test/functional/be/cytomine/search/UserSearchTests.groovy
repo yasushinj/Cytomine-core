@@ -258,8 +258,6 @@ class UserSearchTests {
     }
 
     //sort
-    //TODO
-    // projectRole,
     void testSort(){
         User u1 = BasicInstanceBuilder.getUserNotExist(true)
         User u2 = BasicInstanceBuilder.getUserNotExist(true)
@@ -512,6 +510,35 @@ class UserSearchTests {
         assert json.collection.size() == 1
         assert json.collection[0].id == id2
 
+
+        //---------------- Sort by projectRole
+
+
+        result = UserAPI.list(project.id,"project","user", true, true, true, "projectRole", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == totalSize
+        size = totalSize
+        assert json.collection.size() == size
+        id1 = json.collection[0].id
+        id2 = json.collection[-1].id
+
+        result = UserAPI.list(project.id,"project","user", true, true, true, "projectRole", "asc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == size
+        assert json.collection.size() == 1
+        assert json.collection[0].id == id1
+
+        result = UserAPI.list(project.id,"project","user", true, true, true, "projectRole", "desc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == size
+        assert json.collection.size() == 1
+        assert json.collection[0].id != id1
     }
 
 }

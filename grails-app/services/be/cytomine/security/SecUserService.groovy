@@ -222,7 +222,7 @@ class SecUserService extends ModelService {
         def userIds
         long total
 
-        if (ReflectionUtils.findField(User, sortColumn)) {
+        if (ReflectionUtils.findField(User, sortColumn) || sortColumn.equals("projectRole")) {
             users = this.listUsersByProject(project, searchParameters, sortColumn, sortDirection, max, offset)
             total = users.total
             users = users.data
@@ -307,7 +307,10 @@ class SecUserService extends ModelService {
                 "and aclEntry.aclObjectIdentity = aclObjectId.id " +
                 "and aclEntry.sid = aclSid.id " +
                 "and aclSid.sid = secUser.username " +
-                "and secUser.class = 'be.cytomine.security.User' ";
+                "and secUser.class = 'be.cytomine.security.User' "
+
+        String groupBy = ""
+        String order = ""
 
         if(multiSearch) {
             String value = ((String) multiSearch.values).toLowerCase()
@@ -325,16 +328,28 @@ class SecUserService extends ModelService {
         //for (def t : searchParameters) {
             // TODO parameters to HQL constraints
         //}
-        String order = "order by secUser.$sortColumn $sortDirection "
+        boolean composed = false
+        if(sortColumn == "projectRole"){
+            select += ", max(aclEntry.mask) as role "
+            groupBy = "group by secUser.id "
+            sortColumn = "role"
+            composed = true
+        } else {
+            sortColumn = "secUser.$sortColumn"
+        }
+        order = "order by $sortColumn $sortDirection "
 
 
-        List<User> users = User.executeQuery(select + request + order, [offset:offset, max:max])
+        List<User> users = User.executeQuery(select + request + groupBy + order, [offset:offset, max:max])
 
         long total;
         if(max == 0 && offset == 0) total = users.size()
         else {
-            def list = User.executeQuery("select count(distinct secUser.id) " + request /*"select count(distinct secUser.id) from User secUser"*/ )
+            def list = User.executeQuery("select count(distinct secUser.id) " + request )
             total = list[0]
+        }
+        if(composed){
+            users = users.collect{it[0]}
         }
 
         return [data: users, total: total]
