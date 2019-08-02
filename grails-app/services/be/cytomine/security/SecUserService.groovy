@@ -299,6 +299,7 @@ class SecUserService extends ModelService {
 
         def onlineUserSearch = searchParameters.find{it.field == "status" && it.values == "online"}
         def multiSearch = searchParameters.find{it.field == "fullName"}
+        def projectRoleSearch = searchParameters.find{it.field == "projectRole"}
 
         String select = "select distinct secUser "
         String request = "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
@@ -319,6 +320,8 @@ class SecUserService extends ModelService {
 
             request += " and secUser.id in ("+getAllOnlineUserIds(project).join(",")+") "
         }
+        if(projectRoleSearch && projectRoleSearch.values == "manager") request +=" and aclEntry.mask = 16 "
+
         //for (def t : searchParameters) {
             // TODO parameters to HQL constraints
         //}

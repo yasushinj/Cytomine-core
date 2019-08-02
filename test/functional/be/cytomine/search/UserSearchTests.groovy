@@ -118,6 +118,15 @@ class UserSearchTests {
         assert json.size == 1
         assert UserAPI.containsInJSONList(u1.id,json)
 
+
+        searchParameters = [[operator : "in", field : "projectRole", value: "manager"]]
+
+        result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 2
+
     }
 
 
