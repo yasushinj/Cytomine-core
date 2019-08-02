@@ -45,6 +45,7 @@ class NoSQLCollectionService {
         def db = mongo.getDB(getDatabaseName())
         db.annotationAction.drop()
         db.lastUserPosition.drop()
+        db.lastConnection.drop()
         db.persistentConnection.drop()
         db.persistentImageConsultation.drop()
         db.persistentProjectConnection.drop()

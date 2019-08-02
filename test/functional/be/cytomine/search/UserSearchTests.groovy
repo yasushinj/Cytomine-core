@@ -97,6 +97,14 @@ class UserSearchTests {
         assert json.size == 1
         assert UserAPI.containsInJSONList(u2.id,json)
 
+        searchParameters = [[operator : "ilike", field : "fullName", value:"NOT_PRESENT"]]
+
+        result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 0
+
 
         searchParameters = [[operator : "in", field : "status", value:"online"]]
 
