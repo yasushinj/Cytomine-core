@@ -30,13 +30,79 @@ class UserSearchTests {
 
 
     //search
+    void testUsersSearch(){
+        User u1 = BasicInstanceBuilder.getUserNotExist(true)
+        User u2 = BasicInstanceBuilder.getUserNotExist(true)
+        u1.lastname = BasicInstanceBuilder.getRandomString()
+        u1.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u2.lastname = BasicInstanceBuilder.getRandomString()
+        u2.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u1.save(failOnError: true)
+        u2.save(failOnError: true)
+
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
+
+        u1 = u1.refresh()
+        u2 = u2.refresh()
+
+        def result = UserAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() >= 2
+
+        ArrayList searchParameters = [[operator : "ilike", field : "fullName", value:u1.lastname]]
+
+        result = UserAPI.searchAndList(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert UserAPI.containsInJSONList(u1.id,json)
+
+        searchParameters = [[operator : "ilike", field : "fullName", value:u1.email]]
+
+        result = UserAPI.searchAndList(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert UserAPI.containsInJSONList(u1.id,json)
+
+        searchParameters = [[operator : "ilike", field : "fullName", value:u2.lastname]]
+
+        result = UserAPI.searchAndList(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert UserAPI.containsInJSONList(u2.id,json)
+
+        searchParameters = [[operator : "ilike", field : "fullName", value:u2.email]]
+
+        result = UserAPI.searchAndList( searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert UserAPI.containsInJSONList(u2.id,json)
+
+        searchParameters = [[operator : "ilike", field : "fullName", value:"NOT_PRESENT"]]
+
+        result = UserAPI.searchAndList( searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 0
+    }
+
     void testProjectUsersSearch(){
         User u1 = BasicInstanceBuilder.getUserNotExist(true)
         User u2 = BasicInstanceBuilder.getUserNotExist(true)
-        u1.lastname = "u1"
-        u1.email = "mailX@test.be"
-        u2.lastname = "u2"
-        u2.email = "mailY@test.be"
+        u1.lastname = BasicInstanceBuilder.getRandomString()
+        u1.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u2.lastname = BasicInstanceBuilder.getRandomString()
+        u2.email = BasicInstanceBuilder.getRandomString()+"@test.be"
         u1.save(failOnError: true)
         u2.save(failOnError: true)
         def project = BasicInstanceBuilder.getProjectNotExist(true)
@@ -61,7 +127,7 @@ class UserSearchTests {
         assert json.collection instanceof JSONArray
         assert json.collection.size() == 3
 
-        ArrayList searchParameters = [[operator : "ilike", field : "fullName", value:"u1"]]
+        ArrayList searchParameters = [[operator : "ilike", field : "fullName", value:u1.lastname]]
 
         result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -70,7 +136,7 @@ class UserSearchTests {
         assert json.size == 1
         assert UserAPI.containsInJSONList(u1.id,json)
 
-        searchParameters = [[operator : "ilike", field : "fullName", value:"mailX"]]
+        searchParameters = [[operator : "ilike", field : "fullName", value:u1.email]]
 
         result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -79,7 +145,7 @@ class UserSearchTests {
         assert json.size == 1
         assert UserAPI.containsInJSONList(u1.id,json)
 
-        searchParameters = [[operator : "ilike", field : "fullName", value:"u2"]]
+        searchParameters = [[operator : "ilike", field : "fullName", value:u2.lastname]]
 
         result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -88,7 +154,7 @@ class UserSearchTests {
         assert json.size == 1
         assert UserAPI.containsInJSONList(u2.id,json)
 
-        searchParameters = [[operator : "ilike", field : "fullName", value:"mailY"]]
+        searchParameters = [[operator : "ilike", field : "fullName", value:u2.email]]
 
         result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -266,16 +332,78 @@ class UserSearchTests {
     }
 
     //sort
-    void testSort(){
+    void testUserSort(){
         User u1 = BasicInstanceBuilder.getUserNotExist(true)
         User u2 = BasicInstanceBuilder.getUserNotExist(true)
         User u3 = BasicInstanceBuilder.getUserNotExist(true)
-        u1.lastname = "u1"
-        u1.email = "mailX@test.be"
-        u2.lastname = "u2"
-        u2.email = "mailX@test.be"
-        u3.lastname = "u3"
-        u3.email = "mailY@test.be"
+        u1.lastname = BasicInstanceBuilder.getRandomString()
+        u1.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u2.lastname = BasicInstanceBuilder.getRandomString()
+        u2.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u3.lastname = BasicInstanceBuilder.getRandomString()
+        u3.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u1.save(failOnError: true)
+        u2.save(failOnError: true)
+        u3.save(failOnError: true)
+        def project = BasicInstanceBuilder.getProjectNotExist(true)
+        ProjectAPI.addUserProject(project.id, u1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        ProjectAPI.addAdminProject(project.id, u2.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        ProjectAPI.addUserProject(project.id, u3.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        u1 = u1.refresh()
+        u2 = u2.refresh()
+        u3 = u3.refresh()
+
+
+        def result = UserAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        Long totalSize = json.size
+        assert totalSize >= 4
+
+
+        //---------------- Sort by role
+
+
+        result = UserAPI.list(true,"role", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == totalSize
+        Long size = totalSize
+        assert json.collection.size() == size
+        Long id1 = json.collection[0].id
+        Long id2 = json.collection[-1].id
+
+        result = UserAPI.list( true,"role", "asc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == size
+        assert json.collection.size() == 1
+        assert json.collection[0].id == id1
+
+        result = UserAPI.list(true,"role", "desc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == size
+        assert json.collection.size() == 1
+        assert json.collection[0].id != id1
+        assert json.collection[0].role == "ROLE_SUPER_ADMIN"
+    }
+
+    void testProjectUserSort(){
+        User u1 = BasicInstanceBuilder.getUserNotExist(true)
+        User u2 = BasicInstanceBuilder.getUserNotExist(true)
+        User u3 = BasicInstanceBuilder.getUserNotExist(true)
+        u1.lastname = BasicInstanceBuilder.getRandomString()
+        u1.email = BasicInstanceBuilder.getRandomString()+"@test.be"
+        u2.lastname = BasicInstanceBuilder.getRandomString()
+        u2.email = u1.email
+        u3.lastname = BasicInstanceBuilder.getRandomString()
+        u3.email = BasicInstanceBuilder.getRandomString()+"@test.be"
         u1.save(failOnError: true)
         u2.save(failOnError: true)
         u3.save(failOnError: true)
@@ -339,7 +467,7 @@ class UserSearchTests {
 
 
 
-        ArrayList searchParameters = [[operator : "ilike", field : "fullName", value:"mailX"]]
+        ArrayList searchParameters = [[operator : "ilike", field : "fullName", value:u1.email]]
 
         result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -410,7 +538,7 @@ class UserSearchTests {
 
 
 
-        searchParameters = [[operator : "ilike", field : "fullName", value:"mailX"]]
+        searchParameters = [[operator : "ilike", field : "fullName", value:u1.email]]
 
         result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -481,7 +609,7 @@ class UserSearchTests {
 
 
 
-        searchParameters = [[operator : "ilike", field : "fullName", value:"mailX"]]
+        searchParameters = [[operator : "ilike", field : "fullName", value:u1.email]]
 
         result = UserAPI.searchAndList(project.id,"project","user", searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

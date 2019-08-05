@@ -36,6 +36,8 @@ import org.joda.time.DateTime
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
+import static org.springframework.security.acls.domain.BasePermission.READ
+
 /**
  * Handle HTTP Requests for CRUD operations on the User domain class.
  */
@@ -74,6 +76,8 @@ class RestUserController extends RestController {
     def showByProject() {
 
         Project project = projectService.read(params.long('id'))
+        securityACLService.check(project,READ)
+
         def extended = [:]
         if(params.withLastImage) extended.put("withLastImage",params.withLastImage)
         if(params.withLastConsultation) extended.put("withLastConsultation",params.withLastConsultation)
@@ -207,10 +211,10 @@ class RestUserController extends RestController {
 
         if (params.publicKey != null) {
             responseSuccess(secUserService.getByPublicKey(params.publicKey))
-        } else if (params.getBoolean("withRoles")) {
-            responseSuccess(secUserService.listWithRoles())
         } else {
-            result = secUserService.list(searchParameters, params.long("max",0), params.long("offset",0))
+            def extended = [:]
+            if(params.getBoolean("withRoles")) extended.put("withRoles",params.withRoles)
+            result = secUserService.list(extended, searchParameters, params.sort, params.order, params.long("max",0), params.long("offset",0))
             responseSuccess([collection : result.data, size : result.total])
         }
     }

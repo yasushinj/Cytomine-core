@@ -41,8 +41,10 @@ import be.cytomine.utils.Task
 import be.cytomine.utils.Utils
 import grails.converters.JSON
 import grails.plugin.springsecurity.acl.AclSid
+import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 import org.apache.commons.collections.ListUtils
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.util.ReflectionUtils
 
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
@@ -132,19 +134,96 @@ class SecUserService extends ModelService {
         cytomineService.getCurrentUser()
     }
 
-    def list(def searchParameters = [], Long max = 0, Long offset = 0) {
-        list(null, null, searchParameters, max, offset)
+    def list(def extended = [:], def searchParameters = [], Long max = 0, Long offset = 0) {
+        list(extended, searchParameters, null, null, max, offset)
     }
-    def list(String sortColumn, String sortDirection, def searchParameters = [], Long max = 0, Long offset = 0) {
+    def list(def extended, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0) {
         securityACLService.checkGuest(cytomineService.currentUser)
+
+        if (sortColumn.equals("role") && !extended.withRoles) throw new WrongArgumentException("Cannot sort on user role without argument withRoles")
+
         if(!sortColumn) sortColumn = "username"
         if(!sortDirection) sortDirection = "asc"
 
-        def users = criteriaRequestWithPagination(User, max, offset, {}, searchParameters , {
-            order(sortColumn, sortDirection)
-        })
+        def multiSearch = searchParameters.find{it.field == "fullName"}
 
-        return users
+        String select = "SELECT u.* "
+        String from = "FROM sec_user u "
+        String where ="WHERE job_id IS NULL "
+        String search = ""
+        String groupBy = ""
+        String sort
+
+
+        if(multiSearch) {
+            String value = ((String) multiSearch.values).toLowerCase()
+            where += " and (u.firstname ILIKE '%$value%' OR u.lastname ILIKE '%$value%' OR u.email ILIKE '%$value%') "
+        }
+        if(extended.withRoles){
+            select += ", MAX(x.order_number) as role "
+            from +=", sec_user_sec_role sur, sec_role r " +
+                    "JOIN (VALUES ('ROLE_GUEST', 1), ('ROLE_USER' ,2), ('ROLE_ADMIN', 3), ('ROLE_SUPER_ADMIN', 4)) as x(value, order_number) ON r.authority = x.value "
+            where += "and u.id = sur.sec_user_id and sur.sec_role_id = r.id "
+            groupBy = "GROUP BY u.id "
+        }
+
+        if(sortColumn == "role") {
+            sort = "ORDER BY $sortColumn $sortDirection, u.id ASC "
+        } else sort = "ORDER BY u.$sortColumn $sortDirection "
+
+        String request = select + from + where + search + groupBy + sort
+        if(max > 0) request += " LIMIT $max "
+        if(offset > 0) request += " OFFSET $offset "
+
+
+        def sql = new Sql(dataSource)
+        def data = []
+        sql.eachRow(request) {
+            def map = [:]
+
+            for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
+                String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
+                String objectKey = key.replaceAll( "(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() } )
+                map.putAt(objectKey, it[key])
+            }
+
+            // I mock methods and fields to pass through getDataFromDomain of SecUser
+            map["class"] = User.class
+            map.getMetaClass().algo = { return false }
+
+            def line = User.getDataFromDomain(map)
+
+            if(extended.withRoles){
+                String role
+                switch (map.role){
+                    case 1:
+                        role = 'ROLE_GUEST'
+                        break;
+                    case 2:
+                        role = 'ROLE_USER'
+                        break;
+                    case 3:
+                        role = 'ROLE_ADMIN'
+                        break;
+                    case 4:
+                        role = 'ROLE_SUPER_ADMIN'
+                        break;
+                }
+                line.putAt("role", role)
+            }
+            data << line
+
+        }
+
+        def size
+        request = "SELECT COUNT(DISTINCT u.id) " + from + where + search
+
+        sql.eachRow(request) {
+            size = it.count
+        }
+        sql.close()
+
+        return [data:data, total:size]
     }
 
     def lock(SecUser user){
@@ -577,7 +656,7 @@ class SecUserService extends ModelService {
      * @param json New domain data
      * @return Response structure (created domain data,..)
      */
-    def add(def json) {
+    def add(JSONObject json) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkUser(currentUser)
         return executeCommand(new AddCommand(user: currentUser),null,json)

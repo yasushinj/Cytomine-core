@@ -62,8 +62,23 @@ class UserAPI extends DomainAPI {
         list(null, 0, 0, username, password)
     }
 
-    static def list(String key = null, Long max, Long offset, String username, String password) {
+    static def list(String key = null, boolean withRoles = false, Long max, Long offset, String username, String password) {
+        list((String) null, false, null, null,  max, offset, username, password)
+    }
+    static def list(boolean withRoles, String sort, String order, String username, String password) {
+        list((String) null, withRoles, sort, order,  0, 0, username, password)
+    }
+    static def list(String key = null, boolean withRoles = false, String sort, String order, String username, String password) {
+        list((String) null, withRoles, sort, order,  0, 0, username, password)
+    }
+    static def list(String key = null, String sort, String order, Long max, Long offset, String username, String password) {
+        list((String) null, false, sort, order,  max, offset, username, password)
+    }
+    static def list(String key = null, boolean withRoles, String sort, String order, Long max, Long offset, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/user.json?max=$max&offset=$offset" + (key ? "&publicKey=$key" : "")
+        URL += withRoles ? "&withRoles=$withRoles" : ""
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
 
@@ -88,6 +103,25 @@ class UserAPI extends DomainAPI {
         URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
+
+
+    static def searchAndList(ArrayList searchParameters, String username, String password) {
+        searchAndList(false, searchParameters,  0, 0, username, password)
+    }
+    static def searchAndList(Boolean online = false, ArrayList searchParameters, String sort, String order, String username, String password) {
+        return searchAndList(online, searchParameters, sort, order,0, 0, username, password)
+    }
+    static def searchAndList(Boolean online = false, ArrayList searchParameters, Long max, Long offset, String username, String password) {
+        return searchAndList(online, searchParameters, null, null, max, offset, username, password)
+    }
+    static def searchAndList(Boolean online = false, ArrayList searchParameters, String sort, String order, Long max, Long offset, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/user.json?max=$max&offset=$offset&${convertSearchParameters(searchParameters)}" + (online? "&online=true":"")
+        URL += sort ? "&sort=$sort" : ""
+        URL += order ? "&order=$order" : ""
+        return doGET(URL, username, password)
+    }
+
+
     static def searchAndList(Long id, String domain, String type, ArrayList searchParameters, String username, String password) {
         searchAndList(id, domain, type, false, false, false, false, searchParameters,  0, 0, username, password)
     }
