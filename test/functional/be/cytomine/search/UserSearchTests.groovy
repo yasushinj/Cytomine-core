@@ -487,14 +487,16 @@ class UserSearchTests {
         id2 = json.collection[-1].id
         assert json.collection[0].lastImage instanceof JSONObject.Null
         assert !(json.collection[-1].lastImage instanceof JSONObject.Null)
+        assert json.collection[0].containsKey("lastConnection")
 
-        result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, "lastImageName", "asc", 1,0,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = UserAPI.searchAndList(project.id,"project","user", true, false, true, searchParameters, "lastImageName", "asc", 1,0,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.size == size
         assert json.collection.size() == 1
         assert json.collection[0].id == id1
+        assert !json.collection[0].containsKey("lastConnection")
 
         result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, "lastImageName", "desc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

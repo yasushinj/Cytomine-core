@@ -343,7 +343,7 @@ class SecUserService extends ModelService {
                 entry << userInfo
             }
         }
-        if (!consultationsFetched) {
+        if (!consultationsFetched && extended.withLastImage) {
             images = imageConsultationService.lastImageOfUsersByProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
             for (def user : results) {
                 int index = binSearchI(images, "user", user.id)
@@ -352,7 +352,7 @@ class SecUserService extends ModelService {
             }
             consultationsFetched = true
         }
-        if (!connectionsFetched) {
+        if (!connectionsFetched && extended.withLastConsultation) {
             connections = projectConnectionService.lastConnectionInProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
             for (def user : results) {
                 int index = binSearchI(connections, "user", user.id)
@@ -361,7 +361,7 @@ class SecUserService extends ModelService {
             }
             connectionsFetched = true
         }
-        if (!frequenciessFetched) {
+        if (!frequenciessFetched && extended.withNumberConsultations) {
             frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
             for (def user : results) {
                 int index = binSearchI(frequencies, "user", user.id)
