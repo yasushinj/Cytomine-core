@@ -101,14 +101,15 @@ class JobService extends ModelService {
         }
 
         boolean joinSoftware = validatedSearchParameters.any {it.property.contains(softwareAlias+".")} || sortedProperty.contains(softwareAlias+".")
-        boolean joinUser = searchParameters.any {it.field.equals("username")}
+        def usernameSearch = searchParameters.find {it.field.equals("username")}
+        boolean joinUser = usernameSearch
 
 
         def subQuery
         if(joinUser) {
             subQuery = DetachedCriteria.forClass(UserJob, 'uj')
             subQuery.createAlias("uj.user", "u")
-            subQuery.add(Restrictions.eq('u.username', "admin"))
+            subQuery.add(Restrictions.eq('u.username', usernameSearch.values))
             subQuery.createAlias("uj.job", "j")
             subQuery.setProjection(Projections.groupProperty("j.id"))
         }

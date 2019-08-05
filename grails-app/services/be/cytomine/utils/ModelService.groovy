@@ -555,13 +555,13 @@ abstract class ModelService {
                         isNull t.property
                         continue
                     }
-                    if(t.value.isEmpty()) {
-                        isNull "id"
-                        continue
-                    }
 
                     if(!t.value.class.isArray() && !(t.value instanceof List)){
                         t.value = [t.value]
+                    }
+                    if(t.value.isEmpty()) {
+                        isNull "id"
+                        continue
                     }
 
                     if(t.value.contains(null) || t.value.contains("null")){
