@@ -76,7 +76,8 @@ class BootstrapUtilsService {
                     email: item.email,
                     color: item.color,
                     password: item.password,
-                    enabled: true)
+                    enabled: true,
+                    origin: "BOOTSTRAP")
             user.generateKeys()
 
 

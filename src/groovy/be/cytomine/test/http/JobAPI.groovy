@@ -109,7 +109,7 @@ class JobAPI extends DomainAPI {
     }
 
     static def deleteAllJobData(def id, def task,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/job/" + id + "/all0data.json?task="+task
+        String URL = Infos.CYTOMINEURL + "api/job/" + id + "/alldata.json?task="+task
         return doDELETE(URL,username,password)
     }
 

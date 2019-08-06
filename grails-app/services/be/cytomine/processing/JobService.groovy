@@ -116,7 +116,9 @@ class JobService extends ModelService {
 
         def jobs = criteriaRequestWithPagination(Job, max, offset, {
             if(softwares && !softwares.isEmpty()) inList "software", softwares
+            else isNull "id"
             if(projects && !projects.isEmpty()) inList "project", projects
+            else isNull "id"
 
             if(joinSoftware) {
                 createAlias("software", softwareAlias)
@@ -335,6 +337,7 @@ class JobService extends ModelService {
         userJob.accountLocked = user.accountLocked
         userJob.passwordExpired = user.passwordExpired
         userJob.user = user
+        userJob.origin = "JOB"
         userJob = userJob.save(flush: true, failOnError: true)
 
         currentRoleServiceProxy.findCurrentRole(user).each { secRole ->

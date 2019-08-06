@@ -33,7 +33,11 @@ class ProjectAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def list(def searchParameters=[], Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, String username, String password) {
+    static def list(Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, String username, String password) {
+        return list([], withMembersCount, withLastActivity,withCurrentUserRoles, username, password)
+    }
+
+    static def list(def searchParameters, Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, String username, String password) {
         return list(withMembersCount, withLastActivity,withCurrentUserRoles, 0,0,username, password)
     }
 

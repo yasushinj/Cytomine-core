@@ -392,6 +392,36 @@ class UserSearchTests {
         assert json.collection.size() == 1
         assert json.collection[0].id != id1
         assert json.collection[0].role == "ROLE_SUPER_ADMIN"
+
+
+        //---------------- Sort by origin
+
+
+        result = UserAPI.list("origin", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == totalSize
+        size = totalSize
+        assert json.collection.size() == size
+        id1 = json.collection[0].id
+        id2 = json.collection[-1].id
+
+        result = UserAPI.list( "origin", "asc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == size
+        assert json.collection.size() == 1
+        assert json.collection[0].id == id1
+
+        result = UserAPI.list("origin", "desc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == size
+        assert json.collection.size() == 1
+        assert json.collection[0].id != id1
     }
 
     void testProjectUserSort(){
@@ -590,8 +620,8 @@ class UserSearchTests {
         assert json.collection.size() == size
         id1 = json.collection[0].id
         id2 = json.collection[-1].id
-        assert json.collection[0].numberConsultations instanceof JSONObject.Null
-        assert !(json.collection[-1].numberConsultations instanceof JSONObject.Null)
+        assert json.collection[0].numberConnections instanceof JSONObject.Null
+        assert !(json.collection[-1].numberConnections instanceof JSONObject.Null)
 
         result = UserAPI.list(project.id,"project","user", true, true, true, "frequency", "asc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -629,8 +659,8 @@ class UserSearchTests {
         assert json.collection.size() == size
         id1 = json.collection[0].id
         id2 = json.collection[-1].id
-        assert json.collection[0].numberConsultations instanceof JSONObject.Null
-        assert !(json.collection[-1].numberConsultations instanceof JSONObject.Null)
+        assert json.collection[0].numberConnections instanceof JSONObject.Null
+        assert !(json.collection[-1].numberConnections instanceof JSONObject.Null)
 
         result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, "frequency", "asc", 1,0,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

@@ -230,13 +230,13 @@ class SecUserService extends ModelService {
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(!user.enabled) throw new InvalidRequestException("User already locked !")
         user.enabled = false
-        user.save()
+        user.save(failOnError: true)
     }
     def unlock(SecUser user){
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(user.enabled) throw new InvalidRequestException("User already unlocked !")
         user.enabled = true
-        user.save()
+        user.save(failOnError: true)
     }
 
     def listWithRoles() {
@@ -280,8 +280,8 @@ class SecUserService extends ModelService {
     def listUsersExtendedByProject(Project project, def extended, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0) {
 
         if (sortColumn.equals("lastImageName") && !extended.withLastImage) throw new WrongArgumentException("Cannot sort on lastImageName without argument withLastImage")
-        if (sortColumn.equals("lastConnection") && !extended.withLastConsultation) throw new WrongArgumentException("Cannot sort on lastConnection without argument withLastConsultation")
-        if (sortColumn.equals("frequency") && !extended.withNumberConsultations) throw new WrongArgumentException("Cannot sort on frequency without argument withNumberConsultations")
+        if (sortColumn.equals("lastConnection") && !extended.withLastConnection) throw new WrongArgumentException("Cannot sort on lastConnection without argument withLastConnection")
+        if (sortColumn.equals("frequency") && !extended.withNumberConnections) throw new WrongArgumentException("Cannot sort on frequency without argument withNumberConnections")
 
         if (!extended || extended.isEmpty()) return listUsersByProject(project, searchParameters, sortColumn, sortDirection, max, offset)
 
@@ -329,7 +329,7 @@ class SecUserService extends ModelService {
                 break
             case "frequency":
                 frequencies = projectConnectionService.numberOfConnectionsOfGivenByProject(project, userIds, "frequency", sortDirection, max, offset)
-                results = frequencies.collect { f -> [id: f.user, numberConsultations: f.frequency] }
+                results = frequencies.collect { f -> [id: f.user, numberConnections: f.frequency] }
                 userIds = results.collect { it.id }
                 frequenciessFetched = true
                 break
@@ -352,7 +352,7 @@ class SecUserService extends ModelService {
             }
             consultationsFetched = true
         }
-        if (!connectionsFetched && extended.withLastConsultation) {
+        if (!connectionsFetched && extended.withLastConnection) {
             connections = projectConnectionService.lastConnectionInProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
             for (def user : results) {
                 int index = binSearchI(connections, "user", user.id)
@@ -361,12 +361,12 @@ class SecUserService extends ModelService {
             }
             connectionsFetched = true
         }
-        if (!frequenciessFetched && extended.withNumberConsultations) {
+        if (!frequenciessFetched && extended.withNumberConnections) {
             frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
             for (def user : results) {
                 int index = binSearchI(frequencies, "user", user.id)
                 def frequency = index >= 0 ? frequencies[index] : null
-                user.numberConnection = frequency?.frequency
+                user.numberConnections = frequency?.frequency
             }
             frequenciessFetched = true
         }
@@ -659,6 +659,10 @@ class SecUserService extends ModelService {
     def add(JSONObject json) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkUser(currentUser)
+        if(json.user == null) {
+            json.user = cytomineService.getCurrentUser().id
+            json.origin = "ADMINISTRATOR"
+        }
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
 

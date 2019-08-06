@@ -80,13 +80,13 @@ class RestUserController extends RestController {
 
         def extended = [:]
         if(params.withLastImage) extended.put("withLastImage",params.withLastImage)
-        if(params.withLastConsultation) extended.put("withLastConsultation",params.withLastConsultation)
-        if(params.withNumberConsultations) extended.put("withNumberConsultations",params.withNumberConsultations)
+        if(params.withLastConnection) extended.put("withLastConnection",params.withLastConnection)
+        if(params.withNumberConnections) extended.put("withNumberConnections",params.withNumberConnections)
         if(params.withUserJob) extended.put("withUserJob",params.withUserJob)
         String sortColumn = params.sort ?: "created"
         String sortDirection = params.order ?: "desc"
 
-        def results = secUserService.listUsersExtendedByProject(project, extended, searchParameters, sortColumn, sortDirection, params.long('max'), params.long('offset'))
+        def results = secUserService.listUsersExtendedByProject(project, extended, searchParameters, sortColumn, sortDirection, params.long('max',0), params.long('offset',0))
 
         responseSuccess([collection : results.data, size:results.total])
 

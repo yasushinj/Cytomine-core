@@ -441,7 +441,7 @@ class RestImageInstanceController extends RestController {
             Project project = projectService.read(params.long('project'))
             if(image) {
                 securityACLService.checkIsAdminContainer(image.project,cytomineService.currentUser)
-                def layers =  imageInstanceService.getLayersFromAbstractImage(image.baseImage,image, projectService.list(cytomineService.currentUser).data.collect{it.id},secUserService.listUsers(image.project).collect{it.id},project)
+                def layers =  imageInstanceService.getLayersFromAbstractImage(image.baseImage,image, projectService.list(cytomineService.currentUser).collect{it.id},secUserService.listUsers(image.project).collect{it.id},project)
                 responseSuccess(layers)
             } else {
                 responseNotFound("Abstract Image",params.id)

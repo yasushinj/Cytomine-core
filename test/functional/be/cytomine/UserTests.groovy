@@ -147,11 +147,11 @@ class UserTests  {
         assert json.collection instanceof JSONArray
         assert json.collection.size() == 1
 
-        result = UserAPI.list(project.id,"project","user",true,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = UserAPI.list(project.id,"project","user",false, false, false, true, (String) null, (String) null, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
-        assert json.collection.size() == 0
+        assert json.collection.size() == 1
 
         result = UserAPI.list(-99,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
@@ -166,8 +166,8 @@ class UserTests  {
         assert json.collection.size() == 1
 
         assert !(((JSONObject)json.collection[0]).has("lastImage"))
-        assert !(((JSONObject)json.collection[0]).has("lastConsultation"))
-        assert !(((JSONObject)json.collection[0]).has("numberConsultations"))
+        assert !(((JSONObject)json.collection[0]).has("lastConnection"))
+        assert !(((JSONObject)json.collection[0]).has("numberConnections"))
 
         result = UserAPI.listWithConsultationInformation(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -176,11 +176,11 @@ class UserTests  {
         assert json.collection instanceof JSONArray
         assert json.collection.size() == 1
         assert (((JSONObject)json.collection[0]).has("lastImage"))
-        assert (((JSONObject)json.collection[0]).has("lastConsultation"))
-        assert (((JSONObject)json.collection[0]).has("numberConsultations"))
+        assert (((JSONObject)json.collection[0]).has("lastConnection"))
+        assert (((JSONObject)json.collection[0]).has("numberConnections"))
         assert json.collection[0].lastImage instanceof JSONObject.Null
-        assert json.collection[0].lastConsultation instanceof JSONObject.Null
-        assert json.collection[0].numberConsultations instanceof JSONObject.Null
+        assert json.collection[0].lastConnection instanceof JSONObject.Null
+        assert json.collection[0].numberConnections instanceof JSONObject.Null
 
         BasicInstanceBuilder.getImageConsultationNotExist(project.id,true)
 
@@ -191,8 +191,8 @@ class UserTests  {
         assert json.collection instanceof JSONArray
         assert json.collection.size() == 1
         assert !(json.collection[0].lastImage instanceof JSONObject.Null)
-        assert !(json.collection[0].lastConsultation instanceof JSONObject.Null)
-        assert !(json.collection[0].numberConsultations instanceof JSONObject.Null)
+        assert !(json.collection[0].lastConnection instanceof JSONObject.Null)
+        assert !(json.collection[0].numberConnections instanceof JSONObject.Null)
     }
 
     void testListProjectAdmin() {

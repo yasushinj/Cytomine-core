@@ -62,17 +62,21 @@ class UserAPI extends DomainAPI {
         list(null, 0, 0, username, password)
     }
 
+    static def list(String key, String username, String password) {
+        list(key, 0, 0, username, password)
+    }
+
     static def list(String key = null, boolean withRoles = false, Long max, Long offset, String username, String password) {
-        list((String) null, false, null, null,  max, offset, username, password)
+        list(key, withRoles, null, null,  max, offset, username, password)
     }
     static def list(boolean withRoles, String sort, String order, String username, String password) {
         list((String) null, withRoles, sort, order,  0, 0, username, password)
     }
     static def list(String key = null, boolean withRoles = false, String sort, String order, String username, String password) {
-        list((String) null, withRoles, sort, order,  0, 0, username, password)
+        list(key, withRoles, sort, order,  0, 0, username, password)
     }
     static def list(String key = null, String sort, String order, Long max, Long offset, String username, String password) {
-        list((String) null, false, sort, order,  max, offset, username, password)
+        list(key, false, sort, order,  max, offset, username, password)
     }
     static def list(String key = null, boolean withRoles, String sort, String order, Long max, Long offset, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/user.json?max=$max&offset=$offset" + (key ? "&publicKey=$key" : "")
@@ -94,11 +98,11 @@ class UserAPI extends DomainAPI {
     static def list(Long id,String domain,String type, Boolean online = false,  boolean withLastImage, boolean withLastConsultation, boolean withNumberConsultations, Long max, Long offset, String username, String password) {
         return list(id, domain, type, online, withLastImage, withLastConsultation, withNumberConsultations, null, null, max, offset, username, password)
     }
-    static def list(Long id,String domain,String type, Boolean online = false, boolean withLastImage, boolean withLastConsultation, boolean withNumberConsultations, String sort, String order, Long max, Long offset, String username, String password) {
+    static def list(Long id,String domain,String type, Boolean online = false, boolean withLastImage, boolean withLastConnection, boolean withNumberConnections, String sort, String order, Long max, Long offset, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/${domain}/$id/${type}.json?max=$max&offset=$offset" + (online? "&online=true":"")
         URL += withLastImage ? "&withLastImage=$withLastImage" : ""
-        URL += withLastConsultation ? "&withLastConsultation=$withLastConsultation" : ""
-        URL += withNumberConsultations ? "&withNumberConsultations=$withNumberConsultations" : ""
+        URL += withLastConnection ? "&withLastConnection=$withLastConnection" : ""
+        URL += withNumberConnections ? "&withNumberConnections=$withNumberConnections" : ""
         URL += sort ? "&sort=$sort" : ""
         URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
@@ -135,18 +139,17 @@ class UserAPI extends DomainAPI {
     static def searchAndList(Long id,String domain,String type, Boolean online = false, boolean withLastImage, boolean withLastConsultation, boolean withNumberConsultations, ArrayList searchParameters, Long max, Long offset, String username, String password) {
         return searchAndList(id, domain, type, online, withLastImage, withLastConsultation, withNumberConsultations, searchParameters, null, null, max, offset, username, password)
     }
-    static def searchAndList(Long id,String domain,String type, Boolean online = false, boolean withLastImage, boolean withLastConsultation, boolean withNumberConsultations, ArrayList searchParameters, String sort, String order, Long max, Long offset, String username, String password) {
+    static def searchAndList(Long id,String domain,String type, Boolean online = false, boolean withLastImage, boolean withLastConnection, boolean withNumberConnections, ArrayList searchParameters, String sort, String order, Long max, Long offset, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/${domain}/$id/${type}.json?max=$max&offset=$offset&${convertSearchParameters(searchParameters)}" + (online? "&online=true":"")
         URL += withLastImage ? "&withLastImage=$withLastImage" : ""
-        URL += withLastConsultation ? "&withLastConsultation=$withLastConsultation" : ""
-        URL += withNumberConsultations ? "&withNumberConsultations=$withNumberConsultations" : ""
+        URL += withLastConnection ? "&withLastConnection=$withLastConnection" : ""
+        URL += withNumberConnections ? "&withNumberConnections=$withNumberConnections" : ""
         URL += sort ? "&sort=$sort" : ""
         URL += order ? "&order=$order" : ""
         return doGET(URL, username, password)
     }
     static def listWithConsultationInformation(Long id,String domain,String type, Long max = 0, Long offset = 0, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/${domain}/$id/${type}.json?max=$max&offset=$offset&withLastImage=true&withLastConsultation=true&withNumberConsultations=true"
-        return doGET(URL, username, password)
+        return list(id, domain, type, false, true, true, true, null, null, max, offset, username, password)
     }
 
     static def listFriends(Long id,def offline, Long idProject,String username, String password) {

@@ -117,7 +117,7 @@ class SearchEngineFilterService extends ModelService {
         }
 
         if (!JSONUtils.getJSONList(filters.projects).equals([])) {
-            def projects = projectService.list(User.findById(json.user)).data
+            def projects = projectService.list(User.findById(json.user))
             for (def projectId in JSONUtils.getJSONList(filters.projects)) {
                 def project = projects.find {
                     it.id == projectId
