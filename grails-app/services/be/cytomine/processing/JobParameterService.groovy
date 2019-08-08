@@ -59,6 +59,18 @@ class JobParameterService extends ModelService {
         JobParameter.findAllByJob(job)
     }
 
+    def list(List<Long> jobIds) {
+
+        def parameters = JobParameter.findAllByJobInList(Job.findAllByIdInList(jobIds),[sort: 'job'])
+        def result = []
+        parameters.each {
+            def values = JobParameter.getDataFromDomain(it)
+            if(values['name'].equals("privateKey")) values['value']= "*********************"
+            result << values
+        }
+        return result
+    }
+
     /**
      * Add the new domain with JSON data
      * @param json New domain data
