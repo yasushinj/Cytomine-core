@@ -33,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -447,7 +449,7 @@ abstract class ModelService {
                 }
                 def value;
 
-                value = parameter.values.class.isArray() ? parameter.values.collect{convert(it)} : convert(parameter.values)
+                value = (parameter.values.class.isArray() || parameter.values instanceof List) ? parameter.values.collect{convert(it)} : convert(parameter.values)
 
                 result << [operator: parameter.operator, property: field.name, value: value]
 
@@ -467,10 +469,16 @@ abstract class ModelService {
             String replacement = "\$1_\$2"
             parameter.property =parameter.property.replaceAll(regex, replacement).toLowerCase()
 
+            if(parameter.value instanceof Date){
+                DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+                parameter.value = formatter.format(parameter.value)
+            }
+            if(parameter.value instanceof String) parameter.value = "'$parameter.value'"
+
             String sql
             switch(parameter.operator){
                 case "equals":
-                    if(parameter.value != null) sql = parameter.property+" == "+parameter.value
+                    if(parameter.value != null) sql = parameter.property+" = "+parameter.value
                     else sql = parameter.property+" IS NULL "
                     break
                 case "nequals":
@@ -491,11 +499,7 @@ abstract class ModelService {
                     break
                 case "in":
 
-                    if(parameter.value && (parameter.value.class.isArray() || (parameter.value instanceof List))){
-                        parameter.value = parameter.value.unique()
-                    }
-
-                    if(parameter.value == null || (parameter.value.size() == 1 && parameter.value[0] == null)) {
+                    if(parameter.value == null) {
                         sql = parameter.property+" IS NULL "
                         break
                     }
@@ -504,9 +508,26 @@ abstract class ModelService {
                         parameter.value = [parameter.value]
                     }
 
+                    parameter.value = parameter.value.unique()
+
+                    if(parameter.value.size() == 1 && parameter.value[0] == null) {
+                        sql = parameter.property+" IS NULL "
+                        break
+                    }
+
                     if(parameter.value.contains(null) || parameter.value.contains("null")){
+                        parameter.value = parameter.value.findAll{it != null && it != 'null'}
+                        parameter.value = parameter.value.collect{
+                            if(it instanceof String) return "'$it'"
+                            else return it
+                        }
+
                         sql = "("+parameter.property+" IN ("+parameter.value.join(",")+") OR "+parameter.property+" IS NULL) "
                     } else {
+                        parameter.value = parameter.value.collect{
+                            if(it instanceof String) return "'$it'"
+                            else return it
+                        }
                         sql = parameter.property+" IN ("+parameter.value.join(",")+") "
                         break
                     }
