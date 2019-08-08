@@ -179,7 +179,7 @@ class ProjectService extends ModelService {
                     property = "members.member_count"
                     break
                 default:
-                    break loop
+                    continue loop
             }
 
             validParameters << [operator: parameter.operator, property: property, value: parameter.values]
@@ -288,7 +288,8 @@ class ProjectService extends ModelService {
 
         if(sortColumn) {
             sort = " ORDER BY "+sortColumn
-            sort += (sortDirection.equals("desc")) ? " DESC" : " ASC"
+            sort += (sortDirection.equals("desc")) ? " DESC " : " ASC "
+            sort += (sortDirection.equals("desc")) ? " NULLS LAST " : " NULLS FIRST "
         }
 
 
@@ -323,6 +324,7 @@ class ProjectService extends ModelService {
                 line.putAt("lastActivity", map.maxDate)
             }
             if(extended.withMembersCount) {
+                if(!map.memberCount) map.memberCount = 0
                 line.putAt("membersCount", map.memberCount)
             }
             if(extended.withCurrentUserRoles) {
