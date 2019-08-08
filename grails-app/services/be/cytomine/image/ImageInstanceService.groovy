@@ -17,6 +17,7 @@ package be.cytomine.image
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.CytomineMethodNotYetImplementedException
 import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
@@ -179,9 +180,14 @@ class ImageInstanceService extends ModelService {
 
         if(!sortColumn)  sortColumn = "created"
         if(!sortDirection)  sortDirection = "asc"
+        if(sortColumn.equals("numberOfAnnotations")) sortColumn = "countImageAnnotations"
+        if(sortColumn.equals("numberOfJobAnnotations")) sortColumn = "countImageJobAnnotations"
+        if(sortColumn.equals("numberOfReviewedAnnotations")) sortColumn = "countImageReviewedAnnotations"
+
         String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
-        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : "created"
+        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : null
+        if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("ImageInstance list sorted by $sortDirection is not implemented")
 
         def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters, project.blindMode)
 
