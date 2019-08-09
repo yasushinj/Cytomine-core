@@ -89,7 +89,7 @@ class JobService extends ModelService {
         String sortedProperty = ReflectionUtils.findField(Job, sortColumn) ? "${jobAlias}.$sortColumn" : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Software, sortColumn) ? softwareAlias + "." + sortColumn : null
         if(!sortedProperty && sortColumn == "username") sortedProperty = "${userAlias}.$sortColumn"
-        if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("Job list sorted by $sortDirection is not implemented")
+        if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("Job list sorted by $sortColumn is not implemented")
 
         if (sortedProperty == "${userAlias}.$sortColumn" && !extended.withUser) throw new WrongArgumentException("Cannot sort on username without argument withUser")
 
@@ -194,7 +194,7 @@ class JobService extends ModelService {
         if(extended.withJobParameters){
             def parameters = jobParameterService.list(data.collect{it.id})
             for(def line : data){
-                line.putAt('jobParameters', parameters.find{it.job == line.id})
+                line.putAt('jobParameters', parameters.findAll{it.job == line.id})
             }
         }
 
