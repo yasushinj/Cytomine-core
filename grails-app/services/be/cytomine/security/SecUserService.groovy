@@ -18,6 +18,7 @@ package be.cytomine.security
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ConstraintException
+import be.cytomine.Exception.CytomineMethodNotYetImplementedException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
@@ -279,11 +280,14 @@ class SecUserService extends ModelService {
 
     def listUsersExtendedByProject(Project project, def extended, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0) {
 
+        if(!ReflectionUtils.findField(User, sortColumn) && !(["projectRole", "fullName", "lastImageName","lastConnection","frequency"].contains(sortColumn)))
+            throw new CytomineMethodNotYetImplementedException("User list sorted by $sortColumn is not implemented")
+
         if (sortColumn.equals("lastImageName") && !extended.withLastImage) throw new WrongArgumentException("Cannot sort on lastImageName without argument withLastImage")
         if (sortColumn.equals("lastConnection") && !extended.withLastConnection) throw new WrongArgumentException("Cannot sort on lastConnection without argument withLastConnection")
         if (sortColumn.equals("frequency") && !extended.withNumberConnections) throw new WrongArgumentException("Cannot sort on frequency without argument withNumberConnections")
 
-        if (!extended || extended.isEmpty()) return listUsersByProject(project, searchParameters, sortColumn, sortDirection, max, offset)
+        if (!extended || extended.isEmpty()) return listUsersByProject(project, true, searchParameters, sortColumn, sortDirection, max, offset)
 
         def results = []
         def users = []
@@ -302,13 +306,13 @@ class SecUserService extends ModelService {
         long total
 
         if (ReflectionUtils.findField(User, sortColumn) || sortColumn.equals("projectRole")) {
-            users = this.listUsersByProject(project, searchParameters, sortColumn, sortDirection, max, offset)
+            users = this.listUsersByProject(project, true, searchParameters, sortColumn, sortDirection, max, offset)
             total = users.total
             users = users.data
-            results = users.collect{User.getDataFromDomain(it)}
+            results = users
             usersFetched = true
         } else {
-            users = this.listUsersByProject(project, searchParameters, "id", "asc").data
+            users = this.listUsersByProject(project, true, searchParameters, "id", "asc").data
             total = users.size()
         }
         userIds = users.collect { it.id }
@@ -339,8 +343,7 @@ class SecUserService extends ModelService {
             for (def entry : results) {
                 int index = binSearchI(users, "id", entry.id)
                 def user = users[index]
-                def userInfo = User.getDataFromDomain(user)
-                entry << userInfo
+                entry << user
             }
         }
         if (!consultationsFetched && extended.withLastImage) {
@@ -374,61 +377,76 @@ class SecUserService extends ModelService {
         return [data: results, total: total]
     }
 
-    def listUsersByProject(Project project, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0){
+    def listUsersByProject(Project project, boolean withProjectRole = true, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0){
 
         def onlineUserSearch = searchParameters.find{it.field == "status" && it.values == "online"}
         def multiSearch = searchParameters.find{it.field == "fullName"}
         def projectRoleSearch = searchParameters.find{it.field == "projectRole"}
 
         String select = "select distinct secUser "
-        String request = "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
-                "where aclObjectId.objectId = "+project.id+" " +
+        String from  = "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "
+        if(withProjectRole) {
+            from = "from ProjectRepresentativeUser r right outer join r.user secUser WITH (r.project.id = ${project.id}), " +
+                    "AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid "
+        }
+        String where = "where aclObjectId.objectId = "+project.id+" " +
                 "and aclEntry.aclObjectIdentity = aclObjectId.id " +
                 "and aclEntry.sid = aclSid.id " +
                 "and aclSid.sid = secUser.username " +
                 "and secUser.class = 'be.cytomine.security.User' "
-
         String groupBy = ""
         String order = ""
 
         if(multiSearch) {
             String value = ((String) multiSearch.values).toLowerCase()
-            request += " and (lower(secUser.firstname) like '%$value%' or lower(secUser.lastname) like '%$value%' or lower(secUser.email) like '%$value%') "
+            where += " and (lower(secUser.firstname) like '%$value%' or lower(secUser.lastname) like '%$value%' or lower(secUser.email) like '%$value%') "
         }
         if(onlineUserSearch) {
             def onlineUsers = getAllOnlineUserIds(project)
             if(onlineUsers.isEmpty())
                 return [data: [], total: 0]
 
-            request += " and secUser.id in ("+getAllOnlineUserIds(project).join(",")+") "
+            where += " and secUser.id in ("+getAllOnlineUserIds(project).join(",")+") "
         }
-        if(projectRoleSearch && projectRoleSearch.values == "manager") request +=" and aclEntry.mask = 16 "
+        if(projectRoleSearch && projectRoleSearch.values == "manager") where +=" and aclEntry.mask = 16 "
 
         //for (def t : searchParameters) {
             // TODO parameters to HQL constraints
         //}
-        boolean composed = false
+
+        if(withProjectRole){
+            //works because 'contributor' < 'manager' < 'representative'
+            select += ", MAX( CASE WHEN r.id IS NOT NULL THEN 'representative'\n" +
+                    "     WHEN aclEntry.mask = 16 THEN 'manager'\n" +
+                    "     ELSE 'contributor'\n" +
+                    " END) as role "
+            groupBy = "GROUP BY secUser.id "
+        }
         if(sortColumn == "projectRole"){
-            select += ", max(aclEntry.mask) as role "
-            groupBy = "group by secUser.id "
             sortColumn = "role"
-            composed = true
+        } else if(sortColumn == "fullName"){
+            sortColumn = "secUser.firstname"
         } else {
             sortColumn = "secUser.$sortColumn"
         }
         order = "order by $sortColumn $sortDirection "
 
+        String request = select + from + where + groupBy + order
 
-        List<User> users = User.executeQuery(select + request + groupBy + order, [offset:offset, max:max])
+        def users = User.executeQuery(request, [offset:offset, max:max])
 
         long total;
         if(max == 0 && offset == 0) total = users.size()
         else {
-            def list = User.executeQuery("select count(distinct secUser.id) " + request )
+            def list = User.executeQuery("select count(distinct secUser.id) " + from + where  )
             total = list[0]
         }
-        if(composed){
-            users = users.collect{it[0]}
+
+        users = users.collect{item ->
+            if(!withProjectRole) return item
+            item[0] = User.getDataFromDomain(item[0])
+            item[0].role = item[1]
+            return item[0]
         }
 
         return [data: users, total: total]
