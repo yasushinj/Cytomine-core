@@ -82,7 +82,7 @@ class RestProjectRepresentativeUserController extends RestController {
             if(params.id) domain = projectRepresentativeUserService.retrieve(JSON.parse("{id : $params.id}"))
             if(!domain) {
                 Project project = projectService.read(params.getLong("idProject"))
-                User user = secUserService.read(params.getLong("idUser"))
+                User user = secUserService.read(params.getLong("user"))
 
                 domain = projectRepresentativeUserService.getByProjectAndUser(project, user)
             }
