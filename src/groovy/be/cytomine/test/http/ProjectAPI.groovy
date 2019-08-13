@@ -108,6 +108,10 @@ class ProjectAPI extends DomainAPI {
         String URL = Infos.CYTOMINEURL + "api/project/${idProject}/user/${idUser}.json"
         return doPOST(URL,"",username,password)
     }
+    static def addUsersProject(def idProject, def idUsers, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/${idProject}/user.json?users="+idUsers.join(",")
+        return doPOST(URL,"",username,password)
+    }
 
     static def addAdminProject(def idProject, def idUser, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/project/${idProject}/user/${idUser}/admin.json"
@@ -117,6 +121,10 @@ class ProjectAPI extends DomainAPI {
 
     static def deleteUserProject(def idProject, def idUser, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/project/${idProject}/user/${idUser}.json"
+        return doDELETE(URL,username,password)
+    }
+    static def deleteUsersProject(def idProject, def idUsers, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/${idProject}/user.json?users="+idUsers.join(",")
         return doDELETE(URL,username,password)
     }
 

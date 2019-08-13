@@ -47,7 +47,7 @@ class ProjectRepresentativeUserAPI extends DomainAPI {
     }
 
     static def deleteByUser(def idUser, Long idProject, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/" + idProject + "/representative.json?idUser=$idUser"
+        String URL = Infos.CYTOMINEURL + "api/project/" + idProject + "/representative.json?user=$idUser"
         return doDELETE(URL,username,password)
     }
 }
