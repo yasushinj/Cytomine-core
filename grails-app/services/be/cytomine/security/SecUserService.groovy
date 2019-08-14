@@ -146,6 +146,9 @@ class SecUserService extends ModelService {
         if(!sortColumn) sortColumn = "username"
         if(!sortDirection) sortDirection = "asc"
 
+        if(!ReflectionUtils.findField(User, sortColumn) && !(["role", "fullName"].contains(sortColumn)))
+            throw new CytomineMethodNotYetImplementedException("User list sorted by $sortColumn is not implemented")
+
         def multiSearch = searchParameters.find{it.field == "fullName"}
 
         String select = "SELECT u.* "
@@ -170,6 +173,8 @@ class SecUserService extends ModelService {
 
         if(sortColumn == "role") {
             sort = "ORDER BY $sortColumn $sortDirection, u.id ASC "
+        } else if(sortColumn == "fullName"){
+            sort = "ORDER BY u.firstname $sortDirection "
         } else sort = "ORDER BY u.$sortColumn $sortDirection "
 
         String request = select + from + where + search + groupBy + sort
