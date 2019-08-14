@@ -201,9 +201,9 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['numberOfJobAnnotations'] = image?.countImageJobAnnotations
         returnArray['numberOfReviewedAnnotations'] = image?.countImageReviewedAnnotations
 
-        returnArray['thumb'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image?.baseImage?.id, 512)
-        returnArray['preview'] = UrlApi.getAbstractImageThumbUrlWithMaxSize(image?.baseImage?.id, 1024)
-        returnArray['macroURL'] = UrlApi.getAssociatedImage(image?.baseImage?.id, "macro", image?.baseImage?.uploadedFile?.contentType, 512)
+        returnArray['thumb'] = UrlApi.getImageInstanceThumbUrlWithMaxSize(image?.id, 512)
+        returnArray['preview'] = UrlApi.getImageInstanceThumbUrlWithMaxSize(image?.id, 1024)
+        returnArray['macroURL'] = UrlApi.getAssociatedImageInstance(image?.id, "macro", image?.baseImage?.uploadedFile?.contentType, 512)
         return returnArray
     }
 

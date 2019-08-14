@@ -137,7 +137,7 @@ class ImageInstanceService extends ModelService {
 
                 data << [id              : it['_id'],
                          date            : it['date'],
-                         thumb           : UrlApi.getAbstractImageThumbUrl(image.baseImage.id),
+                         thumb           : UrlApi.getImageInstanceThumbUrl(image.id),
                          instanceFilename: image.blindInstanceFilename,
                          project         : image.project.id
                 ]

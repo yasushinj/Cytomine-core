@@ -88,16 +88,39 @@ class UrlApi {
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label.$format$size"
     }
 
+    static def getAssociatedImageInstance(Long id, String label, String contentType = null, def maxSize = null, def format="png") {
+        def formatsWithMacro = [
+                "openslide/ndpi", "openslide/vms", "openslide/mrxs", "openslide/svs", "openslide/scn", "ventana/bif", "ventana/tif", "philips/tif"
+        ]
+        if(label == "macro" && contentType && !formatsWithMacro.contains(contentType)) {
+            return null
+        }
+        String size = maxSize ? "?maxWidth=$maxSize" : "";
+        return "${serverUrl()}/api/imageinstance/$id/associated/$label.$format$size"
+    }
+
     static def getAbstractImageThumbUrl(Long idImage, def format="png") {
         return  "${serverUrl()}/api/abstractimage/$idImage/thumb.$format"
+    }
+
+    static def getImageInstanceThumbUrl(Long idImage, def format="png") {
+        return  "${serverUrl()}/api/imageinstance/$idImage/thumb.$format"
     }
 
     static def getAbstractImageThumbUrlWithMaxSize(Long idAbstractImage, def maxSize = 256, def format="png") {
         return "${serverUrl()}/api/abstractimage/$idAbstractImage/thumb.$format?maxSize=$maxSize"
     }
 
+    static def getImageInstanceThumbUrlWithMaxSize(Long idImage, def maxSize = 256, def format="png") {
+        return "${serverUrl()}/api/imageinstance/$idImage/thumb.$format?maxSize=$maxSize"
+    }
+
     static def getAbstractSliceThumbUrl(Long idSlice, def format="png") {
         return "${serverUrl()}/api/abstractslice/$idSlice/thumb.$format"
+    }
+
+    static def getSliceInstanceThumbUrl(Long idSlice, def format="png") {
+        return "${serverUrl()}/api/sliceinstance/$idSlice/thumb.$format"
     }
 
     static def getImageGroupThumbUrlWithMaxSize(Long idImageGroup, def maxSize = 256, def format="png") {
@@ -114,16 +137,6 @@ class UrlApi {
 
     static def getDashboardURL(Long idProject) {
         return  "${UIUrl()}/#/project/$idProject"
-    }
-
-    /**
-     * Return cytomine url to access an image thumb
-     * @param url  Cytomine base url
-     * @param idImage Image id
-     * @return full cytomine url
-     */
-    static def getAbstractImageThumbURL(Long idImage) {
-        return  "${serverUrl()}/api/abstractimage/$idImage/thumb.png"
     }
 
     static def serverUrl() {
