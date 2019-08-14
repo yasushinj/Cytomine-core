@@ -549,6 +549,15 @@ class RestImageInstanceController extends RestController {
         }
     }
 
+    def metadata() {
+        ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
+        if (imageInstance) {
+            responseSuccess(propertyService.list(imageInstance.baseImage))
+        } else {
+            responseNotFound("Image", params.id)
+        }
+    }
+
     // as I have one field that I override differently if I am a manager, I overrided all the response method until the super method is more flexible
     @Override
     protected def response(data) {

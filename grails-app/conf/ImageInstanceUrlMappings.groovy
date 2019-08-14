@@ -104,6 +104,9 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/camera_url-$x-$y-$w-$h.$format"(controller: "restImageInstance"){
             action = [GET:"cameraUrl", POST:"cameraUrl"]
         }
+        "/api/imageinstance/$id/metadata.$format"(controller: "restImageInstance"){
+            action = [GET: "metadata"]
+        }
         
         // Deprecated
         "/api/imageinstance/$id/cropgeometry.$format"(controller :"restImageInstance") {
