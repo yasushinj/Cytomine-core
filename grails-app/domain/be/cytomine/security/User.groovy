@@ -111,6 +111,7 @@ class User extends SecUser {
         domain.email = JSONUtils.getJSONAttrStr(json,'email')
         domain.color = JSONUtils.getJSONAttrStr(json,'color')
         domain.language = Language.findByCode(JSONUtils.getJSONAttrStr(json,'language') ?: "EN")
+        if(!domain.language) domain.language = Language.valueOf(JSONUtils.getJSONAttrStr(json,'language') ?: "EN")
         domain.origin = JSONUtils.getJSONAttrStr(json,'origin')
         if (json.password && domain.password != null) {
             domain.newPassword = JSONUtils.getJSONAttrStr(json,'password') //user is updated
@@ -146,6 +147,7 @@ class User extends SecUser {
         }
         returnArray['enabled'] = domain?.enabled
         returnArray['color'] = domain?.color
+        returnArray['user'] = domain?.creator
         returnArray
     }
 

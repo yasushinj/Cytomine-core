@@ -199,6 +199,7 @@ class UserSearchTests {
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        assert json.collection[0].containsKey("role")
         assert json.size == 2
 
     }
