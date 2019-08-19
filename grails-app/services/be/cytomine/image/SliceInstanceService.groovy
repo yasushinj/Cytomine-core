@@ -5,6 +5,7 @@ import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
+import be.cytomine.ontology.AnnotationTrack
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
@@ -84,5 +85,12 @@ class SliceInstanceService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser, transaction: transaction)
         executeCommand(c, slice, null)
+    }
+
+    def annotationTrackService
+    def deleteDependentAnnotationTrack(SliceInstance slice, Transaction transaction, Task task = null) {
+        AnnotationTrack.findAllBySlice(slice).each {
+            annotationTrackService.delete(it, transaction, task)
+        }
     }
 }

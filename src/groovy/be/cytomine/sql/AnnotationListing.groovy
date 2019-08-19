@@ -23,6 +23,7 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.SliceInstance
 import be.cytomine.ontology.Term
+import be.cytomine.ontology.Track
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import com.vividsolutions.jts.io.WKTReader
@@ -55,6 +56,9 @@ abstract class AnnotationListing {
 
     def slice = null
     def slices = null
+
+    def track = null
+    def tracks = null
 
     def user = null
     def userForTermAlgo = null
@@ -215,6 +219,9 @@ abstract class AnnotationListing {
                         getTermConst() +
                         getTermsConst() +
 
+                        getTrackConst() +
+                        getTracksConst() +
+
                         getUsersForTermConst() +
 
                         getUserForTermAlgoConst() +
@@ -237,16 +244,34 @@ abstract class AnnotationListing {
                         getAfterThan() +
                         createOrderBy()
 
-        if(term || terms){
-            sqlColumns = sqlColumns.findAll{it.key != "term" && it.key != "annotationTerms" && it.key != "userTerm"}
+        if (term || terms || track || tracks) {
+            def request = "SELECT DISTINCT a.*, "
 
-            return "SELECT DISTINCT a.*, at.term_id as term , at.id as annotationTerms, at.user_id as userTerm\n " +
-                    "FROM ("+
-                    getSelect(sqlColumns) + getFrom() + whereRequest +
-                    " ) a \n" +
-                    "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id " +
-                    "ORDER BY a.id DESC"
+            if (term || terms) {
+                sqlColumns = sqlColumns.findAll{it.key != "term" && it.key != "annotationTerms" && it.key != "userTerm"}
+                request += "at.term_id as term, at.id as annotationTerms, at.user_id as userTerm "
+            }
+
+            if ((term || terms) && (track || tracks))
+                request += ", "
+
+            if (track || tracks) {
+                sqlColumns = sqlColumns.findAll{it.key != "track" && it.key != "annotationTracks"}
+                request += "atr.track_id as track, atr.id as annotationTracks "
+            }
+
+            request += "FROM (" + getSelect(sqlColumns) + getFrom() + whereRequest + ") a \n"
+
+            if (term || terms)
+                request += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
+
+            if (track || tracks)
+                request += "LEFT OUTER JOIN annotation_track atr ON a.id = atr.annotation_ident "
+
+            request += "ORDER BY a.id DESC"
+            return request
         }
+
         return getSelect(sqlColumns) + getFrom() + whereRequest
 
     }
@@ -421,6 +446,28 @@ abstract class AnnotationListing {
         }
     }
 
+    def getTrackConst() {
+        if (track) {
+            if (!Track.read(track)) {
+                throw new ObjectNotFoundException("Track $track not exists !")
+            }
+            addIfMissingColumn('track')
+            return " AND atr.track_id = ${track}\n"
+        } else {
+            return ""
+        }
+    }
+
+    def getTracksConst() {
+        if (tracks) {
+            addIfMissingColumn('track')
+            return "AND atr.track_id IN (${tracks.join(',')})\n"
+        } else {
+            return ""
+        }
+
+    }
+
     def getExcludedAnnotationConst() {
         return (excludedAnnotation ? "AND a.id <> ${excludedAnnotation}\n" : "")
     }
@@ -492,6 +539,7 @@ user = $user
 term = $term
 image = $image
 slice = $slice
+track = $track
 suggestedTerm = $suggestedTerm
 userForTermAlgo = $userForTermAlgo
 users = $users
@@ -501,6 +549,7 @@ reviewUsers = $reviewUsers
 terms = $terms
 images = $images
 slices = $slices
+tracks = $tracks
 afterThan = $afterThan
 beforeThan = $beforeThan
 suggestedTerms = $suggestedTerms
@@ -570,6 +619,10 @@ class UserAnnotationListing extends AnnotationListing {
                 annotationTerms: 'at.id', // not in single annot marshaller
                 userTerm: 'at.user_id' // not in single annot marshaller
         ],
+        track: [
+                track: 'atr.track_id',
+                annotationTracks: 'atr.id'
+        ],
         image: [
                 originalFilename: 'ai.original_filename', // not in single annot marshaller
                 instanceFilename: 'ii.instance_filename' // not in single annot marshaller
@@ -620,12 +673,16 @@ class UserAnnotationListing extends AnnotationListing {
             from += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
         }
 
+        if (columnToPrint.contains('track')) {
+            from += "LEFT OUTER JOIN annotation_track atr ON a.id = atr.annotation_ident "
+        }
+
         if (columnToPrint.contains('user')) {
             from += "INNER JOIN sec_user u ON a.user_id = u.id "
         }
 
         if (columnToPrint.contains('image')) {
-            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ON ii.base_image_id = ai.id "
         }
 
         if (columnToPrint.contains('algo')) {
@@ -653,7 +710,7 @@ class UserAnnotationListing extends AnnotationListing {
         if (orderByRate) {
             return "ORDER BY aat.rate desc"
         } else if (!orderBy) {
-            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "")
+            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "") + ((track || tracks || columnToPrint.contains("track")) ? ", atr.track_id " : "")
         } else {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         }
@@ -714,6 +771,10 @@ class AlgoAnnotationListing extends AnnotationListing {
                 userTerm: 'aat.user_job_id',
                 rate: 'aat.rate'
         ],
+        track: [
+                track: 'atr.track_id',
+                annotationTracks: 'atr.id'
+        ],
         image: [
                 originalFilename: 'ai.original_filename', // not in single annot marshaller
                 instanceFilename: 'ii.instance_filename' // not in single annot marshaller
@@ -754,8 +815,12 @@ class AlgoAnnotationListing extends AnnotationListing {
             from += "LEFT JOIN algo_annotation_term aat ON a.id = aat.annotation_ident "
         }
 
+        if (columnToPrint.contains('track')) {
+            from += "LEFT OUTER JOIN annotation_track atr ON a.id = atr.annotation_ident "
+        }
+
         if (columnToPrint.contains('image')) {
-            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ON ii.base_image_id = ai.id "
         }
 
         if (columnToPrint.contains('slice')) {
@@ -912,7 +977,7 @@ class ReviewedAnnotationListing extends AnnotationListing {
         }
 
         if (columnToPrint.contains('image')) {
-            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ON ii.base_image_id = ai.id "
         }
 
         if (columnToPrint.contains('slice')) {
@@ -1061,7 +1126,7 @@ class RoiAnnotationListing extends AnnotationListing {
         }
 
         if (columnToPrint.contains('image')) {
-            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ii.base_image_id = ai.id "
+            from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ON ii.base_image_id = ai.id "
         }
 
         if (columnToPrint.contains('slice')) {

@@ -109,6 +109,9 @@ class RestAnnotationDomainController extends RestController {
             @RestApiParam(name="showSlice", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation slice details (c,z,t,...). This may slow down the request."),
             @RestApiParam(name="hideSlice", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation slice details (c,z,t,...). This may slow down the request."),
 
+            @RestApiParam(name="showTrack", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, show the annotation track details. This may slow down the request."),
+            @RestApiParam(name="hideTrack", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) If true, hide the annotation track details. This may slow down the request."),
+
             @RestApiParam(name="project", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this project id"),
 
             @RestApiParam(name="job", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this job id"),
@@ -125,6 +128,9 @@ class RestAnnotationDomainController extends RestController {
             @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
             @RestApiParam(name="slice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this slice id"),
             @RestApiParam(name="slices", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these slices id"),
+
+            @RestApiParam(name="track", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this track id"),
+            @RestApiParam(name="tracks", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these tracks id"),
 
             @RestApiParam(name="suggestedTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for this term by a job"),
             @RestApiParam(name="suggestedTerms", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for these terms by a job"),
@@ -387,6 +393,13 @@ class RestAnnotationDomainController extends RestController {
         def slices = params.get('slices')
         if(slices) {
             al.slices = params.get('slices').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+
+        // Tracks
+        al.track = params.getLong('track')
+        def tracks = params.get('tracks')
+        if(tracks) {
+            al.tracks = params.get('tracks').replace("_",",").split(",").collect{Long.parseLong(it)}
         }
 
         // Users

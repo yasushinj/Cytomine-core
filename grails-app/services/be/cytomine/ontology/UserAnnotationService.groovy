@@ -393,6 +393,13 @@ class UserAnnotationService extends ModelService {
 
     }
 
+    def annotationTrackService
+    def deleteDependentAnnotationTrack(UserAnnotation ua, Transaction transaction, Task task = null) {
+        AnnotationTrack.findAllByAnnotationIdent(ua.id).each {
+            annotationTrackService.delete(it, transaction, task)
+        }
+    }
+
 
     /**
      * List all annotation with a very light strcuture: id, project and crop url

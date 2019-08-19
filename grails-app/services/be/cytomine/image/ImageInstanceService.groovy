@@ -569,6 +569,13 @@ class ImageInstanceService extends ModelService {
         }
     }
 
+    def trackService
+    def deleteDependentTrack(ImageInstance image, Transaction transaction, Task task = null) {
+        Track.findAllByImage(image).each {
+            trackService.delete(it, transaction, task)
+        }
+    }
+
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.blindInstanceFilename, domain.project.name]
     }

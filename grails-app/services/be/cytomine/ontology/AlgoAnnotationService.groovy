@@ -295,4 +295,10 @@ class AlgoAnnotationService extends ModelService {
 
     }
 
+    def annotationTrackService
+    def deleteDependentAnnotationTrack(UserAnnotation ua, Transaction transaction, Task task = null) {
+        AnnotationTrack.findAllByAnnotationIdent(ua.id).each {
+            annotationTrackService.delete(it, transaction, task)
+        }
+    }
 }

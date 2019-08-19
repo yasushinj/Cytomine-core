@@ -133,7 +133,8 @@ class ParamsService {
                     showImage:'image',
                     showAlgo:'algo',
                     showUser: 'user',
-                    showSlice: 'slice'
+                    showSlice: 'slice',
+                    showTrack: 'track',
             ]
 
             //show if ask

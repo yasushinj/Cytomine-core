@@ -71,14 +71,22 @@ class AnnotationListingService extends ModelService {
         def data = []
         long lastAnnotationId = -1
         long lastTermId = -1
+        long lastTrackId = -1
+
         boolean first = true;
 
         def realColumn = []
         def request = al.getAnnotationsRequest()
+
         boolean termAsked = false
+        boolean trackAsked = false
+
+        def excludedColumns = ['annotationTerms', 'annotationTracks', 'userTerm', 'x', 'y']
+
         def sql = new Sql(dataSource)
         log.info request
         sql.eachRow(request) {
+
 
             /**
              * If an annotation has n multiple term, it will be on "n" lines.
@@ -86,24 +94,24 @@ class AnnotationListingService extends ModelService {
              * For the other lines, we add term data to the last annotation
              */
             if (it.id != lastAnnotationId) {
+                termAsked = false
+                trackAsked = false
+
                 if(first) {
                     al.getAllPropertiesName().each { columnName ->
-                        if(columnExist(it,columnName)) {
+                        if(columnExist(it,columnName) && !excludedColumns.contains(columnName)) {
                             realColumn << columnName
                         }
                     }
                     first = false
                 }
 
-
                 def item = [:]
                 item['class'] = al.getDomainClass()
 
                 realColumn.each { columnName ->
-                    item[columnName]=it[columnName]
+                    item[columnName] = it[columnName]
                 }
-
-
 
                 if(al.columnToPrint.contains('term')) {
                     termAsked = true
@@ -111,12 +119,16 @@ class AnnotationListingService extends ModelService {
                     item['userByTerm'] = (it.term ? [[id: it.annotationTerms, term: it.term, user: [it.userTerm]]] : [])
                 }
 
+                if (al.columnToPrint.contains('track')) {
+                    trackAsked = true
+                    item['track'] = (it.track ? [it.track] : [])
+                    item['annotationTrack'] = (it.track ? [[id: it.annotationTracks, track: it.track]] : [])
+                }
+
                 if(al.columnToPrint.contains('gis')) {
                     item['perimeterUnit'] = (it.perimeterUnit != null? GisUtils.retrieveUnit(it.perimeterUnit) : null)
                     item['areaUnit'] = (it.areaUnit ? GisUtils.retrieveUnit(it.areaUnit) : null)
-                    item['centroid'] = [x: item['x'], y: item['y']]
-                    item.remove('x')
-                    item.remove('y')
+                    item['centroid'] = [x: it.x, y: it.y]
                 }
 
                 if(al.columnToPrint.contains('meta')) {
@@ -139,22 +151,31 @@ class AnnotationListingService extends ModelService {
                 }
                 data << item
             } else {
-                if (it.term) {
-                    data.last().term.add(it.term)
-                    data.last().term.unique()
+                if (termAsked && it.term) {
                     if (it.term == lastTermId) {
                         data.last().userByTerm.last().user.add(it.userTerm)
                         data.last().userByTerm.last().user.unique()
                     } else {
+                        data.last().term.add(it.term)
                         data.last().userByTerm.add([id: it.annotationTerms, term: it.term, user: [it.userTerm]])
                     }
                 }
-            }
-            if (termAsked) {
-                lastTermId = it.term
-                lastAnnotationId = it.id
+
+                if (trackAsked && it.track && it.track != lastTrackId) {
+                    data.last().track.add(it.track)
+                    data.last().annotationTrack.add([id: it.annotationTracks, track: it.track])
+                }
             }
 
+            if (termAsked) {
+                lastTermId = it.term
+            }
+
+            if (trackAsked) {
+                lastTrackId = it.track
+            }
+
+            lastAnnotationId = it.id
         }
         sql.close()
         data
