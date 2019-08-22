@@ -73,8 +73,8 @@ class PersistentUserPosition extends CytomineDomain {
         version false
         stateless true //don't store data in memory after read&co. These data don't need to be update.
         image index:true
-        compoundIndex user:1, image:1, created:-1
-        compoundIndex location:"2d", indexAttributes:[min:Integer.MIN_VALUE, max:Integer.MAX_VALUE], image:1
+        compoundIndex user:1, image:1, slice:1, created:-1
+        compoundIndex location:"2d", indexAttributes:[min:Integer.MIN_VALUE, max:Integer.MAX_VALUE], image:1, slice:1
     }
 
     /**
