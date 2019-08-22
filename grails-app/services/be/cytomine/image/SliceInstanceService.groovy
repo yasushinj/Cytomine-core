@@ -93,4 +93,8 @@ class SliceInstanceService extends ModelService {
             annotationTrackService.delete(it, transaction, task)
         }
     }
+
+    def getStringParamsI18n(Object domain) {
+        return [domain.id, domain.baseSlice.channel, domain.baseSlice.zStack, domain.baseSlice.time]
+    }
 }
