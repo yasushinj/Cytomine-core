@@ -105,10 +105,12 @@ class TrackService extends ModelService {
 
     def update(Track track, def json) {
         securityACLService.check(track, READ)
-        securityACLService.check(json.project, Project, READ)
         securityACLService.checkisNotReadOnly(track)
-        securityACLService.checkisNotReadOnly(json.project ,Project)
         SecUser currentUser = cytomineService.getCurrentUser()
+
+        ImageInstance image = imageInstanceService.read(json.image)
+        Project project = image?.project
+        json.project = project.id
 
         Command c = new EditCommand(user: currentUser)
         executeCommand(c, track, json)

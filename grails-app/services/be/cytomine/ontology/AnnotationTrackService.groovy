@@ -1,6 +1,8 @@
 package be.cytomine.ontology
 
 import be.cytomine.AnnotationDomain
+import be.cytomine.CytomineDomain
+import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
@@ -73,6 +75,8 @@ class AnnotationTrackService extends ModelService {
         securityACLService.check(annotation .project, READ)
         securityACLService.checkisNotReadOnly(annotation.project)
         json.slice = annotation.slice.id
+        json.annotationIdent = annotation.id
+        json.annotationClassName = annotation.getClass().getName()
 
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new AddCommand(user: currentUser)
@@ -89,5 +93,26 @@ class AnnotationTrackService extends ModelService {
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.annotationIdent, domain.track]
+    }
+
+    def retrieve(Map json) {
+        CytomineDomain domain = null
+        if(json.id && !json.id.toString().equals("null")) {
+            domain = currentDomain().get(json.id)
+        }
+        else if (json.annotationIdent && json.track) {
+            def track = Track.get(json.track)
+            domain = AnnotationTrack.findByAnnotationIdentAndTrack(json.annotationIdent, track)
+        }
+
+        if (!domain) {
+            throw new ObjectNotFoundException("${currentDomain().class} " + json.id + " not found")
+        }
+        def container = domain.container()
+        if (container) {
+            //we only check security if container is defined
+            securityACLService.check(container,READ)
+        }
+        return domain
     }
 }

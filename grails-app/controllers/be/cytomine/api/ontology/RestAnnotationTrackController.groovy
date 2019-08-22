@@ -106,7 +106,7 @@ class RestAnnotationTrackController extends RestController {
             @RestApiParam(name="track", type="long", paramType = RestApiParamType.PATH, description = "The track id")
     ])
     def delete() {
-        def json = JSON.parse("{annotation : $params.annotation, track: $params.track}")
+        def json = JSON.parse("{annotationIdent: $params.annotation, track: $params.track}")
         delete(annotationTrackService, json,null)
     }
 }

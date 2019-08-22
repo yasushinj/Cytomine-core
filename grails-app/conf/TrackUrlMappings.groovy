@@ -18,7 +18,7 @@ class TrackUrlMappings {
     static mappings = {
 
         "/api/track.$format"(controller:"restTrack"){
-            action = [GET: "list",POST:"add"]
+            action = [POST:"add"]
         }
         "/api/track/$id.$format"(controller:"restTrack"){
             action = [GET:"show",PUT:"update", DELETE:"delete"]
