@@ -397,6 +397,7 @@ cytomine.customUI.project = [
         "project-explore-annotation-terms":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-explore-annotation-attached-files":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-explore-annotation-creation-info":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-tracks":["ADMIN_PROJECT":true, "CONTRIBUTOR_PROJECT":true],
 
         //annotation tools
         "project-tools-main":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
