@@ -170,6 +170,15 @@ class IndexService {
             // Term
             createIndex("term", "ontology_id");
 
+            // Track
+            createIndex("track", "image_id")
+            createIndex("track", "project_id")
+
+            // Annotation track
+            createIndex("annotation_track", "track_id")
+            createIndex("annotation_track", "slice_id")
+            createIndex("annotation_track", "annotation_ident")
+
             // TODO
             // User Job
             // Job
