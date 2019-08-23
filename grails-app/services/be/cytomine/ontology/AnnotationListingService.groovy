@@ -161,7 +161,7 @@ class AnnotationListingService extends ModelService {
                     }
                 }
 
-                if (trackAsked && it.track && it.track != lastTrackId) {
+                if (trackAsked && it.track && it.track != lastTrackId && !data.last().track.contains(it.track)) {
                     data.last().track.add(it.track)
                     data.last().annotationTrack.add([id: it.annotationTracks, track: it.track])
                 }

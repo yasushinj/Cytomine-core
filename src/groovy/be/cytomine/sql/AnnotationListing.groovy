@@ -654,12 +654,9 @@ class UserAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
         if (multipleTerm) {
-            from = "$from, annotation_term at, annotation_term at2 "
-            where = "$where" +
-                    "AND a.id = at.user_annotation_id\n" +
-                    " AND a.id = at2.user_annotation_id\n" +
-                    " AND at.id <> at2.id \n" +
-                    " AND at.term_id <> at2.term_id \n"
+            from += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
+            from += "LEFT OUTER JOIN annotation_term at2 ON a.id = at2.user_annotation_id "
+            where += "AND at.id <> at2.id AND at.term_id <> at2.term_id "
         }
         else if (noTerm) {
             from += "LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
@@ -800,12 +797,9 @@ class AlgoAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
         if (multipleTerm) {
-            from = "$from, algo_annotation_term aat, algo_annotation_term aat2 "
-            where = "$where" +
-                    "AND a.id = aat.annotation_ident\n" +
-                    " AND a.id = aat2.annotation_ident\n" +
-                    " AND aat.id <> aat2.id \n" +
-                    " AND aat.term_id <> aat2.term_id \n"
+            from += "LEFT OUTER JOIN algo_annotation_term att ON a.id = att.annotation_ident "
+            from += "LEFT OUTER JOIN algo_annotation_term att2 ON a.id = att2.annotation_ident "
+            where += "AND att.id <> att2.id AND att.term_id <> att2.term_id "
         }
         else if (noTerm || noAlgoTerm) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_job_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
@@ -962,11 +956,9 @@ class ReviewedAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
         if (multipleTerm) {
-            from = "$from, reviewed_annotation_term at, reviewed_annotation_term at2 "
-            where = "$where" +
-                    "AND a.id = at.reviewed_annotation_terms_id\n" +
-                    " AND a.id = at2.reviewed_annotation_terms_id\n" +
-                    " AND at.term_id <> at2.term_id \n"
+            from += "LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
+            from += "LEFT OUTER JOIN reviewed_annotation_term at2 ON a.id = at2.reviewed_annotation_terms_id "
+            where += "AND at.term_id <> at2.term_id "
         }
         else if (noTerm) {
             from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
