@@ -256,6 +256,15 @@ class UserAnnotationService extends ModelService {
             propertyService.addProperty("be.cytomine.ontology.UserAnnotation", addedAnnotation.id, key, value, currentUser, transaction)
         }
 
+        // Add annotation-track if any
+        def tracksIds = JSONUtils.getJSONList(json.track) + JSONUtils.getJSONList(json.tracks)
+        def annotationTracks = tracksIds.collect { id ->
+            def r = annotationTrackService.addAnnotationTrack("be.cytomine.ontology.UserAnnotation", addedAnnotation.id, id, addedAnnotation.slice.id, currentUser, transaction)
+            return r?.data?.annotationtrack
+        }
+        result.data.annotation.annotationTrack = annotationTracks
+        result.data.annotation.track = annotationTracks.collect { it -> it.track }
+
         // Add to retrieval index
         if (addedAnnotation.location.getNumPoints() >= 3 && !currentUser.algo()) {
             try {

@@ -11,6 +11,7 @@ import be.cytomine.command.Transaction
 import be.cytomine.security.SecUser
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import grails.converters.JSON
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -81,6 +82,11 @@ class AnnotationTrackService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new AddCommand(user: currentUser)
         executeCommand(c, null, json)
+    }
+
+    def addAnnotationTrack(def annotationClassName, def annotationIdent, def idTrack, def idSlice, SecUser currentUser, Transaction transaction) {
+        def json = JSON.parse("{annotationClassName: $annotationClassName, annotationIdent: $annotationIdent, track: $idTrack, slice: $idSlice}")
+        return executeCommand(new AddCommand(user: currentUser, transaction: transaction), null,json)
     }
 
     def delete(AnnotationTrack annotationTrack, Transaction transaction = null, Task task = null, boolean printMessage = true) {

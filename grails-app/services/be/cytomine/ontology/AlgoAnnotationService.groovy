@@ -186,6 +186,15 @@ class AlgoAnnotationService extends ModelService {
         }
         result.data.annotation.term = terms
 
+        // Add annotation-track if any
+        def tracksIds = JSONUtils.getJSONList(json.track) + JSONUtils.getJSONList(json.tracks)
+        def annotationTracks = tracksIds.collect { id ->
+            def r = annotationTrackService.addAnnotationTrack("be.cytomine.ontology.AlgoAnnotation", addedAnnotation.id, id, addedAnnotation.slice.id, currentUser, transaction)
+            return r?.data?.annotationtrack
+        }
+        result.data.annotation.annotationTrack = annotationTracks
+        result.data.annotation.track = annotationTracks.collect { it -> it.track }
+
         // Add properties if any
         def properties = JSONUtils.getJSONList(json.property) + JSONUtils.getJSONList(json.properties)
         properties.each {
