@@ -486,10 +486,10 @@ abstract class ModelService {
                     else sql = parameter.property+" IS NOT NULL "
                     break
                 case "like":
-                    sql = parameter.property+" LIKE '"+parameter.value+"'"
+                    sql = parameter.property+" LIKE "+parameter.value
                     break
                 case "ilike":
-                    sql = parameter.property+" ILIKE '"+parameter.value+"'"
+                    sql = parameter.property+" ILIKE "+parameter.value
                     break
                 case "lte":
                     sql = parameter.property+" <= "+parameter.value
