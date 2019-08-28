@@ -45,27 +45,20 @@ class UploadedFileService extends ModelService {
         return UploadedFile
     }
 
-    def list() {
+    def list(String sortedProperty = null, String sortDirection = null, Long max  = 0, Long offset = 0) {
         securityACLService.checkAdmin(cytomineService.currentUser)
-        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
+
+        return criteriaRequestWithPagination(UploadedFile, max, offset, {
             isNull("deleted")
-        }
-        return uploadedFiles
+        }, [], sortedProperty, sortDirection)
+
     }
 
-    def list(User user) {
-        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
-        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
-            eq("user.id", user.id)
-            isNull("deleted")
-        }
-        return uploadedFiles
-    }
-
-    def list(User user, Long parentId, Boolean onlyRoot) {
+    def list(User user, Long parentId = null, Boolean onlyRoot = null, String sortedProperty = null, String sortDirection = null, Long max  = 0, Long offset = 0) {
 
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
-        def uploadedFiles = UploadedFile.createCriteria().list(sort : "created", order : "desc") {
+
+        return criteriaRequestWithPagination(UploadedFile, max, offset, {
             eq("user.id", user.id)
             if(onlyRoot) {
                 isNull("parent.id")
@@ -73,8 +66,8 @@ class UploadedFileService extends ModelService {
                 eq("parent.id", parentId)
             }
             isNull("deleted")
-        }
-        return uploadedFiles
+        }, [], sortedProperty, sortDirection)
+
     }
 
     def listHierarchicalTree(User user, Long rootId){

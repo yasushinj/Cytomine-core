@@ -26,13 +26,16 @@ import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.UserAnnotation
+import org.springframework.util.ReflectionUtils
 import grails.util.GrailsNameUtils
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
-import java.lang.reflect.Method
+import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -414,6 +417,195 @@ abstract class ModelService {
             }
         }
         return false
+    }
+
+    protected def getDomainAssociatedSearchParameters(Class<? extends CytomineDomain> domain, ArrayList searchParameters) {
+        if(!searchParameters) return []
+
+        def result = []
+        def translated = []
+
+        for (def parameter : searchParameters){
+
+            Field field = ReflectionUtils.findField(domain, parameter.field)
+
+            if(field) {
+
+                def convert = { input ->
+
+                    if(input == null || input.equals("null")) return null
+                    def output
+
+                    if (field.type == Integer || field.type == int) {
+                        output = Integer.parseInt(input)
+                    } else if (field.type == Long || field.type == long) {
+                        output = Long.parseLong(input)
+                    } else if (field.type == Double || field.type == double) {
+                        output = Double.parseDouble(input)
+                    } else if (field.type == Date) {
+                        output = new Date(Long.parseLong(input))
+                    } else {
+                        output = input
+                    }
+                    return output
+                }
+                def value;
+
+                value = (parameter.values.class.isArray() || parameter.values instanceof List) ? parameter.values.collect{convert(it)} : convert(parameter.values)
+
+                result << [operator: parameter.operator, property: field.name, value: value]
+
+                translated << parameter
+            }
+
+        }
+
+        searchParameters.removeAll(translated)
+
+        return result
+    }
+
+    protected def searchParametersToSQLConstraints(def parameters) {
+        for (def parameter : parameters){
+            String regex = "([a-z])([A-Z]+)"
+            String replacement = "\$1_\$2"
+            parameter.property =parameter.property.replaceAll(regex, replacement).toLowerCase()
+
+            if(parameter.value instanceof Date){
+                DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+                parameter.value = formatter.format(parameter.value)
+            }
+            if(parameter.value instanceof String && parameter.value != "null") parameter.value = "'$parameter.value'".toString()
+
+            String sql
+            switch(parameter.operator){
+                case "equals":
+                    if(parameter.value != null) sql = parameter.property+" = "+parameter.value
+                    else sql = parameter.property+" IS NULL "
+                    break
+                case "nequals":
+                    if(parameter.value != null) sql = parameter.property+" != "+parameter.value
+                    else sql = parameter.property+" IS NOT NULL "
+                    break
+                case "like":
+                    sql = parameter.property+" LIKE "+parameter.value
+                    break
+                case "ilike":
+                    sql = parameter.property+" ILIKE "+parameter.value
+                    break
+                case "lte":
+                    sql = parameter.property+" <= "+parameter.value
+                    break
+                case "gte":
+                    sql = parameter.property+" >= "+parameter.value
+                    break
+                case "in":
+
+                    if(parameter.value == null) {
+                        sql = parameter.property+" IS NULL "
+                        break
+                    }
+
+                    if(!parameter.value.class.isArray() && !(parameter.value instanceof List)){
+                        parameter.value = [parameter.value]
+                    }
+
+                    parameter.value = parameter.value.unique()
+
+                    if(parameter.value.size() == 1 && (parameter.value[0] == null || parameter.value[0] == "null")) {
+                        sql = parameter.property+" IS NULL "
+                        break
+                    }
+
+                    if(parameter.value.contains(null) || parameter.value.contains("null")){
+                        parameter.value = parameter.value.findAll{it != null && it != 'null'}
+                        parameter.value = parameter.value.collect {
+                            if(it instanceof String) return "'$it'"
+                            else return it
+                        }
+
+                        sql = "("+parameter.property+" IN ("+parameter.value.join(",")+") OR "+parameter.property+" IS NULL) "
+                    } else {
+                        parameter.value = parameter.value.collect{
+                            if(it instanceof String) return "'$it'"
+                            else return it
+                        }
+                        sql = parameter.property+" IN ("+parameter.value.join(",")+") "
+                        break
+                    }
+
+                    break
+                //case "":
+            }
+            parameter.sql = sql
+        }
+        return parameters
+    }
+
+    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure preselection, def searchParameters, String sortedProperty = null, String sortDirection = null){
+        sortedProperty = (sortedProperty != null && ReflectionUtils.findField(domain, sortedProperty)) ? sortedProperty : "created"
+        if(!sortDirection.equals("asc") && !sortDirection.equals("desc")) sortDirection = "asc"
+
+        Closure sorting = {
+            order(sortedProperty, sortDirection)
+        }
+
+        return criteriaRequestWithPagination(domain, max, offset, preselection, searchParameters, sorting)
+    }
+
+    protected def criteriaRequestWithPagination(Class<? extends CytomineDomain> domain, Long max, Long offset, Closure preselection, def searchParameters, Closure sorting){
+
+        for(def t : searchParameters) {
+            if(["in"].contains(t.operator)) {
+                if(t.value && (t.value.class.isArray() || (t.value instanceof List))){
+                    t.value = t.value.unique()
+                    if(t.value.size() == 1 && t.value[0] == null){
+                        t.value = null
+                    }
+                }
+            }
+            if(t.operator.equals("equals")) {
+                t.operator = "eq"
+            }
+        }
+
+        Closure selection = preselection >> {
+
+            for(def t : searchParameters) {
+                if(["in"].contains(t.operator)){
+
+                    if(t.value == null) {
+                        isNull t.property
+                        continue
+                    }
+
+                    if(!t.value.class.isArray() && !(t.value instanceof List)){
+                        t.value = [t.value]
+                    }
+                    if(t.value.isEmpty()) {
+                        isNull "id"
+                        continue
+                    }
+
+                    if(t.value.contains(null) || t.value.contains("null")){
+                        or {
+                            inList t.property, t.value
+                            isNull t.property
+                        }
+                    } else {
+                        inList t.property, t.value
+                    }
+                } else {
+                    "${t.operator}" t.property,t.value
+                }
+            }
+        }
+
+        def total = domain.createCriteria().count(selection)
+
+        Closure c = selection >> sorting
+        def data = domain.createCriteria().list(max:max, offset:offset,c)
+        return [data : data, total : total]
     }
 
 }

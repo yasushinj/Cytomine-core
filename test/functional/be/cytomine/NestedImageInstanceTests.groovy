@@ -62,19 +62,19 @@ class NestedImageInstanceTests {
 
 
     void testListImageCheckIfNoNestedImageInstance() {
-        def nested = BasicInstanceBuilder.getNestedImageInstanceNotExist( BasicInstanceBuilder.getImageInstance(),true)
+        def nested = BasicInstanceBuilder.getNestedImageInstanceNotExist( BasicInstanceBuilder.getImageInstanceNotExist(BasicInstanceBuilder.getProjectNotExist(true),true),true)
 
         def result = ImageInstanceAPI.listByProject(nested.project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         def json = JSON.parse(result.data)
         assert NestedImageInstanceAPI.containsInJSONList(nested.parent.id,json)
         assert !NestedImageInstanceAPI.containsInJSONList(nested.id,json)
 
-        result = ImageInstanceAPI.listByProject(nested.project.id,1,2, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.listByProject(nested.project.id,2,1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         json = JSON.parse(result.data)
-        assert NestedImageInstanceAPI.containsInJSONList(nested.parent.id,json)
+        assert !NestedImageInstanceAPI.containsInJSONList(nested.parent.id,json)
         assert !NestedImageInstanceAPI.containsInJSONList(nested.id,json)
 
-        result = ImageInstanceAPI.listByProject(nested.project.id, 0,1,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.listByProject(nested.project.id, 1,0,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         json = JSON.parse(result.data)
         assert NestedImageInstanceAPI.containsInJSONList(nested.parent.id,json)
         assert !NestedImageInstanceAPI.containsInJSONList(nested.id,json)

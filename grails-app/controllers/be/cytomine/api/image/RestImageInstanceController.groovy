@@ -43,6 +43,7 @@ import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
 import java.awt.image.BufferedImage
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Created by IntelliJ IDEA.
@@ -71,6 +72,7 @@ class RestImageInstanceController extends RestController {
     def propertyService
     def securityACLService
     def imageGroupService
+    def statsService
 
     final static int MAX_SIZE_WINDOW_REQUEST = 5000 * 5000 //5k by 5k pixels
 
@@ -141,23 +143,24 @@ class RestImageInstanceController extends RestController {
             responseSuccess(dataTablesService.process(params, ImageInstance, where, fieldFormat,project))
         }
         else if (project && !params.tree) {
-            String sortColumn = params.sortColumn ? params.sortColumn : "created"
-            String sortDirection = params.sortDirection ? params.sortDirection : "desc"
-            String search = params.search
+            String sortColumn = params.sort ?: "created"
+            String sortDirection = params.order ?: "desc"
             def extended = [:]
             if(params.withLastActivity) extended.put("withLastActivity",params.withLastActivity)
             def imageList
             if(extended.isEmpty()) {
                 boolean light = params.getBoolean("light")
-                imageList = imageInstanceService.list(project, sortColumn, sortDirection, search, light)
+                def result = imageInstanceService.list(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), light)
+                imageList = [collection : result.data, size : result.total]
             } else {
-                imageList = imageInstanceService.listExtended(project, sortColumn, sortDirection, search, extended)
+                def result = imageInstanceService.listExtended(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), extended)
+                imageList = [collection : result.data, size : result.total]
             }
 
             responseSuccess(imageList)
         }
         else if (project && params.tree && params.boolean("tree"))  {
-            responseSuccess(imageInstanceService.listTree(project))
+            responseSuccess(imageInstanceService.listTree(project, params.long('max'), params.long('offset')))
         }
         else {
             responseNotFound("ImageInstance", "Project", params.project)
@@ -537,6 +540,27 @@ class RestImageInstanceController extends RestController {
         log.info "response $url"
         responseSuccess([url : url.url])
     }
+
+    def bounds() {
+        def images
+
+        Project project = Project.read(params.projectId)
+        securityACLService.check(project, READ)
+        images = ImageInstance.findAllByProject(project)
+
+        def bounds = statsService.bounds(ImageInstance, images)
+
+        def abstractImages = images.collect{it.baseImage}
+        bounds.put("width", [min : abstractImages.min{it.width}?.width, max : abstractImages.max{it.width}?.width])
+        bounds.put("height", [min : abstractImages.min{it.height}?.height, max : abstractImages.max{it.height}?.height])
+        bounds.put("magnification", [list : images.collect{it.magnification}.unique(), min : bounds["magnification"]?.min, max : bounds["magnification"]?.max])
+        bounds.put("resolution", [list : images.collect{it.resolution}.unique(), min : bounds["resolution"]?.min, max : bounds["resolution"]?.max])
+        bounds.put("format", [list : abstractImages.collect{it.mime?.extension}.unique()])
+        bounds.put("mimeType", [list : abstractImages.collect{it.mime?.mimeType}.unique()])
+
+        responseSuccess(bounds)
+    }
+
 
     // as I have one field that I override differently if I am a manager, I overrided all the response method until the super method is more flexible
     @Override

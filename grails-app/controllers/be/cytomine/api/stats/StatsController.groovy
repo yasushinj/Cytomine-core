@@ -1,5 +1,6 @@
 package be.cytomine.api.stats
 
+import be.cytomine.Exception.CytomineMethodNotYetImplementedException
 import be.cytomine.Exception.WrongArgumentException
 
 /*
@@ -377,4 +378,5 @@ class StatsController extends RestController {
 
         responseSuccess(statsService.statAnnotationActionsEvolution(project, daysRange, startDate, endDate, accumulate, params.type))
     }
+
 }

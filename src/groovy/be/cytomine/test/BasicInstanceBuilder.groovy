@@ -138,7 +138,8 @@ class BasicInstanceBuilder {
                     lastname: "User",
                     email: "Basic@User.be",
                     password: "password",
-                    enabled: true)
+                    enabled: true,
+                    origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
@@ -172,7 +173,7 @@ class BasicInstanceBuilder {
     static UserJob getUserJob(String username, String password) {
         UserJob user = UserJob.findByUsername(username)
         if (!user) {
-            user = new UserJob(username: username, user:User.findByUsername(Infos.SUPERADMINLOGIN),password: password,enabled: true,job: getJob())
+            user = new UserJob(username: username, user:User.findByUsername(Infos.SUPERADMINLOGIN),password: password,enabled: true,job: getJob(), origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
@@ -186,7 +187,7 @@ class BasicInstanceBuilder {
     static UserJob getUserJob() {
         UserJob userJob = UserJob.findByUsername("BasicUserJob")
         if (!userJob) {
-            userJob = new UserJob(username: "BasicUserJob",password: "PasswordUserJob",enabled: true,user : User.findByUsername(Infos.SUPERADMINLOGIN),job: getJob())
+            userJob = new UserJob(username: "BasicUserJob",password: "PasswordUserJob",enabled: true,user : User.findByUsername(Infos.SUPERADMINLOGIN),job: getJob(), origin: "TEST")
             userJob.generateKeys()
             saveDomain(userJob)
             SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
@@ -222,7 +223,7 @@ class BasicInstanceBuilder {
     }
 
     static UserJob getUserJobNotExist(Job job, User user, boolean save = false) {
-        UserJob userJob = new UserJob(username:getRandomString(),password: "PasswordUserJob",enabled: true,user : user,job: job)
+        UserJob userJob = new UserJob(username:getRandomString(),password: "PasswordUserJob",enabled: true,user : user,job: job, origin: "TEST")
         userJob.generateKeys()
 
         if(save) {
@@ -1170,7 +1171,7 @@ class BasicInstanceBuilder {
     static User getUser(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User ($username)",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username,firstname: "Basic",lastname: "User ($username)",email: "Basic@User.be",password: password,enabled: true, origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
@@ -1181,7 +1182,7 @@ class BasicInstanceBuilder {
     static User getGhest(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true, origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_GUEST"),true)
@@ -1190,7 +1191,7 @@ class BasicInstanceBuilder {
     }
 
     static User getUserNotExist(boolean save = false) {
-       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true)
+       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true, origin: "TEST")
         user.generateKeys()
         if(save) {
             saveDomain(user)
@@ -1203,7 +1204,7 @@ class BasicInstanceBuilder {
     }
 
     static User getGhestNotExist(boolean save = false) {
-       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true)
+       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true, origin: "TEST")
         user.generateKeys()
         if(save) {
             saveDomain(user)

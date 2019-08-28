@@ -54,6 +54,10 @@ class ProjectUrlMappings {
         "/api/project/method/lastopened.$format" (controller: "restProject") {
             action = [GET:"listLastOpened"]
         }
+        "/api/bounds/project.$format"(controller:"restProject"){
+            action = [GET:"bounds"]
+        }
+
 
         "/api/project/$id/invitation.$format" (controller: "restProject") {
             action = [POST:"inviteNewUser"]

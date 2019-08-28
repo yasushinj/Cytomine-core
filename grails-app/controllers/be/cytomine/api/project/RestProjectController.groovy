@@ -47,6 +47,7 @@ class RestProjectController extends RestController {
     def dataSource
     def currentRoleServiceProxy
     def securityACLService
+    def statsService
 
     /**
      * List all project available for the current user
@@ -69,12 +70,8 @@ class RestProjectController extends RestController {
         if(withMembersCount) extended.put("withMembersCount",withMembersCount)
         if(withLastActivity) extended.put("withLastActivity",withLastActivity)
         if(withCurrentUserRoles) extended.put("withCurrentUserRoles",withCurrentUserRoles)
-        if(extended.isEmpty()){
-            projectList = projectService.list(user)
-        } else {
-            projectList = projectService.listExtended(user, extended)
-        }
-        responseSuccess(projectList)
+        projectList = projectService.list(user, extended, searchParameters, params.sort, params.order, params.long('max'), params.long('offset'))
+        responseSuccess([collection : projectList.data, size : projectList.total])
     }
 
     /**
@@ -221,7 +218,8 @@ class RestProjectController extends RestController {
     def listByUser() {
         User user = User.read(params.long('id'))
         if(user) {
-            responseSuccess(projectService.list(user))
+            def result = projectService.list(user,params.long('max',0),params.long('offset',0))
+            responseSuccess([collection : result.data, size : result.total])
         } else {
             responseNotFound("User", params.id)
         }
@@ -319,6 +317,34 @@ class RestProjectController extends RestController {
             response([success: false, errors: e.msg], e.code)
         }
     }
+
+    def bounds() {
+        def projects
+        SecUser user = cytomineService.currentUser
+
+        if(currentRoleServiceProxy.isAdminByNow(user)) {
+            //if user is admin, we print all available project
+            user = null
+        } else {
+            securityACLService.checkGuest(user)
+        }
+
+        def extended = [:]
+        if(params.boolean('withMembersCount')) extended.put("withMembersCount",params.boolean('withMembersCount'))
+        projects = projectService.list(user, extended).data
+
+        def bounds = statsService.bounds(Project, projects)
+
+        ["numberOfAnnotations", "numberOfJobAnnotations", "numberOfReviewedAnnotations", "numberOfImages"].each { field ->
+            bounds.put(field, [min : projects.min{it[field]}?."${field}", max : projects.max{it[field]}?."${field}"])
+        }
+        if(!extended.isEmpty()) {
+            bounds.put("members", [min : projects.min{it.membersCount}?.membersCount, max : projects.max{it.membersCount}?.membersCount])
+        }
+
+        responseSuccess(bounds)
+    }
+
 
     private def findCommandHistory(List<Project> projects, SecUser user, Integer max, Integer offset,
                                    Boolean fullData, Long startDate, Long endDate) {

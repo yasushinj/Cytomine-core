@@ -142,20 +142,58 @@ class ProjectService extends ModelService {
     def list(SecUser user = null) {
         if (user) {
             return Project.executeQuery(
-                    "select distinct project "+
-                            "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Project as project "+
+                    "select distinct project " +
+                            "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Project as project " +
                             "where aclObjectId.objectId = project.id " +
-                            "and aclEntry.aclObjectIdentity = aclObjectId.id "+
-                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.humanUsername()+"' and project.deleted is null")
+                            "and aclEntry.aclObjectIdentity = aclObjectId.id " +
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '" + user.humanUsername() + "' and project.deleted is null")
         } else {
             Project.findAllByDeletedIsNull()
         }
     }
 
-    def listExtended(SecUser user = null, def extended) {
-        if(extended.isEmpty()) return list(user)
+    def list(SecUser user = null, Long max , Long offset) {
+        return list(user, [:], [], null, null, max , offset)
+    }
+    def list(SecUser user = null, LinkedHashMap extended, List searchParameters = [], String sortColumn = null, String sortDirection = null, Long max  = 0, Long offset = 0) {
 
-        String select, from, where
+        for (def parameter : searchParameters){
+            if(parameter.field.equals("numberOfImages")) parameter.field = "countImages"
+            if(parameter.field.equals("numberOfAnnotations")) parameter.field = "countAnnotations"
+            if(parameter.field.equals("numberOfJobAnnotations")) parameter.field = "countJobAnnotations"
+            if(parameter.field.equals("numberOfReviewedAnnotations")) parameter.field = "countReviewedAnnotations"
+            if(parameter.field.equals("ontology")) parameter.field = "ontology_id"
+            if(parameter.operator.equals("ilike")){
+                parameter.values = "%"+parameter.values+"%"
+            }
+        }
+
+        def validParameters = getDomainAssociatedSearchParameters(Project, searchParameters).each{it.property = "p."+it.property}
+        loop:for (def parameter : searchParameters){
+            String property
+            switch(parameter.field) {
+                case "ontology_id" :
+                    property = "ontology.id"
+                    break
+                case "membersCount" :
+                    property = "members.member_count"
+                    break
+                default:
+                    continue loop
+            }
+
+            validParameters << [operator: parameter.operator, property: property, value: parameter.values]
+        }
+
+        def sqlSearchConditions = searchParametersToSQLConstraints(validParameters)
+
+        sqlSearchConditions = [
+                project : sqlSearchConditions.findAll{it.property.startsWith("p.")}.collect{it.sql}.join(" AND "),
+                ontology : sqlSearchConditions.findAll{it.property.startsWith("ontology.")}.collect{it.sql}.join(" AND "),
+                members : sqlSearchConditions.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND ")
+        ]
+
+        String select, from, where, search, sort
         String request
         //faster method
         if (user) {
@@ -164,17 +202,29 @@ class ProjectService extends ModelService {
                     "JOIN acl_object_identity as aclObjectId ON aclObjectId.object_id_identity = p.id " +
                     "JOIN acl_entry as aclEntry ON aclEntry.acl_object_identity = aclObjectId.id " +
                     "JOIN acl_sid as aclSid ON aclEntry.sid = aclSid.id "
-            where = "WHERE aclSid.sid like '"+user.username+"' and p.deleted is null"
+            where = "WHERE aclSid.sid like '"+user.username+"' and p.deleted is null "
         }
         else {
             select = "SELECT  p.* "
             from = "FROM project p "
-            where = "WHERE p.deleted is null"
+            where = "WHERE p.deleted is null "
         }
         select += ", ontology.name as ontology_name, ontology.id as ontology "
         from += "LEFT OUTER JOIN ontology ON p.ontology_id = ontology.id "
         select += ", discipline.name as discipline_name, discipline.id as discipline "
         from += "LEFT OUTER JOIN discipline ON p.discipline_id = discipline.id "
+
+        search = "";sort = ""
+        if(sqlSearchConditions.project){
+            search +=" AND "
+            search += sqlSearchConditions.project
+        }
+
+        if(sqlSearchConditions.ontology){
+            search +=" AND "
+            search += sqlSearchConditions.ontology
+        }
+
 
         if(extended.withLastActivity) {
             select += ", activities.max_date "
@@ -192,6 +242,11 @@ class ProjectService extends ModelService {
                     "   WHERE aclEntry.acl_object_identity = aclObjectId.id and aclEntry.sid = aclSid.id and aclSid.sid = secUser.username and secUser.class = 'be.cytomine.security.User' " +
                     "   GROUP BY aclObjectId.object_id_identity " +
                     ") members ON p.id = members.project_id "
+
+            if(sqlSearchConditions.members){
+                search +=" AND "
+                search += sqlSearchConditions.members
+            }
         }
         if(extended.withCurrentUserRoles) {
             SecUser currentUser = cytomineService.currentUser // cannot use user param because it is set to null if user connected as admin
@@ -200,9 +255,48 @@ class ProjectService extends ModelService {
                     "ON admin_project.id = p.id AND admin_project.user_id = $currentUser.id " +
                     "LEFT OUTER JOIN project_representative_user repr " +
                     "ON repr.project_id = p.id AND repr.user_id = $currentUser.id "
+
+            def searchedRole = searchParameters.find {it.field == "currentUserRole"}
+            if(searchedRole) {
+                if(searchedRole.values.contains("manager") && searchedRole.values.contains("contributor")){} // nothing because null or not null
+                else if(searchedRole.values.contains("manager")) search += " AND admin_project.id IS NOT NULL  "
+                else if(searchedRole.values.contains("contributor")) search += " AND admin_project.id IS NULL  "
+            }
+
         }
 
-        request = select + from + where
+        switch(sortColumn) {
+            case "currentUserRole" : 
+                if(extended.withCurrentUserRoles) sortColumn="is_representative "+((sortDirection.equals("desc")) ? " DESC " : " ASC ")+", is_admin"
+            break
+            case "membersCount" :
+                if(extended.withMembersCount) sortColumn="members.member_count"
+                break
+            case "lastActivity" :
+                if(extended.withLastActivity) sortColumn="activities.max_date"
+                break
+            case "name":
+            case "numberOfImages":
+            case "numberOfAnnotations":
+            case "numberOfJobAnnotations":
+            case "numberOfReviewedAnnotations":
+                String regex = "([a-z])([A-Z]+)"
+                String replacement = "\$1_\$2"
+                sortColumn ="p."+sortColumn.replaceAll("numberOf", "count").replaceAll(regex, replacement).toLowerCase()
+                break
+        }
+
+        if(sortColumn) {
+            sort = " ORDER BY "+sortColumn
+            sort += (sortDirection.equals("desc")) ? " DESC " : " ASC "
+            sort += (sortDirection.equals("desc")) ? " NULLS LAST " : " NULLS FIRST "
+        }
+
+
+        request = select + from + where + search + sort
+        if(max > 0) request += " LIMIT $max"
+        if(offset > 0) request += " OFFSET $offset"
+
 
         def sql = new Sql(dataSource)
         def data = []
@@ -230,6 +324,7 @@ class ProjectService extends ModelService {
                 line.putAt("lastActivity", map.maxDate)
             }
             if(extended.withMembersCount) {
+                if(!map.memberCount) map.memberCount = 0
                 line.putAt("membersCount", map.memberCount)
             }
             if(extended.withCurrentUserRoles) {
@@ -238,9 +333,16 @@ class ProjectService extends ModelService {
             data << line
 
         }
+
+        def size
+        request = "SELECT COUNT(DISTINCT p.id) " + from + where + search
+
+        sql.eachRow(request) {
+            size = it.count
+        }
         sql.close()
 
-        return data
+        return [data:data, total:size]
     }
 
     def listByOntology(Ontology ontology) {

@@ -36,6 +36,9 @@ import org.joda.time.DateTime
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
+import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
+import static org.springframework.security.acls.domain.BasePermission.READ
+
 /**
  * Handle HTTP Requests for CRUD operations on the User domain class.
  */
@@ -58,100 +61,6 @@ class RestUserController extends RestController {
     def projectRepresentativeUserService
     def userAnnotationService
 
-    /**
-     * Get all project users
-     * Online flag may be set to get only online users
-     */
-    @RestApiMethod(description="Get all project users. Online flag may be set to get only online users", listing = true)
-    @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
-            @RestApiParam(name="online", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Get only online users for this project"),
-            @RestApiParam(name="showJob", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Also show the users job for this project"),
-            @RestApiParam(name="withLastImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last image seen by each user in this project"),
-            @RestApiParam(name="withLastConsultation", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last consultation of this project by each user"),
-            @RestApiParam(name="withNumberConsultations", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the number of consultations of this project by each user"),
-    ])
-    def showByProject() {
-        boolean online = params.boolean('online')
-        boolean showUserJob = params.boolean('showJob')
-        Project project = projectService.read(params.long('id'))
-        List<SecUser> users
-        if(!project){
-            responseNotFound("User", "Project", params.id)
-        }
-        if (online) {
-            users = secUserService.getAllFriendsUsersOnline(cytomineService.currentUser, project)
-        } else {
-            users = secUserService.listUsers(project, showUserJob)
-        }
-
-        boolean withLastImage = params.boolean('withLastImage')
-        boolean withLastConsultation = params.boolean('withLastConsultation')
-        boolean withNumberConsultations = params.boolean('withNumberConsultations')
-        if(!withNumberConsultations && !withLastConsultation && !withLastImage){
-            responseSuccess(users)
-        } else {
-            // we sorted to apply binary search instead of a simple "find" method. => performance
-            def binSearchI = { aList, property, target ->
-                def a = aList
-                def offSet = 0
-                while (!a.empty) {
-                    def n = a.size()
-                    def m = n.intdiv(2)
-                    if(a[m]."$property" > target) {
-                        a = a[0..<m]
-                    } else if (a[m]."$property" < target) {
-                        a = a[(m + 1)..<n]
-                        offSet += m + 1
-                    } else {
-                        return (offSet + m)
-                    }
-                }
-                return -1
-            }
-
-            def images = []
-            if(withLastImage){
-                images = imageConsultationService.lastImageOfUsersByProject(project)
-                images.sort {it.user}
-            }
-
-            def connections = []
-            if(withLastConsultation){
-                connections = projectConnectionService.lastConnectionInProject(project)
-                connections.sort {it.user}
-            }
-
-            def frequencies = []
-            if(withNumberConsultations){
-                frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project)
-                frequencies.sort {it.user}
-            }
-
-            def results = []
-            for(SecUser user : users) {
-                def userInfo = User.getDataFromDomain(user)
-                if(withLastImage){
-                    int index = binSearchI(images, "user", user.id)
-                    def image = index >= 0 ? images[index]:null
-                    userInfo.lastImage = image?.image
-                }
-                if(withLastConsultation){
-                    int index = binSearchI(connections, "user", user.id)
-                    def connection = index >= 0 ? connections[index]:null
-                    userInfo.lastConsultation = connection?.created
-                }
-                if(withNumberConsultations){
-                    int index = binSearchI(frequencies, "user", user.id)
-                    def frequency = index >= 0 ? frequencies[index]:null
-                    userInfo.numberConsultations = frequency?.frequency
-                }
-                results << userInfo
-            }
-
-            responseSuccess(results)
-        }
-    }
 
     /**
      * Get all project managers
@@ -267,12 +176,15 @@ class RestUserController extends RestController {
         @RestApiParam(name="publicKey", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) If set, get only user with the public key in param"),
     ])
     def list() {
+        def result
+
         if (params.publicKey != null) {
             responseSuccess(secUserService.getByPublicKey(params.publicKey))
-        } else if (params.getBoolean("withRoles")) {
-            responseSuccess(secUserService.listWithRoles())
         } else {
-            responseSuccess(secUserService.list())
+            def extended = [:]
+            if(params.getBoolean("withRoles")) extended.put("withRoles",params.withRoles)
+            result = secUserService.list(extended, searchParameters, params.sort, params.order, params.long("max",0), params.long("offset",0))
+            responseSuccess([collection : result.data, size : result.total])
         }
     }
 
@@ -441,13 +353,40 @@ class RestUserController extends RestController {
         response(secUserService.unlock(user))
     }
 
-    /**
-     * Add a user to project user list
-     */
+
+    @RestApiMethod(description="Get all project users. Online flag may be set to get only online users", listing = true)
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="online", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Get only online users for this project"),
+            @RestApiParam(name="showJob", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Also show the users job for this project"),
+            @RestApiParam(name="withLastImage", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last image seen by each user in this project"),
+            @RestApiParam(name="withLastConsultation", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the last consultation of this project by each user"),
+            @RestApiParam(name="withNumberConsultations", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional, default false) Show the number of consultations of this project by each user"),
+    ])
+    def showByProject() {
+
+        Project project = projectService.read(params.long('project'))
+        securityACLService.check(project,READ)
+
+        def extended = [:]
+        if(params.withLastImage) extended.put("withLastImage",params.withLastImage)
+        if(params.withLastConnection) extended.put("withLastConnection",params.withLastConnection)
+        if(params.withNumberConnections) extended.put("withNumberConnections",params.withNumberConnections)
+        if(params.withUserJob) extended.put("withUserJob",params.withUserJob)
+        String sortColumn = params.sort ?: "created"
+        String sortDirection = params.order ?: "desc"
+
+        def results = secUserService.listUsersExtendedByProject(project, extended, searchParameters, sortColumn, sortDirection, params.long('max',0), params.long('offset',0))
+
+        responseSuccess([collection : results.data, size:results.total])
+
+        //boolean showUserJob = params.boolean('showJob')
+    }
+
     @RestApiMethod(description="Add user in a project as simple 'user'")
     @RestApiParams(params=[
-        @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
-        @RestApiParam(name="idUser", type="long", paramType = RestApiParamType.PATH, description = "The user id")
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="idUsers", type="long", paramType = RestApiParamType.PATH, description = "The user id")
     ])
     @RestApiResponseObject(objectIdentifier = "empty")
     def addUserToProject() {
@@ -459,12 +398,59 @@ class RestUserController extends RestController {
         response.status = 200
         def ret = [data: [message: "OK"], status: 200]
         response(ret)
-
     }
 
-    /**
-     * Delete a user from a project user list
-     */
+    @RestApiMethod(description="Add users in a project as simple 'user'")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="users", type="array", paramType = RestApiParamType.QUERY, description = "The users ids")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def addUsersToProject() {
+        Project project = projectService.read(params.long('project'))
+        securityACLService.check(project,ADMINISTRATION)
+
+        def idUsers = params.users.toString().split(",")
+        def users = []
+        def wrongIds = []
+
+        def errorMessage = ""
+        def errors = []
+
+        for(def id : idUsers){
+            try{
+                users << Long.parseLong(id)
+            } catch(NumberFormatException e){
+                wrongIds << id
+            }
+        }
+
+        idUsers = users
+        log.info "addUserToProject project=${project} users=${users}"
+        users = User.findAllByIdInList(users)
+
+        wrongIds.addAll(idUsers- (users.collect{it.id}))
+
+        users.each { user ->
+            def code = secUserService.addUserToProject(user, project, false).status
+            if(code != 200 && code != 201) errors << user.id
+        }
+
+        if(!errors.isEmpty()) errorMessage += "Cannot add theses users to the project ${project.id} : "+errors.join(",")+". "
+        if(!wrongIds.isEmpty()) errorMessage += wrongIds.join(",")+" are not well formatted ids"
+
+        def result = [data: [message: "OK"], status: 200]
+        response.status = 200
+
+        if(!errors.isEmpty() || !wrongIds.isEmpty()) {
+            result.data.message = errorMessage
+            result.status = 206
+            response.status = 206
+        }
+
+        response(result)
+    }
+
     @RestApiMethod(description="Delete user from a project as simple 'user'")
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
@@ -478,6 +464,58 @@ class RestUserController extends RestController {
         response.status = 200
         def ret = [data: [message: "OK"], status: 200]
         response(ret)
+    }
+
+    @RestApiMethod(description="Delete users from a project (also delete the manager role if the user was one)")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+            @RestApiParam(name="users", type="array", paramType = RestApiParamType.QUERY, description = "The users ids")
+    ])
+    @RestApiResponseObject(objectIdentifier = "empty")
+    def deleteUsersFromProject() {
+
+        Project project = projectService.read(params.long('project'))
+        securityACLService.check(project,ADMINISTRATION)
+
+        def idUsers = params.users.toString().split(",")
+        def users = []
+        def wrongIds = []
+
+        def errorMessage = ""
+        def errors = []
+
+        for(def id : idUsers){
+            try{
+                users << Long.parseLong(id)
+            } catch(NumberFormatException e){
+                wrongIds << id
+            }
+        }
+        idUsers = users
+        users = User.findAllByIdInList(users)
+
+        users.each { user ->
+            secUserService.deleteUserFromProject(user, project, true)
+            def code = secUserService.deleteUserFromProject(user, project, false).status
+            if(code != 200 && code != 201) {
+                errors << user.id
+            }
+        }
+        wrongIds.addAll(idUsers- (users.collect{it.id}))
+
+        if(!errors.isEmpty()) errorMessage += "Cannot add theses users to the project ${project.id} : "+errors.join(",")+". "
+        if(!wrongIds.isEmpty()) errorMessage += wrongIds.join(",")+" are not well formatted ids"
+
+        def result = [data: [message: "OK"], status: 200]
+        response.status = 200
+
+        if(!errors.isEmpty() || !wrongIds.isEmpty()) {
+            result.data.message = errorMessage
+            result.status = 206
+            response.status = 206
+        }
+
+        response(result)
     }
 
     /**
@@ -511,6 +549,9 @@ class RestUserController extends RestController {
     def deleteUserAdminFromProject() {
         Project project = Project.get(params.id)
         SecUser user = SecUser.get(params.idUser)
+        if (cytomineService.currentUser.id!=user.id) {
+            securityACLService.check(project,ADMINISTRATION)
+        }
         secUserService.deleteUserFromProject(user, project, true)
         response.status = 200
         def ret = [data: [message: "OK"], status: 200]

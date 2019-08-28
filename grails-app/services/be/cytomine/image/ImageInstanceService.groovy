@@ -17,6 +17,8 @@ package be.cytomine.image
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.CytomineMethodNotYetImplementedException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
@@ -39,6 +41,7 @@ import be.cytomine.utils.Task
 import grails.converters.JSON
 import groovy.sql.Sql
 import org.hibernate.FetchMode
+import org.springframework.util.ReflectionUtils
 
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -76,20 +79,6 @@ class ImageInstanceService extends ModelService {
         image
     }
 
-
-    def list(Project project) {
-        securityACLService.check(project,READ)
-
-        def images = ImageInstance.createCriteria().list {
-            createAlias("baseImage", "i")
-            eq("project", project)
-            isNull("parent")
-            order("i.created", "desc")
-            fetchMode 'baseImage', FetchMode.JOIN
-            isNull("deleted")
-        }
-        return images
-    }
 
     /**
      * Get all image id from project
@@ -163,11 +152,12 @@ class ImageInstanceService extends ModelService {
 
 
 
-    def listTree(Project project) {
+    def listTree(Project project, Long max  = 0, Long offset = 0) {
         securityACLService.check(project,READ)
 
         def children = []
-        list(project).each { image->
+        def images = list(project, null, null, [], max, offset)
+        images.data.each { image->
             children << [ id : image.id, key : image.id, title : image.instanceFilename, isFolder : false, children : []]
         }
         def tree = [:]
@@ -178,42 +168,96 @@ class ImageInstanceService extends ModelService {
         tree.key = project.getId()
         tree.id = project.getId()
         tree.children = children
+        tree.size = images.total
         return tree
     }
 
-    def list(Project project, String sortColumn, String sortDirection, String search, boolean light=false) {
+    def list(Project project, String sortColumn = 'created', String sortDirection = "asc", def searchParameters = [], Long max  = 0, Long offset = 0, boolean light=false) {
         securityACLService.check(project,READ)
 
         String abstractImageAlias = "ai"
-        String _sortColumn = ImageInstance.hasProperty(sortColumn) ? sortColumn : "created"
-        _sortColumn = AbstractImage.hasProperty(sortColumn) ? abstractImageAlias + "." + sortColumn : "created"
-        String _search = (search != null && search != "") ? "%"+search+"%" : "%"
+        String mimeAlias = "mime"
 
-        def images = ImageInstance.createCriteria().list() {
-            createAlias("baseImage", abstractImageAlias)
+        if(!sortColumn)  sortColumn = "created"
+        if(!sortDirection)  sortDirection = "asc"
+        if(sortColumn.equals("numberOfAnnotations")) sortColumn = "countImageAnnotations"
+        if(sortColumn.equals("numberOfJobAnnotations")) sortColumn = "countImageJobAnnotations"
+        if(sortColumn.equals("numberOfReviewedAnnotations")) sortColumn = "countImageReviewedAnnotations"
+
+        String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? sortColumn : null
+        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
+        if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : null
+        if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("ImageInstance list sorted by $sortDirection is not implemented")
+
+        def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters, project.blindMode)
+
+        boolean joinAI = validatedSearchParameters.any {it.property.contains(abstractImageAlias+".")} || sortedProperty.contains(abstractImageAlias+".")
+        boolean joinMime = validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")
+
+        def blindedNameSearch
+        boolean manager = false
+        for (def parameter : searchParameters){
+            if(parameter.field.equals("blindedName") && parameter.operator.equals("ilike")){
+                parameter.field = "ai.id"
+                blindedNameSearch = parameter
+                break
+            }
+        }
+
+        if(blindedNameSearch) {
+            validatedSearchParameters.remove(blindedNameSearch)
+            joinAI = true
+            blindedNameSearch = blindedNameSearch.values
+
+            try{
+                securityACLService.checkIsAdminContainer(project, cytomineService.currentUser)
+                manager = true
+            } catch(ForbiddenException e){}
+        }
+
+
+        def images = criteriaRequestWithPagination(ImageInstance, max, offset, {
             eq("project", project)
             isNull("parent")
             isNull("deleted")
-            fetchMode 'baseImage', FetchMode.JOIN
-            ilike(abstractImageAlias + ".originalFilename", _search)
-            order(_sortColumn, sortDirection)
-        }
+
+            if(joinMime){
+                createAlias("baseImage", abstractImageAlias)
+                createAlias("baseImage.mime", "mime")
+                //fetchMode 'baseImage', FetchMode.JOIN
+                //fetchMode 'mime', FetchMode.JOIN
+            } else if(joinAI){
+                createAlias("baseImage", abstractImageAlias)
+                //fetchMode 'baseImage', FetchMode.JOIN
+            }
+
+            if(blindedNameSearch && manager) {
+                or {
+                    sqlRestriction(abstractImageAlias + "1_.id::text like '" + blindedNameSearch.replace("'", "''") + "'")
+                    ilike "instanceFilename", blindedNameSearch
+                }
+            } else if(blindedNameSearch) sqlRestriction(abstractImageAlias+"1_.id::text like '"+blindedNameSearch.replace("'", "''")+"'")
+
+        }, validatedSearchParameters , {
+            order(sortedProperty, sortDirection)
+        })
 
         if(!light) {
             return images
         }
 
         def data = []
-        images.each { image ->
+        images.data.each { image ->
             data << [id: image.id, instanceFilename: image.instanceFilename, blindedName: image.blindedName]
         }
-        return data
+        images.data = data
+        return images
     }
 
-    def listExtended(Project project, String sortColumn, String sortDirection, String search, def extended) {
+    def listExtended(Project project, String sortColumn, String sortDirection, def searchParameters, Long max  = 0, Long offset = 0, def extended) {
 
         def data = []
-        def images = list(project, sortColumn, sortDirection, search)
+        def images = list(project, sortColumn, sortDirection, searchParameters, max, offset)
 
         //get last activity grouped by images
         def user = cytomineService.currentUser
@@ -247,7 +291,7 @@ class ImageInstanceService extends ModelService {
             return -1
         }
 
-        images.each { image ->
+        images.data.each { image ->
             def index
             def line = ImageInstance.getDataFromDomain(image)
             if(extended.withLastActivity) {
@@ -260,7 +304,8 @@ class ImageInstanceService extends ModelService {
             }
             data << line
         }
-        return data
+        images.data = data
+        return images
     }
 
     private long copyAnnotationLayer(ImageInstance image, User user, ImageInstance based, def usersProject,Task task, double total, double alreadyDone,SecUser currentUser, Boolean giveMe ) {
@@ -614,4 +659,34 @@ class ImageInstanceService extends ModelService {
         }
 
     }
+
+    private def getDomainAssociatedSearchParameters(ArrayList searchParameters, boolean blinded) {
+
+        for (def parameter : searchParameters){
+            if(parameter.field.equals("name")){
+                parameter.field = blinded ? "blindedName" : "instanceFilename"
+            }
+            if(parameter.field.equals("numberOfJobAnnotations")) parameter.field = "countImageJobAnnotations"
+            if(parameter.field.equals("numberOfReviewedAnnotations")) parameter.field = "countImageReviewedAnnotations"
+            if(parameter.field.equals("numberOfAnnotations")) parameter.field = "countImageAnnotations"
+            if(parameter.operator.equals("ilike")){
+                parameter.values = "%"+parameter.values+"%"
+            }
+        }
+
+
+        def validParameters = getDomainAssociatedSearchParameters(ImageInstance, searchParameters)
+
+        String abstractImageAlias = "ai"
+        validParameters.addAll(getDomainAssociatedSearchParameters(AbstractImage, searchParameters).collect {[operator:it.operator, property:abstractImageAlias+"."+it.property, value:it.value]})
+        validParameters.addAll(getDomainAssociatedSearchParameters(Mime, searchParameters).collect {[operator:it.operator, property:"mime."+it.property, value:it.value]})
+
+        if(searchParameters.size() > 0){
+            log.debug "The following search parameters have not been validated: "+searchParameters
+        }
+
+        return validParameters
+    }
+
+
 }
