@@ -336,10 +336,10 @@ class RestProjectController extends RestController {
         def bounds = statsService.bounds(Project, projects)
 
         ["numberOfAnnotations", "numberOfJobAnnotations", "numberOfReviewedAnnotations", "numberOfImages"].each { field ->
-            bounds.put(field, [min : projects.min{it[field]}[field], max : projects.max{it[field]}[field]])
+            bounds.put(field, [min : projects.min{it[field]}?."${field}", max : projects.max{it[field]}?."${field}"])
         }
         if(!extended.isEmpty()) {
-            bounds.put("members", [min : projects.min{it.membersCount}.membersCount, max : projects.max{it.membersCount}.membersCount])
+            bounds.put("members", [min : projects.min{it.membersCount}?.membersCount, max : projects.max{it.membersCount}?.membersCount])
         }
 
         responseSuccess(bounds)

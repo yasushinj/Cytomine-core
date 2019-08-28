@@ -473,7 +473,7 @@ abstract class ModelService {
                 DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
                 parameter.value = formatter.format(parameter.value)
             }
-            if(parameter.value instanceof String) parameter.value = "'$parameter.value'"
+            if(parameter.value instanceof String && parameter.value != "null") parameter.value = "'$parameter.value'".toString()
 
             String sql
             switch(parameter.operator){
@@ -510,14 +510,14 @@ abstract class ModelService {
 
                     parameter.value = parameter.value.unique()
 
-                    if(parameter.value.size() == 1 && parameter.value[0] == null) {
+                    if(parameter.value.size() == 1 && (parameter.value[0] == null || parameter.value[0] == "null")) {
                         sql = parameter.property+" IS NULL "
                         break
                     }
 
                     if(parameter.value.contains(null) || parameter.value.contains("null")){
                         parameter.value = parameter.value.findAll{it != null && it != 'null'}
-                        parameter.value = parameter.value.collect{
+                        parameter.value = parameter.value.collect {
                             if(it instanceof String) return "'$it'"
                             else return it
                         }

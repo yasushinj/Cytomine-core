@@ -467,8 +467,8 @@ class StatsService extends ModelService {
             if(!CytomineDomain.isAssignableFrom(field.type) &&
                     Comparable.isAssignableFrom(field.type)) {
 
-                min = objects.min{it[field.name]}[field.name]
-                max = objects.max{it[field.name]}[field.name]
+                min = objects.min{it[field.name]}?."${field.name}"
+                max = objects.max{it[field.name]}?."${field.name}"
                 result.put(field.name, [min : min, max : max])
             }
         }
