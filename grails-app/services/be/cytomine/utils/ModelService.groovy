@@ -474,6 +474,12 @@ abstract class ModelService {
                 parameter.value = formatter.format(parameter.value)
             }
             if(parameter.value instanceof String && parameter.value != "null") parameter.value = "'$parameter.value'".toString()
+            if(parameter.value instanceof List || parameter.value.class.isArray()) {
+                parameter.value = parameter.value.collect{
+                    if(it instanceof String) return "'$it'"
+                    else return it
+                }
+            }
 
             String sql
             switch(parameter.operator){
@@ -517,17 +523,9 @@ abstract class ModelService {
 
                     if(parameter.value.contains(null) || parameter.value.contains("null")){
                         parameter.value = parameter.value.findAll{it != null && it != 'null'}
-                        parameter.value = parameter.value.collect {
-                            if(it instanceof String) return "'$it'"
-                            else return it
-                        }
 
                         sql = "("+parameter.property+" IN ("+parameter.value.join(",")+") OR "+parameter.property+" IS NULL) "
                     } else {
-                        parameter.value = parameter.value.collect{
-                            if(it instanceof String) return "'$it'"
-                            else return it
-                        }
                         sql = parameter.property+" IN ("+parameter.value.join(",")+") "
                         break
                     }
