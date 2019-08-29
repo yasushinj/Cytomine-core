@@ -33,17 +33,25 @@ class ProjectAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def list(Long max , Long offset, String username, String password) {
+        return list([], null, null,null, max,offset, username, password)
+    }
+
     static def list(Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, String username, String password) {
         return list([], withMembersCount, withLastActivity,withCurrentUserRoles, username, password)
     }
 
     static def list(def searchParameters, Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, String username, String password) {
-        return list(withMembersCount, withLastActivity,withCurrentUserRoles, 0,0,username, password)
+        return list(searchParameters, withMembersCount, withLastActivity,withCurrentUserRoles, 0,0,username, password)
     }
 
-    static def list(Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, Long max , Long offset, String username, String password) {
+    static def list(Boolean withMembersCount, Boolean withLastActivity, Boolean withCurrentUserRoles, Long max , Long offset, String username, String password) {
+        return list([],withMembersCount, withLastActivity,withCurrentUserRoles, max,offset,username, password)
+    }
+
+    static def list(def searchParameters, Boolean withMembersCount = null, Boolean withLastActivity = null, Boolean withCurrentUserRoles = null, Long max , Long offset, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/project.json"
-        URL += "?max=$max&offset=$offset"
+        URL += "?max=$max&offset=$offset&${convertSearchParameters(searchParameters)}"
         if(withMembersCount || withLastActivity || withCurrentUserRoles) {
             URL += "&withMembersCount="+withMembersCount
             URL += "&withLastActivity="+withLastActivity

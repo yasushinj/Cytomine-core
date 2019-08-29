@@ -56,11 +56,13 @@ class ProjectSearchTests {
     void testGetSearch(){
         Project p1 = BasicInstanceBuilder.getProjectNotExist(true)
         p1.name = "T"
-        p1.save()
+        p1.save(flush: true)
         BasicInstanceBuilder.getUserAnnotationNotExist(p1, true)
         Project p2 = BasicInstanceBuilder.getProjectNotExist(true)
         p2.name = "S"
-        p2.save()
+        p2.save(flush: true)
+        p1 = p1.refresh()
+        p2 = p2.refresh()
 
         User user = BasicInstanceBuilder.getAdmin(Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         ProjectAPI.addUserProject(p1.id, user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -112,6 +114,13 @@ class ProjectSearchTests {
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert ProjectAPI.containsInJSONList(p1.id,json)
+
+        searchParameters = [[operator : "in", field : "ontology_id", value:"null"]]
+
+        result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
     }
 
     //pagination
