@@ -26,7 +26,7 @@ class AnnotationActionTests {
 
     void testAddAction() {
         def annotation = BasicInstanceBuilder.getUserAnnotation()
-        def json = JSON.parse("{annotation:${annotation.id},action:Test}");
+        def json = JSON.parse("{annotationIdent:${annotation.id},action:Test}");
 
         def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
