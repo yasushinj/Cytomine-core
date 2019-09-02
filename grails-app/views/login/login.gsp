@@ -26,7 +26,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
-    <title>Login without LDAP</title>
+    <title>Login without SSO</title>
     <link rel="stylesheet" href="../lib/bootstrap-3.0.3/css/bootstrap.min.css"/>
 
     <style type="text/css">
@@ -80,7 +80,7 @@
     <div class="container">
 
         <form id="login-form" class="form-signin" role="form">
-            <h2 class="form-signin-heading">Login without LDAP:</h2>
+            <h2 class="form-signin-heading">Login without SSO:</h2>
             <input id="j_username" name="j_username" type="text" class="form-control" placeholder="Username" required>
             <input id="j_password" name="j_password" type="password" class="form-control" placeholder="Password" required>
             <div class="checkbox">

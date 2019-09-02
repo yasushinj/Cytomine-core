@@ -52,8 +52,8 @@ class LoginController extends RestController {
     def springSecurityService
     def notificationService
 
-    def loginWithoutLDAP () {
-        log.info "loginWithoutLDAP"
+    def loginWithoutSSO () {
+        log.info "loginWithoutSSO"
         if (springSecurityService.isLoggedIn()) {
             redirect uri: SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl
         }

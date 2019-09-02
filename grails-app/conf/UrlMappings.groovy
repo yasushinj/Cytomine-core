@@ -96,8 +96,8 @@ class UrlMappings {
             action = [GET:"listNews"]
         }
 
-        "/loginWithoutLDAP/login" (controller: "login") {
-            action = [GET:"loginWithoutLDAP"]
+        "/loginWithoutSSO/login" (controller: "login") {
+            action = [GET:"loginWithoutSSO"]
         }
 
         "/login/forgotPassword" (controller: "login") {
