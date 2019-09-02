@@ -94,6 +94,14 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
+    void initv1_9_9() {
+        log.info "1.9.9"
+        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
+            systemUser.origin = "SYSTEM"
+            systemUser.save();
+        }
+    }
+
     void initv1_2_2() {
         log.info "1.2.2"
         new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
