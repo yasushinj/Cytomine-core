@@ -122,6 +122,10 @@ class UrlMappings {
             action = [GET:"infoAdminSession"]
         }
 
+        "/api/custom-ui/config.$format" (controller: "customUI") {
+            action = [GET:"retrieveUIConfig"]
+        }
+        //DEPRECATED
         "/custom-ui/config.$format" (controller: "customUI") {
             action = [GET:"retrieveUIConfig"]
         }
@@ -130,6 +134,10 @@ class UrlMappings {
 //            action = [GET:"retrieveUIRoles"]
 //        }
 
+        "/api/custom-ui/project/$project.$format" (controller: "customUI") {
+            action = [GET:"showCustomUIForProject",POST:"addCustomUIForProject"]
+        }
+        //DEPRECATED
         "/custom-ui/project/$project.$format" (controller: "customUI") {
             action = [GET:"showCustomUIForProject",POST:"addCustomUIForProject"]
         }
