@@ -190,12 +190,7 @@ class BootstrapUtilsService {
             configs << new Configuration(key: "ldap_context_managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
             //grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
         }
-
-        //LTI values
-        //grailsApplication.config.grails.LTIConsumer.each{}
-        //add key secret and name
-        //role invited user values
-
+        
 
         configs.each { config ->
             if (config.validate()) {

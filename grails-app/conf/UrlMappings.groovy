@@ -108,10 +108,6 @@ class UrlMappings {
             action = [GET:"loginWithToken"]
         }
 
-        "/login/loginWithLTI" (controller: "login") {
-            action = [POST:"loginWithLTI"]
-        }
-
         "/session/admin/open.$format" (controller: "grantRole") {
             action = [GET:"openAdminSession"]
         }
