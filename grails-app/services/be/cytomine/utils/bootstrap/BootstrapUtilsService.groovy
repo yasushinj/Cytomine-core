@@ -35,6 +35,7 @@ import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.utils.Configuration
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
+import grails.util.Holders
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
 
@@ -76,6 +77,7 @@ class BootstrapUtilsService {
                     email: item.email,
                     color: item.color,
                     password: item.password,
+                    language: User.Language.valueOf(Holders.getGrailsApplication().config.grails.defaultLanguage),
                     enabled: true,
                     origin: "BOOTSTRAP")
             user.generateKeys()
