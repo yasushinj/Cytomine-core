@@ -69,7 +69,9 @@ class ImageInstanceSearchTests {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
         ImageInstance img1 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         img1.baseImage.width = 499
-        img1.save()
+        img1.setInstanceFilename("TEST")
+        img1.save(flush: true)
+        img1 = img1.refresh()
         BasicInstanceBuilder.getUserAnnotationNotExist(img1.project, img1, true)
         ImageInstance img2 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
 
@@ -112,6 +114,17 @@ class ImageInstanceSearchTests {
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.size == 0
+
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        println img1.getInstanceFilename()
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
     }
 
     /*
