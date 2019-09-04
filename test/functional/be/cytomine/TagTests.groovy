@@ -71,6 +71,7 @@ class TagTests {
     }
     void testDeleteTag() {
         def tag = BasicInstanceBuilder.getTagNotExist(true)
+        //create associations then verify than > 0
 
         def result = TagAPI.delete(tag.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -80,6 +81,7 @@ class TagTests {
         result = TagAPI.show(json.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 500 == result.code
 
+        //check than 0 association to the associated object
     }
 
 
