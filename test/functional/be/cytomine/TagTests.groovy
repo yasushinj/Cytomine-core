@@ -1,5 +1,7 @@
 package be.cytomine
 
+import be.cytomine.meta.TagDomainAssociation
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -19,6 +21,8 @@ package be.cytomine
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.TagAPI
+import be.cytomine.test.http.TagDomainAssociationAPI
+import be.cytomine.utils.UpdateData
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -38,16 +42,15 @@ class TagTests {
         def result = TagAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
-        assert json instanceof JSONArray
+        assert json instanceof JSONObject
+        assert json.collection instanceof JSONArray
     }
     void testAddTag() {
         def tag = BasicInstanceBuilder.getTagNotExist()
         def result = TagAPI.create(tag.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json instanceof JSONObject
-        assert json.id == tag.id
-        result = TagAPI.show(json.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        tag = result.data
+        result = TagAPI.show(tag.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
     void testAddTagSameName() {
@@ -55,61 +58,113 @@ class TagTests {
         def tag = BasicInstanceBuilder.getTagNotExist()
         tag.name = tagOrigin.name
         def result = TagAPI.create(tag.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 403 == result.code
+        assert 409 == result.code
     }
     void testUpdateTag() {
         def tag = BasicInstanceBuilder.getTagNotExist(true)
-        tag.name = "NEW"
-        def result = TagAPI.update(tag.id, tag.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def data = UpdateData.createUpdateSet(tag,[name: [tag.name, "NEWNAME"]])
+        def result = TagAPI.update(tag.id, data.postData, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
-        result = TagAPI.show(json.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        int idTag = json.tag.id
+        result = TagAPI.show(idTag, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
-        assert json.name == "NEW"
+        BasicInstanceBuilder.compare(data.mapNew, json)
+
     }
     void testDeleteTag() {
         def tag = BasicInstanceBuilder.getTagNotExist(true)
-        //create associations then verify than > 0
+        def association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association.tag = tag
+        association.save(flush: true)
+        association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association.tag = tag
+        association.save(flush: true)
+        association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association.tag = tag
+        association.save(flush: true)
 
-        def result = TagAPI.delete(tag.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def searchParameters = [[operator : "in", field : "tag", value:tag.id]]
+
+        def result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
-        assert json.id == tag.id
-        result = TagAPI.show(json.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 500 == result.code
+        assert json.collection.size() == 3
 
-        //check than 0 association to the associated object
+        result = TagAPI.delete(tag.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.tag.id == tag.id
+        result = TagAPI.show(json.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+
+        result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 0
     }
 
+    void testDeleteNotExistingTag() {
+        def result = TagAPI.delete(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
 
 
     //Test Tag Associations
-    void testListTagByDomain() {
-        //TagAPI.listByDomain()
-        //...
-        assert false
+    void testListTagDomainAssociationByDomain() {
+        def domain = BasicInstanceBuilder.getProjectNotExist(true)
+        def association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association.setDomain(domain)
+        association.save(flush: true)
+        def result = TagDomainAssociationAPI.listByDomain(domain, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 1
     }
+
     void testListTagDomainAssociationByTag() {
-        //...
-        //url is /api/tag_association.json ? SEARCH REST URL with domain class + tag id
-        assert false
+        def tag = BasicInstanceBuilder.getTagNotExist(true)
+        def association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association.tag = tag
+        association.save(flush: true)
+
+        def searchParameters = [[operator : "in", field : "tag", value: tag.id]]
+        def result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 1
+        assert json.collection[0].tag == tag.id
     }
+
     void testAddTagDomainAssociation() {
-        //url is /api/domain/domainID/tag.json
-        //...
-        assert false
+        TagDomainAssociation association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        def result = TagDomainAssociationAPI.create(association.encodeAsJSON(), association.domainClassName, association.domainIdent, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        association = result.data
+        result = TagDomainAssociationAPI.show(association.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
     }
     void testAddSameTagDomainAssociation() {
-        //take 2 differents users o associate the same tag to same domain
-        //...
-        assert false
+        def association = BasicInstanceBuilder.getTagDomainAssociationNotExist(true)
+        def association2 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association2.tag = association.tag
+        association2.domain = association.retrieveCytomineDomain()
+        def result = TagDomainAssociationAPI.create(association2.encodeAsJSON(), association2.domainClassName, association2.domainIdent, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 409 == result.code
     }
     void testDeleteTagDomainAssociation() {
-        //url is /api/domain/domainID/tag.json
-        //...
-        assert false
+        def association = BasicInstanceBuilder.getTagDomainAssociationNotExist(true)
+        def result = TagDomainAssociationAPI.delete(association.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert result.code == 200
+        result = TagDomainAssociationAPI.show(association.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
     }
+
 }

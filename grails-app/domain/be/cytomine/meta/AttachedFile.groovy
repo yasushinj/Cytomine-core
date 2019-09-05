@@ -1,4 +1,4 @@
-package be.cytomine.utils
+package be.cytomine.meta
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.

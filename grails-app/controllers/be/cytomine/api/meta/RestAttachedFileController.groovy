@@ -1,4 +1,4 @@
-package be.cytomine.api.utils
+package be.cytomine.api.meta
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -22,7 +22,7 @@ import be.cytomine.project.Project
 import be.cytomine.AnnotationDomain
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.WrongArgumentException
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
 import grails.converters.JSON
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType

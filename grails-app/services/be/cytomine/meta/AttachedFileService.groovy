@@ -1,4 +1,4 @@
-package be.cytomine.utils
+package be.cytomine.meta
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -19,7 +19,10 @@ package be.cytomine.utils
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
 import be.cytomine.command.Transaction
+import be.cytomine.meta.AttachedFile
 import be.cytomine.security.SecUser
+import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
 
 class AttachedFileService extends ModelService {
 

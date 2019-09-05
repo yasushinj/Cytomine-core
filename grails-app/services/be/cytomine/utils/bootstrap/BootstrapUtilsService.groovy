@@ -25,14 +25,13 @@ import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.*
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.MessageBrokerServer
-import be.cytomine.ontology.Property
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
 import be.cytomine.processing.Software
 import be.cytomine.security.*
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
-import be.cytomine.utils.Configuration
+import be.cytomine.meta.Configuration
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
 import grails.util.Holders

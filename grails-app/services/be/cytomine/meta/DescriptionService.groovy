@@ -1,4 +1,4 @@
-package be.cytomine.utils
+package be.cytomine.meta
 
 import be.cytomine.AnnotationDomain
 
@@ -20,7 +20,10 @@ import be.cytomine.AnnotationDomain
 
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
+import be.cytomine.meta.Description
 import be.cytomine.security.SecUser
+import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 

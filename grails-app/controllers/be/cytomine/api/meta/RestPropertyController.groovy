@@ -1,4 +1,4 @@
-package be.cytomine.api.ontology
+package be.cytomine.api.meta
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -21,7 +21,7 @@ import be.cytomine.CytomineDomain
 import be.cytomine.Exception.CytomineException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.project.Project
 import be.cytomine.utils.GeometryUtils
 import com.vividsolutions.jts.geom.Geometry

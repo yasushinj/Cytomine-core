@@ -19,11 +19,11 @@ package be.cytomine.utils.bootstrap
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.image.UploadedFile
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import be.cytomine.security.User
-import be.cytomine.utils.Configuration
+import be.cytomine.meta.Configuration
 import be.cytomine.utils.Version
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils

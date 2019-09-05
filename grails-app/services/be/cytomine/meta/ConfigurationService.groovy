@@ -1,4 +1,4 @@
-package be.cytomine.utils
+package be.cytomine.meta
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -19,7 +19,10 @@ package be.cytomine.utils
 import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.command.*
+import be.cytomine.meta.Configuration
 import be.cytomine.security.SecUser
+import be.cytomine.utils.ModelService
+import be.cytomine.utils.Task
 import grails.transaction.Transactional
 
 @Transactional

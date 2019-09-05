@@ -17,7 +17,7 @@ package be.cytomine
 */
 
 import be.cytomine.api.RestController
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import grails.converters.JSON

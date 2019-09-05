@@ -26,7 +26,7 @@ import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.JobAPI
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAnnotationAPI
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
 import com.mongodb.util.JSON
 
 class AttachedFileSecurityTests extends SecurityTestsAbstract{

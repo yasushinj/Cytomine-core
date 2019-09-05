@@ -442,6 +442,8 @@ abstract class ModelService {
                         output = Double.parseDouble(input)
                     } else if (field.type == Date) {
                         output = new Date(Long.parseLong(input))
+                    } else if(CytomineDomain.isAssignableFrom(field.type)) {
+                        output = field.type.findById(Long.parseLong(input))
                     } else {
                         output = input
                     }
@@ -449,7 +451,15 @@ abstract class ModelService {
                 }
                 def value;
 
-                value = (parameter.values.class.isArray() || parameter.values instanceof List) ? parameter.values.collect{convert(it)} : convert(parameter.values)
+                if(parameter.values.class.isArray() || parameter.values instanceof List) {
+                    if(CytomineDomain.isAssignableFrom(field.type)){
+                        value = field.type.findAllByIdInList(parameter.values.collect{Long.parseLong(it)})
+                    } else {
+                        value = parameter.values.collect{convert(it)}
+                    }
+                } else {
+                    value = convert(parameter.values)
+                }
 
                 result << [operator: parameter.operator, property: field.name, value: value]
 

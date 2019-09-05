@@ -1,14 +1,5 @@
 package be.cytomine.test.http
 
-import be.cytomine.CytomineDomain
-import be.cytomine.image.ImageInstance
-import be.cytomine.ontology.AlgoAnnotation
-import be.cytomine.ontology.ReviewedAnnotation
-import be.cytomine.ontology.UserAnnotation
-import be.cytomine.processing.Job
-import be.cytomine.processing.Software
-import be.cytomine.project.Project
-
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -27,6 +18,7 @@ import be.cytomine.project.Project
 
 import be.cytomine.test.Infos
 import grails.converters.JSON
+import be.cytomine.meta.Tag
 
 class TagAPI extends DomainAPI {
 
@@ -55,26 +47,6 @@ class TagAPI extends DomainAPI {
     static def delete(def id, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/tag/${id}.json"
         return doDELETE(URL,username,password)
-    }
-
-    static def listByDomain(CytomineDomain domain, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/"
-        // TODO when RESTE normalization replace the switch by domain.getClass().simpleName converted to snake case
-        switch (domain.getClass()){
-            case ImageInstance :
-            case Project :
-            case Software :
-            case Job :
-                URL += domain.getClass().simpleName.toLowerCase()+"/${domain.id}/"
-                break;
-            case UserAnnotation :
-            case AlgoAnnotation :
-            case ReviewedAnnotation :
-                URL += "annotation/${domain.id}/"
-                break;
-        }
-        URL += "tag.json"
-        return doGET(URL, username, password)
     }
 
 }

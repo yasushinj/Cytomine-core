@@ -1,4 +1,4 @@
-package be.cytomine.api.utils
+package be.cytomine.api.meta
 
 import be.cytomine.Exception.ObjectNotFoundException
 
@@ -19,7 +19,7 @@ import be.cytomine.Exception.ObjectNotFoundException
 */
 
 import be.cytomine.api.RestController
-import be.cytomine.utils.Configuration
+import be.cytomine.meta.Configuration
 import grails.converters.JSON
 import grails.converters.XML
 import org.restapidoc.annotation.RestApiMethod

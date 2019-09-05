@@ -16,7 +16,7 @@ package be.cytomine.image
 * limitations under the License.
 */
 
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import grails.converters.JSON
 
 /**

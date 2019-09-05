@@ -22,6 +22,7 @@ import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
+import be.cytomine.meta.Property
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.server.RetrievalServer
 import be.cytomine.processing.Job

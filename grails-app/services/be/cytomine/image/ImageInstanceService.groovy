@@ -28,13 +28,13 @@ import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.AnnotationTerm
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.ontology.ReviewedAnnotation
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
-import be.cytomine.utils.Description
+import be.cytomine.meta.Description
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
@@ -43,7 +43,6 @@ import groovy.sql.Sql
 import org.hibernate.FetchMode
 import org.springframework.util.ReflectionUtils
 
-import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**

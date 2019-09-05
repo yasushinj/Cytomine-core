@@ -23,7 +23,7 @@ import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AttachedFileAPI
 import be.cytomine.test.http.DomainAPI
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
