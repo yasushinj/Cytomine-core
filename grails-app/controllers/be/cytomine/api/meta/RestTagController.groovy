@@ -67,7 +67,7 @@ class RestTagController extends RestController {
     def update() {
         SecUser currentUser = cytomineService.getCurrentUser()
         Tag tag = Tag.read(request.JSON.id)
-        securityACLService.checkIsCreator(tag, currentUser )
+        securityACLService.checkIsCreator(tag, currentUser)
         update(tagService, request.JSON)
     }
 
@@ -81,7 +81,7 @@ class RestTagController extends RestController {
     def delete() {
         SecUser currentUser = cytomineService.getCurrentUser()
         Tag tag = Tag.read(params.id)
-        securityACLService.checkIsCreator(tag, currentUser )
+        if(tag) securityACLService.checkIsCreator(tag, currentUser )
         delete(tagService, JSON.parse("{id : $params.id}"),null)
     }
 }

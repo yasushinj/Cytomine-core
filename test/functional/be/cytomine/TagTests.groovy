@@ -1,6 +1,9 @@
 package be.cytomine
 
+import be.cytomine.image.ImageInstance
 import be.cytomine.meta.TagDomainAssociation
+import be.cytomine.ontology.UserAnnotation
+import be.cytomine.project.Project
 
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
@@ -72,7 +75,6 @@ class TagTests {
         assert 200 == result.code
         json = JSON.parse(result.data)
         BasicInstanceBuilder.compare(data.mapNew, json)
-
     }
     void testDeleteTag() {
         def tag = BasicInstanceBuilder.getTagNotExist(true)
@@ -141,6 +143,67 @@ class TagTests {
         assert json instanceof JSONObject
         assert json.collection.size() == 1
         assert json.collection[0].tag == tag.id
+    }
+
+    void testListTagDomainAssociationByTagAndDomain() {
+        def tag = BasicInstanceBuilder.getTagNotExist(true)
+        def tag2 = BasicInstanceBuilder.getTagNotExist(true)
+        def tag3 = BasicInstanceBuilder.getTagNotExist(true)
+
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        UserAnnotation annot = BasicInstanceBuilder.getUserAnnotationNotExist(true)
+
+
+        def association1 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association1.tag = tag
+        association1.domain = project
+        association1.save(flush: true)
+
+        def association2 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association2.tag = tag2
+        association2.domain = image
+        association2.save(flush: true)
+
+        def association3 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association3.tag = tag3
+        association3.domain = annot
+        association3.save(flush: true)
+
+        def association4 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association4.tag = tag3
+        association4.domain = image
+        association4.save(flush: true)
+
+        def searchParameters = [[operator : "in", field : "tag", value: tag.id+","+tag2.id], [operator : "in", field : "domainIdent", value: project.id+","+image.id]]
+        def result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 2
+        assert TagDomainAssociationAPI.containsInJSONList(association1.id,json)
+
+        searchParameters = [[operator : "in", field : "tag", value: tag.id+","+tag2.id], [operator : "in", field : "domainIdent", value: image.id+","+annot.id]]
+        result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 1
+        assert TagDomainAssociationAPI.containsInJSONList(association2.id,json)
+
+        searchParameters = [[operator : "in", field : "tag", value: tag2.id+","+tag3.id], [operator : "in", field : "domainIdent", value: project.id]]
+        result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 0
+
+        searchParameters = [[operator : "in", field : "tag", value: tag2.id+","+tag3.id], [operator : "in", field : "domainIdent", value: image.id+","+annot.id]]
+        result = TagDomainAssociationAPI.search(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.collection.size() == 3
     }
 
     void testAddTagDomainAssociation() {

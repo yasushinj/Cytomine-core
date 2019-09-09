@@ -17,6 +17,7 @@ package be.cytomine.meta
 */
 import be.cytomine.AnnotationDomain
 import be.cytomine.CytomineDomain
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.command.*
 import be.cytomine.security.SecUser
 import be.cytomine.utils.JSONUtils
@@ -47,27 +48,60 @@ class TagDomainAssociationService extends ModelService {
         association
     }
 
-    /**
-     * List all tags
-     */
-    def list(def searchParameters = [], Long max = 0, Long offset = 0) {
+    // cannot paginate because I don't know the total of the list before checking permissions !
+    def list(def searchParameters = []) {
         def validSearchParameters = getDomainAssociatedSearchParameters(TagDomainAssociation, searchParameters)
 
-        return criteriaRequestWithPagination(TagDomainAssociation, max, offset, {}, validSearchParameters, "created", "desc")
+        def result = criteriaRequestWithPagination(TagDomainAssociation, 0, 0, {}, validSearchParameters, "domainClassName", "desc")
+        List<TagDomainAssociation> associations = result.data
+        result = [data:[], total : 0]
+
+        def cache = []
+        for(TagDomainAssociation association : associations) {
+
+            try {
+                def cached = cache.findAll{it.id == association.domainIdent && it.clazz == association.domainClassName}
+                if(cached) {
+                    if(cached.granted) result.data << association
+                } else {
+                    def current = [id : association.domainIdent, clazz : association.domainClassName, granted : false]
+                    cache << current
+                    if(!association.domainClassName.contains("AbstractImage")) {
+                        securityACLService.check(association.container(),READ)
+                        if (association.retrieveCytomineDomain().hasProperty('user') && association.retrieveCytomineDomain().user) {
+                            securityACLService.checkFullOrRestrictedForOwner(association, association.retrieveCytomineDomain().user)
+                        } else if (association.domainClassName.contains("Project")){
+                            securityACLService.check(association.domainIdent,association.domainClassName, WRITE)
+                        } else {
+                            securityACLService.checkisNotReadOnly(association)
+                        }
+                    }
+                    current.granted = true
+                    result.data << association
+                }
+            } catch (ForbiddenException e){}
+        }
+        result.total = result.data.size()
+        return result
+
+
+
+
     }
 
     /**
      * List all tags
      */
     def listByTag(Tag tag) {
-        return TagDomainAssociation.findAllByTag(tag)
+        securityACLService.checkAdmin(cytomineService.getCurrentUser())
+        return list([[operator : "in", field : "tag", values:tag.id]])
     }
 
     /**
      * List all tags
      */
     def listByDomain(CytomineDomain domain) {
-        return TagDomainAssociation.findAllByDomainClassNameAndDomainIdent(domain.getClass().name, domain.id)
+        return list([[operator : "equals", field : "domainClassName", values:domain.getClass().name], [operator : "equals", field : "domainIdent", values:domain.id]])
     }
 
     /**
