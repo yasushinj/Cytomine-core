@@ -393,6 +393,8 @@ class RestController {
                 if(operator.equals("in")) {
                     if(values.contains(",")) values = values.split(",") as List
                 }
+                if(values instanceof List) values = values.collect {URLDecoder.decode(it.toString(), "UTF-8")}
+                else values = URLDecoder.decode(values.toString(), "UTF-8")
 
                 if(allowedOperators.contains(operator)) searchParameters << [operator : operator, field : tmp[0], values : values]
             }

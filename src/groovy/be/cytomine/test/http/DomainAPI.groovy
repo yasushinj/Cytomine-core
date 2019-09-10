@@ -244,7 +244,10 @@ class DomainAPI {
         return parameters.collect{p->
             String value
             if(p.value instanceof Date) value = ((Date)p.value).time
-            else value = p.value.toString()
+            else if(p.value instanceof List) {
+                value = p.value.collect{URLEncoder.encode(it.toString(), "UTF-8")}.join(",")
+            }
+            else value = URLEncoder.encode(p.value.toString(), "UTF-8")
             return p.field + "["+p.operator+"]=" + value
         }.join("&")
     }

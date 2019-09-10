@@ -476,7 +476,7 @@ abstract class ModelService {
             if(parameter.value instanceof String && parameter.value != "null") parameter.value = "'$parameter.value'".toString()
             if(parameter.value instanceof List || parameter.value.class.isArray()) {
                 parameter.value = parameter.value.collect{
-                    if(it instanceof String) return "'$it'"
+                    if(it instanceof String  && it != "null") return "'$it'"
                     else return it
                 }
             }
@@ -505,7 +505,7 @@ abstract class ModelService {
                     break
                 case "in":
 
-                    if(parameter.value == null) {
+                    if(parameter.value == null || parameter.value == "null") {
                         sql = parameter.property+" IS NULL "
                         break
                     }

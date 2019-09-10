@@ -121,6 +121,29 @@ class ProjectSearchTests {
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+
+        searchParameters = [[operator : "in", field : "ontology_id", value:"null,"+p1.ontology.id]]
+
+        result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+
+        Project p3 = BasicInstanceBuilder.getProjectNotExist(true)
+        p3.name = "T&test=5"
+        p3.save(flush: true)
+        p3 = p3.refresh()
+
+        searchParameters = [[operator : "like", field : "name", value:"T&test=5"]]
+
+        result = ProjectAPI.list(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert !ProjectAPI.containsInJSONList(p1.id,json)
+        assert ProjectAPI.containsInJSONList(p3.id,json)
+
     }
 
     //pagination
