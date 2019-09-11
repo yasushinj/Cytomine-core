@@ -39,10 +39,15 @@ class AnnotationListingService extends ModelService {
     def listGeneric(AnnotationListing al) {
         securityACLService.check(al.container(),READ)
         if(al.kmeans && !al.kmeansValue) {
-            if(!al.image || !al.bbox) {
-                throw new WrongArgumentException("If you want to use kmeans, you must provide image (=${al.image}, bbox (=${al.bbox})")
+            if(!al.bbox) {
+                throw new WrongArgumentException("If you want to use kmeans, you must provide image bbox (=${al.bbox})")
             }
-            def rule = kmeansGeometryService.mustBeReduce(al.image,al.user,al.bbox)
+
+            if (!al.slice) {
+                throw new WrongArgumentException("If you want to use kmeans, you must provide slice Id")
+            }
+
+            def rule = kmeansGeometryService.mustBeReduce(al.slice,al.user,al.bbox)
             al.kmeansValue = rule
         } else {
             //no kmeans

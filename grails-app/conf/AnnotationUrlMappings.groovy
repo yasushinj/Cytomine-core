@@ -27,9 +27,7 @@ class AnnotationUrlMappings {
         /**
          * Annotation generic
          */
-        "/api/annotation/method/union.$format"(controller:"restAnnotationDomain"){
-            action = [PUT:"union", GET:"union"]
-        }
+
         "/api/annotation.$format"(controller:"restAnnotationDomain"){
             action = [GET: "search",POST:"add"]
         }
@@ -118,9 +116,7 @@ class AnnotationUrlMappings {
         "/api/project/$project/algoannotation/count.$format"(controller:"restAlgoAnnotation"){
             action = [GET: "countByProject"]
         }
-        "/api/algoannotation/method/union.$format"(controller:"restAlgoAnnotation"){
-            action = [PUT:"union", GET:"union"]
-        }
+
         "/api/algoannotation.$format"(controller:"restAlgoAnnotation"){
             action = [GET: "list",POST:"add"]
         }

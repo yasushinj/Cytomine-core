@@ -278,8 +278,9 @@ class SecUserService extends ModelService {
     private def getUserJobImage(ImageInstance image) {
 
         String request = "SELECT u.id as id, u.username as username, s.name as softwareName, s.software_version as softwareVersion, j.created as created \n" +
-                "FROM annotation_index ai, sec_user u, job j, software s\n" +
-                "WHERE ai.image_id = ${image.id}\n" +
+                "FROM annotation_index ai, sec_user u, job j, software s, slice_instance si\n" +
+                "WHERE si.image_id = ${image.id}\n" +
+                "AND ai.slice_id = si.id\n" +
                 "AND ai.user_id = u.id\n" +
                 "AND u.job_id = j.id\n" +
                 "AND j.software_id = s.id\n" +

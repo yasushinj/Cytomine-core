@@ -126,7 +126,7 @@ class IndexService {
             createIndex("description", "domain_ident")
 
             // Annotation index
-            createIndex("annotation_index", "image_id")
+            createIndex("annotation_index", "slice_id")
             createIndex("annotation_index", "user_id")
 
             // Annotation

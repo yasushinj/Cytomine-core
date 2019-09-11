@@ -261,47 +261,6 @@ class  RestAlgoAnnotationController extends RestController {
     }
 
     /**
-     * Do union operation between annotation from the same image, user and term.
-     * Params are:
-     * -minIntersectionLength: size of the intersection geometry between two annotation to merge them
-     * -bufferLength: tolerance threshold for two annotation (if they are very close but not intersect)
-     */
-    @Deprecated
-    def union() {
-        ImageInstance image = ImageInstance.read(params.getLong('idImage'))
-        SecUser user = SecUser.read(params.getLong('idUser'))
-        Term term = Term.read(params.getLong('idTerm'))
-        Integer minIntersectLength = params.getInt('minIntersectionLength')
-        Integer bufferLength = params.getInt('bufferLength')
-        Integer area = params.getInt('area')
-
-        if (!image) {
-            responseNotFound("ImageInstance", params.getLong('idImage'))
-        }
-        else if (!term) {
-            responseNotFound("Term", params.getLong('idTerm'))
-        }
-        else if (!user) {
-            responseNotFound("User", params.getLong('idUser'))
-        }
-        else {
-            if(!area) {
-                //compute a good "windows area" (depend of number of annotation and image size)
-                //little image with a lot of annotataion must be very short window size
-                def annotationNumber = annotationIndexService.count(image,user)
-                def imageSize = image.baseImage.width*image.baseImage.height
-                area = (Math.sqrt(imageSize)/(annotationNumber/1000))/4
-                area = Math.max(area,500)
-            }
-            unionAnnotations(image, user, term, minIntersectLength, bufferLength,area)
-            def data = [:]
-            data.annotationunion = [:]
-            data.annotationunion.status = "ok"
-            responseSuccess(data)
-        }
-    }
-
-    /**
      * Merge all annotation from the image, user and term that touch with min minIntersectLength size and with a tolerance threshold bufferLength
      * @param image Image
      * @param user User

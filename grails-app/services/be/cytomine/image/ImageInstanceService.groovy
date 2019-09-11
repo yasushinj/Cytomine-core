@@ -513,12 +513,6 @@ class ImageInstanceService extends ModelService {
         }
     }
 
-    def deleteDependentAnnotationIndex(ImageInstance image, Transaction transaction, Task task = null) {
-        AnnotationIndex.findAllByImage(image).each {
-            it.delete()
-        }
-    }
-
     def deleteDependentAnnotationAction(ImageInstance image, Transaction transaction, Task task = null) {
         AnnotationAction.findAllByImage(image).each {
             it.delete()
