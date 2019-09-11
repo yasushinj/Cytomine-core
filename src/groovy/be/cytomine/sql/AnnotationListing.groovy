@@ -59,6 +59,9 @@ abstract class AnnotationListing {
 
     def track = null
     def tracks = null
+    def beforeSlice = null
+    def afterSlice = null
+    def sliceDimension = null
 
     def user = null
     def userForTermAlgo = null
@@ -221,6 +224,7 @@ abstract class AnnotationListing {
 
                         getTrackConst() +
                         getTracksConst() +
+                        getBeforeOrAfterSliceConst() +
 
                         getUsersForTermConst() +
 
@@ -465,7 +469,40 @@ abstract class AnnotationListing {
         } else {
             return ""
         }
+    }
 
+    def getBeforeOrAfterSliceConst() {
+        if ((track || tracks) && (beforeSlice || afterSlice)) {
+            if (!sliceDimension || !['C', 'Z', 'T'].contains(sliceDimension)) {
+                throw new WrongArgumentException("You need to provide a valid slice dimension (C,Z,T) to use beforeSlice")
+            }
+            addIfMissingColumn('slice')
+            def sliceId = (beforeSlice) ? beforeSlice : afterSlice
+            def slice = SliceInstance.read(sliceId)
+            if (!slice) {
+                throw new ObjectNotFoundException("Slice $sliceId not exists !")
+            }
+
+            def constraint = ''
+            if (sliceDimension == 'C') {
+                constraint = 'channel'
+            }
+            else if (sliceDimension == 'Z') {
+                constraint = 'zStack'
+            }
+            else if (sliceDimension == 'T') {
+                constraint = 'time'
+            }
+            def equals = ['channel', 'zStack', 'time'] - constraint
+            def snakeCase = [channel: 'channel', zStack: 'z_stack', time: 'time']
+            def sign = (beforeSlice) ? '<' : '>'
+
+            return "AND asl.${snakeCase[constraint]} ${sign} ${slice.baseSlice[constraint]}\n" +
+                    "AND asl.${snakeCase[equals[0]]} = ${slice.baseSlice[equals[0]]}\n" +
+                    "AND asl.${snakeCase[equals[1]]} = ${slice.baseSlice[equals[1]]}\n"
+        } else {
+            return ""
+        }
     }
 
     def getExcludedAnnotationConst() {
@@ -707,7 +744,15 @@ class UserAnnotationListing extends AnnotationListing {
         if (orderByRate) {
             return "ORDER BY aat.rate desc"
         } else if (!orderBy) {
-            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "") + ((track || tracks || columnToPrint.contains("track")) ? ", atr.track_id " : "")
+            def termOrder = ((term || terms || columnToPrint.contains("term")) ? " at.term_id, " : "")
+            def trackOrder = ((track || tracks || columnToPrint.contains("track")) ? " atr.track_id, " : "")
+            def sliceOrder = ""
+            if (sliceDimension && (beforeSlice || afterSlice)) {
+                if (sliceDimension == 'C') sliceOrder = ' asl.channel asc, '
+                else if (sliceDimension == 'Z') sliceOrder = ' asl.z_stack asc, '
+                else if (sliceDimension == 'T') sliceOrder = ' asl.time asc, '
+            }
+            return "ORDER BY " + sliceOrder + termOrder + trackOrder +  " a.id desc"
         } else {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         }
@@ -870,7 +915,14 @@ class AlgoAnnotationListing extends AnnotationListing {
         if (orderBy) {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         } else {
-            return "ORDER BY " + (columnToPrint.contains("term") ? "aat.rate desc ," : "") + " a.id desc "
+            def termOrder = (columnToPrint.contains("term") ? "aat.rate desc ," : "")
+            def sliceOrder = ""
+            if (sliceDimension && (beforeSlice || afterSlice)) {
+                if (sliceDimension == 'C') sliceOrder = ' asl.channel asc, '
+                else if (sliceDimension == 'Z') sliceOrder = ' asl.z_stack asc, '
+                else if (sliceDimension == 'T') sliceOrder = ' asl.time asc, '
+            }
+            return "ORDER BY " + termOrder + sliceOrder + " a.id desc "
         }
     }
 }

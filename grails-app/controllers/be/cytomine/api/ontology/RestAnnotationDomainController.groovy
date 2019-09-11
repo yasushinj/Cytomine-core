@@ -131,6 +131,9 @@ class RestAnnotationDomainController extends RestController {
 
             @RestApiParam(name="track", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this track id"),
             @RestApiParam(name="tracks", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these tracks id"),
+            @RestApiParam(name="afterSlice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only to be used with track(s), return only annotation in the track(s) after the given slice"),
+            @RestApiParam(name="beforeSlice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only to be used with track(s), return only annotation in the track(s) before the given slice"),
+            @RestApiParam(name="sliceDirection", type="long", paramType = RestApiParamType.QUERY, description = "Only to be used with beforeSlice, afterSlice or aroundSlide and mandatory in this case. Give the dimension to follow in the image. Accepted values: C,Z,T"),
 
             @RestApiParam(name="suggestedTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for this term by a job"),
             @RestApiParam(name="suggestedTerms", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation suggested by for these terms by a job"),
@@ -400,6 +403,12 @@ class RestAnnotationDomainController extends RestController {
         def tracks = params.get('tracks')
         if(tracks) {
             al.tracks = params.get('tracks').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+
+        if (al.track || al.tracks) {
+            al.beforeSlice = params.getLong('beforeSlice')
+            al.afterSlice = params.getLong('afterSlice')
+            al.sliceDimension = params.sliceDimension
         }
 
         // Users
