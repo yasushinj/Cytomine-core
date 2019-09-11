@@ -118,7 +118,7 @@ class ImageServerService extends ModelService {
 
     def crop(AnnotationDomain annotation, def params, def urlOnly = false, def parametersOnly = false) {
         params.geometry = annotation.location
-        crop(annotation.image, params, urlOnly, parametersOnly)
+        crop(annotation.slice, params, urlOnly, parametersOnly)
     }
 
     def crop(ImageInstance image, def params, def urlOnly = false, def parametersOnly = false) {
