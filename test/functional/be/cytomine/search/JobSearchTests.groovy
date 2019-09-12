@@ -257,7 +257,7 @@ class JobSearchTests {
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.collection.size() > 1
-        assert name != json.collection[1].softwareName
+        assert name == json.collection[-1].softwareName
 
         result = JobAPI.list("username", "asc", Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
