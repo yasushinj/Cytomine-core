@@ -174,6 +174,7 @@ class ProjectService extends ModelService {
             switch(parameter.field) {
                 case "ontology_id" :
                     property = "ontology.id"
+                    parameter.values= convertSearchParameter(Long.class, parameter.values)
                     break
                 case "membersCount" :
                     property = "members.member_count"
@@ -188,9 +189,10 @@ class ProjectService extends ModelService {
         def sqlSearchConditions = searchParametersToSQLConstraints(validParameters)
 
         sqlSearchConditions = [
-                project : sqlSearchConditions.findAll{it.property.startsWith("p.")}.collect{it.sql}.join(" AND "),
-                ontology : sqlSearchConditions.findAll{it.property.startsWith("ontology.")}.collect{it.sql}.join(" AND "),
-                members : sqlSearchConditions.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND ")
+                project : sqlSearchConditions.data.findAll{it.property.startsWith("p.")}.collect{it.sql}.join(" AND "),
+                ontology : sqlSearchConditions.data.findAll{it.property.startsWith("ontology.")}.collect{it.sql}.join(" AND "),
+                members : sqlSearchConditions.data.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND "),
+                parameters: sqlSearchConditions.sqlParameters
         ]
 
         String select, from, where, search, sort
@@ -300,7 +302,9 @@ class ProjectService extends ModelService {
 
         def sql = new Sql(dataSource)
         def data = []
-        sql.eachRow(request) {
+        def mapParams = sqlSearchConditions.parameters
+
+        sql.eachRow(request, mapParams) {
             def map = [:]
 
             for(int i =1;i<=((GroovyResultSet) it).getMetaData().getColumnCount();i++){
@@ -337,7 +341,7 @@ class ProjectService extends ModelService {
         def size
         request = "SELECT COUNT(DISTINCT p.id) " + from + where + search
 
-        sql.eachRow(request) {
+        sql.eachRow(request, mapParams) {
             size = it.count
         }
         sql.close()

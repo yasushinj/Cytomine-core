@@ -141,9 +141,15 @@ class ProjectSearchTests {
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        assert json.size == 1
         assert !ProjectAPI.containsInJSONList(p1.id,json)
         assert ProjectAPI.containsInJSONList(p3.id,json)
 
+
+        searchParameters = [[operator : "like", field : "name", value:"T';DELETE FROM amqp_queue_config;SELECT * FROM project WHERE name LIKE 'T%X';--"]]
+
+        result = ProjectAPI.list(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code // if multiple queries, error is returned. If 200 ==> OK
     }
 
     //pagination
