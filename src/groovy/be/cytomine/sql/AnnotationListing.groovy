@@ -273,6 +273,8 @@ abstract class AnnotationListing {
                 request += "LEFT OUTER JOIN annotation_track atr ON a.id = atr.annotation_ident "
 
             request += "ORDER BY a.id DESC"
+            request += ((term || terms) ? ", at.term_id " : "")
+            request += ((track || tracks) ? ", atr.track_id " : "")
             return request
         }
 
@@ -744,15 +746,7 @@ class UserAnnotationListing extends AnnotationListing {
         if (orderByRate) {
             return "ORDER BY aat.rate desc"
         } else if (!orderBy) {
-            def termOrder = ((term || terms || columnToPrint.contains("term")) ? " at.term_id, " : "")
-            def trackOrder = ((track || tracks || columnToPrint.contains("track")) ? " atr.track_id, " : "")
-            def sliceOrder = ""
-            if (sliceDimension && (beforeSlice || afterSlice)) {
-                if (sliceDimension == 'C') sliceOrder = ' asl.channel asc, '
-                else if (sliceDimension == 'Z') sliceOrder = ' asl.z_stack asc, '
-                else if (sliceDimension == 'T') sliceOrder = ' asl.time asc, '
-            }
-            return "ORDER BY " + sliceOrder + termOrder + trackOrder +  " a.id desc"
+            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "") + ((track || tracks || columnToPrint.contains("track")) ? ", atr.track_id " : "")
         } else {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         }
