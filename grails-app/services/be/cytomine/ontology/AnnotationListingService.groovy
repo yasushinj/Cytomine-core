@@ -160,7 +160,7 @@ class AnnotationListingService extends ModelService {
                     if (it.term == lastTermId) {
                         data.last().userByTerm.last().user.add(it.userTerm)
                         data.last().userByTerm.last().user.unique()
-                    } else {
+                    } else if (!data.last().term.contains(it.term)) {
                         data.last().term.add(it.term)
                         data.last().userByTerm.add([id: it.annotationTerms, term: it.term, user: [it.userTerm]])
                     }

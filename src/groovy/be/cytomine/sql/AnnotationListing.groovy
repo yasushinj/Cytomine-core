@@ -272,7 +272,8 @@ abstract class AnnotationListing {
             if (track || tracks)
                 request += "LEFT OUTER JOIN annotation_track atr ON a.id = atr.annotation_ident "
 
-            request += "ORDER BY a.id DESC"
+            request += "ORDER BY "
+            request += (track || tracks) ? "a.rank asc" : "a.id desc "
             request += ((term || terms) ? ", at.term_id " : "")
             request += ((track || tracks) ? ", atr.track_id " : "")
             return request
@@ -291,6 +292,11 @@ abstract class AnnotationListing {
             columns.each {
                 requestHeadList << it.value + " as " + it.key
             }
+
+            if (track || tracks) {
+                requestHeadList << '(asl.channel + ai.channels * (asl.z_stack + ai.depth * asl.time)) as rank'
+            }
+
             return "SELECT " + requestHeadList.join(', ') + " \n"
         } else {
             return "SELECT ST_ClusterKMeans(location, 5) OVER () AS kmeans, location\n"
@@ -475,9 +481,6 @@ abstract class AnnotationListing {
 
     def getBeforeOrAfterSliceConst() {
         if ((track || tracks) && (beforeSlice || afterSlice)) {
-            if (!sliceDimension || !['C', 'Z', 'T'].contains(sliceDimension)) {
-                throw new WrongArgumentException("You need to provide a valid slice dimension (C,Z,T) to use beforeSlice")
-            }
             addIfMissingColumn('slice')
             def sliceId = (beforeSlice) ? beforeSlice : afterSlice
             def slice = SliceInstance.read(sliceId)
@@ -485,23 +488,9 @@ abstract class AnnotationListing {
                 throw new ObjectNotFoundException("Slice $sliceId not exists !")
             }
 
-            def constraint = ''
-            if (sliceDimension == 'C') {
-                constraint = 'channel'
-            }
-            else if (sliceDimension == 'Z') {
-                constraint = 'zStack'
-            }
-            else if (sliceDimension == 'T') {
-                constraint = 'time'
-            }
-            def equals = ['channel', 'zStack', 'time'] - constraint
-            def snakeCase = [channel: 'channel', zStack: 'z_stack', time: 'time']
             def sign = (beforeSlice) ? '<' : '>'
 
-            return "AND asl.${snakeCase[constraint]} ${sign} ${slice.baseSlice[constraint]}\n" +
-                    "AND asl.${snakeCase[equals[0]]} = ${slice.baseSlice[equals[0]]}\n" +
-                    "AND asl.${snakeCase[equals[1]]} = ${slice.baseSlice[equals[1]]}\n"
+            return "AND (asl.channel + ai.channels * (asl.z_stack + ai.depth * asl.time)) ${sign} ${slice.baseSlice.rank} \n"
         } else {
             return ""
         }
@@ -660,7 +649,7 @@ class UserAnnotationListing extends AnnotationListing {
         ],
         track: [
                 track: 'atr.track_id',
-                annotationTracks: 'atr.id'
+                annotationTracks: 'atr.id',
         ],
         image: [
                 originalFilename: 'ai.original_filename', // not in single annot marshaller
@@ -717,7 +706,7 @@ class UserAnnotationListing extends AnnotationListing {
             from += "INNER JOIN sec_user u ON a.user_id = u.id "
         }
 
-        if (columnToPrint.contains('image')) {
+        if (columnToPrint.contains('image') || tracks || track) {
             from += "INNER JOIN image_instance ii ON a.image_id = ii.id INNER JOIN abstract_image ai ON ii.base_image_id = ai.id "
         }
 
@@ -725,7 +714,7 @@ class UserAnnotationListing extends AnnotationListing {
             from += "INNER JOIN algo_annotation_term aat ON aat.annotation_ident = a.id "
         }
 
-        if (columnToPrint.contains('slice')) {
+        if (columnToPrint.contains('slice') || tracks || track) {
             from += "INNER JOIN slice_instance si ON a.slice_id = si.id INNER JOIN abstract_slice asl ON si.base_slice_id = asl.id "
         }
 
@@ -746,7 +735,8 @@ class UserAnnotationListing extends AnnotationListing {
         if (orderByRate) {
             return "ORDER BY aat.rate desc"
         } else if (!orderBy) {
-            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "") + ((track || tracks || columnToPrint.contains("track")) ? ", atr.track_id " : "")
+            def order = (track || tracks) ? "rank asc" : "a.id desc "
+            return "ORDER BY "+ order + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "") + ((track || tracks || columnToPrint.contains("track")) ? ", atr.track_id " : "")
         } else {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         }
