@@ -542,6 +542,19 @@ abstract class ModelService {
 
         parameters = [data:parameters, sqlParameters:[]]
         parameters.sqlParameters = parameters.data.findResults{it.sqlParameter}
+
+        //if a same property is used multiple times
+        if(parameters.sqlParameters.collectEntries().keySet().size() < parameters.sqlParameters.size()){
+            def duplicateKeys = parameters.data.groupBy{it.property}.findAll{key, value -> value.size()> 1}.keySet()
+            parameters.data.findAll {duplicateKeys.contains(it.property)}.eachWithIndex{ it, index ->
+                String oldName = it.sqlParameter.keySet()[0]
+                String newName = oldName+"_"+index
+
+                it.sql = it.sql.replace(":"+oldName, ":"+newName)
+                it.sqlParameter.put(newName, it.sqlParameter.remove(oldName))
+            }
+        }
+
         if(parameters.sqlParameters.size() > 0) parameters.sqlParameters = parameters.sqlParameters.collectEntries()
 
 
