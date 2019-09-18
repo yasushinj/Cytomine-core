@@ -115,12 +115,64 @@ class ProjectSearchTests {
         assert json.collection instanceof JSONArray
         assert ProjectAPI.containsInJSONList(p1.id,json)
 
+        searchParameters = [[operator : "lte", field : "membersCount", value:10]]
+
+        result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 400 == result.code
+
+        result = ProjectAPI.list(searchParameters, true, true, true, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert ProjectAPI.containsInJSONList(p1.id,json)
+
+        searchParameters = [[operator : "lte", field : "membersCount", value:10], [operator : "gte", field : "membersCount", value:1]]
+
+        result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 400 == result.code
+
+        result = ProjectAPI.list(searchParameters, true, true, true, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size >= 2
+        assert ProjectAPI.containsInJSONList(p1.id,json)
+
         searchParameters = [[operator : "in", field : "ontology_id", value:"null"]]
 
         result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+
+        searchParameters = [[operator : "in", field : "ontology_id", value:"null,"+p1.ontology.id]]
+
+        result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+
+
+        Project p3 = BasicInstanceBuilder.getProjectNotExist(true)
+        p3.name = "T&test=5"
+        p3.save(flush: true)
+        p3 = p3.refresh()
+
+        searchParameters = [[operator : "like", field : "name", value:"T&test=5"]]
+
+        result = ProjectAPI.list(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert !ProjectAPI.containsInJSONList(p1.id,json)
+        assert ProjectAPI.containsInJSONList(p3.id,json)
+
+
+        searchParameters = [[operator : "like", field : "name", value:"T';DELETE FROM amqp_queue_config;SELECT * FROM project WHERE name LIKE 'T%X';--"]]
+
+        result = ProjectAPI.list(searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code // if multiple queries, error is returned. If 200 ==> OK
     }
 
     //pagination

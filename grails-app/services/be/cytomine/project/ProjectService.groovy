@@ -168,15 +168,21 @@ class ProjectService extends ModelService {
             }
         }
 
+        if (sortColumn == "lastActivity" && !extended.withLastActivity) throw new WrongArgumentException("Cannot sort on lastActivity without argument withLastActivity")
+        if (sortColumn == "membersCount" && !extended.withMembersCount) throw new WrongArgumentException("Cannot sort on membersCount without argument withMembersCount")
+
+
         def validParameters = getDomainAssociatedSearchParameters(Project, searchParameters).each{it.property = "p."+it.property}
         loop:for (def parameter : searchParameters){
             String property
             switch(parameter.field) {
                 case "ontology_id" :
                     property = "ontology.id"
+                    parameter.values= convertSearchParameter(Long.class, parameter.values)
                     break
                 case "membersCount" :
                     property = "members.member_count"
+                    parameter.values= convertSearchParameter(Long.class, parameter.values)
                     break
                 default:
                     continue loop
@@ -188,10 +194,13 @@ class ProjectService extends ModelService {
         def sqlSearchConditions = searchParametersToSQLConstraints(validParameters)
 
         sqlSearchConditions = [
-                project : sqlSearchConditions.findAll{it.property.startsWith("p.")}.collect{it.sql}.join(" AND "),
-                ontology : sqlSearchConditions.findAll{it.property.startsWith("ontology.")}.collect{it.sql}.join(" AND "),
-                members : sqlSearchConditions.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND ")
+                project : sqlSearchConditions.data.findAll{it.property.startsWith("p.")}.collect{it.sql}.join(" AND "),
+                ontology : sqlSearchConditions.data.findAll{it.property.startsWith("ontology.")}.collect{it.sql}.join(" AND "),
+                members : sqlSearchConditions.data.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND "),
+                parameters: sqlSearchConditions.sqlParameters
         ]
+
+        if (sqlSearchConditions.members && !extended.withMembersCount) throw new WrongArgumentException("Cannot search on members attributes without argument withMembersCount")
 
         String select, from, where, search, sort
         String request
@@ -300,7 +309,9 @@ class ProjectService extends ModelService {
 
         def sql = new Sql(dataSource)
         def data = []
-        sql.eachRow(request) {
+        def mapParams = sqlSearchConditions.parameters
+
+        sql.eachRow(request, mapParams) {
             def map = [:]
 
             for(int i =1;i<=((GroovyResultSet) it).getMetaData().getColumnCount();i++){
@@ -337,7 +348,7 @@ class ProjectService extends ModelService {
         def size
         request = "SELECT COUNT(DISTINCT p.id) " + from + where + search
 
-        sql.eachRow(request) {
+        sql.eachRow(request, mapParams) {
             size = it.count
         }
         sql.close()

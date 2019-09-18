@@ -33,8 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+import java.time.ZoneId
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
@@ -417,6 +416,27 @@ abstract class ModelService {
         return false
     }
 
+    def convertSearchParameter(Class type, def parameter){
+
+        if(parameter instanceof List || parameter.class.isArray()) return parameter.collect{convertSearchParameter(type, it)}
+
+        if(parameter == null || parameter.equals("null")) return null
+        def output
+
+        if ((type == Integer || type == int) && !(parameter instanceof Integer)) {
+            output = Integer.parseInt(parameter)
+        } else if ((type == Long || type == long) && !(parameter instanceof Long)) {
+            output = Long.parseLong(parameter)
+        } else if ((type == Double || type == double) && !(parameter instanceof Double)) {
+            output = Double.parseDouble(parameter)
+        } else if (type == Date) {
+            output = new Date(Long.parseLong(parameter))
+        } else {
+            output = parameter
+        }
+        return output
+    }
+
     protected def getDomainAssociatedSearchParameters(Class<? extends CytomineDomain> domain, ArrayList searchParameters) {
         if(!searchParameters) return []
 
@@ -428,41 +448,9 @@ abstract class ModelService {
             Field field = ReflectionUtils.findField(domain, parameter.field)
 
             if(field) {
-
-                def convert = { input ->
-
-                    if(input == null || input.equals("null")) return null
-                    def output
-
-                    if ((field.type == Integer || field.type == int) && !(input instanceof Integer)) {
-                        output = Integer.parseInt(input)
-                    } else if ((field.type == Long || field.type == long) && !(input instanceof Long)) {
-                        output = Long.parseLong(input)
-                    } else if ((field.type == Double || field.type == double) && !(input instanceof Double)) {
-                        output = Double.parseDouble(input)
-                    } else if (field.type == Date) {
-                        output = new Date(Long.parseLong(input))
-                    } else if(CytomineDomain.isAssignableFrom(field.type)) {
-                        output = field.type.findById(Long.parseLong(input))
-                    } else {
-                        output = input
-                    }
-                    return output
-                }
-                def value;
-
-                if(parameter.values.class.isArray() || parameter.values instanceof List) {
-                    if(CytomineDomain.isAssignableFrom(field.type)){
-                        value = field.type.findAllByIdInList(parameter.values.collect{Long.parseLong(it)})
-                    } else {
-                        value = parameter.values.collect{convert(it)}
-                    }
-                } else {
-                    value = convert(parameter.values)
-                }
+                def value = convertSearchParameter(field.type, parameter.values)
 
                 result << [operator: parameter.operator, property: field.name, value: value]
-
                 translated << parameter
             }
 
@@ -480,42 +468,34 @@ abstract class ModelService {
             parameter.property =parameter.property.replaceAll(regex, replacement).toLowerCase()
 
             if(parameter.value instanceof Date){
-                DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-                parameter.value = formatter.format(parameter.value)
-            }
-            if(parameter.value instanceof String && parameter.value != "null") parameter.value = "'$parameter.value'".toString()
-            if(parameter.value instanceof List || parameter.value.class.isArray()) {
-                parameter.value = parameter.value.collect{
-                    if(it instanceof String) return "'$it'"
-                    else return it
-                }
+                parameter.value = ((Date) parameter.value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
             }
 
             String sql
             switch(parameter.operator){
                 case "equals":
-                    if(parameter.value != null) sql = parameter.property+" = "+parameter.value
+                    if(parameter.value != null) sql = parameter.property+" = :"+parameter.property.replaceAll("\\.","_")
                     else sql = parameter.property+" IS NULL "
                     break
                 case "nequals":
-                    if(parameter.value != null) sql = parameter.property+" != "+parameter.value
+                    if(parameter.value != null) sql = parameter.property+" != :"+parameter.property.replaceAll("\\.","_")
                     else sql = parameter.property+" IS NOT NULL "
                     break
                 case "like":
-                    sql = parameter.property+" LIKE "+parameter.value
+                    sql = parameter.property+" LIKE :"+parameter.property.replaceAll("\\.","_")
                     break
                 case "ilike":
-                    sql = parameter.property+" ILIKE "+parameter.value
+                    sql = parameter.property+" ILIKE :"+parameter.property.replaceAll("\\.","_")
                     break
                 case "lte":
-                    sql = parameter.property+" <= "+parameter.value
+                    sql = parameter.property+" <= :"+parameter.property.replaceAll("\\.","_")
                     break
                 case "gte":
-                    sql = parameter.property+" >= "+parameter.value
+                    sql = parameter.property+" >= :"+parameter.property.replaceAll("\\.","_")
                     break
                 case "in":
 
-                    if(parameter.value == null) {
+                    if(parameter.value == null || parameter.value == "null") {
                         sql = parameter.property+" IS NULL "
                         break
                     }
@@ -531,20 +511,53 @@ abstract class ModelService {
                         break
                     }
 
+                    sql = parameter.property+" IN ("
+                    sql += (1..parameter.value.count{it != null && it != 'null'}).collect {":"+parameter.property.replaceAll("\\.","_")+"_"+it}.join(",")
+                    sql += ") "
+
                     if(parameter.value.contains(null) || parameter.value.contains("null")){
                         parameter.value = parameter.value.findAll{it != null && it != 'null'}
-
-                        sql = "("+parameter.property+" IN ("+parameter.value.join(",")+") OR "+parameter.property+" IS NULL) "
+                        sql = "("+sql+" OR "+parameter.property+" IS NULL) "
                     } else {
-                        sql = parameter.property+" IN ("+parameter.value.join(",")+") "
                         break
                     }
 
                     break
-                //case "":
+            //case "":
             }
             parameter.sql = sql
+            parameter.sqlParameter = [:]
+
+            if(parameter.value?.class?.isArray() || (parameter.value instanceof List)){
+                (1..parameter.value.size()).each {
+                    parameter.sqlParameter.put(parameter.property.replaceAll("\\.","_")+"_"+it, parameter.value[it-1])
+                }
+            } else parameter.sqlParameter.put(parameter.property.replaceAll("\\.","_"), parameter.value)
         }
+
+        parameters.each {
+            it.sqlParameter = it.sqlParameter.findAll{key, value -> it.sql.contains(key)}
+            if(it.sqlParameter.size() == 0) it.remove("sqlParameter")
+        }
+
+        parameters = [data:parameters, sqlParameters:[]]
+        parameters.sqlParameters = parameters.data.findResults{it.sqlParameter}
+
+        //if a same property is used multiple times
+        if(parameters.sqlParameters.collectEntries().keySet().size() < parameters.sqlParameters.size()){
+            def duplicateKeys = parameters.data.groupBy{it.property}.findAll{key, value -> value.size()> 1}.keySet()
+            parameters.data.findAll {duplicateKeys.contains(it.property)}.eachWithIndex{ it, index ->
+                String oldName = it.sqlParameter.keySet()[0]
+                String newName = oldName+"_"+index
+
+                it.sql = it.sql.replace(":"+oldName, ":"+newName)
+                it.sqlParameter.put(newName, it.sqlParameter.remove(oldName))
+            }
+        }
+
+        if(parameters.sqlParameters.size() > 0) parameters.sqlParameters = parameters.sqlParameters.collectEntries()
+
+
         return parameters
     }
 
