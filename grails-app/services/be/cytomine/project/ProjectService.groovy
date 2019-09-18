@@ -168,6 +168,10 @@ class ProjectService extends ModelService {
             }
         }
 
+        if (sortColumn == "lastActivity" && !extended.withLastActivity) throw new WrongArgumentException("Cannot sort on lastActivity without argument withLastActivity")
+        if (sortColumn == "membersCount" && !extended.withMembersCount) throw new WrongArgumentException("Cannot sort on membersCount without argument withMembersCount")
+
+
         def validParameters = getDomainAssociatedSearchParameters(Project, searchParameters).each{it.property = "p."+it.property}
         loop:for (def parameter : searchParameters){
             String property
@@ -178,6 +182,7 @@ class ProjectService extends ModelService {
                     break
                 case "membersCount" :
                     property = "members.member_count"
+                    parameter.values= convertSearchParameter(Long.class, parameter.values)
                     break
                 default:
                     continue loop
@@ -194,6 +199,8 @@ class ProjectService extends ModelService {
                 members : sqlSearchConditions.data.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND "),
                 parameters: sqlSearchConditions.sqlParameters
         ]
+
+        if (sqlSearchConditions.members && !extended.withMembersCount) throw new WrongArgumentException("Cannot search on members attributes without argument withMembersCount")
 
         String select, from, where, search, sort
         String request
