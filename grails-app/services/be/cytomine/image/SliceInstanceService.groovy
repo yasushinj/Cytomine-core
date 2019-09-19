@@ -13,6 +13,7 @@ import be.cytomine.utils.ModelService
 import be.cytomine.utils.SQLUtils
 import be.cytomine.utils.Task
 import groovy.sql.Sql
+import org.hibernate.FetchMode
 
 import java.nio.file.Paths
 
@@ -55,7 +56,14 @@ class SliceInstanceService extends ModelService {
 
     def list(ImageInstance image) {
         securityACLService.check(image, READ)
-        SliceInstance.findAllByImage(image)
+        SliceInstance.createCriteria().list {
+            createAlias("baseSlice", "as")
+            eq("image", image)
+            order("as.time", "asc")
+            order("as.zStack", "asc")
+            order("as.channel", "asc")
+            fetchMode("baseSlice", FetchMode.JOIN)
+        }
     }
 
     def add(def json) {
