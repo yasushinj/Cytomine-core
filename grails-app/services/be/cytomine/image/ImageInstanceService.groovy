@@ -446,9 +446,10 @@ class ImageInstanceService extends ModelService {
         def res = executeCommand(c, domain, jsonNewData)
         ImageInstance imageInstance = res.object
 
-        Double resolution = JSONUtils.getJSONAttrDouble(attributes, "resolution", null)
+        Double resolutionX = JSONUtils.getJSONAttrDouble(attributes, "physicalSizeX", null)
+        Double resolutionY = JSONUtils.getJSONAttrDouble(attributes, "physicalSizeY", null)
 
-        boolean resolutionUpdated = resolution != imageInstance.resolution
+        boolean resolutionUpdated = (resolutionX != imageInstance.physicalSizeX) || (resolutionY != imageInstance.physicalSizeY)
 
         if (resolutionUpdated) {
             def annotations

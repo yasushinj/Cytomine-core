@@ -71,6 +71,18 @@ class ImageInstance extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "The image resolution (microm per pixel)")
     Double resolution
 
+    @RestApiObjectField(description = "Physical size of a pixel along X axis", mandatory = false)
+    Double physicalSizeX
+
+    @RestApiObjectField(description = "Physical size of a pixel along Y axis", mandatory = false)
+    Double physicalSizeY
+
+    @RestApiObjectField(description = "Physical size of a pixel along Z axis", mandatory = false)
+    Double physicalSizeZ
+
+    @RestApiObjectField(description = "The number of frames per second", mandatory = false)
+    Double fps
+
     @RestApiObjectFields(params = [
             @RestApiObjectField(apiFieldName = "filename", description = "Abstract image filename (see Abstract Image)", allowedType = "string", useForCreation = false),
             @RestApiObjectField(apiFieldName = "originalFilename", description = "Abstract image original filename (see Abstract Image)", allowedType = "string", useForCreation = false),
@@ -97,6 +109,10 @@ class ImageInstance extends CytomineDomain implements Serializable {
         instanceFilename nullable: true
         magnification nullable: true
         resolution nullable: true
+        physicalSizeX nullable: true
+        physicalSizeY nullable: true
+        physicalSizeZ nullable: true
+        fps nullable: true
     }
 
     static mapping = {
@@ -141,7 +157,10 @@ class ImageInstance extends CytomineDomain implements Serializable {
         domain.reviewUser = JSONUtils.getJSONAttrDomain(json, "reviewUser", new User(), false)
 
         domain.magnification = JSONUtils.getJSONAttrInteger(json,'magnification',null)
-        domain.resolution = JSONUtils.getJSONAttrDouble(json,'resolution',null)
+        domain.physicalSizeX = JSONUtils.getJSONAttrDouble(json, "physicalSizeX", null)
+        domain.physicalSizeY = JSONUtils.getJSONAttrDouble(json, "physicalSizeY", null)
+        domain.physicalSizeZ = JSONUtils.getJSONAttrDouble(json, "physicalSizeZ", null)
+        domain.fps = JSONUtils.getJSONAttrDouble(json, "fps", null)
 
         //Check review constraint
         if ((domain.reviewUser == null && domain.reviewStart != null)
@@ -179,10 +198,10 @@ class ImageInstance extends CytomineDomain implements Serializable {
         returnArray['duration'] = image?.baseImage?.duration
         returnArray['channels'] = image?.baseImage?.channels
 
-        returnArray['physicalSizeX'] = image?.baseImage?.physicalSizeX
-        returnArray['physicalSizeY'] = image?.baseImage?.physicalSizeY
-        returnArray['physicalSizeZ'] = image?.baseImage?.physicalSizeZ
-        returnArray['fps'] = image?.baseImage?.fps
+        returnArray['physicalSizeX'] = image?.physicalSizeX
+        returnArray['physicalSizeY'] = image?.physicalSizeY
+        returnArray['physicalSizeZ'] = image?.physicalSizeZ
+        returnArray['fps'] = image?.fps
 
         returnArray['zoom'] = image?.baseImage?.getZoomLevels()
 
@@ -274,13 +293,35 @@ class ImageInstance extends CytomineDomain implements Serializable {
         if(project?.blindMode) return baseImage.id
         return null
     }
-
-    public Double getResolution() {
-        if (resolution != null && resolution != 0) {
-            return resolution
+    
+    Double getPhysicalSizeX() {
+        if (physicalSizeX != null && physicalSizeX != 0) {
+            return physicalSizeX
         }
-        return baseImage.resolution
+        return baseImage.physicalSizeX
     }
+
+    Double getPhysicalSizeY() {
+        if (physicalSizeY != null && physicalSizeY != 0) {
+            return physicalSizeY
+        }
+        return baseImage.physicalSizeY
+    }
+
+    Double getPhysicalSizeZ() {
+        if (physicalSizeZ != null && physicalSizeZ != 0) {
+            return physicalSizeZ
+        }
+        return baseImage.physicalSizeZ
+    }
+
+    public Double getFps() {
+        if (fps != null && fps != 0) {
+            return fps
+        }
+        return baseImage.fps
+    }
+    
     public Integer getMagnification() {
         if (magnification != null && magnification != 0) {
             return magnification
