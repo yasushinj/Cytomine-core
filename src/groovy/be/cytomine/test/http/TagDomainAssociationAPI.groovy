@@ -37,7 +37,7 @@ class TagDomainAssociationAPI extends DomainAPI {
     }
 
     static def create(def json, String domainClassName, Long domainIdent, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/"+domainClassName+"/"+domainIdent+"/tag_domain_association.json"
+        String URL = Infos.CYTOMINEURL + "api/domain/"+domainClassName+"/"+domainIdent+"/tag_domain_association.json"
         def result = doPOST(URL,json,username,password)
         result.data = TagDomainAssociation.get(JSON.parse(result.data)?.tagdomainassociation?.id)
         return result
@@ -54,7 +54,7 @@ class TagDomainAssociationAPI extends DomainAPI {
     }
 
     static def listByDomain(CytomineDomain domain, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/"
+        String URL = Infos.CYTOMINEURL + "api/domain/"
         // TODO when RESTE normalization replace the switch by domain.getClass().simpleName converted to snake case
         switch (domain.getClass()){
             case ImageInstance :

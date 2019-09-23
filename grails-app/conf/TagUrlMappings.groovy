@@ -24,12 +24,12 @@ class TagUrlMappings {
             action = [GET:"show",PUT:"update", DELETE:"delete"]
         }
         "/api/tag_domain_association.$format"(controller:"restTagDomainAssociation"){
-            action = [GET: "list"]
+            action = [GET: "list", POST:"add"]
         }
         "/api/tag_domain_association/$id.$format"(controller:"restTagDomainAssociation"){
             action = [GET: "show", DELETE: "delete"]
         }
-        "/api/$domainClassName/$domainId/tag_domain_association.$format"(controller:"restTagDomainAssociation"){
+        "/api/domain/$domainClassName/$domainId/tag_domain_association.$format"(controller:"restTagDomainAssociation"){
             action = [GET:"listByDomain", POST:"add"]
         }
     }
