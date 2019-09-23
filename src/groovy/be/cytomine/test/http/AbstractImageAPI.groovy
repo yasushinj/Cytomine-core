@@ -17,6 +17,9 @@ package be.cytomine.test.http
 */
 
 import be.cytomine.image.AbstractImage
+import be.cytomine.image.server.Storage
+import be.cytomine.image.server.StorageAbstractImage
+import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -89,6 +92,21 @@ class AbstractImageAPI extends DomainAPI {
     static def delete(def id, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/abstractimage/" + id + ".json"
         return doDELETE(URL,username,password)
+    }
+
+    static AbstractImage buildBasicAbstractImage(String username, String password) {
+        AbstractImage abstractImage = BasicInstanceBuilder.getAbstractImageNotExist()
+        def result = AbstractImageAPI.create(abstractImage.encodeAsJSON(), username, password)
+        assert 200 == result.code
+        abstractImage = result.data
+
+        result = StorageAPI.create(BasicInstanceBuilder.getStorageNotExist(false).encodeAsJSON(), username, password)
+        assert 200 == result.code
+        Storage storage = result.data
+        StorageAbstractImage sai = new StorageAbstractImage(storage : storage, abstractImage : abstractImage)
+        BasicInstanceBuilder.saveDomain(sai)
+
+        return abstractImage
     }
 
 }
