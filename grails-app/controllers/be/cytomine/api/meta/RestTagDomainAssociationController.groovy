@@ -52,7 +52,7 @@ class RestTagDomainAssociationController extends RestController {
     @RestApiMethod(description="Get all tag-domain associations available in cytomine", listing = true)
     def list() {
         securityACLService.checkGuest(cytomineService.currentUser)
-        def result = tagDomainAssociationService.list(searchParameters)
+        def result = tagDomainAssociationService.list(searchParameters, params.long('max'), params.long('offset'))
         responseSuccess([collection : result.data, size:result.total])
     }
 
@@ -67,7 +67,7 @@ class RestTagDomainAssociationController extends RestController {
         if (!params.domainClassName.contains("AbstractImage")) {
             securityACLService.check(domain.container(),READ)
         }
-        def result = tagDomainAssociationService.listByDomain(domain)
+        def result = tagDomainAssociationService.listByDomain(domain, params.long('max'), params.long('offset'))
         responseSuccess([collection : result.data, size:result.total])
     }
 

@@ -49,7 +49,7 @@ class TagDomainAssociationService extends ModelService {
     }
 
     // cannot paginate because I don't know the total of the list before checking permissions !
-    def list(def searchParameters = []) {
+    def list(def searchParameters = [], Long max = 0, Long offset = 0) {
         def validSearchParameters = getDomainAssociatedSearchParameters(TagDomainAssociation, searchParameters)
 
         def result = criteriaRequestWithPagination(TagDomainAssociation, 0, 0, {}, validSearchParameters, "domainClassName", "desc")
@@ -82,6 +82,17 @@ class TagDomainAssociationService extends ModelService {
             } catch (ForbiddenException e){}
         }
         result.total = result.data.size()
+
+        // as there is no efficient backend pagination, I do it at the end.
+        if(max > 0) {
+            if (offset >= result.data.size()) {
+                result.data = []
+            } else {
+                def maxForCollection = Math.min(result.data.size() - offset, max)
+                result.data = result.data.subList((int)offset,(int)offset + (int)maxForCollection)
+            }
+        }
+
         return result
 
 
@@ -92,16 +103,16 @@ class TagDomainAssociationService extends ModelService {
     /**
      * List all tags
      */
-    def listByTag(Tag tag) {
+    def listByTag(Tag tag, Long max = 0, Long offset = 0) {
         securityACLService.checkAdmin(cytomineService.getCurrentUser())
-        return list([[operator : "in", field : "tag", values:tag.id]])
+        return list([[operator : "in", field : "tag", values:tag.id]], max, offset)
     }
 
     /**
      * List all tags
      */
-    def listByDomain(CytomineDomain domain) {
-        return list([[operator : "equals", field : "domainClassName", values:domain.getClass().name], [operator : "equals", field : "domainIdent", values:domain.id]])
+    def listByDomain(CytomineDomain domain, Long max = 0, Long offset = 0) {
+        return list([[operator : "equals", field : "domainClassName", values:domain.getClass().name], [operator : "equals", field : "domainIdent", values:domain.id]], max, offset)
     }
 
     /**
