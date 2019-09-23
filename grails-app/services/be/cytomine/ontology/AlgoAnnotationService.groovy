@@ -89,10 +89,10 @@ class AlgoAnnotationService extends ModelService {
         List<UserJob> users = UserJob.findAllByJob(job);
         List algoAnnotations = []
         users.each { user ->
-            algoAnnotations.addAll(new AlgoAnnotationListing(
+            algoAnnotations.addAll(annotationListingService.executeRequest(new AlgoAnnotationListing(
                     columnToPrint: propertiesToShow,
                     user : user.id
-            ))
+            )))
         }
         return algoAnnotations
     }
