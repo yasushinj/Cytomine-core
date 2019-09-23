@@ -431,6 +431,10 @@ abstract class ModelService {
             output = Double.parseDouble(parameter)
         } else if (type == Date) {
             output = new Date(Long.parseLong(parameter))
+        } else if (CytomineDomain.isAssignableFrom(type)) {
+            output = Long.parseLong(parameter)
+            output = type.read(output)
+
         } else {
             output = parameter
         }
