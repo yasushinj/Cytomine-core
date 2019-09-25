@@ -181,7 +181,7 @@ class AlgoAnnotationService extends ModelService {
         // Add annotation-term if any
         def termIds = JSONUtils.getJSONList(json.term) + JSONUtils.getJSONList(json.terms)
         def terms = termIds.collect { id ->
-            def r = algoAnnotationTermService.addAlgoAnnotationTerm(addedAnnotation, id, null, currentUser.id, currentUser, transaction)
+            def r = algoAnnotationTermService.addAlgoAnnotationTerm(addedAnnotation, id, currentUser.id, currentUser, transaction)
             return r?.data?.algoannotationterm?.term
         }
         result.data.annotation.term = terms
@@ -259,7 +259,7 @@ class AlgoAnnotationService extends ModelService {
 
 
     def getStringParamsI18n(def domain) {
-        return [cytomineService.getCurrentUser().toString(), domain.image?.getFileName(), domain.user.toString()]
+        return [cytomineService.getCurrentUser().toString(), domain.image?.getBlindInstanceFilename(), domain.user.toString()]
     }
 
     def afterAdd(def domain, def response) {
@@ -305,7 +305,7 @@ class AlgoAnnotationService extends ModelService {
     }
 
     def annotationTrackService
-    def deleteDependentAnnotationTrack(UserAnnotation ua, Transaction transaction, Task task = null) {
+    def deleteDependentAnnotationTrack(AlgoAnnotation ua, Transaction transaction, Task task = null) {
         AnnotationTrack.findAllByAnnotationIdent(ua.id).each {
             annotationTrackService.delete(it, transaction, task)
         }
