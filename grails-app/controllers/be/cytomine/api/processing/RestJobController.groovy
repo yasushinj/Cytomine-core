@@ -236,6 +236,16 @@ class RestJobController extends RestController {
         }
     }
 
+    def getLog() {
+        Job job = jobService.read(params.long('id'))
+        def data = jobService.getLog(job)
+        if (data) {
+            responseSuccess(data)
+        } else {
+            responseNotFound("Job", params.id)
+        }
+    }
+
     /**
      * Delete the full data set build by the job
      * This method will delete: annotation prediction, uploaded files,...

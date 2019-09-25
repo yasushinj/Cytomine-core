@@ -26,6 +26,7 @@ import be.cytomine.security.User
 import be.cytomine.security.UserJob
 import be.cytomine.sql.AlgoAnnotationListing
 import be.cytomine.sql.ReviewedAnnotationListing
+import be.cytomine.utils.AttachedFile
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import groovy.sql.Sql
@@ -154,6 +155,17 @@ class JobService extends ModelService {
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.software.name]
+    }
+
+    def getLog(Job job) {
+        def log = AttachedFile.findByDomainClassNameAndDomainIdentAndFilename("be.cytomine.processing.Job", job.id, "log.out")
+
+        if (!log) {
+            return null
+        }
+        def ret = AttachedFile.getDataFromDomain(log)
+        ret['data'] = new String(log.data);
+        return ret
     }
 
     List<UserJob> getAllLastUserJob(Project project, Software software) {
