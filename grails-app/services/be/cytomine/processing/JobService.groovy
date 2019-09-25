@@ -21,6 +21,7 @@ import be.cytomine.Exception.WrongArgumentException
 */
 
 import be.cytomine.command.*
+import be.cytomine.meta.AttachedFile
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.SecUserSecRole
@@ -280,6 +281,17 @@ class JobService extends ModelService {
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.software.name]
+    }
+
+    def getLog(Job job) {
+        def log = AttachedFile.findByDomainClassNameAndDomainIdentAndFilename("be.cytomine.processing.Job", job.id, "log.out")
+
+        if (!log) {
+            return null
+        }
+        def ret = AttachedFile.getDataFromDomain(log)
+        ret['data'] = new String(log.data);
+        return ret
     }
 
     List<UserJob> getAllLastUserJob(Project project, Software software) {
