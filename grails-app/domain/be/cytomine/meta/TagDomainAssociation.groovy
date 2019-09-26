@@ -87,6 +87,7 @@ class TagDomainAssociation extends CytomineDomain implements Serializable{
         returnArray['domainIdent'] = domain?.domainIdent
         returnArray['domainClassName'] = domain?.domainClassName
         returnArray['tag'] = domain?.tag.id
+        returnArray['tagName'] = domain?.tag.name
         return returnArray
     }
 

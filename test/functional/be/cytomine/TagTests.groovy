@@ -62,6 +62,12 @@ class TagTests {
         tag.name = tagOrigin.name
         def result = TagAPI.create(tag.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 409 == result.code
+        tag.name = tagOrigin.name.toUpperCase()
+        result = TagAPI.create(tag.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 409 == result.code
+        tag.name = tagOrigin.name.toLowerCase()
+        result = TagAPI.create(tag.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 409 == result.code
     }
     void testUpdateTag() {
         def tag = BasicInstanceBuilder.getTagNotExist(true)

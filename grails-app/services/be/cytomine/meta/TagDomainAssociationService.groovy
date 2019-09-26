@@ -68,13 +68,6 @@ class TagDomainAssociationService extends ModelService {
                     cache << current
                     if(!association.domainClassName.contains("AbstractImage")) {
                         securityACLService.check(association.container(),READ)
-                        if (association.retrieveCytomineDomain().hasProperty('user') && association.retrieveCytomineDomain().user) {
-                            securityACLService.checkFullOrRestrictedForOwner(association, association.retrieveCytomineDomain().user)
-                        } else if (association.domainClassName.contains("Project")){
-                            securityACLService.check(association.domainIdent,association.domainClassName, WRITE)
-                        } else {
-                            securityACLService.checkisNotReadOnly(association)
-                        }
                     }
                     current.granted = true
                     result.data << association
@@ -135,7 +128,7 @@ class TagDomainAssociationService extends ModelService {
             if (domain.hasProperty('user') && domain.user) {
                 securityACLService.checkFullOrRestrictedForOwner(domain, domain.user)
             } else {
-                securityACLService.checkisNotReadOnly(domain)
+                securityACLService.checkFullOrRestrictedForOwner(domain)
             }
         }
 
@@ -159,10 +152,8 @@ class TagDomainAssociationService extends ModelService {
             securityACLService.check(domain.container(),READ)
             if (domain.retrieveCytomineDomain().hasProperty('user') && domain.retrieveCytomineDomain().user) {
                 securityACLService.checkFullOrRestrictedForOwner(domain, domain.retrieveCytomineDomain().user)
-            } else if (domain.domainClassName.contains("Project")){
-                securityACLService.check(domain.domainIdent,domain.domainClassName, WRITE)
             } else {
-                securityACLService.checkisNotReadOnly(domain)
+                securityACLService.checkFullOrRestrictedForOwner(domain)
             }
         }
 
