@@ -60,7 +60,7 @@ class TagDomainAssociationService extends ModelService {
         for(TagDomainAssociation association : associations) {
 
             try {
-                def cached = cache.findAll{it.id == association.domainIdent && it.clazz == association.domainClassName}
+                def cached = cache.find{it.id == association.domainIdent && it.clazz == association.domainClassName}
                 if(cached) {
                     if(cached.granted) result.data << association
                 } else {
@@ -72,6 +72,7 @@ class TagDomainAssociationService extends ModelService {
                     current.granted = true
                     result.data << association
                 }
+
             } catch (ForbiddenException e){}
         }
         result.total = result.data.size()
@@ -127,6 +128,8 @@ class TagDomainAssociationService extends ModelService {
             securityACLService.check(domain.container(),READ)
             if (domain.hasProperty('user') && domain.user) {
                 securityACLService.checkFullOrRestrictedForOwner(domain, domain.user)
+            } else if (domainClass.contains("Project")){
+                securityACLService.check(domain, WRITE)
             } else {
                 securityACLService.checkFullOrRestrictedForOwner(domain)
             }
