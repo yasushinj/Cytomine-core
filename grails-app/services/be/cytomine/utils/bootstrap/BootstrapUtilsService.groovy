@@ -24,6 +24,7 @@ import be.cytomine.image.Mime
 import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.*
 import be.cytomine.middleware.AmqpQueue
+import be.cytomine.middleware.AmqpQueueConfigInstance
 import be.cytomine.middleware.MessageBrokerServer
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
@@ -264,7 +265,9 @@ class BootstrapUtilsService {
             if(!grailsApplication.config.grails.messageBrokerServerURL.contains(messageBroker.host)) {
                 log.info messageBroker.host + " is not in config, drop it"
                 log.info "delete Message Broker Server " + messageBroker.host
-                AmqpQueue.findAllByHost(messageBroker.host).each {it.delete(failOnError:true)}
+                def queues = AmqpQueue.findAllByHost(messageBroker.host)
+                AmqpQueueConfigInstance.deleteAll(AmqpQueueConfigInstance.findAllByQueueInList(queues))
+                AmqpQueue.deleteAll(queues)
                 messageBroker.delete()
             }
         }
