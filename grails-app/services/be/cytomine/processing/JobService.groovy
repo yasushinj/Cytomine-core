@@ -168,6 +168,12 @@ class JobService extends ModelService {
         return ret
     }
 
+    def markAsFavorite(Job job, boolean favorite) {
+        new Sql(dataSource).executeUpdate("UPDATE job SET favorite = ${favorite} WHERE id = ${job.id}");
+        job.favorite = favorite
+        return job
+    }
+
     List<UserJob> getAllLastUserJob(Project project, Software software) {
         securityACLService.check(project,READ)
         //TODO: inlist bad performance

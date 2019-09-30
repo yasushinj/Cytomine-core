@@ -140,7 +140,7 @@ class UrlApi {
     }
 
     static def serverUrl() {
-        Holders.getGrailsApplication().config.grails.serverURL
+        Holders.getGrailsApplication().config.grails.serverURL.replace("https", "http")
     }
 
     static def UIUrl() {

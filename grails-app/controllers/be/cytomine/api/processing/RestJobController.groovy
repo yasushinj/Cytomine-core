@@ -27,6 +27,7 @@ import be.cytomine.processing.ProcessingServer
 import be.cytomine.processing.Software
 import be.cytomine.project.Project
 import be.cytomine.security.UserJob
+import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import org.restapidoc.annotation.*
@@ -233,6 +234,17 @@ class RestJobController extends RestController {
             response.outputStream.flush()
         } else {
             responseNotFound("JobData", "getPreview")
+        }
+    }
+
+    def setFavorite() {
+        Job job = jobService.read(params.long('id'))
+        securityACLService.checkisNotReadOnly(job.container())
+        if (job) {
+            def favorite = JSONUtils.getJSONAttrBoolean(request.JSON, 'favorite', false)
+            responseSuccess(jobService.markAsFavorite(job, favorite))
+        } else {
+            responseNotFound("Job", params.id)
         }
     }
 
