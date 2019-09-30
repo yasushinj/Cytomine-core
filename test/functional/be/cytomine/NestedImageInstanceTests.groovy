@@ -79,7 +79,7 @@ class NestedImageInstanceTests {
         assert NestedImageInstanceAPI.containsInJSONList(nested.parent.id,json)
         assert !NestedImageInstanceAPI.containsInJSONList(nested.id,json)
 
-        result = ImageInstanceAPI.listByUser(nested.user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.listLightByUser(nested.user.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         json = JSON.parse(result.data)
         assert NestedImageInstanceAPI.containsInJSONList(nested.parent.id,json)
         assert !NestedImageInstanceAPI.containsInJSONList(nested.id,json)

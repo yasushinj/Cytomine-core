@@ -26,6 +26,7 @@ import be.cytomine.image.multidim.ImageGroup
 import be.cytomine.ontology.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
+import be.cytomine.security.SecUser
 import be.cytomine.sql.ReviewedAnnotationListing
 import be.cytomine.test.HttpClient
 import be.cytomine.utils.Description
@@ -91,7 +92,16 @@ class RestImageInstanceController extends RestController {
 
     @RestApiMethod(description="Get all image instance available for the current user", listing = true)
     def listByUser() {
-        responseSuccess(imageInstanceService.list(cytomineService.currentUser))
+        String sortColumn = params.sortColumn ? params.sortColumn : "created"
+        String sortDirection = params.sortDirection ? params.sortDirection : "desc"
+        SecUser user = secUserService.read(params.long('user'))
+        def result = imageInstanceService.list(user, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'))
+        responseSuccess([collection : result.data, size : result.total])
+    }
+
+    @RestApiMethod(description="Get a lighted list of all image instance available for the current user", listing = true)
+    def listLightByUser() {
+        responseSuccess(imageInstanceService.listLight(cytomineService.currentUser))
     }
 
     @RestApiMethod(description="Get the last opened image for the current user", listing = true)

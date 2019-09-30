@@ -30,8 +30,13 @@ import grails.converters.JSON
  */
 class ImageInstanceAPI extends DomainAPI {
 
-    static def listByUser(Long id, Long max = 0, Long offset = 0, String username, String password) {
+    static def listLightByUser(Long id, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/user/$id/imageinstance/light.json?max=$max&offset=$offset"
+        return doGET(URL, username, password)
+    }
+
+    static def listByUser(Long userId, def searchParameters = [], Long max = 0, Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/user/$userId/imageinstance.json?${convertSearchParameters(searchParameters)}&max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 

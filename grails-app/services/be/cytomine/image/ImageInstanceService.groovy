@@ -39,6 +39,7 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 import org.hibernate.FetchMode
 import org.springframework.util.ReflectionUtils
@@ -97,7 +98,117 @@ class ImageInstanceService extends ModelService {
         return data
     }
 
-    def list(User user) {
+    def list(User user, String sortColumn = "created", String sortDirection = "desc", def searchParameters = [], Long max = 0, Long offset = 0) {
+
+        securityACLService.checkIsSameUser(user, cytomineService.currentUser)
+
+        String imageInstanceAlias = "ii"
+        String abstractImageAlias = "ai"
+
+        if (!sortColumn) sortColumn = "created"
+        if (!sortDirection) sortDirection = "asc"
+        if (sortColumn.equals("numberOfAnnotations")) sortColumn = "countImageAnnotations"
+        if (sortColumn.equals("numberOfJobAnnotations")) sortColumn = "countImageJobAnnotations"
+        if (sortColumn.equals("numberOfReviewedAnnotations")) sortColumn = "countImageReviewedAnnotations"
+
+        String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? "${imageInstanceAlias}." + sortColumn : null
+        if (!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
+        if (!sortedProperty) throw new CytomineMethodNotYetImplementedException("ImageInstance list sorted by $sortDirection is not implemented")
+
+        def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters, false)
+
+        validatedSearchParameters.findAll { !it.property.contains(".") }.each {
+            it.property = "${imageInstanceAlias}." + it.property
+        }
+        validatedSearchParameters.findAll { it.property == "ii.instanceFilename" }.each { it.property = "name" }
+
+        boolean joinAI = validatedSearchParameters.any {it.property.contains(abstractImageAlias + ".")} || sortedProperty.contains(abstractImageAlias + ".")
+
+        def sqlSearchConditions = searchParametersToSQLConstraints(validatedSearchParameters)
+
+        def nameSearch = sqlSearchConditions.data.find { it.property == "name" }
+
+        sqlSearchConditions = [
+                imageInstance: sqlSearchConditions.data.findAll {it.property.startsWith("$imageInstanceAlias.")}.collect { it.sql }.join(" AND "),
+                abstractImage: sqlSearchConditions.data.findAll {it.property.startsWith("$abstractImageAlias.")}.collect { it.sql }.join(" AND "),
+                parameters   : sqlSearchConditions.sqlParameters
+        ]
+
+
+        String select, from, where, search, sort
+        String request
+
+        select = "SELECT distinct $imageInstanceAlias.* "
+        from = "FROM user_image $imageInstanceAlias "
+        where = "WHERE user_image_id = ${user.id} "
+
+        if (joinAI) {
+            select += ", ${abstractImageAlias}.* "
+            from += "JOIN abstract_image $abstractImageAlias ON ${abstractImageAlias}.id = ${imageInstanceAlias}.base_image_id "
+        }
+        search = ""
+
+        if (sqlSearchConditions.imageInstance) {
+            search += " AND "
+            search += sqlSearchConditions.imageInstance
+        }
+        if (sqlSearchConditions.abstractImage) {
+            search += " AND "
+            search += sqlSearchConditions.abstractImage
+        }
+
+        if (nameSearch) {
+            String operation
+            if (nameSearch.operator == "ilike") {
+                operation = "ILIKE"
+            } else if (nameSearch.operator == "equals") {
+                operation = "=="
+            }
+            where += "AND ( (NOT project_blind AND instance_filename $operation :name) OR (project_blind AND NOT user_project_manager AND base_image_id::text $operation :name) OR (project_blind AND user_project_manager AND (base_image_id::text $operation :name OR instance_filename $operation :name)))"
+        }
+
+        sort = " ORDER BY " + sortedProperty
+        sort += (sortDirection.equals("desc")) ? " DESC " : " ASC "
+
+
+        request = select + from + where + search + sort
+        if (max > 0) request += " LIMIT $max"
+        if (offset > 0) request += " OFFSET $offset"
+
+
+        def sql = new Sql(dataSource)
+        def data = []
+        def mapParams = sqlSearchConditions.parameters
+
+        if(nameSearch){
+            mapParams.put("name", nameSearch.value)
+        }
+
+        sql.eachRow(request, mapParams) {
+            def map = [:]
+
+            for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
+                String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
+                String objectKey = key.replaceAll( "(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() } )
+
+
+                map.putAt(objectKey, it[key])
+            }
+            data << map
+        }
+
+        def size
+        request = "SELECT COUNT(DISTINCT ${imageInstanceAlias}.id) " + from + where + search
+
+        sql.eachRow(request, mapParams) {
+            size = it.count
+        }
+        sql.close()
+
+        return [data:data, total:size]
+    }
+
+    def listLight(User user) {
         securityACLService.checkIsSameUser(user,cytomineService.currentUser)
         def data = []
 
