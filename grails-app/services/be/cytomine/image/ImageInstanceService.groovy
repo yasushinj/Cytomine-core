@@ -194,9 +194,19 @@ class ImageInstanceService extends ModelService {
 
                 map.putAt(objectKey, it[key])
             }
-            data << map
-        }
 
+            map['created'] = map['created'].getTime()
+            map['deleted'] = map['deleted']?.getTime()
+            map['updated'] = map['updated']?.getTime()
+            map['baseImage'] = map['baseImageId']
+            map['project'] = map['projectId']
+
+            //TODO improve perf !
+            def line = ImageInstance.getDataFromDomain(ImageInstance.insertDataIntoDomain(map))
+            line.putAt('projectBlind', map.projectBlind)
+            line.putAt('projectName', map.projectName)
+            data << line
+        }
         def size
         request = "SELECT COUNT(DISTINCT ${imageInstanceAlias}.id) " + from + where + search
 
