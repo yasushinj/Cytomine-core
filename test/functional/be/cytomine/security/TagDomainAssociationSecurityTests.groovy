@@ -117,6 +117,7 @@ class TagDomainAssociationSecurityTests extends SecurityTestsAbstract {
         assert result.code == 200
 
         def tag2 = BasicInstanceBuilder.getTagNotExist(true)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         getUser2()
 
         project.mode = Project.EditingMode.READ_ONLY
@@ -130,13 +131,31 @@ class TagDomainAssociationSecurityTests extends SecurityTestsAbstract {
         result = TagDomainAssociationAPI.create(association2.encodeAsJSON(), association2.domainClassName, association2.domainIdent, USERNAME2, PASSWORD2)
         assert result.code == 403
 
+        TagDomainAssociation association3 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        association3.tag = tag2
+        association3.domain = image
+        result = TagDomainAssociationAPI.create(association3.encodeAsJSON(), association3.domainClassName, association3.domainIdent, USERNAME2, PASSWORD2)
+        assert result.code == 403
+
         project.mode = Project.EditingMode.RESTRICTED
         project.save(true)
         result = TagDomainAssociationAPI.create(association2.encodeAsJSON(), association2.domainClassName, association2.domainIdent, USERNAME2, PASSWORD2)
         assert result.code == 403
+        result = TagDomainAssociationAPI.create(association3.encodeAsJSON(), association3.domainClassName, association3.domainIdent, USERNAME2, PASSWORD2)
+        assert result.code == 403
 
         project.mode = Project.EditingMode.CLASSIC
         project.save(true)
+
+        result = TagDomainAssociationAPI.create(association2.encodeAsJSON(), association2.domainClassName, association2.domainIdent, USERNAME2, PASSWORD2)
+        assert result.code == 403 // even in classic mode, simple user cannot change project parameter
+        result = TagDomainAssociationAPI.create(association3.encodeAsJSON(), association3.domainClassName, association3.domainIdent, USERNAME2, PASSWORD2)
+        assert result.code == 200
+
+        project.mode = Project.EditingMode.RESTRICTED
+        project.save(true)
+
+        ProjectAPI.addAdminProject(project.id,user2.id,SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
 
         result = TagDomainAssociationAPI.create(association2.encodeAsJSON(), association2.domainClassName, association2.domainIdent, USERNAME2, PASSWORD2)
         assert result.code == 200
@@ -202,7 +221,7 @@ class TagDomainAssociationSecurityTests extends SecurityTestsAbstract {
         tag = BasicInstanceBuilder.getTagNotExist()
         result = TagAPI.create(tag.encodeAsJSON(), USERNAME2, PASSWORD2)
         tag = result.data
-        ProjectAPI.addUserProject(project.id,user2.id,SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
+        ProjectAPI.addAdminProject(project.id,user2.id,SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
         association = BasicInstanceBuilder.getTagDomainAssociationNotExist()
         association.tag = tag
         association.domain = project
@@ -415,15 +434,16 @@ class TagDomainAssociationSecurityTests extends SecurityTestsAbstract {
 
         ProjectAPI.addUserProject(project.id, user2.id, USERNAME1, PASSWORD1)
 
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         TagDomainAssociation association1 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
         association1.tag = tag1
-        association1.domain = project
+        association1.domain = image
         result = TagDomainAssociationAPI.create(association1.encodeAsJSON(), association1.domainClassName, association1.domainIdent, USERNAME2, PASSWORD2)
         assert result.code == 200
         association1 = result.data
 
 
-        def searchParameters = [[operator : "in", field : "tag", value: tag1.id], [operator : "in", field : "domainIdent", value: project.id]]
+        def searchParameters = [[operator : "in", field : "tag", value: tag1.id], [operator : "in", field : "domainIdent", value: image.id]]
         result = TagDomainAssociationAPI.search(searchParameters, USERNAME1, PASSWORD1)
         assert 200 == result.code
         def json = JSON.parse(result.data)
