@@ -19,12 +19,20 @@ import be.cytomine.image.ImageInstance
 */
 
 import be.cytomine.meta.TagDomainAssociation
+import be.cytomine.ontology.AlgoAnnotation
+import be.cytomine.ontology.ReviewedAnnotation
+import be.cytomine.ontology.UserAnnotation
+import be.cytomine.processing.RoiAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
+import be.cytomine.test.http.AlgoAnnotationAPI
 import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.ProjectAPI
+import be.cytomine.test.http.ReviewedAnnotationAPI
+import be.cytomine.test.http.RoiAnnotationAPI
+import be.cytomine.test.http.UserAnnotationAPI
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 
@@ -166,5 +174,76 @@ class TagDomainAssociationSearchTests {
         assert json.collection instanceof JSONArray
         assert ImageInstanceAPI.containsInJSONList(i1.id,json)
         assert ImageInstanceAPI.containsInJSONList(i3.id,json)
+    }
+
+    void testGetSearchAnnotation(){
+
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        UserAnnotation ua1 = BasicInstanceBuilder.getUserAnnotationNotExist(project,true)
+        UserAnnotation ua2 = BasicInstanceBuilder.getUserAnnotationNotExist(project,true)
+
+        TagDomainAssociation tda = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        tda.tag = BasicInstanceBuilder.getTagNotExist(true)
+        tda.domain = ua1
+        tda.save(true)
+
+        def result = UserAnnotationAPI.listByProject(project.id, [tda.tag.id], Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert UserAnnotationAPI.containsInJSONList(ua1.id,json)
+        assert !UserAnnotationAPI.containsInJSONList(ua2.id,json)
+
+
+        AlgoAnnotation aa1 = BasicInstanceBuilder.getAlgoAnnotationNotExist(project,true)
+        AlgoAnnotation aa2 = BasicInstanceBuilder.getAlgoAnnotationNotExist(project,true)
+        TagDomainAssociation tda2 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        tda2.tag = tda.tag
+        tda2.domain = aa1
+        tda2.save(true)
+
+        result = AlgoAnnotationAPI.listByProject(project.id, [tda.tag.id], Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 2 // return user AND algo annots
+        assert AlgoAnnotationAPI.containsInJSONList(ua1.id,json)
+        assert AlgoAnnotationAPI.containsInJSONList(aa1.id,json)
+        assert !AlgoAnnotationAPI.containsInJSONList(ua2.id,json)
+        assert !AlgoAnnotationAPI.containsInJSONList(aa2.id,json)
+
+
+        ReviewedAnnotation ra1 = BasicInstanceBuilder.getReviewedAnnotationNotExist(project,true)
+        ReviewedAnnotation ra2 = BasicInstanceBuilder.getReviewedAnnotationNotExist(project,true)
+        TagDomainAssociation tda3 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        tda3.tag = tda.tag
+        tda3.domain = ra1
+        tda3.save(true)
+
+        result = ReviewedAnnotationAPI.listByProject(project.id, [tda.tag.id], Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert ReviewedAnnotationAPI.containsInJSONList(ra1.id,json)
+        assert !ReviewedAnnotationAPI.containsInJSONList(ra2.id,json)
+
+
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        RoiAnnotation roa1 = BasicInstanceBuilder.getRoiAnnotationNotExist(image,true)
+        RoiAnnotation roa2 = BasicInstanceBuilder.getRoiAnnotationNotExist(image,true)
+        TagDomainAssociation tda4 = BasicInstanceBuilder.getTagDomainAssociationNotExist()
+        tda4.tag = tda.tag
+        tda4.domain = roa1
+        tda4.save(true)
+
+        result = RoiAnnotationAPI.listByProject(project.id, [tda.tag.id], Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        assert RoiAnnotationAPI.containsInJSONList(roa1.id,json)
+        assert !RoiAnnotationAPI.containsInJSONList(roa2.id,json)
     }
 }
