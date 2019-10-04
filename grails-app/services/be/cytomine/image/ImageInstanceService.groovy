@@ -259,9 +259,9 @@ class ImageInstanceService extends ModelService {
                 String filename;
                 filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
                 if(image.project.blindMode) filename = image.getBlindedName()
-                 data << [id:it['_id'],date:it['date'], thumb: UrlApi.getAbstractImageThumbURL(image.baseImage.id),instanceFilename:filename,project:image.project.id]
+                data << [id:it['_id'],date:it['date'], thumb: UrlApi.getAbstractImageThumbURL(image.baseImage.id),instanceFilename:filename,project:image.project.id]
             } catch(CytomineException e) {
-               //if user has data but has no access to picture,  ImageInstance.read will throw a forbiddenException
+                //if user has data but has no access to picture,  ImageInstance.read will throw a forbiddenException
             }
         }
         data = data.sort{-it.date.getTime()}
@@ -295,6 +295,7 @@ class ImageInstanceService extends ModelService {
     def list(Project project, String sortColumn = 'created', String sortDirection = "asc", def searchParameters = [], Long max  = 0, Long offset = 0, boolean light=false) {
         securityACLService.check(project,READ)
 
+        String imageInstanceAlias = "ii"
         String abstractImageAlias = "ai"
         String mimeAlias = "mime"
 
@@ -304,28 +305,40 @@ class ImageInstanceService extends ModelService {
         if(sortColumn.equals("numberOfJobAnnotations")) sortColumn = "countImageJobAnnotations"
         if(sortColumn.equals("numberOfReviewedAnnotations")) sortColumn = "countImageReviewedAnnotations"
 
-        String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? sortColumn : null
+        String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? "${imageInstanceAlias}." + sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : null
         if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("ImageInstance list sorted by $sortDirection is not implemented")
 
         def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters, project.blindMode)
 
-        boolean joinAI = validatedSearchParameters.any {it.property.contains(abstractImageAlias+".")} || sortedProperty.contains(abstractImageAlias+".")
-        boolean joinMime = validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")
+        validatedSearchParameters.findAll { !it.property.contains(".") }.each {
+            it.property = "${imageInstanceAlias}." + it.property
+        }
 
         def blindedNameSearch
         boolean manager = false
         for (def parameter : searchParameters){
-            if(parameter.field.equals("blindedName") && parameter.operator.equals("ilike")){
+            if(parameter.field.equals("blindedName")){
                 parameter.field = "ai.id"
                 blindedNameSearch = parameter
                 break
             }
         }
 
+
+        boolean joinAI = validatedSearchParameters.any {it.property.contains(abstractImageAlias+".")} || sortedProperty.contains(abstractImageAlias+".")
+        boolean joinMime = validatedSearchParameters.any {it.property.contains(mimeAlias+".")} || sortedProperty.contains(mimeAlias+".")
+        def sqlSearchConditions = searchParametersToSQLConstraints(validatedSearchParameters)
+
+        sqlSearchConditions = [
+                imageInstance: sqlSearchConditions.data.findAll {it.property.startsWith("$imageInstanceAlias.")}.collect { it.sql }.join(" AND "),
+                abstractImage: sqlSearchConditions.data.findAll {it.property.startsWith("$abstractImageAlias.")}.collect { it.sql }.join(" AND "),
+                mime: sqlSearchConditions.data.findAll {it.property.startsWith("$mimeAlias.")}.collect { it.sql }.join(" AND "),
+                parameters   : sqlSearchConditions.sqlParameters
+        ]
+
         if(blindedNameSearch) {
-            validatedSearchParameters.remove(blindedNameSearch)
             joinAI = true
             blindedNameSearch = blindedNameSearch.values
 
@@ -336,42 +349,97 @@ class ImageInstanceService extends ModelService {
         }
 
 
-        def images = criteriaRequestWithPagination(ImageInstance, max, offset, {
-            eq("project", project)
-            isNull("parent")
-            isNull("deleted")
+        String select, from, where, search, sort
+        String request
 
-            if(joinMime){
-                createAlias("baseImage", abstractImageAlias)
-                createAlias("baseImage.mime", "mime")
-                //fetchMode 'baseImage', FetchMode.JOIN
-                //fetchMode 'mime', FetchMode.JOIN
-            } else if(joinAI){
-                createAlias("baseImage", abstractImageAlias)
-                //fetchMode 'baseImage', FetchMode.JOIN
+
+        select = "SELECT distinct $imageInstanceAlias.* "
+        from = "FROM image_instance $imageInstanceAlias "
+        where = "WHERE ${imageInstanceAlias}.project_id = ${project.id} AND ${imageInstanceAlias}.parent_id IS NULL AND ${imageInstanceAlias}.deleted IS NULL "
+
+        if (joinAI) {
+            select += ", ${abstractImageAlias}.* "
+            from += "JOIN abstract_image $abstractImageAlias ON ${abstractImageAlias}.id = ${imageInstanceAlias}.base_image_id "
+        }
+        if (joinMime) {
+            select += ", ${mimeAlias}.* "
+            from += "JOIN mime $mimeAlias ON ${mimeAlias}.id = ${abstractImageAlias}.mime_id "
+        }
+        search = ""
+
+        if (sqlSearchConditions.imageInstance) {
+            search += " AND "
+            search += sqlSearchConditions.imageInstance
+        }
+        if (sqlSearchConditions.abstractImage) {
+            search += " AND "
+            search += sqlSearchConditions.abstractImage
+        }
+        if (sqlSearchConditions.mime) {
+            search += " AND "
+            search += sqlSearchConditions.mime
+        }
+
+        if(blindedNameSearch && manager) {
+            search +=" AND "
+            search += "("+abstractImageAlias+".id::text ILIKE :name OR  ${imageInstanceAlias}.instance_filename ILIKE :name ) "
+        } else if(blindedNameSearch){
+            search +=" AND "
+            search += abstractImageAlias+".id::text ILIKE :name "
+        }
+
+
+        sort = " ORDER BY " + sortedProperty
+        sort += (sortDirection.equals("desc")) ? " DESC " : " ASC "
+
+
+        request = select + from + where + search + sort
+        if (max > 0) request += " LIMIT $max"
+        if (offset > 0) request += " OFFSET $offset"
+
+
+        def sql = new Sql(dataSource)
+        def data = []
+        def mapParams = sqlSearchConditions.parameters
+
+        if(blindedNameSearch){
+            if(mapParams.isEmpty()) mapParams = [:]
+            mapParams.put("name", blindedNameSearch)
+        }
+
+        sql.eachRow(request, mapParams) {
+            def map = [:]
+
+            for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
+                String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
+                String objectKey = key.replaceAll( "(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() } )
+
+
+                map.putAt(objectKey, it[key])
             }
 
-            if(blindedNameSearch && manager) {
-                or {
-                    sqlRestriction(abstractImageAlias + "1_.id::text like '" + blindedNameSearch.replace("'", "''") + "'")
-                    ilike "instanceFilename", blindedNameSearch
-                }
-            } else if(blindedNameSearch) sqlRestriction(abstractImageAlias+"1_.id::text like '"+blindedNameSearch.replace("'", "''")+"'")
+            map['created'] = map['created'].getTime()
+            map['deleted'] = map['deleted']?.getTime()
+            map['updated'] = map['updated']?.getTime()
+            map['baseImage'] = map['baseImageId']
+            map['project'] = map['projectId']
 
-        }, validatedSearchParameters , {
-            order(sortedProperty, sortDirection)
-        })
-
-        if(!light) {
-            return images
+            //TODO improve perf !
+            def line = ImageInstance.getDataFromDomain(ImageInstance.insertDataIntoDomain(map))
+            line.putAt('projectBlind', map.projectBlind)
+            line.putAt('projectName', map.projectName)
+            data << line
         }
 
-        def data = []
-        images.data.each { image ->
-            data << [id: image.id, instanceFilename: image.instanceFilename, blindedName: image.blindedName]
+        def size
+        request = "SELECT COUNT(DISTINCT ${imageInstanceAlias}.id) " + from + where + search
+
+        sql.eachRow(request, mapParams) {
+            size = it.count
         }
-        images.data = data
-        return images
+        sql.close()
+
+        return [data:data, total:size]
     }
 
     def listExtended(Project project, String sortColumn, String sortDirection, def searchParameters, Long max  = 0, Long offset = 0, def extended) {
@@ -413,7 +481,7 @@ class ImageInstanceService extends ModelService {
 
         images.data.each { image ->
             def index
-            def line = ImageInstance.getDataFromDomain(image)
+            def line = image
             if(extended.withLastActivity) {
                 index = binSearchI(consultations, "imageId", image.id)
                 if(index >= 0){
@@ -430,13 +498,13 @@ class ImageInstanceService extends ModelService {
 
     private long copyAnnotationLayer(ImageInstance image, User user, ImageInstance based, def usersProject,Task task, double total, double alreadyDone,SecUser currentUser, Boolean giveMe ) {
         log.info "copyAnnotationLayer=$image | $user "
-         def alreadyDoneLocal = alreadyDone
-         UserAnnotation.findAllByImageAndUser(image,user).each {
-             copyAnnotation(it,based,usersProject,currentUser,giveMe)
-             log.info "alreadyDone=$alreadyDone total=$total"
-             taskService.updateTask(task,Math.min(100,((alreadyDoneLocal/total)*100d).intValue()),"Start to copy ${total.intValue()} annotations...")
-             alreadyDoneLocal = alreadyDoneLocal +1
-         }
+        def alreadyDoneLocal = alreadyDone
+        UserAnnotation.findAllByImageAndUser(image,user).each {
+            copyAnnotation(it,based,usersProject,currentUser,giveMe)
+            log.info "alreadyDone=$alreadyDone total=$total"
+            taskService.updateTask(task,Math.min(100,((alreadyDoneLocal/total)*100d).intValue()),"Start to copy ${total.intValue()} annotations...")
+            alreadyDoneLocal = alreadyDoneLocal +1
+        }
         alreadyDoneLocal
     }
 
@@ -512,20 +580,20 @@ class ImageInstanceService extends ModelService {
 
 
     def getLayersFromAbstractImage(AbstractImage image, ImageInstance exclude, def currentUsersProject,def layerFromNewImage, Project project = null) {
-           //get id of last open image
+        //get id of last open image
 
-           def layers = []
-           def adminsMap = [:]
+        def layers = []
+        def adminsMap = [:]
 
-           def req1 = getLayersFromAbtrsactImageSQLRequestStr(true,project)
-           def sql = new Sql(dataSource)
-            sql.eachRow(req1,[image.id,exclude.id]) {
-               if(currentUsersProject.contains(it.project) && layerFromNewImage.contains(it.user)) {
-                   layers << [image:it.image,user:it.user,projectName:it.projectName,project:it.project,lastname:it.lastname,firstname:it.firstname,username:it.username,admin:it.admin]
-                   adminsMap.put(it.image+"_"+it.user,true)
-               }
+        def req1 = getLayersFromAbtrsactImageSQLRequestStr(true,project)
+        def sql = new Sql(dataSource)
+        sql.eachRow(req1,[image.id,exclude.id]) {
+            if(currentUsersProject.contains(it.project) && layerFromNewImage.contains(it.user)) {
+                layers << [image:it.image,user:it.user,projectName:it.projectName,project:it.project,lastname:it.lastname,firstname:it.firstname,username:it.username,admin:it.admin]
+                adminsMap.put(it.image+"_"+it.user,true)
+            }
 
-           }
+        }
         sql.close()
 
         def req2 = getLayersFromAbtrsactImageSQLRequestStr(false,project)
@@ -744,7 +812,7 @@ class ImageInstanceService extends ModelService {
             order(_sortColumn, sortDirection)
         }
 
-       // return ImageInstance.findAllByProjectAndIdNotInList(project, listout);
+        // return ImageInstance.findAllByProjectAndIdNotInList(project, listout);
     }
 
     def listWithoutAnyGroup(Project project,String sortColumn, String sortDirection, String search ){
@@ -780,7 +848,7 @@ class ImageInstanceService extends ModelService {
     private def getDomainAssociatedSearchParameters(ArrayList searchParameters, boolean blinded) {
 
         for (def parameter : searchParameters){
-            if(parameter.field.equals("name")){
+            if(parameter.field.equals("name") || parameter.field.equals("instanceFilename")){
                 parameter.field = blinded ? "blindedName" : "instanceFilename"
             }
             if(parameter.field.equals("numberOfJobAnnotations")) parameter.field = "countImageJobAnnotations"
