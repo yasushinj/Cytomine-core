@@ -418,9 +418,9 @@ abstract class ModelService {
 
     def convertSearchParameter(Class type, def parameter){
 
+        if(parameter == null || parameter.equals("null")) return null
         if(parameter instanceof List || parameter.class.isArray()) return parameter.collect{convertSearchParameter(type, it)}
 
-        if(parameter == null || parameter.equals("null")) return null
         def output
 
         if ((type == Integer || type == int) && !(parameter instanceof Integer)) {
@@ -539,6 +539,7 @@ abstract class ModelService {
             } else parameter.sqlParameter.put(parameter.property.replaceAll("\\.","_"), parameter.value)
         }
 
+        //remove parameters not injected into sql (as IS NULL)
         parameters.each {
             it.sqlParameter = it.sqlParameter.findAll{key, value -> it.sql.contains(key)}
             if(it.sqlParameter.size() == 0) it.remove("sqlParameter")
@@ -547,8 +548,11 @@ abstract class ModelService {
         parameters = [data:parameters, sqlParameters:[]]
         parameters.sqlParameters = parameters.data.findResults{it.sqlParameter}
 
+        //as we have an array with maps and some maps with more than one element, we sum.
+        long nbParameters = parameters.sqlParameters.inject(0) { sum, params -> sum + params.size() }
+
         //if a same property is used multiple times
-        if(parameters.sqlParameters.collectEntries().keySet().size() < parameters.sqlParameters.size()){
+        if(parameters.sqlParameters.collectEntries().keySet().size() < nbParameters){
             def duplicateKeys = parameters.data.groupBy{it.property}.findAll{key, value -> value.size()> 1}.keySet()
             parameters.data.findAll {duplicateKeys.contains(it.property)}.eachWithIndex{ it, index ->
                 String oldName = it.sqlParameter.keySet()[0]
