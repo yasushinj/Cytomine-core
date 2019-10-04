@@ -18,6 +18,7 @@ package be.cytomine.search
 
 import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.ImageInstanceAPI
@@ -68,6 +69,9 @@ class ImageInstanceSearchTests {
     //search
     void testGetSearch(){
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        project.blindMode = true
+        project.save(true)
+
         ImageInstance img1 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         img1.baseImage.width = 499
         img1.setInstanceFilename("TEST")
@@ -126,6 +130,37 @@ class ImageInstanceSearchTests {
         println img1.getInstanceFilename()
         assert ImageInstanceAPI.containsInJSONList(img1.id,json)
 
+        User user1 = BasicInstanceBuilder.getUser(Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        ProjectAPI.addUserProject(project.id, user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        println img1.getInstanceFilename()
+        assert !ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+
+        searchParameters = [[operator : "ilike", field : "instanceFilename", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        println img1.getInstanceFilename()
+        assert !ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+
+        project.blindMode = false
+        project.save(true)
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        println img1.getInstanceFilename()
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
     }
 
     /*

@@ -55,11 +55,11 @@ class ProjectSearchTests {
     //search
     void testGetSearch(){
         Project p1 = BasicInstanceBuilder.getProjectNotExist(true)
-        p1.name = "T"
+        p1.name = "T2"
         p1.save(flush: true)
         BasicInstanceBuilder.getUserAnnotationNotExist(p1, true)
         Project p2 = BasicInstanceBuilder.getProjectNotExist(true)
-        p2.name = "S"
+        p2.name = "S2"
         p2.save(flush: true)
         p1 = p1.refresh()
         p2 = p2.refresh()
@@ -91,7 +91,7 @@ class ProjectSearchTests {
         assert json.collection instanceof JSONArray
         assert json.size > 1
 
-        searchParameters = [[operator : "like", field : "name", value:"S"]]
+        searchParameters = [[operator : "like", field : "name", value:"S2"]]
 
         result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         assert 200 == result.code
@@ -99,7 +99,7 @@ class ProjectSearchTests {
         assert json.collection instanceof JSONArray
         assert ProjectAPI.containsInJSONList(p2.id,json)
 
-        searchParameters = [[operator : "like", field : "name", value:"T"]]
+        searchParameters = [[operator : "like", field : "name", value:"T2"]]
 
         result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
         assert 200 == result.code
