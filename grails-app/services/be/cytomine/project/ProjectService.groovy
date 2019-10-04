@@ -184,6 +184,10 @@ class ProjectService extends ModelService {
                     property = "members.member_count"
                     parameter.values= convertSearchParameter(Long.class, parameter.values)
                     break
+                case "tag" :
+                    property = "t.tag_id"
+                    parameter.values= convertSearchParameter(Long.class, parameter.values)
+                    break
                 default:
                     continue loop
             }
@@ -197,6 +201,7 @@ class ProjectService extends ModelService {
                 project : sqlSearchConditions.data.findAll{it.property.startsWith("p.")}.collect{it.sql}.join(" AND "),
                 ontology : sqlSearchConditions.data.findAll{it.property.startsWith("ontology.")}.collect{it.sql}.join(" AND "),
                 members : sqlSearchConditions.data.findAll{it.property.startsWith("members.")}.collect{it.sql}.join(" AND "),
+                tags : sqlSearchConditions.data.findAll{it.property.startsWith("t.")}.collect{it.sql}.join(" AND "),
                 parameters: sqlSearchConditions.sqlParameters
         ]
 
@@ -232,6 +237,12 @@ class ProjectService extends ModelService {
         if(sqlSearchConditions.ontology){
             search +=" AND "
             search += sqlSearchConditions.ontology
+        }
+
+        if(sqlSearchConditions.tags){
+            from += "LEFT OUTER JOIN tag_domain_association t ON p.id = t.domain_ident AND t.domain_class_name = 'be.cytomine.project.Project' "
+            search +=" AND "
+            search += sqlSearchConditions.tags
         }
 
 

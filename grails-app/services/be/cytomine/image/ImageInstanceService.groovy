@@ -130,6 +130,7 @@ class ImageInstanceService extends ModelService {
         sqlSearchConditions = [
                 imageInstance: sqlSearchConditions.data.findAll {it.property.startsWith("$imageInstanceAlias.")}.collect { it.sql }.join(" AND "),
                 abstractImage: sqlSearchConditions.data.findAll {it.property.startsWith("$abstractImageAlias.")}.collect { it.sql }.join(" AND "),
+                tags : sqlSearchConditions.data.findAll{it.property.startsWith("tda.")}.collect{it.sql}.join(" AND "),
                 parameters   : sqlSearchConditions.sqlParameters
         ]
 
@@ -154,6 +155,11 @@ class ImageInstanceService extends ModelService {
         if (sqlSearchConditions.abstractImage) {
             search += " AND "
             search += sqlSearchConditions.abstractImage
+        }
+        if(sqlSearchConditions.tags){
+            from += "LEFT OUTER JOIN tag_domain_association tda ON ii.id = tda.domain_ident AND tda.domain_class_name = 'be.cytomine.image.ImageInstance' "
+            search +=" AND "
+            search += sqlSearchConditions.tags
         }
 
         if (nameSearch) {
@@ -335,6 +341,7 @@ class ImageInstanceService extends ModelService {
                 imageInstance: sqlSearchConditions.data.findAll {it.property.startsWith("$imageInstanceAlias.")}.collect { it.sql }.join(" AND "),
                 abstractImage: sqlSearchConditions.data.findAll {it.property.startsWith("$abstractImageAlias.")}.collect { it.sql }.join(" AND "),
                 mime: sqlSearchConditions.data.findAll {it.property.startsWith("$mimeAlias.")}.collect { it.sql }.join(" AND "),
+                tags : sqlSearchConditions.data.findAll{it.property.startsWith("tda.")}.collect{it.sql}.join(" AND "),
                 parameters   : sqlSearchConditions.sqlParameters
         ]
 
@@ -379,6 +386,12 @@ class ImageInstanceService extends ModelService {
             search += " AND "
             search += sqlSearchConditions.mime
         }
+        if(sqlSearchConditions.tags){
+            from += "LEFT OUTER JOIN tag_domain_association tda ON ii.id = tda.domain_ident AND tda.domain_class_name = 'be.cytomine.image.ImageInstance' "
+            search +=" AND "
+            search += sqlSearchConditions.tags
+        }
+
 
         if(blindedNameSearch && manager) {
             search +=" AND "
@@ -865,6 +878,19 @@ class ImageInstanceService extends ModelService {
         String abstractImageAlias = "ai"
         validParameters.addAll(getDomainAssociatedSearchParameters(AbstractImage, searchParameters).collect {[operator:it.operator, property:abstractImageAlias+"."+it.property, value:it.value]})
         validParameters.addAll(getDomainAssociatedSearchParameters(Mime, searchParameters).collect {[operator:it.operator, property:"mime."+it.property, value:it.value]})
+
+        loop:for (def parameter : searchParameters){
+            String property
+            switch(parameter.field) {
+                case "tag" :
+                    property = "tda.tag_id"
+                    parameter.values = convertSearchParameter(Long.class, parameter.values)
+                    break
+                default:
+                    continue loop
+            }
+            validParameters << [operator: parameter.operator, property: property, value: parameter.values]
+        }
 
         if(searchParameters.size() > 0){
             log.debug "The following search parameters have not been validated: "+searchParameters
