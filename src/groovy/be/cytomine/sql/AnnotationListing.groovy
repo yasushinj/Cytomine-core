@@ -68,6 +68,7 @@ abstract class AnnotationListing {
 
     def notReviewedOnly = false
     def noTerm = false
+    def noTag = false
     def noAlgoTerm = false
     def multipleTerm = false
 
@@ -279,7 +280,9 @@ abstract class AnnotationListing {
     }
 
     def getTagsConst() {
-        if (tags) {
+        if (tags && noTag) {
+            return "AND (tda.tag_id IN (${tags.join(',')}) OR tda.tag_id IS NULL)\n"
+        } else if (tags) {
             return "AND tda.tag_id IN (${tags.join(',')})\n"
         } else {
             return ""
@@ -517,6 +520,7 @@ class UserAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
         if (multipleTerm) {
             from = "$from, annotation_term at, annotation_term at2 "
             where = "$where" +
@@ -552,8 +556,6 @@ class UserAnnotationListing extends AnnotationListing {
             from = "$from, algo_annotation_term aat "
             where = "$where AND aat.annotation_ident = a.id\n"
         }
-
-        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }

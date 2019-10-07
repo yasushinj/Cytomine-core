@@ -375,6 +375,7 @@ class RestAnnotationDomainController extends RestController {
         if(tags) {
             al.tags = params.get('tags').replace("_",",").split(",").collect{Long.parseLong(it)}
         }
+        al.noTag = params.boolean('noTag', false)
 
         def images = params.get('images')
         if(images) {

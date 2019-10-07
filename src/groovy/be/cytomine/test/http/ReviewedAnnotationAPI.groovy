@@ -60,8 +60,9 @@ class ReviewedAnnotationAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def listByProject(Long id, List<Long> tags, String username, String password) {
+    static def listByProject(Long id, List<Long> tags, boolean noTag = false, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/annotation.json?reviewed=true&project=$id&tags="+tags.join(",")
+        if (noTag) URL+="&noTag=true"
         return doGET(URL, username, password)
     }
 

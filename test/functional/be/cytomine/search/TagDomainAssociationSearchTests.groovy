@@ -195,6 +195,14 @@ class TagDomainAssociationSearchTests {
         assert UserAnnotationAPI.containsInJSONList(ua1.id,json)
         assert !UserAnnotationAPI.containsInJSONList(ua2.id,json)
 
+        result = UserAnnotationAPI.listByProject(project.id, [tda.tag.id], true, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 2
+        assert UserAnnotationAPI.containsInJSONList(ua1.id,json)
+        assert UserAnnotationAPI.containsInJSONList(ua2.id,json)
+
 
         AlgoAnnotation aa1 = BasicInstanceBuilder.getAlgoAnnotationNotExist(project,true)
         AlgoAnnotation aa2 = BasicInstanceBuilder.getAlgoAnnotationNotExist(project,true)
@@ -213,6 +221,16 @@ class TagDomainAssociationSearchTests {
         assert !AlgoAnnotationAPI.containsInJSONList(ua2.id,json)
         assert !AlgoAnnotationAPI.containsInJSONList(aa2.id,json)
 
+        result = AlgoAnnotationAPI.listByProject(project.id, [tda.tag.id], true, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 4
+        assert UserAnnotationAPI.containsInJSONList(ua1.id,json)
+        assert UserAnnotationAPI.containsInJSONList(ua2.id,json)
+        assert UserAnnotationAPI.containsInJSONList(aa1.id,json)
+        assert UserAnnotationAPI.containsInJSONList(aa2.id,json)
+
 
         ReviewedAnnotation ra1 = BasicInstanceBuilder.getReviewedAnnotationNotExist(project,true)
         ReviewedAnnotation ra2 = BasicInstanceBuilder.getReviewedAnnotationNotExist(project,true)
@@ -228,6 +246,14 @@ class TagDomainAssociationSearchTests {
         assert json.size == 1
         assert ReviewedAnnotationAPI.containsInJSONList(ra1.id,json)
         assert !ReviewedAnnotationAPI.containsInJSONList(ra2.id,json)
+
+        result = ReviewedAnnotationAPI.listByProject(project.id, [tda.tag.id], true, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 2
+        assert ReviewedAnnotationAPI.containsInJSONList(ra1.id,json)
+        assert ReviewedAnnotationAPI.containsInJSONList(ra2.id,json)
 
 
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
@@ -245,5 +271,13 @@ class TagDomainAssociationSearchTests {
         assert json.size == 1
         assert RoiAnnotationAPI.containsInJSONList(roa1.id,json)
         assert !RoiAnnotationAPI.containsInJSONList(roa2.id,json)
+
+        result = RoiAnnotationAPI.listByProject(project.id, [tda.tag.id], true, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 2
+        assert RoiAnnotationAPI.containsInJSONList(roa1.id,json)
+        assert RoiAnnotationAPI.containsInJSONList(roa2.id,json)
     }
 }
