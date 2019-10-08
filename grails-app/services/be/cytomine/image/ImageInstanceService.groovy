@@ -42,6 +42,7 @@ import grails.converters.JSON
 import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 import org.hibernate.FetchMode
+import org.restapidoc.annotation.RestApiObjectField
 import org.springframework.util.ReflectionUtils
 
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -434,6 +435,9 @@ class ImageInstanceService extends ModelService {
             map['created'] = map['created'].getTime()
             map['deleted'] = map['deleted']?.getTime()
             map['updated'] = map['updated']?.getTime()
+            map['reviewUser'] = map['reviewUserId']
+            map['reviewStart'] = map['reviewStart']?.getTime()
+            map['reviewStop'] = map['reviewStop']?.getTime()
             map['baseImage'] = map['baseImageId']
             map['project'] = map['projectId']
 
@@ -452,6 +456,13 @@ class ImageInstanceService extends ModelService {
         }
         sql.close()
 
+        if(light) {
+            def result = []
+            data.each { image ->
+                result << [id: image.id, instanceFilename: image.instanceFilename, blindedName: image.blindedName]
+            }
+            data = result
+        }
         return [data:data, total:size]
     }
 
