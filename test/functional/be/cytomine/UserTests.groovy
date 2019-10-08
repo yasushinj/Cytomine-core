@@ -209,6 +209,19 @@ class UserTests  {
         userToAdd.email = "invalid@email"
         def result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 400 == result.code
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.email = "somperson@someagency.agency"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.email = "somperson@someschool.school"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.email = "vandana.bunwaree@llb.school"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
     }
 
     void testUpdateUserCorrect() {
