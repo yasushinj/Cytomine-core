@@ -449,6 +449,10 @@ abstract class ModelService {
 
         for (def parameter : searchParameters){
 
+            if(parameter.operator.equals("ilike") || parameter.operator.equals("like")){
+                parameter.values = "%"+parameter.values+"%"
+            }
+
             Field field = ReflectionUtils.findField(domain, parameter.field)
 
             if(field) {

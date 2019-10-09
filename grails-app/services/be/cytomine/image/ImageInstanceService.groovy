@@ -167,6 +167,8 @@ class ImageInstanceService extends ModelService {
             String operation
             if (nameSearch.operator == "ilike") {
                 operation = "ILIKE"
+            } else if (nameSearch.operator == "like") {
+                operation = "LIKE"
             } else if (nameSearch.operator == "equals") {
                 operation = "=="
             }
@@ -878,9 +880,6 @@ class ImageInstanceService extends ModelService {
             if(parameter.field.equals("numberOfJobAnnotations")) parameter.field = "countImageJobAnnotations"
             if(parameter.field.equals("numberOfReviewedAnnotations")) parameter.field = "countImageReviewedAnnotations"
             if(parameter.field.equals("numberOfAnnotations")) parameter.field = "countImageAnnotations"
-            if(parameter.operator.equals("ilike")){
-                parameter.values = "%"+parameter.values+"%"
-            }
         }
 
 

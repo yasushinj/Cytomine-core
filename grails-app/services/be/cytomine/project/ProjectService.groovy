@@ -163,9 +163,6 @@ class ProjectService extends ModelService {
             if(parameter.field.equals("numberOfJobAnnotations")) parameter.field = "countJobAnnotations"
             if(parameter.field.equals("numberOfReviewedAnnotations")) parameter.field = "countReviewedAnnotations"
             if(parameter.field.equals("ontology")) parameter.field = "ontology_id"
-            if(parameter.operator.equals("ilike")){
-                parameter.values = "%"+parameter.values+"%"
-            }
         }
 
         if (sortColumn == "lastActivity" && !extended.withLastActivity) throw new WrongArgumentException("Cannot sort on lastActivity without argument withLastActivity")
