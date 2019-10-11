@@ -442,6 +442,7 @@ class ImageInstanceService extends ModelService {
             map['reviewStop'] = map['reviewStop']?.getTime()
             map['baseImage'] = map['baseImageId']
             map['project'] = map['projectId']
+            map['user'] = map['userId']
 
             //TODO improve perf !
             def line = ImageInstance.getDataFromDomain(ImageInstance.insertDataIntoDomain(map))
