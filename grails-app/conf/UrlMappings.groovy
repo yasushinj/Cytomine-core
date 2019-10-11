@@ -72,9 +72,9 @@ class UrlMappings {
             action = [GET:"listDelete"]
         }
 
-        "/api/search.$format"(controller: "search") {
+        /*"/api/search.$format"(controller: "search") {
             action = [GET:"listResponse"]
-        }
+        }*/
 
         "/api/search-engine.$format"(controller: "searchEngine") {
             action = [GET:"search"]

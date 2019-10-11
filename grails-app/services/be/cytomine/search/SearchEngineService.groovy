@@ -146,8 +146,8 @@ class SearchEngineService extends ModelService {
             throw new WrongArgumentException("Each words must have at least 3 characters!")
         }
 
-        if (words.find { it.contains("*") || it.contains("%") || it.contains("_") }) {
-            throw new WrongArgumentException("Character *, % or _ are not allowed!")
+        if (words.find { it.contains("*") || it.contains("%") || it.contains("_") || it.contains("--") }) {
+            throw new WrongArgumentException("Character *, %, -- or _ are not allowed!")
         }
     }
 
