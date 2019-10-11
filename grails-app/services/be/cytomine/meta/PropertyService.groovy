@@ -83,7 +83,7 @@ class PropertyService extends ModelService {
                 (project? "AND ra.project_id = '"+ project.id + "' " : "") +
                 (image? "AND ra.image_id = '"+ image.id + "' " : "")
 
-        return  (withUser ? selectListKeyWithUser(request) : selectListkey(request))
+        return  (withUser ? selectListKeyWithUser(request, []) : selectListkey(request, []))
     }
 
      List<String> listKeysForImageInstance(Project project) {
@@ -95,7 +95,7 @@ class PropertyService extends ModelService {
                 "WHERE p.domain_ident = ii.id " +
                 "AND ii.project_id = "+ project.id;
 
-        return selectListkey(request)
+        return selectListkey(request, [])
     }
 
     def listAnnotationCenterPosition(SecUser user, ImageInstance image, Geometry boundingbox, String key) {
@@ -103,7 +103,7 @@ class PropertyService extends ModelService {
         String request = "SELECT DISTINCT ua.id, ST_X(ST_CENTROID(ua.location)) as x,ST_Y(ST_CENTROID(ua.location)) as y, p.value " +
                 "FROM user_annotation ua, property as p " +
                 "WHERE p.domain_ident = ua.id " +
-                "AND p.key = '"+ key + "' " +
+                "AND p.key = :key " +
                 "AND ua.image_id = '"+ image.id +"' " +
                 "AND ua.user_id = '"+ user.id +"' " +
                 (boundingbox ? "AND ST_Intersects(ua.location,ST_GeometryFromText('" + boundingbox.toString() + "',0)) " :"") +
@@ -111,12 +111,12 @@ class PropertyService extends ModelService {
                 "SELECT DISTINCT aa.id, ST_X(ST_CENTROID(aa.location)) as x,ST_Y(ST_CENTROID(aa.location)) as y, p.value " +
                 "FROM algo_annotation aa, property as p " +
                 "WHERE p.domain_ident = aa.id " +
-                "AND p.key = '"+ key + "' " +
+                "AND p.key = :key " +
                 "AND aa.image_id = '"+ image.id +"' " +
                 "AND aa.user_id = '"+ user.id +"' " +
                 (boundingbox ? "AND ST_Intersects(aa.location,ST_GeometryFromText('" + boundingbox.toString() + "',0)) " :"")
 
-        return selectsql(request)
+        return selectsql(request, [key: key])
     }
 
     def read(def id) {
@@ -208,10 +208,10 @@ class PropertyService extends ModelService {
         return [domain.key, domain.domainClassName, domain.domainIdent]
     }
 
-    private def selectListkey(String request) {
+    private def selectListkey(String request, def parameters) {
         def data = []
         def sql = new Sql(dataSource)
-        sql.eachRow(request) {
+        sql.eachRow(request, parameters) {
             String key = it[0]
             data << key
         }
@@ -221,10 +221,10 @@ class PropertyService extends ModelService {
         data
     }
 
-    private def selectListKeyWithUser(String request) {
+    private def selectListKeyWithUser(String request, def parameters) {
         def data = []
         def sql = new Sql(dataSource)
-        sql.eachRow(request) {
+        sql.eachRow(request, parameters) {
             String key = it[0]
             String user = it[1]
             data << [key : key, userId : user]
@@ -235,10 +235,10 @@ class PropertyService extends ModelService {
         data
     }
 
-    private def selectsql(String request) {
+    private def selectsql(String request, def parameters) {
         def data = []
         def sql = new Sql(dataSource)
-         sql.eachRow(request) {
+         sql.eachRow(request, parameters) {
 
             long idAnnotation = it[0]
             String value = it[3]
