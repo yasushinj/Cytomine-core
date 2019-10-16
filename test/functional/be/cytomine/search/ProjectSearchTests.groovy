@@ -105,6 +105,16 @@ class ProjectSearchTests {
         assert json.collection.size() >= 1
         assert ProjectAPI.containsInJSONList(p2.id,json)
 
+        searchParameters = [[operator : "like", field : "name", value:"S*2"]]
+
+        result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() >= 2
+        assert ProjectAPI.containsInJSONList(p2.id,json)
+        assert ProjectAPI.containsInJSONList(p3.id,json)
+
         searchParameters = [[operator : "like", field : "name", value:"S%2"]]
 
         result = ProjectAPI.list(searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)

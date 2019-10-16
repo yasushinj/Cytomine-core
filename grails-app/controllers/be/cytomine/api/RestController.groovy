@@ -396,6 +396,10 @@ class RestController {
                 if(values instanceof List) values = values.collect {URLDecoder.decode(it.toString(), "UTF-8")}
                 else values = URLDecoder.decode(values.toString(), "UTF-8")
 
+                if(operator.contains("like")) {
+                    values = values.replace('*','%')
+                }
+
                 if(allowedOperators.contains(operator)) searchParameters << [operator : operator, field : tmp[0], values : values]
             }
         }
