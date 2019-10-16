@@ -196,8 +196,6 @@ abstract class ModelService {
         return domain
     }
 
-
-
     /**
      * Create domain from JSON object
      * @param json JSON with new domain info
@@ -206,9 +204,6 @@ abstract class ModelService {
     CytomineDomain createFromJSON(def json) {
         return currentDomain().insertDataIntoDomain(json)
     }
-
-
-
 
     /**
      * Create new domain in database
@@ -237,7 +232,6 @@ abstract class ModelService {
         //Build response message
         return response
     }
-
 
     /**
      * Edit domain from database
@@ -280,13 +274,13 @@ abstract class ModelService {
     def addMultiple(def json) {
         def result = []
         def errors = []
-        for(int i=0;i<json.size();i++){
+        for (int i = 0; i < json.size(); i++) {
             def resp;
-            try{
+            try {
                 resp = addOne(json[i])
 
                 String objectName;
-                if(currentDomain() == AlgoAnnotation || currentDomain() == UserAnnotation){
+                if (currentDomain() == AlgoAnnotation || currentDomain() == UserAnnotation) {
                     objectName = "annotation"
                 } else {
                     objectName = currentDomain().toString().toLowerCase().split("\\.").last()
@@ -333,7 +327,6 @@ abstract class ModelService {
         session.flush()
         session.clear()
     }
-
 
     /**
      * Destroy domain from database
@@ -447,15 +440,15 @@ abstract class ModelService {
         def result = []
         def translated = []
 
-        for (def parameter : searchParameters){
+        for (def parameter : searchParameters) {
 
-            if(parameter.operator.equals("ilike") || parameter.operator.equals("like")){
-                parameter.values = "%"+parameter.values+"%"
+            if (parameter.operator.equals("ilike") || parameter.operator.equals("like")) {
+                parameter.values = "%" + parameter.values + "%"
             }
 
             Field field = ReflectionUtils.findField(domain, parameter.field)
 
-            if(field) {
+            if (field) {
                 def value = convertSearchParameter(field.type, parameter.values)
 
                 result << [operator: parameter.operator, property: field.name, value: value]
@@ -469,11 +462,15 @@ abstract class ModelService {
         return result
     }
 
+    protected def fieldNameToSQL(String field) {
+        String regex = "([a-z])([A-Z]+)"
+        String replacement = "\$1_\$2"
+        return field.replaceAll(regex, replacement).toLowerCase()
+    }
+
     protected def searchParametersToSQLConstraints(def parameters) {
         for (def parameter : parameters){
-            String regex = "([a-z])([A-Z]+)"
-            String replacement = "\$1_\$2"
-            parameter.property =parameter.property.replaceAll(regex, replacement).toLowerCase()
+            parameter.property = fieldNameToSQL(parameter.property)
 
             if(parameter.value instanceof Date){
                 parameter.value = ((Date) parameter.value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()

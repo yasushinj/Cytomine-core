@@ -318,6 +318,7 @@ class ImageInstanceService extends ModelService {
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : null
         if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("ImageInstance list sorted by $sortDirection is not implemented")
+        sortedProperty = fieldNameToSQL(sortedProperty)
 
         def validatedSearchParameters = getDomainAssociatedSearchParameters(searchParameters, project.blindMode)
 
@@ -446,6 +447,9 @@ class ImageInstanceService extends ModelService {
 
             //TODO improve perf !
             def line = ImageInstance.getDataFromDomain(ImageInstance.insertDataIntoDomain(map))
+            line.putAt('numberOfAnnotations', map.countImageAnnotations)
+            line.putAt('numberOfJobAnnotations', map.countImageJobAnnotations)
+            line.putAt('numberOfReviewedAnnotations', map.countImageReviewedAnnotations)
             line.putAt('projectBlind', map.projectBlind)
             line.putAt('projectName', map.projectName)
             data << line
