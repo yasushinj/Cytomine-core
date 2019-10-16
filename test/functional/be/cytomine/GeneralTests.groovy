@@ -55,14 +55,6 @@ class GeneralTests  {
     def sessionFactory
     def springSecurityService
 
-    void testUIViewPortToXMLConversion() {
-        try{
-            ViewPortToBuildXML.process()
-        } catch(Exception e) {
-            log.error e
-        }
-    }
-
     void testCommandMaxSizeOK() {
         log.info("create image")
         String jsonImage = "{\"text\" : \"*************************************************************************"
@@ -319,31 +311,5 @@ class GeneralTests  {
         assert Version.isOlderVersion(21140104)
         assert !Version.isOlderVersion(21140102)
         assert !Version.isOlderVersion(21140103)
-    }
-
-    //if test fail => error in a js file (cannot create app/lib.js)!!!
-    void testBuildAppAndLibJS() {
-        File app = new File("web-app/application.js")
-        File lib = new File("web-app/lib.js")
-//
-//        app.delete()
-//        lib.delete()
-//
-//        assert !app.exists()
-//        assert !lib.exists()
-//
-//        println("========= C O M P I L E == J S ========= ")
-//        ViewPortToBuildXML.process()
-//        def proc = "./scripts/yui-compressor-ant-task/doc/example/deploy.sh".execute()
-//        proc.in.eachLine { line -> println line }
-//        proc = "./scripts/yui-compressor-ant-task/doc/lib/deploy.sh".execute()
-//        proc.in.eachLine { line -> println line }
-//        println("======================================== ")
-
-        assert app.exists()
-        assert lib.exists()
-        assert app.size()>0
-        assert lib.size()>0
-
     }
 }
