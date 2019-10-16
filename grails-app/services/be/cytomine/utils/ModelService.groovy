@@ -17,6 +17,7 @@ package be.cytomine.utils
 */
 
 import be.cytomine.CytomineDomain
+import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.Exception.ServerException
@@ -276,9 +277,9 @@ abstract class ModelService {
     def addMultiple(def json) {
         def result = []
         def errors = []
-        for (int i = 0; i < json.size(); i++) {
-            def resp;
-            try {
+        for(int i=0;i<json.size();i++){
+            def resp = [:]
+            try{
                 resp = addOne(json[i])
 
                 String objectName;
@@ -288,9 +289,14 @@ abstract class ModelService {
                     objectName = currentDomain().toString().toLowerCase().split("\\.").last()
                 }
                 resp = [domain:resp.data.get(objectName).id, status : resp.status]
-            } catch(WrongArgumentException e){
-                errors << [json:json[i], message : e.msg]
+            } catch(WrongArgumentException | CytomineException e){
+                log.info e.printStackTrace()
+                errors << [data:json[i], message : e.msg]
                 resp = [message : e.msg, status : e.code]
+            } catch(Exception e) {
+                log.info e
+                log.info e.printStackTrace()
+                resp = [message : e.toString(), status : 500]
             }
 
             result << resp
@@ -300,16 +306,16 @@ abstract class ModelService {
 
         def response = [:]
 
-        def succeeded = result.findAll{it.status >= 200 && it.status < 300}
+        def succeeded = result.findAll{it?.status >= 200 && it?.status < 300}
 
         if(succeeded == result) {
             response.data = [message: currentDomain().toString().toLowerCase().split("\\.").last()+"s "+succeeded.collect{it.domain}.join(",")+" added"]
             response.status = 200
         } else if(succeeded.size() == 0) {
-            response.data = [message: "No entry saved", error: errors]
+            response.data = [success: false, message: "No entry saved", errors: errors]
             response.status = 400
         } else {
-            response.data = [message: "Only part of the entries ("+currentDomain().toString().toLowerCase().split("\\.").last()+"s "+succeeded.collect{it.domain}.join(",")+") added.", error: errors]
+            response.data = [success: false, message: "Only part of the entries ("+currentDomain().toString().toLowerCase().split("\\.").last()+"s "+succeeded.collect{it.domain}.join(",")+") added.", errors: errors]
             response.status = 206
         }
 
