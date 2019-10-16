@@ -55,6 +55,7 @@ class Tag extends CytomineDomain implements Serializable{
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['name'] = domain?.name
         returnArray['user'] = domain?.user.id
+        returnArray['creatorName'] = domain?.user.username
         return returnArray
     }
 
