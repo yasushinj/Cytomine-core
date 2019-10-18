@@ -100,6 +100,8 @@ class BootstrapOldVersionService {
             systemUser.origin = "SYSTEM"
             systemUser.save();
         }
+
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET origin = 'BOOTSTRAP' WHERE origin IS NULL;")
     }
 
     void initv1_2_2() {
