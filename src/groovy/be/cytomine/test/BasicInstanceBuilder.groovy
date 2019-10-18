@@ -1494,7 +1494,7 @@ class BasicInstanceBuilder {
     public static ImageInstance initImage() {
 
         //String urlImageServer = "http://localhost:9080"
-        String urlImageServer = "http://image.cytomine.be"
+        String urlImageServer = "http://image.cytomine.coop"
 
         User user = getUser("imgUploader", "password")
 
@@ -1528,7 +1528,7 @@ class BasicInstanceBuilder {
         Storage storage = Storage.findByUser(user)
         if(!storage) {
             storage = new Storage()
-            storage.basePath = "/data/test.cytomine.be/1"
+            storage.basePath = "/data/test.cytomine.coop/1"
             storage.name = "lrollus test storage"
             storage.user = user
             BasicInstanceBuilder.saveDomain(storage)
@@ -1599,10 +1599,10 @@ class BasicInstanceBuilder {
         }
 
 
-        ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.be")
+        ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.coop")
         if (!processingServer) {
             processingServer = new ProcessingServer()
-            processingServer.url = "http://image.cytomine.be"
+            processingServer.url = "http://image.cytomine.coop"
             BasicInstanceBuilder.saveDomain(processingServer)
         }
 
