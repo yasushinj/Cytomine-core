@@ -104,7 +104,7 @@ class DataTablesService {
                     WHERE project_id = ${project.id}
                     AND ai.deleted IS NULL
                     AND ii.deleted IS NULL
-                    AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
+                    AND ${(_search? "ai.original_filename ilike :filename" : "")}
                     ${getAclWhere()}
                     UNION
                     SELECT DISTINCT ai.id, ai.original_filename, ai.created as created, false
@@ -114,7 +114,7 @@ class DataTablesService {
                                      FROM abstract_image ai LEFT OUTER JOIN image_instance ii ON ii.base_image_id = ai.id
                                      WHERE project_id = ${project.id}
                                      AND ii.deleted IS NULL)
-                    AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
+                    AND ${(_search? "ai.original_filename ilike :filename" : "")}
                      ${getAclWhere()}
                     ORDER BY created desc
                 """
@@ -140,7 +140,7 @@ class DataTablesService {
 
             def data = []
             def sql = new Sql(dataSource)
-            sql.eachRow(request) {
+            sql.eachRow(request, [filename : _search]) {
                 def img = [:]
                 img.id=it[0]
                 img.originalFilename=it[1]
@@ -176,7 +176,7 @@ class DataTablesService {
         if(property) {
             if(property.equals("size") || property.equals("created")) {
                 order = "uf.$property"
-            }else {
+            }else if (property.equals("globalSize") || property.equals("nbChildren")){
                 order = "$property"
             }
         }
@@ -192,7 +192,7 @@ class DataTablesService {
         String whereClause =
                 "WHERE uf.content_type NOT similar to '%zip|ome%' AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') \n" +
                         "AND uf.user_id = "+cytomineService.currentUser.id+" \n" +
-                        "AND uf.original_filename ILIKE '"+_search+"' \n"
+                        "AND uf.original_filename ILIKE :filename \n"
         int limit = params.int('max',0)
         String request =
                 "SELECT uf.id, uf.content_type as contentType, uf.created, uf.filename, uf.original_filename as originalFilename, uf.size, uf.status, \n" +
@@ -209,7 +209,7 @@ class DataTablesService {
 
         def data = []
         def sql = new Sql(dataSource)
-        sql.eachRow(request) {
+        sql.eachRow(request, [filename : _search]) {
             def row = [:]
             int i = 0
             row.id = it[i++]
@@ -234,7 +234,7 @@ class DataTablesService {
                         fromClause +
                         whereClause
         long total
-        sql.eachRow(countRequest) {
+        sql.eachRow(countRequest, [filename : _search, order : order]) {
             total = it[0]
         }
 

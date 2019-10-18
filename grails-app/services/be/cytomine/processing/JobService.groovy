@@ -109,9 +109,11 @@ class JobService extends ModelService {
 
         def sqlSearchConditions = searchParametersToSQLConstraints(validatedSearchParameters)
 
+
         sqlSearchConditions = [
-                job : sqlSearchConditions.findAll{it.property.startsWith("$jobAlias.")}.collect{it.sql}.join(" AND "),
-                software : sqlSearchConditions.findAll{it.property.startsWith("$softwareAlias.")}.collect{it.sql}.join(" AND ")
+                job : sqlSearchConditions.data.findAll{it.property.startsWith("$jobAlias.")}.collect{it.sql}.join(" AND "),
+                software : sqlSearchConditions.data.findAll{it.property.startsWith("$softwareAlias.")}.collect{it.sql}.join(" AND "),
+                parameters: sqlSearchConditions.sqlParameters
         ]
 
         boolean joinSoftware = true//sqlSearchConditions.software || sortedProperty.contains(softwareAlias+".") as we return softwareName by default
@@ -169,7 +171,9 @@ class JobService extends ModelService {
 
         def sql = new Sql(dataSource)
         def data = []
-        sql.eachRow(request) {
+        def mapParams = sqlSearchConditions.parameters
+
+        sql.eachRow(request, mapParams) {
             def map = [:]
 
             for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
@@ -201,7 +205,7 @@ class JobService extends ModelService {
         def size
         request = "SELECT COUNT(DISTINCT ${jobAlias}.id) " + from + where + search
 
-        sql.eachRow(request) {
+        sql.eachRow(request, mapParams) {
             size = it.count
         }
         sql.close()

@@ -110,6 +110,7 @@ class RestAnnotationDomainController extends RestController {
         @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation reviewed by these users"),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these images id"),
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
+        @RestApiParam(name="tags", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation associated with these tags"),
         @RestApiParam(name="notReviewedOnly", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation not reviewed"),
         @RestApiParam(name="noTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term"),
         @RestApiParam(name="noAlgoTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term from a job"),
@@ -369,6 +370,12 @@ class RestAnnotationDomainController extends RestController {
         if(reviewUsers) {
             al.reviewUsers = reviewUsers.replace("_",",").split(",").collect{Long.parseLong(it)}
         }
+
+        def tags = params.get('tags')
+        if(tags) {
+            al.tags = params.get('tags').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+        al.noTag = params.boolean('noTag', false)
 
         def images = params.get('images')
         if(images) {

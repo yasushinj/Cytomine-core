@@ -110,7 +110,7 @@ class ParamsService {
                     " WHERE id IN ("+users.join(",")+")"
             def data = []
             def sql = new Sql(dataSource)
-            sql.eachRow(request) {
+            sql.eachRow(request, []) {
                 data << it[0]
             }
             try {

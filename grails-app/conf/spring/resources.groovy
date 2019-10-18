@@ -23,6 +23,7 @@ import be.cytomine.spring.CustomDefaultRedirectStrategy
 import be.cytomine.spring.CustomSavedRequestAwareAuthenticationSuccessHandler
 import be.cytomine.web.CytomineMultipartHttpServletRequest
 import grails.plugin.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.web.authentication.AjaxAwareAuthenticationSuccessHandler
 import grails.util.Holders
 import org.springframework.cache.ehcache.EhCacheFactoryBean
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
@@ -67,6 +68,16 @@ beans = {
         useForward = false
         portMapper = ref('portMapper')
         portResolver = ref('portResolver')
+    }
+
+    authenticationSuccessHandler(AjaxAwareAuthenticationSuccessHandler) {
+        requestCache = ref('requestCache')
+        defaultTargetUrl = Holders.getGrailsApplication().config.grails.UIURL?: Holders.getGrailsApplication().config.grails.serverURL ?: '/'
+        alwaysUseDefaultTargetUrl = false
+        targetUrlParameter = 'spring-security-redirect'
+        ajaxSuccessUrl = SpringSecurityUtils.securityConfig.successHandler.ajaxSuccessUrl
+        useReferer = false
+        redirectStrategy = ref('redirectStrategy')
     }
 
     logoutSuccessHandler(SimpleUrlLogoutSuccessHandler) {

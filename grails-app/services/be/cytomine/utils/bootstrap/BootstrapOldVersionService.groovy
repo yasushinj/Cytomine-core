@@ -19,11 +19,11 @@ package be.cytomine.utils.bootstrap
 import be.cytomine.image.server.Storage
 import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.image.UploadedFile
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.project.Project
 import be.cytomine.security.SecRole
 import be.cytomine.security.User
-import be.cytomine.utils.Configuration
+import be.cytomine.meta.Configuration
 import be.cytomine.utils.Version
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -92,6 +92,14 @@ class BootstrapOldVersionService {
 
         }
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
+    }
+
+    void initv1_9_9() {
+        log.info "1.9.9"
+        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
+            systemUser.origin = "SYSTEM"
+            systemUser.save();
+        }
     }
 
     void initv1_2_2() {

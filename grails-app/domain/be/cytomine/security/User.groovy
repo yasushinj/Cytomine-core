@@ -119,7 +119,6 @@ class User extends SecUser {
             domain.password = JSONUtils.getJSONAttrStr(json,'password') //user is created
         }
         domain.created = JSONUtils.getJSONAttrDate(json, 'created')
-        domain.creator = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), false)
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
         domain.enabled = JSONUtils.getJSONAttrBoolean(json,'enabled', true)
 

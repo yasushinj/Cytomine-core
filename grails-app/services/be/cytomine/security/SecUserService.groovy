@@ -159,9 +159,12 @@ class SecUserService extends ModelService {
         String sort
 
 
+        def mapParams = [:]
         if(multiSearch) {
             String value = ((String) multiSearch.values).toLowerCase()
-            where += " and (u.firstname ILIKE '%$value%' OR u.lastname ILIKE '%$value%' OR u.email ILIKE '%$value%') "
+            value = "%$value%"
+            where += " and (u.firstname ILIKE :name OR u.lastname ILIKE :name OR u.email ILIKE :name) "
+            mapParams.put("name", value)
         }
         if(extended.withRoles){
             select += ", MAX(x.order_number) as role "
@@ -184,7 +187,10 @@ class SecUserService extends ModelService {
 
         def sql = new Sql(dataSource)
         def data = []
-        sql.eachRow(request) {
+
+        if(mapParams.size() == 0) mapParams= []
+
+        sql.eachRow(request, mapParams) {
             def map = [:]
 
             for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
@@ -224,7 +230,7 @@ class SecUserService extends ModelService {
         def size
         request = "SELECT COUNT(DISTINCT u.id) " + from + where + search
 
-        sql.eachRow(request) {
+        sql.eachRow(request, mapParams) {
             size = it.count
         }
         sql.close()

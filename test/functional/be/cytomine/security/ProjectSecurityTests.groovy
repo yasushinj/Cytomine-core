@@ -17,7 +17,7 @@ package be.cytomine.security
 */
 
 import be.cytomine.image.ImageInstance
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.processing.Job
 import be.cytomine.processing.JobData
@@ -26,7 +26,7 @@ import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.*
-import be.cytomine.utils.Description
+import be.cytomine.meta.Description
 import grails.converters.JSON
 
 /**

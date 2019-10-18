@@ -82,15 +82,16 @@ grails.project.dependency.resolution = {
         compile "javax.validation:validation-api:1.1.0.Final"
         runtime "org.hibernate:hibernate-validator:5.0.3.Final"
         compile 'commons-beanutils:commons-beanutils:1.8.3'
-        compile 'org.imsglobal:basiclti-util:1.1.2'
         compile 'joda-time:joda-time:2.10.1'
+        compile( "commons-validator:commons-validator:1.5.0" ) {
+            excludes 'xml-apis','commons-digester','commons-logging','commons-beanutils', 'commons-collections'
+        }
     }
     plugins {
         compile ":mongodb:3.0.2"
         runtime ':hibernate4:4.3.5.5'
         build ':tomcat:7.0.54'
         compile ':cache:1.1.7'
-        compile ':asset-pipeline:1.9.6'
         compile ":grails-melody:1.49.0"
         compile ":rest-api-doc:0.6"
         compile ":rest:0.8"

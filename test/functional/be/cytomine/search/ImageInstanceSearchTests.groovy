@@ -18,9 +18,11 @@ package be.cytomine.search
 
 import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.ImageInstanceAPI
+import be.cytomine.test.http.ProjectAPI
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -67,9 +69,14 @@ class ImageInstanceSearchTests {
     //search
     void testGetSearch(){
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        project.blindMode = true
+        project.save(true)
+
         ImageInstance img1 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         img1.baseImage.width = 499
-        img1.save()
+        img1.setInstanceFilename("TEST")
+        img1.save(flush: true)
+        img1 = img1.refresh()
         BasicInstanceBuilder.getUserAnnotationNotExist(img1.project, img1, true)
         ImageInstance img2 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
 
@@ -112,6 +119,48 @@ class ImageInstanceSearchTests {
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.size == 0
+
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        println img1.getInstanceFilename()
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+        User user1 = BasicInstanceBuilder.getUser(Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        ProjectAPI.addUserProject(project.id, user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        println img1.getInstanceFilename()
+        assert !ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+
+        searchParameters = [[operator : "ilike", field : "instanceFilename", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        println img1.getInstanceFilename()
+        assert !ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+
+        project.blindMode = false
+        project.save(true)
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.ADMINLOGIN, Infos.ADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 1
+        println img1.getInstanceFilename()
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
     }
 
     /*
@@ -215,7 +264,7 @@ class ImageInstanceSearchTests {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
         BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         BasicInstanceBuilder.getImageInstanceNotExist(project, true)
-        def result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageInstanceAPI.listLightByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
@@ -224,7 +273,7 @@ class ImageInstanceSearchTests {
         Long id1 = json.collection[0].id
         Long id2 = json.collection[1].id
 
-        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.listLightByUser(BasicInstanceBuilder.getUser1().id, 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
@@ -232,13 +281,103 @@ class ImageInstanceSearchTests {
         assert size == json.size
         assert json.collection[0].id == id1
 
-        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, 1, 1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = ImageInstanceAPI.listLightByUser(BasicInstanceBuilder.getUser1().id, 1, 1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.collection.size() == 1
         assert size == json.size
         assert json.collection[0].id == id2
+    }
+
+
+    void testListImagesInstanceByUser() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        ImageInstance img1 = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        img1.baseImage.width = 499
+        img1.setInstanceFilename("TEST")
+        img1.save(flush: true)
+        img1 = img1.refresh()
+        BasicInstanceBuilder.getUserAnnotationNotExist(img1.project, img1, true)
+        BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+
+        ProjectAPI.addAdminProject(project.id, BasicInstanceBuilder.getUser1().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        def result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size > 1
+
+        def searchParameters = [[operator : "lte", field : "width", value:500], [operator : "lte", field : "numberOfAnnotations", value:1000]]
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+        searchParameters = [[operator : "gte", field : "numberOfAnnotations", value:1]]
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+        ProjectAPI.addUserProject(project.id, BasicInstanceBuilder.getUser2().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser2().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+        assert json.collection[0].blindedName instanceof JSONObject.Null
+
+        project.blindMode = true
+        project.save(true)
+
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getInstanceFilename()]]
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser2().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert !ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getFileName()]]
+
+        result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser2().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+        assert ImageInstanceAPI.containsInJSONList(img1.id,json)
+
+        assert json.collection[0].blindedName == json.collection[0].baseImage.toString()
+
+
     }
 
 

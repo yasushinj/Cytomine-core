@@ -19,6 +19,7 @@ package be.cytomine.ontology
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
+import be.cytomine.meta.Property
 import be.cytomine.image.ImageInstance
 import be.cytomine.processing.Job
 import be.cytomine.project.Project

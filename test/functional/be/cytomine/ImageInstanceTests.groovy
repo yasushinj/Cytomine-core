@@ -106,7 +106,7 @@ class ImageInstanceTests  {
 
     void testListImagesInstanceByUserLight() {
         BasicInstanceBuilder.getImageInstance()
-        def result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageInstanceAPI.listLightByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray

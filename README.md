@@ -21,7 +21,7 @@ Overall, we believe Cytomine is an important new tool of broad interest to foste
 students, in an unprecedented way using machine learning and web communication mechanisms.
 
 
-Full documentation can be found [online](http://doc.cytomine.be)
+Full documentation can be found [online](https://documentation.cytomine.org/)
 
 ## How to install it
 

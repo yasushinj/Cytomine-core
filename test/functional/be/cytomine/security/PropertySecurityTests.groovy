@@ -17,7 +17,7 @@ package be.cytomine.security
 */
 
 import be.cytomine.image.ImageInstance
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder

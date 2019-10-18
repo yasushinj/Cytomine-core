@@ -59,6 +59,7 @@ abstract class AnnotationListing {
     def usersForTermAlgo = null
     def reviewUsers
     def terms = null
+    def tags = null
     def images = null
     def afterThan = null
     def beforeThan = null
@@ -67,6 +68,7 @@ abstract class AnnotationListing {
 
     def notReviewedOnly = false
     def noTerm = false
+    def noTag = false
     def noAlgoTerm = false
     def multipleTerm = false
 
@@ -182,6 +184,7 @@ abstract class AnnotationListing {
                         getUsersConst() +
                         getReviewUsersConst() +
                         getImagesConst() +
+                        getTagsConst() +
                         getImageConst() +
                         getTermConst() +
                         getTermsConst() +
@@ -274,6 +277,16 @@ abstract class AnnotationListing {
             return (images ? "AND a.image_id IN (${images.join(",")})\n" : "")
         }
 
+    }
+
+    def getTagsConst() {
+        if (tags && noTag) {
+            return "AND (tda.tag_id IN (${tags.join(',')}) OR tda.tag_id IS NULL)\n"
+        } else if (tags) {
+            return "AND tda.tag_id IN (${tags.join(',')})\n"
+        } else {
+            return ""
+        }
     }
 
     def getImageConst() {
@@ -507,6 +520,7 @@ class UserAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
         if (multipleTerm) {
             from = "$from, annotation_term at, annotation_term at2 "
             where = "$where" +
@@ -647,6 +661,8 @@ class AlgoAnnotationListing extends AnnotationListing {
                     "AND j.software_id = s.id\n"
         }
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
+
         return from + "\n" + where
     }
 
@@ -774,6 +790,8 @@ class ReviewedAnnotationListing extends AnnotationListing {
             where = "$where AND a.user_id = u.id \n"
         }
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
+
         return from + "\n" + where
     }
 
@@ -895,6 +913,8 @@ class RoiAnnotationListing extends AnnotationListing {
             from = "$from, sec_user u "
             where = "$where AND a.user_id = u.id \n"
         }
+
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }

@@ -24,17 +24,18 @@ import be.cytomine.image.Mime
 import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.*
 import be.cytomine.middleware.AmqpQueue
+import be.cytomine.middleware.AmqpQueueConfigInstance
 import be.cytomine.middleware.MessageBrokerServer
-import be.cytomine.ontology.Property
 import be.cytomine.ontology.Relation
 import be.cytomine.ontology.RelationTerm
 import be.cytomine.processing.Software
 import be.cytomine.security.*
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
-import be.cytomine.utils.Configuration
+import be.cytomine.meta.Configuration
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Environment
+import grails.util.Holders
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
 
@@ -76,6 +77,7 @@ class BootstrapUtilsService {
                     email: item.email,
                     color: item.color,
                     password: item.password,
+                    language: User.Language.valueOf(Holders.getGrailsApplication().config.grails.defaultLanguage),
                     enabled: true,
                     origin: "BOOTSTRAP")
             user.generateKeys()
@@ -190,12 +192,7 @@ class BootstrapUtilsService {
             configs << new Configuration(key: "ldap_context_managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
             //grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
         }
-
-        //LTI values
-        //grailsApplication.config.grails.LTIConsumer.each{}
-        //add key secret and name
-        //role invited user values
-
+        
 
         configs.each { config ->
             if (config.validate()) {
@@ -268,7 +265,9 @@ class BootstrapUtilsService {
             if(!grailsApplication.config.grails.messageBrokerServerURL.contains(messageBroker.host)) {
                 log.info messageBroker.host + " is not in config, drop it"
                 log.info "delete Message Broker Server " + messageBroker.host
-                AmqpQueue.findAllByHost(messageBroker.host).each {it.delete(failOnError:true)}
+                def queues = AmqpQueue.findAllByHost(messageBroker.host)
+                AmqpQueueConfigInstance.deleteAll(AmqpQueueConfigInstance.findAllByQueueInList(queues))
+                AmqpQueue.deleteAll(queues)
                 messageBroker.delete()
             }
         }

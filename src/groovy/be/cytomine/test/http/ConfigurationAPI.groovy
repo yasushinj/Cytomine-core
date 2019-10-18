@@ -17,8 +17,6 @@ package be.cytomine.test.http
 */
 
 import be.cytomine.test.Infos
-import be.cytomine.utils.Configuration
-import grails.converters.JSON
 
 /**
  * Created by hoyoux on 06.05.15.

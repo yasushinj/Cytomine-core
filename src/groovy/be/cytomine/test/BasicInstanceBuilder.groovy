@@ -18,6 +18,7 @@ package be.cytomine.test
 
 import be.cytomine.AnnotationDomain
 import be.cytomine.CytomineDomain
+import be.cytomine.meta.Property
 import be.cytomine.image.*
 import be.cytomine.image.acquisition.Instrument
 import be.cytomine.image.multidim.ImageGroup
@@ -25,6 +26,8 @@ import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.image.server.*
 import be.cytomine.laboratory.Sample
+import be.cytomine.meta.Tag
+import be.cytomine.meta.TagDomainAssociation
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.AmqpQueueConfig
 import be.cytomine.middleware.AmqpQueueConfigInstance
@@ -41,9 +44,9 @@ import be.cytomine.social.LastUserPosition
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.social.PersistentUserPosition
-import be.cytomine.utils.AttachedFile
-import be.cytomine.utils.Configuration
-import be.cytomine.utils.Description
+import be.cytomine.meta.AttachedFile
+import be.cytomine.meta.Configuration
+import be.cytomine.meta.Description
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
 import org.apache.commons.logging.Log
@@ -1143,6 +1146,36 @@ class BasicInstanceBuilder {
         save? saveDomain(abstractImageProperty) : checkDomain(abstractImageProperty)
     }
 
+    static Tag getTag() {
+        Tag tag = Tag.findByName("TEST_TAG")
+        if (!tag) {
+            tag = new Tag(name: 'TEST_TAG', user: User.findByUsername(Infos.SUPERADMINLOGIN))
+            saveDomain(tag)
+        }
+        tag
+    }
+
+    static Tag getTagNotExist(boolean save  = false) {
+        Tag tag = new Tag(name: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
+        save? saveDomain(tag) : checkDomain(tag)
+    }
+
+    static TagDomainAssociation getTagDomainAssociation() {
+        TagDomainAssociation association = TagDomainAssociation.findByTag(getTag())
+        if (!association) {
+            association = new TagDomainAssociation(tag: getTag())
+            association.setDomain(getProject())
+            saveDomain(association)
+        }
+        association
+    }
+
+    static TagDomainAssociation getTagDomainAssociationNotExist(boolean save  = false) {
+        TagDomainAssociation association = new TagDomainAssociation(tag: getTagNotExist(true))
+        association.setDomain(getProjectNotExist(true))
+        save? saveDomain(association) : checkDomain(association)
+    }
+
     static Instrument getScanner() {
         Instrument scanner = new Instrument(brand: "brand", model: "model")
         saveDomain(scanner)
@@ -1459,7 +1492,7 @@ class BasicInstanceBuilder {
     public static ImageInstance initImage() {
 
         //String urlImageServer = "http://localhost:9080"
-        String urlImageServer = "http://image.cytomine.be"
+        String urlImageServer = "http://image.cytomine.coop"
 
         User user = getUser("imgUploader", "password")
 
@@ -1493,7 +1526,7 @@ class BasicInstanceBuilder {
         Storage storage = Storage.findByUser(user)
         if(!storage) {
             storage = new Storage()
-            storage.basePath = "/data/test.cytomine.be/1"
+            storage.basePath = "/data/test.cytomine.coop/1"
             storage.name = "lrollus test storage"
             storage.user = user
             BasicInstanceBuilder.saveDomain(storage)
@@ -1564,10 +1597,10 @@ class BasicInstanceBuilder {
         }
 
 
-        ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.be")
+        ProcessingServer processingServer = ProcessingServer.findByUrl("http://image.cytomine.coop")
         if (!processingServer) {
             processingServer = new ProcessingServer()
-            processingServer.url = "http://image.cytomine.be"
+            processingServer.url = "http://image.cytomine.coop"
             BasicInstanceBuilder.saveDomain(processingServer)
         }
 
