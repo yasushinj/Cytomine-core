@@ -83,6 +83,9 @@ grails.project.dependency.resolution = {
         runtime "org.hibernate:hibernate-validator:5.0.3.Final"
         compile 'commons-beanutils:commons-beanutils:1.8.3'
         compile 'joda-time:joda-time:2.10.1'
+        compile( "commons-validator:commons-validator:1.5.0" ) {
+            excludes 'xml-apis','commons-digester','commons-logging','commons-beanutils', 'commons-collections'
+        }
     }
     plugins {
         compile ":mongodb:3.0.2"
