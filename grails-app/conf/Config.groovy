@@ -423,6 +423,7 @@ cytomine.customUI.project = [
         "project-tools-move":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-tools-delete":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-tools-screenshot":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-copy-paste":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-tools-undo-redo":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
 
         //graphs
