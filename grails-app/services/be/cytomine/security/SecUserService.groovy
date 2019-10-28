@@ -202,6 +202,7 @@ class SecUserService extends ModelService {
             // I mock methods and fields to pass through getDataFromDomain of SecUser
             map["class"] = User.class
             map.getMetaClass().algo = { return false }
+            map["language"] = User.Language.valueOf(map["language"])
 
             def line = User.getDataFromDomain(map)
 
