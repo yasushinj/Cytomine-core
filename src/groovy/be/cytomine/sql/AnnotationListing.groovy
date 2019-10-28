@@ -203,6 +203,7 @@ abstract class AnnotationListing {
                         getMaxDistanceAnnotationConst() +
                         getBeforeThan() +
                         getAfterThan() +
+                        getNotDeleted() +
                         createOrderBy()
 
         if(term || terms){
@@ -434,6 +435,9 @@ abstract class AnnotationListing {
         } else {
             return ""
         }
+    }
+    def getNotDeleted() {
+        return "AND a.deleted IS NULL\n"
     }
 
     @Override

@@ -102,6 +102,9 @@ class UserAnnotationListingTests {
       assert JSON.parse(result.data).collection.size()==dataSet.annotations.size() -1
        //generic way test
       checkUserAnnotationResultNumber("image=${dataSet.image.id}",dataSet.annotations.size()-1)
+
+      UserAnnotationAPI.delete(dataSet.annotations[1].id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      checkUserAnnotationResultNumber("image=${dataSet.image.id}",dataSet.annotations.size()-2)
   }
 
     void testListAnnotationSearchByMultipleTerm() {
