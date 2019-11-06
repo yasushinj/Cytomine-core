@@ -42,6 +42,7 @@ import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
 import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.hibernate.FetchMode
 import org.hibernate.criterion.Restrictions
 import org.hibernate.spatial.criterion.SpatialRestrictions
 
@@ -231,6 +232,11 @@ class UserAnnotationService extends ModelService {
             log.error("Cannot simplify annotation location:" + e)
         }
 
+        if (!json.location) {
+            json.location = annotationShape
+            json.geometryCompression = 0.0d
+        }
+
         //Start transaction
         Transaction transaction = transactionService.start()
         def result = executeCommand(new AddCommand(user: currentUser, transaction: transaction), null, json)
@@ -354,6 +360,36 @@ class UserAnnotationService extends ModelService {
     def afterDelete(def domain, def response) {
         response.data['annotation'] = response.data.userannotation
         response.data.remove('userannotation')
+    }
+
+    def repeat(def userAnnotation, def baseSliceId, def repeat) {
+        SliceInstance currentSlice = sliceInstanceService.read(baseSliceId)
+
+        def slices = SliceInstance.createCriteria().list {
+            createAlias("baseSlice", "as")
+            eq("image", userAnnotation.image)
+            order("as.time", "asc")
+            order("as.zStack", "asc")
+            order("as.channel", "asc")
+            fetchMode("baseSlice", FetchMode.JOIN)
+            ge("as.time", currentSlice.baseSlice.time)
+            ge("as.zStack", currentSlice.baseSlice.zStack)
+            ge("as.channel", currentSlice.baseSlice.channel)
+            ne("id", userAnnotation.slice.id)
+            maxResults(repeat)
+        }
+
+        def collection = []
+        slices.each { slice ->
+            collection << add(new JSONObject([
+                    slice: slice.id,
+                    location: userAnnotation.location.toString(),
+                    terms: userAnnotation.termsId(),
+                    tracks: userAnnotation.tracksId()
+            ]))
+        }
+
+        return [collection: collection]
     }
 
     def getStringParamsI18n(def domain) {

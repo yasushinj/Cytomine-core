@@ -88,6 +88,9 @@ class AnnotationUrlMappings {
         "/api/userannotation/$id/alphamask.$format"(controller: "restUserAnnotation"){
             action = [GET:"cropAlphaMask"]
         }
+        "/api/userannotation/$id/repeat.$format"(controller: "restUserAnnotation"){
+            action = [POST: "repeat"]
+        }
 
 
 

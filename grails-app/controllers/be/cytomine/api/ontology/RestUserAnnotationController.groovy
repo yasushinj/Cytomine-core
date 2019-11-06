@@ -23,6 +23,7 @@ import be.cytomine.ontology.SharedAnnotation
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.utils.JSONUtils
 import grails.converters.JSON
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
@@ -237,6 +238,17 @@ class RestUserAnnotationController extends RestController {
     ])
     def delete() {
         delete(userAnnotationService, JSON.parse("{id : $params.id}"), null)
+    }
+
+    def repeat() {
+        UserAnnotation annotation = userAnnotationService.read(params.long("id"))
+        if (annotation) {
+            def repeat = JSONUtils.getJSONAttrInteger(request.JSON,'repeat',1)
+            def slice = JSONUtils.getJSONAttrInteger(request.JSON, 'slice', null)
+            responseSuccess(userAnnotationService.repeat(annotation, slice, repeat))
+        } else {
+            responseNotFound("UserAnnotation", params.id)
+        }
     }
 
     @RestApiMethod(description = "Get a crop of a user annotation (image area framing annotation)", extensions = ["png", "jpg", "tiff"])

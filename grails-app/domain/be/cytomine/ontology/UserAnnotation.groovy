@@ -91,6 +91,14 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
         }
     }
 
+    def tracks() {
+        if (this.version != null) {
+            AnnotationTrack.findAllByAnnotationIdent(this.id).collect { it.track }
+        } else {
+            return []
+        }
+    }
+
     /**
      * Get all annotation terms id
      * @return Terms id list
@@ -102,6 +110,10 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
             return terms().collect { it.id }.unique()
         }
 
+    }
+
+    def tracksId() {
+        return tracks().collect { it.id }.unique()
     }
 
     /**
