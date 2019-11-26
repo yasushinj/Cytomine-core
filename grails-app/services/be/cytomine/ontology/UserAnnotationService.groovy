@@ -215,7 +215,7 @@ class UserAnnotationService extends ModelService {
         try {
             annotationShape = new WKTReader().read(json.location)
         }
-        catch (ParseException ignored) {
+        catch (Exception ignored) {
             throw new WrongArgumentException("Annotation location is not valid")
         }
 
