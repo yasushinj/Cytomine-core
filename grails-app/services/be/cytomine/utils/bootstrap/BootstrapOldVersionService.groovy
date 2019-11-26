@@ -194,8 +194,6 @@ class BootstrapOldVersionService {
 
         //TODO:
         def server = ImageServer.first()
-        server.url = "https://localhost-ims"
-        server.basePath = "/data/images"
         server.save(flush: true)
 
         // Add image server to uploaded file (TODO: use old ImageServerStorage and StorageAbstractImage)
