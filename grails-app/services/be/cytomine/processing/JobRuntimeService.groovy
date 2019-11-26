@@ -60,10 +60,11 @@ class JobRuntimeService {
             String value = parameter.defaultValue
             if (jobParameter)
                 value = jobParameter.value
-            else if (parameter.required && value == null)
+            else if (parameter.required && (value == null || value.isEmpty()))
                 throw new WrongArgumentException("Argument ${parameter.name} is required !")
 
-            values.put(parameter, value)
+            if (value && !value.isEmpty())
+                values.put(parameter, value)
 
             log.info("${parameter.name} = ${value}")
         }
@@ -109,7 +110,7 @@ class JobRuntimeService {
 
         def sp = softwareParameters.find { ["HOST", "CYTOMINEHOST"].contains(it.name.toUpperCase().replace('_', '')) }
         if (sp) {
-            jobParameterService.add(JSON.parse(new JobParameter(value: Holders.getGrailsApplication().config.grails.serverURL.replace("https", "http"), job: job, softwareParameter: sp).encodeAsJSON()))
+            jobParameterService.add(JSON.parse(new JobParameter(value: Holders.getGrailsApplication().config.grails.serverURL, job: job, softwareParameter: sp).encodeAsJSON()))
         }
 
         sp = softwareParameters.find { ["PUBLICKEY", "CYTOMINEPUBLICKEY"].contains(it.name.toUpperCase().replace('_', '')) }
