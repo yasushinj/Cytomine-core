@@ -151,6 +151,7 @@ class RestJobController extends RestController {
         long jobId = params.long("id")
         Job job = Job.read(jobId)
 
+        securityACLService.checkUser(cytomineService.currentUser)
         securityACLService.check(job.container(), READ)
         UserJob userJob = UserJob.findByJob(job)
 
@@ -171,6 +172,7 @@ class RestJobController extends RestController {
         long processingServerId = params.long("processingServerId")
         ProcessingServer processingServer = ProcessingServer.read(processingServerId)
 
+        securityACLService.checkUser(cytomineService.currentUser)
         securityACLService.check(job.container(), READ)
         UserJob userJob = UserJob.findByJob(job)
 
@@ -258,6 +260,8 @@ class RestJobController extends RestController {
         }
     }
 
+    def transactionService
+
     /**
      * Delete the full data set build by the job
      * This method will delete: annotation prediction, uploaded files,...
@@ -296,13 +300,19 @@ class RestJobController extends RestController {
                 taskService.updateTask(task,60,"Delete all annotations...")
                 jobService.deleteAllAlgoAnnotations(job)
 
-                taskService.updateTask(task,90,"Delete all files...")
+                taskService.updateTask(task,80,"Delete all files...")
                 jobService.deleteAllJobData(job)
 
-                taskService.finishTask(task)
-                job.dataDeleted = true;
-                job.save(flush:true)
-                responseSuccess([message:"All data from job launch "+ job.created + " are deleted!"])
+                taskService.updateTask(task, 90, "Delete job...")
+                try {
+                    def result = jobService.delete(job, transactionService.start())
+                    taskService.finishTask(task)
+                    responseResult(result)
+                } catch (CytomineException e) {
+                    taskService.finishTask(task)
+                    log.error(e)
+                    response([success: false, errors: e.msg, errorValues : e.values], e.code)
+                }
             }
         }
     }
