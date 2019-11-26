@@ -342,7 +342,9 @@ class SecUserService extends ModelService {
             layersFormatted.addAll(humanAdmins.collect { User.getDataFromDomain(it) })
         }
 
-        if (humanUsers.contains(currentUser) && !layersFormatted.find { it.id == currentUser.id }) {
+        if (((!project.hideUsersLayers && humanUsers.contains(currentUser))
+                    || (!project.hideAdminsLayers && humanAdmins.contains(currentUser)))
+                && !layersFormatted.find { it.id == currentUser.id }) {
             def currentUserFormatted = User.getDataFromDomain(currentUser)
             layersFormatted.add(currentUserFormatted)
         }
@@ -548,12 +550,19 @@ class SecUserService extends ModelService {
     }
 
     def beforeDelete(def domain) {
-        Command.findAllByUser(domain).each {
-            UndoStackItem.findAllByCommand(it).each { it.delete()}
-            RedoStackItem.findAllByCommand(it).each { it.delete()}
-            CommandHistory.findAllByCommand(it).each {it.delete()}
-            it.delete()
-        }
+        def sql = new Sql(dataSource)
+        sql.executeUpdate("delete from command_history where user_id = ${domain.id};")
+        sql.executeUpdate("delete from redo_stack_item where user_id = ${domain.id};")
+        sql.executeUpdate("delete from undo_stack_item where user_id = ${domain.id};")
+        sql.executeUpdate("delete from command where user_id = ${domain.id};")
+        sql.close()
+
+//        Command.findAllByUser(domain).each {
+//            UndoStackItem.findAllByCommand(it).each { it.delete()}
+//            RedoStackItem.findAllByCommand(it).each { it.delete()}
+//            CommandHistory.findAllByCommand(it).each {it.delete()}
+//            it.delete()
+//        }
     }
 
     def afterAdd(def domain, def response) {
