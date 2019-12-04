@@ -51,6 +51,10 @@ class AnnotationUrlMappings {
             action = [GET:"cropParameters"]
         }
 
+        "/api/annotation/$id/profile.$format"(controller: "restAnnotationDomain") {
+            action = [GET: "profile"]
+        }
+
         //keep this for retrieval
         "/api/annotation/$id/cropMin.$format"(controller: "restAnnotationDomain"){
             action = [GET:"cropMin"]

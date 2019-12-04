@@ -37,6 +37,8 @@ class CompanionFile extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "A user-friendly filename")
     String filename
 
+    String type
+
     static belongsTo = [AbstractImage]
 
     static mapping = {
@@ -63,7 +65,7 @@ class CompanionFile extends CytomineDomain implements Serializable {
         }
     }
 
-    static AbstractSlice insertDataIntoDomain(def json, def domain = new AbstractSlice()) {
+    static CompanionFile insertDataIntoDomain(def json, def domain = new CompanionFile()) {
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.created = JSONUtils.getJSONAttrDate(json,'created')
         domain.updated = JSONUtils.getJSONAttrDate(json,'updated')
@@ -74,6 +76,7 @@ class CompanionFile extends CytomineDomain implements Serializable {
 
         domain.originalFilename = JSONUtils.getJSONAttrStr(json, "originalFilename", true)
         domain.filename = JSONUtils.getJSONAttrStr(json, "filename", true)
+        domain.type = JSONUtils.getJSONAttrStr(json, "type", true)
 
         domain
     }
@@ -85,11 +88,23 @@ class CompanionFile extends CytomineDomain implements Serializable {
         returnArray['image'] = domain?.image?.id
         returnArray['originalFilename'] = domain?.originalFilename
         returnArray['filename'] = domain?.filename
+        returnArray['type'] = domain?.type
+
+        returnArray['status'] = domain?.uploadedFile?.status
+        returnArray['statusText'] = domain?.uploadedFile?.statusText
 
         returnArray
     }
 
     CytomineDomain[] containers() {
         return image?.containers()
+    }
+
+    def getImageServerUrl() {
+        return uploadedFile?.imageServer?.url
+    }
+
+    def getImageServerInternalUrl() {
+        return uploadedFile?.imageServer?.internalUrl
     }
 }

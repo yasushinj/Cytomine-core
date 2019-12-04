@@ -1,5 +1,7 @@
 package be.cytomine.api.image
 
+import be.cytomine.Exception.InvalidRequestException
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -79,7 +81,12 @@ class RestCompanionFileController extends RestController {
 
     @RestApiMethod(description="Add a new companion file. See 'upload file service' to upload a slice.")
     def add() {
-        add(companionFileService, request.JSON)
+        def json = request.JSON
+
+        if (json?.type == "HDF5" && json?.uploadedFile == null)
+            forward(controller: "restCompanionFile", action: "computeProfile")
+        else
+            add(companionFileService, request.JSON)
     }
 
     @RestApiMethod(description="Update a companion file")
@@ -108,6 +115,34 @@ class RestCompanionFileController extends RestController {
             responseSuccess(user)
         } else {
             responseNotFound("User", "CompanionFile", params.id)
+        }
+    }
+
+    def download() {
+        CompanionFile companionFile = companionFileService.read(params.long("id"))
+        String url = imageServerService.downloadUri(companionFile)
+        redirect(url: url)
+    }
+
+    @RestApiMethod(description="Ask to compute HDF5 profile for the given image")
+    @RestApiParams(params=[
+            @RestApiParam(name="image", type="long", paramType = RestApiParamType.PATH, description = "The abstract image id")
+    ])
+    def computeProfile() {
+        def id = params.long("image") ?: request.JSON?.image
+
+        AbstractImage abstractImage = abstractImageService.read(id)
+        if (abstractImage) {
+            if (abstractImage.dimensions.length() == 3 && !abstractImage.hasProfile()) {
+                //TODO: check image is greyscale
+                responseSuccess(imageServerService.profile(abstractImage).companionFile)
+            }
+            else {
+                responseError(new InvalidRequestException("Abstract image ${abstractImage.id} already has a profile or cannot have one."))
+            }
+        }
+        else {
+            responseNotFound("Image", id)
         }
     }
 

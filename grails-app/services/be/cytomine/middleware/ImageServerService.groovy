@@ -1,13 +1,16 @@
 package be.cytomine.middleware
 
 import be.cytomine.AnnotationDomain
+import be.cytomine.api.UrlApi
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.AbstractSlice
+import be.cytomine.image.CompanionFile
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.SliceInstance
 import be.cytomine.image.UploadedFile
 import be.cytomine.utils.GeometryUtils
 import be.cytomine.utils.ModelService
+import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
 import groovyx.net.http.ContentType
@@ -54,9 +57,30 @@ class ImageServerService extends ModelService {
         downloadUri(image.uploadedFile)
     }
 
+    def downloadUri(CompanionFile file) {
+        downloadUri(file.uploadedFile)
+    }
+
     def properties(AbstractImage image) {
         def (server, parameters) = imsParametersFromAbstractImage(image)
         return JSON.parse(new URL(makeGetUrl("/image/properties.json", server, parameters)).text)
+    }
+
+    def profile(AbstractImage image) {
+        def (server, parameters) = imsParametersFromAbstractImage(image)
+        parameters.abstractImage = image.id
+        parameters.uploadedFileParent = image.uploadedFile.id
+        parameters.user = cytomineService.currentUser.id
+        parameters.core = UrlApi.serverUrl()
+        return JSON.parse(new String(makeRequest("/profile.json", server, parameters, "POST")))
+    }
+
+    def profile(CompanionFile profile, AnnotationDomain annotation, def params) {
+        def (server, parameters) = imsParametersFromCompanionFile(profile)
+        parameters.location = annotation.location
+        parameters.minSlice = params.minSlice
+        parameters.maxSlice = params.maxSlice
+        return JSON.parse(new URL(makeGetUrl("/profile.json", server, parameters)).text)
     }
 
     def associated(ImageInstance image) {
@@ -246,6 +270,12 @@ class ImageServerService extends ModelService {
         return [server, parameters]
     }
 
+    private static def imsParametersFromCompanionFile(CompanionFile cf) {
+        def server = cf.getImageServerInternalUrl()
+        def parameters = [fif: cf.path]
+        return [server, parameters]
+    }
+
     private static def filterParameters(parameters) {
         parameters.findAll { it.value != null && it.value != ""}
     }
@@ -253,6 +283,9 @@ class ImageServerService extends ModelService {
     private static def makeGetUrl(def uri, def server, def parameters) {
         parameters = filterParameters(parameters)
         String query = parameters.collect { key, value ->
+            if (value instanceof Geometry)
+                value = value.toText()
+
             if (value instanceof String)
                 value = URLEncoder.encode(value, "UTF-8")
             "$key=$value"
@@ -261,12 +294,12 @@ class ImageServerService extends ModelService {
         return "$server$uri?$query"
     }
 
-    private static byte[] makeRequest(def uri, def server, def parameters, def getOnly=false) {
+    private static byte[] makeRequest(def uri, def server, def parameters, def httpMethod=null) {
         def final GET_URL_MAX_LENGTH = 512
         parameters = filterParameters(parameters)
         def url = makeGetUrl(uri, server, parameters)
         def http = new HTTPBuilder(server)
-        if (url.size() < GET_URL_MAX_LENGTH || getOnly) {
+        if ((url.size() < GET_URL_MAX_LENGTH && !httpMethod) || httpMethod == "GET") {
             (byte[]) http.get(path: uri, requestContentType: ContentType.URLENC, query: parameters) { response ->
                 HttpEntity entity = response.getEntity()
                 if (entity != null) {

@@ -68,4 +68,8 @@ class CompanionFileService extends ModelService {
         CompanionFile file = read(id)
         return file?.uploadedFile?.user
     }
+
+    def getStringParamsI18n(def domain) {
+        return [domain.id, domain.originalFilename]
+    }
 }

@@ -34,6 +34,14 @@ class CompanionFileUrlMappings {
         "/api/companionfile/$id/user.$format"(controller:"restCompanionFile"){
             action = [GET:"showUploader"]
         }
+
+        "/api/companionfile/$id/download"(controller: "restCompanionFile"){
+            action = [GET:"download"]
+        }
+
+        "/api/profile.$format"(controller: "restCompanionFile") {
+            action = [POST: "computeProfile"]
+        }
     }
 }
 

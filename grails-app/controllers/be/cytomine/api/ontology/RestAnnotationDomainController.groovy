@@ -24,6 +24,7 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.RestController
 import be.cytomine.api.UrlApi
 import be.cytomine.image.AbstractImage
+import be.cytomine.image.CompanionFile
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.ReviewedAnnotation
@@ -808,6 +809,26 @@ class RestAnnotationDomainController extends RestController {
         def wkt = json.wkt
         def result = simplifyGeometryService.simplifyPolygon(wkt,minPoint,maxPoint)
         responseSuccess([wkt:result.geometry.toText()])
+    }
+
+    def profile() {
+        try {
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(params.long('id'))
+            if (!annotation) {
+                throw new ObjectNotFoundException("Annotation ${params.long('id')} not found!")
+            }
+
+            if (!annotation.image.baseImage.hasProfile()) {
+                throw new ObjectNotFoundException("No profile for abstract image ${annotation.image.baseImage}")
+            }
+
+            CompanionFile cf = CompanionFile.findByImageAndType(annotation.image.baseImage, "HDF5")
+
+            responseSuccess(imageServerService.profile(cf, annotation, params))
+        }
+        catch (CytomineException e) {
+            responseError(e)
+        }
     }
 
 

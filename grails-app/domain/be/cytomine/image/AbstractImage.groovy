@@ -177,6 +177,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         returnArray['depth'] = image?.depth // /!!\ Breaking API : image?.getZoomLevels()?.max
         returnArray['duration'] = image?.duration
         returnArray['channels'] = image?.channels
+        returnArray['dimensions'] = image?.dimensions
 
         returnArray['physicalSizeX'] = image?.physicalSizeX
         returnArray['physicalSizeY'] = image?.physicalSizeY
@@ -249,6 +250,18 @@ class AbstractImage extends CytomineDomain implements Serializable {
 
     def getFilename() {
         return originalFilename
+    }
+
+    def getDimensions() {
+        def dimensions = ['X', 'Y']
+        if (channels > 1) dimensions << 'C'
+        if (depth > 1) dimensions << 'Z'
+        if (duration > 1) dimensions << 'T'
+        return dimensions.join()
+    }
+
+    def hasProfile() {
+        return CompanionFile.countByImageAndType(this, "HDF5") as Boolean
     }
 
     /**
