@@ -17,6 +17,7 @@ class CompanionFileService extends ModelService {
     static transactional = true
     def cytomineService
     def securityACLService
+    def abstractImageService
 
     def currentDomain() {
         return CompanionFile
@@ -25,13 +26,15 @@ class CompanionFileService extends ModelService {
     def read(def id) {
         CompanionFile file = CompanionFile.read(id)
         if (file) {
-            securityACLService.checkAtLeastOne(file, READ)
+            if (!abstractImageService.hasRightToReadAbstractImageWithProject(file.image)) //TODO: improve
+                securityACLService.checkAtLeastOne(file, READ)
         }
         file
     }
 
     def list(AbstractImage image) {
-        securityACLService.checkAtLeastOne(image, READ)
+        if (!abstractImageService.hasRightToReadAbstractImageWithProject(image)) //TODO: improve
+            securityACLService.checkAtLeastOne(image, READ)
         CompanionFile.findAllByImage(image)
     }
 
