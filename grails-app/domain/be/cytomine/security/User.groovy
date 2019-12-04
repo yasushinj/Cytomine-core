@@ -42,6 +42,9 @@ class User extends SecUser {
 
     @RestApiObjectField(description = "The language of the user")
     Language language
+    
+    @RestApiObjectField(description = "True if user is in developer mode")
+    Boolean isDeveloper = false
 
     @RestApiObjectFields(params=[
         @RestApiObjectField(apiFieldName = "admin", description = "(ONLY VISIBLE WHEN DOING GET /api/user/id.format service) True if the user is ADMIN ",allowedType = "boolean",useForCreation = false),
@@ -52,6 +55,7 @@ class User extends SecUser {
         firstname blank: false
         lastname blank: false
         language(nullable: true)
+        isDeveloper(nullable: true)
         email(blank: false, email: true)
         color(blank: false, nullable: true)
     }
@@ -107,6 +111,7 @@ class User extends SecUser {
         domain.email = JSONUtils.getJSONAttrStr(json,'email')
         domain.color = JSONUtils.getJSONAttrStr(json,'color')
         domain.language = Language.findByCode(JSONUtils.getJSONAttrStr(json,'language') ?: "EN")
+        domain.isDeveloper = JSONUtils.getJSONAttrBoolean(json, 'isDeveloper', false)
         if (json.password && domain.password != null) {
             domain.newPassword = JSONUtils.getJSONAttrStr(json,'password') //user is updated
         } else if (json.password) {
@@ -133,6 +138,7 @@ class User extends SecUser {
         returnArray['lastname'] = domain?.lastname
         returnArray['email'] = domain?.email
         returnArray['language'] = domain?.language.toString()
+        returnArray['isDeveloper'] = domain?.isDeveloper
         if (!(domain?.springSecurityService?.principal instanceof String) && domain?.id == domain?.springSecurityService?.currentUser?.id) {
             returnArray['publicKey'] = domain?.publicKey
             returnArray['privateKey'] = domain?.privateKey

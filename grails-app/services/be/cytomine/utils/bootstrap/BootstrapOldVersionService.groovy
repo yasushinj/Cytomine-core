@@ -111,6 +111,12 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
+    def initv2_0_0() {
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET is_developer = FALSE WHERE is_developer IS NULL;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ALTER COLUMN is_developer SET DEFAULT FALSE;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ALTER COLUMN is_developer SET NOT NULL;")
+    }
+
 //    void initv1_3_2() {
 //        log.info "1.3.2"
 //        new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
