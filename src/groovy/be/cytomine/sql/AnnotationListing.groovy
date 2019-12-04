@@ -826,9 +826,9 @@ class AlgoAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
         if (multipleTerm) {
-            from += "LEFT OUTER JOIN algo_annotation_term att ON a.id = att.annotation_ident "
-            from += "LEFT OUTER JOIN algo_annotation_term att2 ON a.id = att2.annotation_ident "
-            where += "AND att.id <> att2.id AND att.term_id <> att2.term_id "
+            from += "LEFT OUTER JOIN algo_annotation_term aat ON a.id = aat.annotation_ident "
+            from += "LEFT OUTER JOIN algo_annotation_term aat2 ON a.id = aat2.annotation_ident "
+            where += "AND aat.id <> aat2.id AND aat.term_id <> aat2.term_id "
         }
         else if (noTerm || noAlgoTerm) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_job_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
