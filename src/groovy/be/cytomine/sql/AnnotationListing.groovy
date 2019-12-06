@@ -91,6 +91,8 @@ abstract class AnnotationListing {
     def noTerm = false
     def noAlgoTerm = false
     def multipleTerm = false
+    def noTrack = false
+    def multipleTrack = false
 
     def bbox = null
     def bboxAnnotation = null
@@ -434,7 +436,7 @@ abstract class AnnotationListing {
                 throw new ObjectNotFoundException("Term $term not exist!")
             }
             addIfMissingColumn('term')
-            return " AND at.term_id = ${term}\n"
+            return " AND (at.term_id = ${term}" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -452,7 +454,7 @@ abstract class AnnotationListing {
     def getTermsConst() {
         if (terms) {
             addIfMissingColumn('term')
-            return "AND at.term_id IN (${terms.join(',')})\n"
+            return "AND (at.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -464,7 +466,7 @@ abstract class AnnotationListing {
                 throw new ObjectNotFoundException("Track $track not exists !")
             }
             addIfMissingColumn('track')
-            return " AND atr.track_id = ${track}\n"
+            return " AND (atr.track_id = ${track}" + ((noTrack) ? " OR atr.track_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -473,7 +475,7 @@ abstract class AnnotationListing {
     def getTracksConst() {
         if (tracks) {
             addIfMissingColumn('track')
-            return "AND atr.track_id IN (${tracks.join(',')})\n"
+            return "AND (atr.track_id IN (${tracks.join(',')})" + ((noTrack) ? " OR atr.track_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -585,6 +587,8 @@ notReviewedOnly = $notReviewedOnly
 noTerm = $noTerm
 noAlgoTerm = $noAlgoTerm
 multipleTerm = $multipleTerm
+noTrack = $noTrack
+multipleTrack = $multipleTrack
 bboxAnnotation = $bboxAnnotation
 baseAnnotation = $baseAnnotation
 maxDistanceBaseAnnotation = $maxDistanceBaseAnnotation
@@ -686,7 +690,7 @@ class UserAnnotationListing extends AnnotationListing {
             from += "LEFT OUTER JOIN annotation_term at2 ON a.id = at2.user_annotation_id "
             where += "AND at.id <> at2.id AND at.term_id <> at2.term_id "
         }
-        else if (noTerm) {
+        else if (noTerm && !(term || terms)) {
             from += "LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
             where += "AND at.id IS NULL \n"
         }
@@ -698,7 +702,15 @@ class UserAnnotationListing extends AnnotationListing {
             from += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
         }
 
-        if (columnToPrint.contains('track')) {
+        if (multipleTrack) {
+            from += "LEFT OUTER JOIN annotation_track atr2 ON a.id = atr2.annotation_ident "
+            where += "AND atr.id <> atr2.id AND atr.track_id <> atr2.track_id "
+        }
+        else if (noTrack && !(track || tracks)) {
+            where += "AND atr.id IS NULL \n"
+        }
+
+        if (multipleTrack || noTrack || columnToPrint.contains('track')) {
             from += "LEFT OUTER JOIN annotation_track atr ON a.id = atr.annotation_ident "
         }
 
@@ -830,7 +842,7 @@ class AlgoAnnotationListing extends AnnotationListing {
             from += "LEFT OUTER JOIN algo_annotation_term aat2 ON a.id = aat2.annotation_ident "
             where += "AND aat.id <> aat2.id AND aat.term_id <> aat2.term_id "
         }
-        else if (noTerm || noAlgoTerm) {
+        else if ((noTerm || noAlgoTerm) && !(term || terms)) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_job_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
             where = "$where AND aat.id IS NULL \n"
 
@@ -864,7 +876,7 @@ class AlgoAnnotationListing extends AnnotationListing {
     def getTermConst() {
         if (term) {
             addIfMissingColumn('term')
-            return " AND aat.term_id = ${term}\n"
+            return " AND (aat.term_id = ${term}" + ((noTerm) ? " OR aat.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -874,7 +886,7 @@ class AlgoAnnotationListing extends AnnotationListing {
 
         if (terms) {
             addIfMissingColumn('term')
-            return "AND aat.term_id IN (${terms.join(',')})\n"
+            return "AND (aat.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR aat.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -992,12 +1004,12 @@ class ReviewedAnnotationListing extends AnnotationListing {
             from += "LEFT OUTER JOIN reviewed_annotation_term at2 ON a.id = at2.reviewed_annotation_terms_id "
             where += "AND at.term_id <> at2.term_id "
         }
-        else if (noTerm) {
+        else if (noTerm && !(term || terms)) {
             from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
             where = "$where AND at.reviewed_annotation_terms_id IS NULL \n"
         }
         else if (columnToPrint.contains('term')) {
-            from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id"
+            from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
         }
 
         if (columnToPrint.contains('image')) {

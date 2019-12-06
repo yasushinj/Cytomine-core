@@ -121,7 +121,7 @@ class RestAnnotationDomainController extends RestController {
 
             @RestApiParam(name="term", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation link with this term id"),
             @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these terms id"),
-            @RestApiParam(name="noTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term"),
+            @RestApiParam(name="noTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Also get annotation with no term"),
             @RestApiParam(name="noAlgoTerm", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with no term from a job"),
             @RestApiParam(name="multipleTerm", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with multiple terms"),
 
@@ -132,6 +132,8 @@ class RestAnnotationDomainController extends RestController {
 
             @RestApiParam(name="track", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this track id"),
             @RestApiParam(name="tracks", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these tracks id"),
+            @RestApiParam(name="noTrack", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Also get annotation with no track"),
+            @RestApiParam(name="multipleTrack", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with multiple tracks"),
             @RestApiParam(name="afterSlice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only to be used with track(s), return only annotation in the track(s) after the given slice"),
             @RestApiParam(name="beforeSlice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only to be used with track(s), return only annotation in the track(s) before the given slice"),
             @RestApiParam(name="sliceDirection", type="long", paramType = RestApiParamType.QUERY, description = "Only to be used with beforeSlice, afterSlice or aroundSlide and mandatory in this case. Give the dimension to follow in the image. Accepted values: C,Z,T"),
@@ -461,6 +463,8 @@ class RestAnnotationDomainController extends RestController {
         al.noTerm = params.getBoolean('noTerm')
         al.noAlgoTerm = params.getBoolean('noAlgoTerm')
         al.multipleTerm = params.getBoolean('multipleTerm')
+        al.noTrack = params.getBoolean('noTrack')
+        al.multipleTrack = params.getBoolean('multipleTrack')
 
         // Review
         al.notReviewedOnly = params.getBoolean('notReviewedOnly')
