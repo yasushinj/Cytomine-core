@@ -138,74 +138,6 @@ class UserTests  {
     }
 
 
-
-    void testListProjectUser() {
-        def project = BasicInstanceBuilder.getProjectNotExist(true)
-        def result = UserAPI.list(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.collection instanceof JSONArray
-        assert json.collection.size() == 1
-
-        result = UserAPI.list(project.id,"project","user",true,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        json = JSON.parse(result.data)
-        assert json.collection instanceof JSONArray
-        assert json.collection.size() == 0
-
-        result = UserAPI.list(-99,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 404 == result.code
-    }
-
-    void testListProjectUserWithInfos() {
-        def project = BasicInstanceBuilder.getProjectNotExist(true)
-        def result = UserAPI.list(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.collection instanceof JSONArray
-        assert json.collection.size() == 1
-
-        assert !(((JSONObject)json.collection[0]).has("lastImage"))
-        assert !(((JSONObject)json.collection[0]).has("lastConsultation"))
-        assert !(((JSONObject)json.collection[0]).has("numberConsultations"))
-
-        result = UserAPI.listWithConsultationInformation(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        json = JSON.parse(result.data)
-
-        assert json.collection instanceof JSONArray
-        assert json.collection.size() == 1
-        assert (((JSONObject)json.collection[0]).has("lastImage"))
-        assert (((JSONObject)json.collection[0]).has("lastConsultation"))
-        assert (((JSONObject)json.collection[0]).has("numberConsultations"))
-        assert json.collection[0].lastImage instanceof JSONObject.Null
-        assert json.collection[0].lastConsultation instanceof JSONObject.Null
-        assert json.collection[0].numberConsultations instanceof JSONObject.Null
-
-        BasicInstanceBuilder.getImageConsultationNotExist(project.id,true)
-
-        result = UserAPI.listWithConsultationInformation(project.id,"project","user",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        json = JSON.parse(result.data)
-
-        assert json.collection instanceof JSONArray
-        assert json.collection.size() == 1
-        assert !(json.collection[0].lastImage instanceof JSONObject.Null)
-        assert !(json.collection[0].lastConsultation instanceof JSONObject.Null)
-        assert !(json.collection[0].numberConsultations instanceof JSONObject.Null)
-    }
-
-    void testListProjectAdmin() {
-        def project = BasicInstanceBuilder.getProject()
-        def result = UserAPI.list(project.id,"project","admin",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.collection instanceof JSONArray
-
-        result = UserAPI.list(-99,"project","admin",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 404 == result.code
-    }
-
     void testListProjectCreator() {
         def project = BasicInstanceBuilder.getProject()
         def result = UserAPI.list(project.id,"project","creator",Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -277,6 +209,19 @@ class UserTests  {
         userToAdd.email = "invalid@email"
         def result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 400 == result.code
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.email = "somperson@someagency.agency"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.email = "somperson@someschool.school"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.email = "vandana.bunwaree@llb.school"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
     }
 
     void testUpdateUserCorrect() {
@@ -340,52 +285,6 @@ class UserTests  {
     void testDeleteMe() {
         def result = UserAPI.delete(User.findByUsername(Infos.SUPERADMINLOGIN).id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 403==result.code
-    }
-
-    void testAddDeleteUserToProject() {
-        def project = BasicInstanceBuilder.getProjectNotExist()
-        BasicInstanceBuilder.saveDomain(project)
-
-        //Add project right for user 2
-        def resAddUser = ProjectAPI.addUserProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-
-        resAddUser = ProjectAPI.deleteUserProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-    }
-
-    void testAddDeleteAdminToProject() {
-        def project = BasicInstanceBuilder.getProjectNotExist()
-        BasicInstanceBuilder.saveDomain(project)
-
-        //Add project right for user 2
-        def resAddUser = ProjectAPI.addAdminProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-
-        resAddUser = ProjectAPI.deleteAdminProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-    }
-
-    void testAddDeleteUserToProjectNoOntology() {
-        def project = BasicInstanceBuilder.getProjectNotExist(null, true)
-
-        //Add project right for user 1
-        def resAddUser = ProjectAPI.addUserProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-
-        resAddUser = ProjectAPI.deleteUserProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-    }
-
-    void testAddDeleteAdminToProjectNoOntology() {
-        def project = BasicInstanceBuilder.getProjectNotExist(null, true)
-
-        //Add project right for user 1
-        def resAddUser = ProjectAPI.addAdminProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
-
-        resAddUser = ProjectAPI.deleteAdminProject(project.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == resAddUser.code
     }
 
     // SHOW USER JOB

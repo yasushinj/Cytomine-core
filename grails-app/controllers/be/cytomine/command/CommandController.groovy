@@ -32,6 +32,7 @@ class CommandController extends RestController {
     def cytomineService
     def securityACLService
 
+    //TODO count the EditCommand with boolean deleted !
     def listDelete() {
         securityACLService.checkAdmin(cytomineService.currentUser)
         String domain

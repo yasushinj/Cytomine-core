@@ -18,19 +18,28 @@ package be.cytomine.ontology
 
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.ObjectNotFoundException
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
+import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
+import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
+import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.io.ParseException
+import com.vividsolutions.jts.io.WKTReader
+import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
+import grails.transaction.Transactional
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
+@Transactional
 class AnnotationTermService extends ModelService {
 
     static transactional = true
@@ -45,28 +54,32 @@ class AnnotationTermService extends ModelService {
 
     def list(UserAnnotation userAnnotation) {
         securityACLService.check(userAnnotation.container(),READ)
-        AnnotationTerm.findAllByUserAnnotation(userAnnotation)
+        AnnotationTerm.findAllByUserAnnotationAndDeletedIsNull(userAnnotation)
     }
 
     def list(Project project) {
         return AnnotationTerm.withCriteria{
             createAlias('userAnnotation', 'ua')
             eq('ua.project', project)
+            isNull("deleted")
         }
     }
 
     def listNotUser(UserAnnotation userAnnotation, User user) {
         securityACLService.check(userAnnotation.container(),READ)
-        AnnotationTerm.findAllByUserAnnotationAndUserNotEqual(userAnnotation, user)
+        AnnotationTerm.findAllByUserAnnotationAndUserNotEqualAndDeletedIsNull(userAnnotation, user)
     }
 
     def read(AnnotationDomain annotation, Term term, SecUser user) {
         securityACLService.check(annotation.container(),READ)
+        AnnotationTerm result
         if (user) {
-            AnnotationTerm.findWhere('userAnnotation.id': annotation.id, 'term': term, 'user': user)
+            result = AnnotationTerm.findWhere('userAnnotation.id': annotation.id, 'term': term, 'user': user)
         } else {
-            AnnotationTerm.findWhere('userAnnotation.id': annotation.id, 'term': term)
+            result = AnnotationTerm.findWhere('userAnnotation.id': annotation.id, 'term': term)
         }
+        if(result) checkDeleted(result)
+        result
     }
 
     /**
@@ -91,11 +104,15 @@ class AnnotationTermService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(AnnotationTerm domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+        //We don't delete domain, we juste change a flag
+        def jsonNewData = JSON.parse(domain.encodeAsJSON())
+        jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.userAnnotation.id, UserAnnotation, "container", READ)
         securityACLService.checkFullOrRestrictedForOwner(domain, domain.userAnnotation.user)
-        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-        return executeCommand(c,domain,null)
+        Command c = new EditCommand(user: currentUser, transaction: transaction)
+        c.delete = true
+        return executeCommand(c,domain,jsonNewData)
     }
 
 
@@ -147,10 +164,10 @@ class AnnotationTermService extends ModelService {
     }
 
     /**
-      * Retrieve domain thanks to a JSON object
-      * @param json JSON with new domain info
-      * @return domain retrieve thanks to json
-      */
+     * Retrieve domain thanks to a JSON object
+     * @param json JSON with new domain info
+     * @return domain retrieve thanks to json
+     */
     def retrieve(Map json) {
         UserAnnotation annotation = UserAnnotation.get(json.userannotation)
         Term term = Term.get(json.term)

@@ -56,8 +56,8 @@ class UserUrlMappings {
             action = [GET:"listByGroup"]
         }
 
-        "/api/project/$id/user.$format"(controller: "restUser"){
-            action = [GET:"showByProject",POST:"addUser"]
+        "/api/project/$project/user.$format"(controller: "restUser"){
+            action = [GET:"showByProject", POST:"addUsersToProject", DELETE:"deleteUsersFromProject"]
         }
         "/api/project/$id/admin.$format"(controller: "restUser"){
             action = [GET:"showAdminByProject"]

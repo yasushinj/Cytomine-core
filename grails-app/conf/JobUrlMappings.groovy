@@ -55,6 +55,11 @@ class JobUrlMappings {
             action = [POST : "purgeJobNotReviewed", GET : "purgeJobNotReviewed"]
         }
 
+        "/api/project/$projectId/bounds/job.$format"(controller : "restJob") {
+            action = [GET : "bounds"]
+        }
+
+
         /* Job template */
         "/api/jobtemplate.$format"(controller:"restJobTemplate"){
             action = [POST:"add"]

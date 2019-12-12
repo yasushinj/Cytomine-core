@@ -104,7 +104,7 @@ class DataTablesService {
                     WHERE project_id = ${project.id}
                     AND ai.deleted IS NULL
                     AND ii.deleted IS NULL
-                    AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
+                    AND ${(_search? "ai.original_filename ilike :filename" : "")}
                     ${getAclWhere()}
                     UNION
                     SELECT DISTINCT ai.id, ai.original_filename, ai.created as created, false
@@ -114,7 +114,7 @@ class DataTablesService {
                                      FROM abstract_image ai LEFT OUTER JOIN image_instance ii ON ii.base_image_id = ai.id
                                      WHERE project_id = ${project.id}
                                      AND ii.deleted IS NULL)
-                    AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
+                    AND ${(_search? "ai.original_filename ilike :filename" : "")}
                      ${getAclWhere()}
                     ORDER BY created desc
                 """
@@ -140,7 +140,7 @@ class DataTablesService {
 
             def data = []
             def sql = new Sql(dataSource)
-            sql.eachRow(request) {
+            sql.eachRow(request, [filename : _search]) {
                 def img = [:]
                 img.id=it[0]
                 img.originalFilename=it[1]

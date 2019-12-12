@@ -17,7 +17,7 @@ package be.cytomine.test.http
 */
 
 import be.cytomine.test.Infos
-import be.cytomine.utils.Description
+import be.cytomine.meta.Description
 import grails.converters.JSON
 
 /**

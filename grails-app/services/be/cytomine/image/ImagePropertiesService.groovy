@@ -1,7 +1,5 @@
 package be.cytomine.image
 
-import be.cytomine.ontology.Property
-
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -17,6 +15,8 @@ import be.cytomine.ontology.Property
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+import be.cytomine.meta.Property
 
 class ImagePropertiesService implements Serializable {
 

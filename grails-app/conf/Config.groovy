@@ -298,7 +298,7 @@ grails.plugins.restapidoc.defaultErrorPut = [
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {
-        grails.UIURL = "http://localhost"
+        grails.UIURL = null
         grails.serverURL = ""
         grails.uploadURL = ""
         grails.retrievalServerURL = []
@@ -470,3 +470,5 @@ grails.notification.smtp.port = "587"
 grails.instanceHostWebsite = "https://www.cytomine.org"
 grails.instanceHostSupportMail = "support@cytomine.coop"
 grails.instanceHostPhoneNumber = null
+
+grails.defaultLanguage = "ENGLISH"

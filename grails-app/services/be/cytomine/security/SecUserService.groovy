@@ -18,8 +18,10 @@ package be.cytomine.security
 
 import be.cytomine.CytomineDomain
 import be.cytomine.Exception.ConstraintException
+import be.cytomine.Exception.CytomineMethodNotYetImplementedException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.Exception.ObjectNotFoundException
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.NestedImageInstance
@@ -33,12 +35,16 @@ import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.social.LastConnection
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.News
+import be.cytomine.utils.SearchUtils
 import be.cytomine.utils.Task
 import be.cytomine.utils.Utils
 import grails.converters.JSON
 import grails.plugin.springsecurity.acl.AclSid
+import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 import org.apache.commons.collections.ListUtils
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.springframework.util.ReflectionUtils
 
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -70,6 +76,8 @@ class SecUserService extends ModelService {
     def projectDefaultLayerService
     def storageService
     def projectRepresentativeUserService
+    def imageConsultationService
+    def projectConnectionService
 
     def currentDomain() {
         User
@@ -126,22 +134,121 @@ class SecUserService extends ModelService {
         cytomineService.getCurrentUser()
     }
 
-    def list() {
+    def list(def extended = [:], def searchParameters = [], Long max = 0, Long offset = 0) {
+        list(extended, searchParameters, null, null, max, offset)
+    }
+    def list(def extended, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0) {
         securityACLService.checkGuest(cytomineService.currentUser)
-        User.list(sort: "username", order: "asc")
+
+        if (sortColumn.equals("role") && !extended.withRoles) throw new WrongArgumentException("Cannot sort on user role without argument withRoles")
+
+        if(!sortColumn) sortColumn = "username"
+        if(!sortDirection) sortDirection = "asc"
+
+        if(!ReflectionUtils.findField(User, sortColumn) && !(["role", "fullName"].contains(sortColumn)))
+            throw new CytomineMethodNotYetImplementedException("User list sorted by $sortColumn is not implemented")
+
+        def multiSearch = searchParameters.find{it.field == "fullName"}
+
+        String select = "SELECT u.* "
+        String from = "FROM sec_user u "
+        String where ="WHERE job_id IS NULL "
+        String search = ""
+        String groupBy = ""
+        String sort
+
+
+        def mapParams = [:]
+        if(multiSearch) {
+            String value = ((String) multiSearch.values).toLowerCase()
+            value = "%$value%"
+            where += " and (u.firstname ILIKE :name OR u.lastname ILIKE :name OR u.email ILIKE :name) "
+            mapParams.put("name", value)
+        }
+        if(extended.withRoles){
+            select += ", MAX(x.order_number) as role "
+            from +=", sec_user_sec_role sur, sec_role r " +
+                    "JOIN (VALUES ('ROLE_GUEST', 1), ('ROLE_USER' ,2), ('ROLE_ADMIN', 3), ('ROLE_SUPER_ADMIN', 4)) as x(value, order_number) ON r.authority = x.value "
+            where += "and u.id = sur.sec_user_id and sur.sec_role_id = r.id "
+            groupBy = "GROUP BY u.id "
+        }
+
+        if(sortColumn == "role") {
+            sort = "ORDER BY $sortColumn $sortDirection, u.id ASC "
+        } else if(sortColumn == "fullName"){
+            sort = "ORDER BY u.firstname $sortDirection "
+        } else sort = "ORDER BY u.$sortColumn $sortDirection "
+
+        String request = select + from + where + search + groupBy + sort
+        if(max > 0) request += " LIMIT $max "
+        if(offset > 0) request += " OFFSET $offset "
+
+
+        def sql = new Sql(dataSource)
+        def data = []
+
+        if(mapParams.size() == 0) mapParams= []
+
+        sql.eachRow(request, mapParams) {
+            def map = [:]
+
+            for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
+                String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
+                String objectKey = key.replaceAll( "(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() } )
+                map.putAt(objectKey, it[key])
+            }
+
+            // I mock methods and fields to pass through getDataFromDomain of SecUser
+            map["class"] = User.class
+            map.getMetaClass().algo = { return false }
+            map["language"] = User.Language.valueOf(map["language"])
+
+            def line = User.getDataFromDomain(map)
+
+            if(extended.withRoles){
+                String role
+                switch (map.role){
+                    case 1:
+                        role = 'ROLE_GUEST'
+                        break;
+                    case 2:
+                        role = 'ROLE_USER'
+                        break;
+                    case 3:
+                        role = 'ROLE_ADMIN'
+                        break;
+                    case 4:
+                        role = 'ROLE_SUPER_ADMIN'
+                        break;
+                }
+                line.putAt("role", role)
+            }
+            data << line
+
+        }
+
+        def size
+        request = "SELECT COUNT(DISTINCT u.id) " + from + where + search
+
+        sql.eachRow(request, mapParams) {
+            size = it.count
+        }
+        sql.close()
+
+        return [data:data, total:size]
     }
 
     def lock(SecUser user){
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(!user.enabled) throw new InvalidRequestException("User already locked !")
         user.enabled = false
-        user.save()
+        user.save(failOnError: true)
     }
     def unlock(SecUser user){
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(user.enabled) throw new InvalidRequestException("User already unlocked !")
         user.enabled = true
-        user.save()
+        user.save(failOnError: true)
     }
 
     def listWithRoles() {
@@ -180,6 +287,180 @@ class SecUserService extends ModelService {
         //TODO: could be optim!!!
         data.addAll(UserJob.findAllByJobInList(Job.findAllByProject(project)))
         data
+    }
+
+    def listUsersExtendedByProject(Project project, def extended, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0) {
+
+        if(!ReflectionUtils.findField(User, sortColumn) && !(["projectRole", "fullName", "lastImageName","lastConnection","frequency"].contains(sortColumn)))
+            throw new CytomineMethodNotYetImplementedException("User list sorted by $sortColumn is not implemented")
+
+        if (sortColumn.equals("lastImageName") && !extended.withLastImage) throw new WrongArgumentException("Cannot sort on lastImageName without argument withLastImage")
+        if (sortColumn.equals("lastConnection") && !extended.withLastConnection) throw new WrongArgumentException("Cannot sort on lastConnection without argument withLastConnection")
+        if (sortColumn.equals("frequency") && !extended.withNumberConnections) throw new WrongArgumentException("Cannot sort on frequency without argument withNumberConnections")
+
+        if (!extended || extended.isEmpty()) return listUsersByProject(project, true, searchParameters, sortColumn, sortDirection, max, offset)
+
+        def results = []
+        def users = []
+        def images = []
+        def connections = []
+        def frequencies = []
+
+        def binSearchI = SearchUtils.binarySearch()
+
+        boolean usersFetched = false
+        boolean consultationsFetched = false
+        boolean connectionsFetched = false
+        boolean frequenciessFetched = false
+
+        def userIds
+        long total
+
+        if (ReflectionUtils.findField(User, sortColumn) || sortColumn.equals("projectRole")) {
+            users = this.listUsersByProject(project, true, searchParameters, sortColumn, sortDirection, max, offset)
+            total = users.total
+            users = users.data
+            results = users
+            usersFetched = true
+        } else {
+            users = this.listUsersByProject(project, true, searchParameters, "id", "asc").data
+            total = users.size()
+        }
+        userIds = users.collect { it.id }
+
+
+        switch (sortColumn) {
+            case "lastImageName":
+                images = imageConsultationService.lastImageOfGivenUsersByProject(project, userIds, "name", sortDirection, max, offset)
+                results = images.collect { i -> [id: i.user, lastImage: i.image] }
+                userIds = results.collect { it.id }
+                consultationsFetched = true
+                break
+            case "lastConnection":
+                connections = projectConnectionService.lastConnectionOfGivenUsersInProject(project, userIds, "created", sortDirection, max, offset)
+                results = connections.collect { c -> [id: c.user, lastConnection: c.created] }
+                userIds = results.collect { it.id }
+                connectionsFetched = true
+                break
+            case "frequency":
+                frequencies = projectConnectionService.numberOfConnectionsOfGivenByProject(project, userIds, "frequency", sortDirection, max, offset)
+                results = frequencies.collect { f -> [id: f.user, numberConnections: f.frequency] }
+                userIds = results.collect { it.id }
+                frequenciessFetched = true
+                break
+        }
+
+        if(!usersFetched){
+            for (def entry : results) {
+                int index = binSearchI(users, "id", entry.id)
+                def user = users[index]
+                entry << user
+            }
+        }
+        if (!consultationsFetched && extended.withLastImage) {
+            images = imageConsultationService.lastImageOfUsersByProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
+            for (def user : results) {
+                int index = binSearchI(images, "user", user.id)
+                def image = index >= 0 ? images[index] : null
+                user.lastImage = image?.image
+            }
+            consultationsFetched = true
+        }
+        if (!connectionsFetched && extended.withLastConnection) {
+            connections = projectConnectionService.lastConnectionInProject(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
+            for (def user : results) {
+                int index = binSearchI(connections, "user", user.id)
+                def connection = index >= 0 ? connections[index] : null
+                user.lastConnection = connection?.created
+            }
+            connectionsFetched = true
+        }
+        if (!frequenciessFetched && extended.withNumberConnections) {
+            frequencies = projectConnectionService.numberOfConnectionsByProjectAndUser(project, [[operator: "in", property: "user", value: userIds]], "id", "asc")
+            for (def user : results) {
+                int index = binSearchI(frequencies, "user", user.id)
+                def frequency = index >= 0 ? frequencies[index] : null
+                user.numberConnections = frequency?.frequency
+            }
+            frequenciessFetched = true
+        }
+
+        return [data: results, total: total]
+    }
+
+    def listUsersByProject(Project project, boolean withProjectRole = true, def searchParameters = [], String sortColumn, String sortDirection, Long max = 0, Long offset = 0){
+
+        def onlineUserSearch = searchParameters.find{it.field == "status" && it.values == "online"}
+        def multiSearch = searchParameters.find{it.field == "fullName"}
+        def projectRoleSearch = searchParameters.find{it.field == "projectRole"}
+
+        String select = "select distinct secUser "
+        String from  = "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "
+        if(withProjectRole) {
+            from = "from ProjectRepresentativeUser r right outer join r.user secUser WITH (r.project.id = ${project.id}), " +
+                    "AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid "
+        }
+        String where = "where aclObjectId.objectId = "+project.id+" " +
+                "and aclEntry.aclObjectIdentity = aclObjectId.id " +
+                "and aclEntry.sid = aclSid.id " +
+                "and aclSid.sid = secUser.username " +
+                "and secUser.class = 'be.cytomine.security.User' "
+        String groupBy = ""
+        String order = ""
+
+        if(multiSearch) {
+            String value = ((String) multiSearch.values).toLowerCase()
+            where += " and (lower(secUser.firstname) like '%$value%' or lower(secUser.lastname) like '%$value%' or lower(secUser.email) like '%$value%') "
+        }
+        if(onlineUserSearch) {
+            def onlineUsers = getAllOnlineUserIds(project)
+            if(onlineUsers.isEmpty())
+                return [data: [], total: 0]
+
+            where += " and secUser.id in ("+getAllOnlineUserIds(project).join(",")+") "
+        }
+        if(projectRoleSearch && projectRoleSearch.values == "manager") where +=" and aclEntry.mask = 16 "
+
+        //for (def t : searchParameters) {
+            // TODO parameters to HQL constraints
+        //}
+
+        if(withProjectRole){
+            //works because 'contributor' < 'manager' < 'representative'
+            select += ", MAX( CASE WHEN r.id IS NOT NULL THEN 'representative'\n" +
+                    "     WHEN aclEntry.mask = 16 THEN 'manager'\n" +
+                    "     ELSE 'contributor'\n" +
+                    " END) as role "
+            groupBy = "GROUP BY secUser.id "
+        }
+        if(sortColumn == "projectRole"){
+            sortColumn = "role"
+        } else if(sortColumn == "fullName"){
+            sortColumn = "secUser.firstname"
+        } else {
+            sortColumn = "secUser.$sortColumn"
+        }
+        order = "order by $sortColumn $sortDirection "
+
+        String request = select + from + where + groupBy + order
+
+        def users = User.executeQuery(request, [offset:offset, max:max])
+
+        long total;
+        if(max == 0 && offset == 0) total = users.size()
+        else {
+            def list = User.executeQuery("select count(distinct secUser.id) " + from + where  )
+            total = list[0]
+        }
+
+        users = users.collect{item ->
+            if(!withProjectRole) return item
+            item[0] = User.getDataFromDomain(item[0])
+            item[0].role = item[1]
+            return item[0]
+        }
+
+        return [data: users, total: total]
     }
 
     def listUsers(Project project, boolean showUserJob = false) {
@@ -369,18 +650,25 @@ class SecUserService extends ModelService {
     }
 
     /**
+     * Get all online userIds for a project
+     */
+    List<Long> getAllOnlineUserIds(Project project) {
+        securityACLService.check(project,READ)
+        //if(!project) return getAllOnlineUsers()
+        def xSecondAgo = Utils.getDateMinusSecond(300)
+        def results = LastConnection.withCriteria {
+            if(project) eq('project',project)
+            ge('created', xSecondAgo)
+            distinct('user')
+        }
+        return results.collect{it.user.id}
+    }
+    /**
      * Get all online user for a project
      */
     List<SecUser> getAllOnlineUsers(Project project) {
         securityACLService.check(project,READ)
-        if(!project) return getAllOnlineUsers()
-        def xSecondAgo = Utils.getDateMinusSecond(300)
-        def results = LastConnection.withCriteria {
-            eq('project',project)
-            ge('created', xSecondAgo)
-            distinct('user')
-        }
-        return User.getAll(results.collect{it.user.id})
+        return User.getAll(getAllOnlineUserIds(project))
     }
 
     /**
@@ -418,9 +706,13 @@ class SecUserService extends ModelService {
      * @param json New domain data
      * @return Response structure (created domain data,..)
      */
-    def add(def json) {
+    def add(JSONObject json) {
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkUser(currentUser)
+        if(json.user == null) {
+            json.user = cytomineService.getCurrentUser().id
+            json.origin = "ADMINISTRATOR"
+        }
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
 

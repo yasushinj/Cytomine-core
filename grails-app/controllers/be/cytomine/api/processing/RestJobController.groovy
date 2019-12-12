@@ -53,6 +53,7 @@ class RestJobController extends RestController {
     def cytomineService
     def securityACLService
     def jobRuntimeService
+    def statsService
 
     /**
      * List all job
@@ -67,6 +68,8 @@ class RestJobController extends RestController {
         Boolean light = params.boolean('light') ? params.boolean('light') : false;
         def softwares_id = params.software ? params.software.split(',').collect { Long.parseLong(it)} : null
         def projects_id = params.project ? params.project.split(',').collect { Long.parseLong(it)} : null
+        Boolean withJobParameters = params.boolean('withJobParameters', true) //backward compatibility
+        Boolean withUser = params.boolean('withUser', true) //backward compatibility
 
         Collection<Project> projects
         if (projects_id) {
@@ -82,7 +85,9 @@ class RestJobController extends RestController {
             softwares = Software.list() //implement security ?
         }
 
-        responseSuccess(jobService.list(softwares, projects, light))
+        def result = jobService.list(softwares, projects, [withJobParameters:withJobParameters, withUser:withUser], params.sort, params.order, searchParameters, params.long('max',0), params.long('offset',0), light)
+
+        responseSuccess([collection : result.data, size:result.total])
     }
 
     /**
@@ -393,6 +398,21 @@ class RestJobController extends RestController {
             log.error(e)
             response([success: false, errors: e.msg], e.code)
         }
+    }
+
+    def bounds() {
+        def jobs
+
+        Project project = Project.read(params.projectId)
+        securityACLService.check(project, READ)
+        jobs = Job.findAllByProject(project)
+        def userJobs = UserJob.findAllByJobInList(jobs)
+
+        def bounds = statsService.bounds(Job, jobs)
+
+        bounds.put("software", [list : jobs.collect{it.software}.unique()])
+        bounds.put("username", [list : userJobs.collect{it.humanUsername()}.unique()])
+        responseSuccess(bounds)
     }
 
 

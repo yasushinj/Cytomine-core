@@ -22,6 +22,7 @@ import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
+import be.cytomine.meta.Property
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.SliceInstance
 import be.cytomine.image.server.RetrievalServer
@@ -40,14 +41,19 @@ import com.vividsolutions.jts.io.ParseException
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
+import grails.converters.JSON
+import grails.transaction.Transactional
 import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.hibernate.FetchMode
 import org.hibernate.criterion.Restrictions
 import org.hibernate.spatial.criterion.SpatialRestrictions
 
+import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.READ
 
+//import org.hibernatespatial.criterion.SpatialRestrictions
+@Transactional
 class UserAnnotationService extends ModelService {
 
     static transactional = true
@@ -78,6 +84,7 @@ class UserAnnotationService extends ModelService {
         def annotation = UserAnnotation.read(id)
         if (annotation) {
             securityACLService.check(annotation.container(), READ)
+            checkDeleted(annotation)
         }
         annotation
     }

@@ -79,7 +79,7 @@ class ImageInstanceTests  {
         BasicInstanceBuilder.getImageInstanceNotExist(project,true)
 
 
-        def result = ImageInstanceAPI.listByProject(BasicInstanceBuilder.getProject().id,1,2, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageInstanceAPI.listByProject(BasicInstanceBuilder.getProject().id,2,1, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
@@ -88,7 +88,7 @@ class ImageInstanceTests  {
 
     void testListImagesInstanceByProjectWithBorder() {
         BasicInstanceBuilder.getImageInstance()
-        def result = ImageInstanceAPI.listByProject(BasicInstanceBuilder.getProject().id, 0,1,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageInstanceAPI.listByProject(BasicInstanceBuilder.getProject().id, 1,2,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
@@ -106,7 +106,7 @@ class ImageInstanceTests  {
 
     void testListImagesInstanceByUserLight() {
         BasicInstanceBuilder.getImageInstance()
-        def result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = ImageInstanceAPI.listLightByUser(BasicInstanceBuilder.getUser1().id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray

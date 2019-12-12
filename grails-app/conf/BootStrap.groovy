@@ -114,6 +114,14 @@ class BootStrap {
             Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'),grailsApplication.metadata.'app.version')
         }
 
+        // TODO : delete this sql in v2.1
+        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+                "FROM information_schema.columns " +
+                "WHERE table_name='sec_user' and column_name='origin';").size() == 1;
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ADD COLUMN origin VARCHAR;")
+        }
+
         //Initialize marshallers and services
         log.info "init marshaller..."
         marshallersService.initMarshallers()
@@ -179,7 +187,7 @@ class BootStrap {
 
         log.info "init change for old version..."
         // TODO : delete this sql in v2.1
-        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
+        exists = new Sql(dataSource).rows("SELECT column_name " +
                 "FROM information_schema.columns " +
                 "WHERE table_name='version' and column_name='major';").size() == 1;
         if (!exists) {

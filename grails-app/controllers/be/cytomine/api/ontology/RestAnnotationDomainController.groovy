@@ -132,7 +132,8 @@ class RestAnnotationDomainController extends RestController {
 
             @RestApiParam(name="track", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for this track id"),
             @RestApiParam(name="tracks", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation for these tracks id"),
-            @RestApiParam(name="noTrack", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Also get annotation with no track"),
+            @RestApiParam(name="tags", type="list", paramType = RestApiParamType.QUERY, description = "(Optional) Get only annotation associated with these tags"),
+        @RestApiParam(name="noTrack", type="boolean", paramType = RestApiParamType.QUERY, description = "(Optional) Also get annotation with no track"),
             @RestApiParam(name="multipleTrack", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only get annotation with multiple tracks"),
             @RestApiParam(name="afterSlice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only to be used with track(s), return only annotation in the track(s) after the given slice"),
             @RestApiParam(name="beforeSlice", type="long", paramType = RestApiParamType.QUERY, description = "(Optional) Only to be used with track(s), return only annotation in the track(s) before the given slice"),
@@ -383,17 +384,17 @@ class RestAnnotationDomainController extends RestController {
     private def createRequest(AnnotationListing al, def params) {
 
         al.columnToPrint = paramsService.getPropertyGroupToShow(params)
-        
+
         // Project
         al.project = params.getLong('project')
-        
+
         // Images
         al.image = params.getLong('image')
         def images = params.get('images')
         if(images) {
             al.images = params.get('images').replace("_",",").split(",").collect{Long.parseLong(it)}
         }
-        
+
         // Slices
         al.slice = params.getLong('slice')
         def slices = params.get('slices')
@@ -444,6 +445,13 @@ class RestAnnotationDomainController extends RestController {
         if(params.getLong("jobForTermAlgo")) {
             al.userForTermAlgo = UserJob.findByJob(Job.read(params.getLong("jobForTermAlgo")))?.id
         }
+
+        // Tags
+        def tags = params.get('tags')
+        if(tags) {
+            al.tags = params.get('tags').replace("_",",").split(",").collect{Long.parseLong(it)}
+        }
+        al.noTag = params.boolean('noTag', false)
 
         // Terms
         al.term = params.getLong('term')

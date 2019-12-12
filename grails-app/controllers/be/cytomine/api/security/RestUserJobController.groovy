@@ -280,6 +280,7 @@ class RestUserJobController extends RestController {
         userJob.passwordExpired = user.passwordExpired
         userJob.user = user
         userJob.job = job
+        userJob.origin = "JOB"
         Date date = new Date()
 
         try {

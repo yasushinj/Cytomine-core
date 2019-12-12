@@ -34,6 +34,12 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/next.$format"(controller: "restImageInstance"){
             action = [GET:"next"]
         }
+        "/api/user/$user/imageinstance.$format"(controller: "restImageInstance"){
+            action = [GET:"listByUser"]
+        }
+        "/api/user/$user/imageinstance/light.$format"(controller: "restImageInstance"){
+            action = [GET:"listLightByUser"]
+        }
         "/api/imageinstance/$id/previous.$format"(controller: "restImageInstance"){
             action = [GET:"previous"]
         }
@@ -107,10 +113,13 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/metadata.$format"(controller: "restImageInstance"){
             action = [GET: "metadata"]
         }
-        
+
         // Deprecated
         "/api/imageinstance/$id/cropgeometry.$format"(controller :"restImageInstance") {
             action = [GET:"crop", POST:"crop"]
+        }
+        "/api/project/$projectId/bounds/imageinstance.$format"(controller:"restImageInstance"){
+            action = [GET:"bounds"]
         }
     }
 }

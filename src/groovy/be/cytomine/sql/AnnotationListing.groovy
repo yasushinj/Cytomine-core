@@ -80,7 +80,7 @@ abstract class AnnotationListing {
 
     def reviewUsers
 
-
+    def tags = null
 
     def afterThan = null
     def beforeThan = null
@@ -89,6 +89,7 @@ abstract class AnnotationListing {
 
     def notReviewedOnly = false
     def noTerm = false
+    def noTag = false
     def noAlgoTerm = false
     def multipleTerm = false
     def noTrack = false
@@ -217,9 +218,11 @@ abstract class AnnotationListing {
 
                         getImageConst() +
                         getImagesConst() +
-                        
+
                         getSliceConst() +
                         getSlicesConst() +
+
+                        getTagsConst() +
 
                         getTermConst() +
                         getTermsConst() +
@@ -248,6 +251,7 @@ abstract class AnnotationListing {
 
                         getBeforeThan() +
                         getAfterThan() +
+                        getNotDeleted() +
                         createOrderBy()
 
         if (term || terms || track || tracks) {
@@ -348,6 +352,16 @@ abstract class AnnotationListing {
             return (images ? "AND a.image_id IN (${images.join(",")})\n" : "")
         }
 
+    }
+
+    def getTagsConst() {
+        if (tags && noTag) {
+            return "AND (tda.tag_id IN (${tags.join(',')}) OR tda.tag_id IS NULL)\n"
+        } else if (tags) {
+            return "AND tda.tag_id IN (${tags.join(',')})\n"
+        } else {
+            return ""
+        }
     }
 
     def getImageConst() {
@@ -559,6 +573,9 @@ abstract class AnnotationListing {
             return ""
         }
     }
+    def getNotDeleted() {
+        return "AND a.deleted IS NULL\n"
+    }
 
     @Override
     public String toString(){
@@ -685,6 +702,8 @@ class UserAnnotationListing extends AnnotationListing {
         def from = "FROM user_annotation a "
         def where = "WHERE true\n"
 
+
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
         if (multipleTerm) {
             from += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
             from += "LEFT OUTER JOIN annotation_term at2 ON a.id = at2.user_annotation_id "
@@ -866,6 +885,8 @@ class AlgoAnnotationListing extends AnnotationListing {
             from += "INNER JOIN sec_user u ON a.user_id = u.id INNER JOIN job j ON u.job_id = j.id INNER JOIN software s ON j.software_id = s.id "
         }
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
+
         return from + "\n" + where
     }
 
@@ -1024,6 +1045,8 @@ class ReviewedAnnotationListing extends AnnotationListing {
             from += "INNER JOIN sec_user u ON a.user_id = u.id "
         }
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
+
         return from + "\n" + where
     }
 
@@ -1168,6 +1191,8 @@ class RoiAnnotationListing extends AnnotationListing {
         if (columnToPrint.contains('slice')) {
             from += "INNER JOIN slice_instance si ON a.slice_id = si.id INNER JOIN abstract_slice asl ON si.base_slice_id = asl.id "
         }
+
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }

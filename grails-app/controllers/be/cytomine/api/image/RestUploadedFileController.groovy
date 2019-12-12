@@ -64,11 +64,13 @@ class RestUploadedFileController extends RestController {
             ]
             uploadedFiles = uploadedFileService.listWithDetails((User) cytomineService.getCurrentUser(), getSearchParameters(allowedSearchParameters))
         } else if (params.all) {
-            uploadedFiles = uploadedFileService.list()
+            def result = uploadedFileService.list()
+            uploadedFiles = [collection : result.data, size : result.total]
         } else {
             Boolean onlyRoots = params.boolean('onlyRoots', false)
             Long parent = params.long('parent', null)
-            uploadedFiles = uploadedFileService.list((User) secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
+            def result = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots, params.sort, params.order, params.long('max'), params.long('offset'))
+            uploadedFiles = [collection : result.data, size : result.total]
         }
 
         responseSuccess(uploadedFiles)

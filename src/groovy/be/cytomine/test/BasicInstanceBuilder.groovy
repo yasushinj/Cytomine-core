@@ -18,6 +18,7 @@ package be.cytomine.test
 
 import be.cytomine.AnnotationDomain
 import be.cytomine.CytomineDomain
+import be.cytomine.meta.Property
 import be.cytomine.image.*
 import be.cytomine.image.acquisition.Instrument
 import be.cytomine.image.multidim.ImageGroup
@@ -25,6 +26,8 @@ import be.cytomine.image.multidim.ImageGroupHDF5
 import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.image.server.*
 import be.cytomine.laboratory.Sample
+import be.cytomine.meta.Tag
+import be.cytomine.meta.TagDomainAssociation
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.middleware.AmqpQueueConfig
 import be.cytomine.middleware.AmqpQueueConfigInstance
@@ -42,9 +45,9 @@ import be.cytomine.social.LastUserPosition
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
 import be.cytomine.social.PersistentUserPosition
-import be.cytomine.utils.AttachedFile
-import be.cytomine.utils.Configuration
-import be.cytomine.utils.Description
+import be.cytomine.meta.AttachedFile
+import be.cytomine.meta.Configuration
+import be.cytomine.meta.Description
 import com.vividsolutions.jts.io.WKTReader
 import grails.converters.JSON
 import org.apache.commons.logging.Log
@@ -139,7 +142,8 @@ class BasicInstanceBuilder {
                     lastname: "User",
                     email: "Basic@User.be",
                     password: "password",
-                    enabled: true)
+                    enabled: true,
+                    origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
@@ -173,7 +177,7 @@ class BasicInstanceBuilder {
     static UserJob getUserJob(String username, String password) {
         UserJob user = UserJob.findByUsername(username)
         if (!user) {
-            user = new UserJob(username: username, user:User.findByUsername(Infos.SUPERADMINLOGIN),password: password,enabled: true,job: getJob())
+            user = new UserJob(username: username, user:User.findByUsername(Infos.SUPERADMINLOGIN),password: password,enabled: true,job: getJob(), origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
@@ -187,7 +191,7 @@ class BasicInstanceBuilder {
     static UserJob getUserJob() {
         UserJob userJob = UserJob.findByUsername("BasicUserJob")
         if (!userJob) {
-            userJob = new UserJob(username: "BasicUserJob",password: "PasswordUserJob",enabled: true,user : User.findByUsername(Infos.SUPERADMINLOGIN),job: getJob())
+            userJob = new UserJob(username: "BasicUserJob",password: "PasswordUserJob",enabled: true,user : User.findByUsername(Infos.SUPERADMINLOGIN),job: getJob(), origin: "TEST")
             userJob.generateKeys()
             saveDomain(userJob)
             SecUserSecRole.findAllBySecUser(User.findByUsername(Infos.SUPERADMINLOGIN)).collect { it.secRole }.each { secRole ->
@@ -223,7 +227,7 @@ class BasicInstanceBuilder {
     }
 
     static UserJob getUserJobNotExist(Job job, User user, boolean save = false) {
-        UserJob userJob = new UserJob(username:getRandomString(),password: "PasswordUserJob",enabled: true,user : user,job: job)
+        UserJob userJob = new UserJob(username:getRandomString(),password: "PasswordUserJob",enabled: true,user : user,job: job, origin: "TEST")
         userJob.generateKeys()
 
         if(save) {
@@ -283,7 +287,7 @@ class BasicInstanceBuilder {
         def annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: getImageInstanceNotExist(project,true),
-                user: getUserJob(),
+                user: getUserJobNotExist(getJobNotExist(true, project), true),
                 project:project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
@@ -364,7 +368,7 @@ class BasicInstanceBuilder {
 
     //getAlgoAnnotationTermForAlgoAnnotation
     static AlgoAnnotationTerm getAlgoAnnotationTermNotExist(AnnotationDomain annotation, Term term,boolean save = false) {
-        UserJob userJob = getUserJob()
+        UserJob userJob = getUserJobNotExist(getJobNotExist(true, annotation.project), true)
         def algoannotationTerm = new AlgoAnnotationTerm(term:term,userJob:userJob, expectedTerm: term, rate:1d)
         algoannotationTerm.setAnnotation(annotation)
         save ? saveDomain(algoannotationTerm) : checkDomain(algoannotationTerm)
@@ -976,7 +980,7 @@ class BasicInstanceBuilder {
 
     static Ontology getOntology() {
         def ontology = Ontology.findByName("BasicOntology")
-        if (!ontology) {
+        if (!ontology || ontology.deleted != null) {
             ontology = new Ontology(name: "BasicOntology", user: User.findByUsername(Infos.SUPERADMINLOGIN))
             saveDomain(ontology)
             def term = getTermNotExist()
@@ -991,9 +995,7 @@ class BasicInstanceBuilder {
         Ontology ontology = new Ontology(name: getRandomString() + "", user: User.findByUsername(Infos.SUPERADMINLOGIN))
         save ? saveDomain(ontology) : checkDomain(ontology)
         if (save) {
-            Term term = getTermNotExist(true)
-            term.ontology = ontology
-            saveDomain(ontology)
+            Term term = getTermNotExist(ontology,true)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,ontology)
         }
         ontology
@@ -1002,7 +1004,7 @@ class BasicInstanceBuilder {
     static Project getProject() {
         def name = "BasicProject".toUpperCase()
         def project = Project.findByName(name)
-        if (!project) {
+        if (!project || project.deleted != null) {
             project = new Project(name: name, ontology: getOntology(), discipline: getDiscipline())
             saveDomain(project)
             Infos.addUserRight(Infos.SUPERADMINLOGIN,project)
@@ -1145,6 +1147,36 @@ class BasicInstanceBuilder {
         save? saveDomain(abstractImageProperty) : checkDomain(abstractImageProperty)
     }
 
+    static Tag getTag() {
+        Tag tag = Tag.findByName("TEST_TAG")
+        if (!tag) {
+            tag = new Tag(name: 'TEST_TAG', user: User.findByUsername(Infos.SUPERADMINLOGIN))
+            saveDomain(tag)
+        }
+        tag
+    }
+
+    static Tag getTagNotExist(boolean save  = false) {
+        Tag tag = new Tag(name: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
+        save? saveDomain(tag) : checkDomain(tag)
+    }
+
+    static TagDomainAssociation getTagDomainAssociation() {
+        TagDomainAssociation association = TagDomainAssociation.findByTag(getTag())
+        if (!association) {
+            association = new TagDomainAssociation(tag: getTag())
+            association.setDomain(getProject())
+            saveDomain(association)
+        }
+        association
+    }
+
+    static TagDomainAssociation getTagDomainAssociationNotExist(boolean save  = false) {
+        TagDomainAssociation association = new TagDomainAssociation(tag: getTagNotExist(true))
+        association.setDomain(getProjectNotExist(true))
+        save? saveDomain(association) : checkDomain(association)
+    }
+
     static Instrument getScanner() {
         Instrument scanner = new Instrument(brand: "brand", model: "model")
         saveDomain(scanner)
@@ -1173,7 +1205,7 @@ class BasicInstanceBuilder {
     static User getUser(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User ($username)",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username,firstname: "Basic",lastname: "User ($username)",email: "Basic@User.be",password: password,enabled: true, origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_USER"),true)
@@ -1184,7 +1216,7 @@ class BasicInstanceBuilder {
     static User getGhest(String username, String password) {
         def user = SecUser.findByUsername(username)
         if (!user) {
-            user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true)
+            user = new User(username: username,firstname: "Basic",lastname: "User",email: "Basic@User.be",password: password,enabled: true, origin: "TEST")
             user.generateKeys()
             saveDomain(user)
             SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_GUEST"),true)
@@ -1193,7 +1225,7 @@ class BasicInstanceBuilder {
     }
 
     static User getUserNotExist(boolean save = false) {
-       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true)
+       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true, origin: "TEST")
         user.generateKeys()
         if(save) {
             saveDomain(user)
@@ -1206,7 +1238,7 @@ class BasicInstanceBuilder {
     }
 
     static User getGhestNotExist(boolean save = false) {
-       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true)
+       User user = new User(username: getRandomString(),firstname: "BasicNotExist",lastname: "UserNotExist",email: "BasicNotExist@User.be",password: "password",enabled: true, origin: "TEST")
         user.generateKeys()
         if(save) {
             saveDomain(user)
@@ -1461,7 +1493,7 @@ class BasicInstanceBuilder {
     public static ImageInstance initImage() {
 
         //String urlImageServer = "http://localhost:9080"
-        String urlImageServer = "http://image.cytomine.be"
+        String urlImageServer = "http://image.cytomine.coop"
 
         User user = getUser("imgUploader", "password")
 

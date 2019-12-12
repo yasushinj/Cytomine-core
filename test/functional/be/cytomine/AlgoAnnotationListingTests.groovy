@@ -121,6 +121,24 @@ class AlgoAnnotationListingTests {
         )
         assert 200 == result.code
         def json = JSON.parse(result.data)
+
+        long size = json.size
+        assert json.collection.size() == size
+
+        AlgoAnnotationAPI.delete(annotationTerm.retrieveAnnotationDomain().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        result = AlgoAnnotationAPI.listByProjectAndTerm(
+                annotationTerm.retrieveAnnotationDomain().project.id,
+                annotationTerm.term.id,
+                ImageInstance.findAllByProject(annotationTerm.retrieveAnnotationDomain().project),
+                annotationTerm.retrieveAnnotationDomain().user.id,
+                Infos.SUPERADMINLOGIN,
+                Infos.SUPERADMINPASSWORD
+        )
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.collection.size() == size -1
     }
 
     void testListAlgoAnnotationByProjectAndTermWithUserNullWithCredential() {

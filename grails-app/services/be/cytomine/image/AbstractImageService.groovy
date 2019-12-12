@@ -31,7 +31,7 @@ import be.cytomine.laboratory.Sample
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task

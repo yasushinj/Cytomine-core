@@ -42,9 +42,12 @@ class User extends SecUser {
 
     @RestApiObjectField(description = "The language of the user")
     Language language
-    
+
     @RestApiObjectField(description = "True if user is in developer mode")
     Boolean isDeveloper = false
+
+    @RestApiObjectField(description = "User that created this user. Its parent.")
+    User creator
 
     @RestApiObjectFields(params=[
         @RestApiObjectField(apiFieldName = "admin", description = "(ONLY VISIBLE WHEN DOING GET /api/user/id.format service) True if the user is ADMIN ",allowedType = "boolean",useForCreation = false),
@@ -62,6 +65,7 @@ class User extends SecUser {
 
     static mapping = {
         id(generator: 'assigned', unique: true)
+        creator column: 'user_id'
         sort "id"
         cache true
     }
@@ -111,6 +115,8 @@ class User extends SecUser {
         domain.email = JSONUtils.getJSONAttrStr(json,'email')
         domain.color = JSONUtils.getJSONAttrStr(json,'color')
         domain.language = Language.findByCode(JSONUtils.getJSONAttrStr(json,'language') ?: "EN")
+        if(!domain.language) domain.language = Language.valueOf(JSONUtils.getJSONAttrStr(json,'language') ?: "EN")
+        domain.origin = JSONUtils.getJSONAttrStr(json,'origin')
         domain.isDeveloper = JSONUtils.getJSONAttrBoolean(json, 'isDeveloper', false)
         if (json.password && domain.password != null) {
             domain.newPassword = JSONUtils.getJSONAttrStr(json,'password') //user is updated
@@ -146,6 +152,7 @@ class User extends SecUser {
         }
         returnArray['enabled'] = domain?.enabled
         returnArray['color'] = domain?.color
+        returnArray['user'] = domain?.creator
         returnArray
     }
 

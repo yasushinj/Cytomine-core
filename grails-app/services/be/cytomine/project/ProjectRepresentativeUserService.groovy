@@ -48,6 +48,11 @@ class ProjectRepresentativeUserService extends ModelService {
         ref
     }
 
+    def getByProjectAndUser(Project project, User user) {
+        securityACLService.check(project,READ)
+        return ProjectRepresentativeUser.findByProjectAndUser(project, user)
+    }
+
     /**
      * Get all representative of the current project
      * @return ProjectRepresentativeUser list

@@ -58,6 +58,26 @@ class AnnotationDomainTests {
         assert json instanceof JSONObject
 
         assert json.collection.size() == 2
+
+        result = AnnotationDomainAPI.delete(userAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 1
+
+        result = AnnotationDomainAPI.delete(algoAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 0
     }
 
     void testSearchAnnotationFromUsers() {
@@ -93,6 +113,18 @@ class AnnotationDomainTests {
         assert json instanceof JSONObject
 
         assert json.collection.size() == 2
+
+
+        result = AnnotationDomainAPI.delete(userAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImagesAndUsersByPOST(images,users, false, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 1
+
     }
 
     void testSearchAnnotationFromJobs() {
@@ -118,6 +150,18 @@ class AnnotationDomainTests {
         assert json instanceof JSONObject
 
         assert json.collection.size() == 2
+
+
+        result = AnnotationDomainAPI.delete(algoAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 1
+
     }
 
 

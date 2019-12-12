@@ -30,7 +30,7 @@ import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.image.UploadedFile
 import be.cytomine.middleware.AmqpQueue
 import be.cytomine.ontology.AnnotationTrack
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.ontology.Track
 import be.cytomine.processing.ImageFilter
 import be.cytomine.project.Project
@@ -38,7 +38,7 @@ import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
 import be.cytomine.security.SecUserSecRole
 import be.cytomine.security.User
-import be.cytomine.utils.Configuration
+import be.cytomine.meta.Configuration
 import be.cytomine.utils.Version
 import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -163,6 +163,31 @@ class BootstrapOldVersionService {
                 }
             }
         }
+    }
+
+    void initv1_9_9() {
+        log.info "1.9.9"
+        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
+            systemUser.origin = "SYSTEM"
+            systemUser.save();
+        }
+
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET origin = 'BOOTSTRAP' WHERE origin IS NULL;")
+    }
+
+
+    void initv1_2_2() {
+        log.info "1.2.2"
+        new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
+
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET language = 'ENGLISH';")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ALTER COLUMN language SET DEFAULT 'ENGLISH';")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ALTER COLUMN language SET NOT NULL;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user DROP COLUMN IF EXISTS skype_account;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE sec_user DROP COLUMN IF EXISTS sipAccount;")
+
+        new Sql(dataSource).executeUpdate("DROP VIEW user_image;")
+        tableService.initTable()
     }
 
     def checkSqlColumnExistence(def column, def table) {

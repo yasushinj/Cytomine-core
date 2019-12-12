@@ -19,6 +19,7 @@ package be.cytomine.ontology
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
+import be.cytomine.meta.Property
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.SliceInstance
 import be.cytomine.processing.Job
@@ -35,9 +36,11 @@ import com.vividsolutions.jts.io.ParseException
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
+import grails.transaction.Transactional
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
+@Transactional
 class AlgoAnnotationService extends ModelService {
 
     static transactional = true
@@ -64,6 +67,7 @@ class AlgoAnnotationService extends ModelService {
         def annotation = AlgoAnnotation.read(id)
         if (annotation) {
             securityACLService.check(annotation.container(),READ)
+            checkDeleted(annotation)
         }
         annotation
     }

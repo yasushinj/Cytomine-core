@@ -21,6 +21,7 @@ import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.OntologyAPI
+import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.TermAPI
 
 /**
@@ -84,11 +85,6 @@ class TermDependencyTests  {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
         def dependentDomain = createTermWithDependency(project)
         Term term = dependentDomain.first()
-        //change ontology for project with this ontology (cannot delete an ontology with project)
-        project.ontology = BasicInstanceBuilder.getOntology()
-        BasicInstanceBuilder.saveDomain(project)
-
-        BasicInstanceBuilder.saveDomain(term)
 
         ReviewedAnnotation annotation = BasicInstanceBuilder.getReviewedAnnotation()
         annotation.project = project
@@ -104,20 +100,22 @@ class TermDependencyTests  {
 
     void testOntologyDependency() {
         //create a term and all its dependence domain
-        def dependentDomain = createOntologyWithDependency(BasicInstanceBuilder.getProjectNotExist(true))
-        def ontology = dependentDomain.first()
-        //change ontology for project with this ontology (cannot delete an ontology with project)
-        Project.findAllByOntology(ontology).each {
-            it.ontology = BasicInstanceBuilder.getOntology()
-            BasicInstanceBuilder.saveDomain(it)
-        }
+        Ontology ontology = BasicInstanceBuilder.getOntologyNotExist(true)
+        Project project = BasicInstanceBuilder.getProjectNotExist(ontology,true)
+        def dependentDomain = createOntologyWithDependencyAndProjectDependency(project)
+
         BasicInstanceBuilder.checkIfDomainsExist(dependentDomain)
+
+        assert (200 == ProjectAPI.delete(project.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code)
 
         //try to delete term
         assert (200 == OntologyAPI.delete(ontology.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code)
 
         //check if all dependency are not aivalable
         BasicInstanceBuilder.checkIfDomainsNotExist(dependentDomain)
+
+        // as I did'nt undo the project deletion, i keep items nly linked to ontology
+        dependentDomain = dependentDomain.subList(0,3)
 
         //undo op (re create)
         def res = OntologyAPI.undo(Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
@@ -204,6 +202,16 @@ class TermDependencyTests  {
         def domains = []
         domains.add(ontology)
         domains.addAll(createTermWithDependency(project))
+        return domains
+    }
+
+    private def createOntologyWithDependencyAndProjectDependency(Project project) {
+        //create a term x, link with ontology
+        Ontology ontology = project.ontology
+
+        def domains = []
+        domains.add(ontology)
+        domains.addAll(createTermWithDependencyRefuse(project))
         return domains
     }
 }

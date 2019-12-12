@@ -364,7 +364,8 @@ class RestController {
     static def likeAndIlikeOperators = [SEARCH_PARAM_LIKE, SEARCH_PARAM_ILIKE]
     static def equalsAndLikeAndIlikeOperators = [SEARCH_PARAM_EQUALS, SEARCH_PARAM_LIKE, SEARCH_PARAM_ILIKE]
 
-    protected def getSearchParameters(def allowedParameters){
+    static def allowedOperators = ["equals","like","ilike","lte", "gte", "in"]
+    final protected def getSearchParameters(){
         def searchParameters = []
         for(def param : params){
             if (param.key ==~ /.+\[.+\]/) {
@@ -372,15 +373,18 @@ class RestController {
                 String operator = tmp[1].substring(0,tmp[1].length()-1)
                 String field = tmp[0]
 
-                def allowedParameter = allowedParameters.find { it.field = field }
-                if (allowedParameter?.allowedOperators?.contains(operator)) {
-                    String value = param.value
-                    if (operator == SEARCH_PARAM_LIKE || operator == SEARCH_PARAM_ILIKE)
-                        value = "%$value%"
-
-                    def sqlOperator = (operator == SEARCH_PARAM_EQUALS) ? "=" : operator
-                    searchParameters << [operator: operator, field: field, value: value, sqlOperator: sqlOperator]
+                def values = param.value
+                if(operator.equals("in")) {
+                    if(values.contains(",")) values = values.split(",") as List
                 }
+                if(values instanceof List) values = values.collect {URLDecoder.decode(it.toString(), "UTF-8")}
+                else values = URLDecoder.decode(values.toString(), "UTF-8")
+
+                if(operator.contains("like")) {
+                    values = values.replace('*','%')
+                }
+
+                if(allowedOperators.contains(operator)) searchParameters << [operator : operator, field : tmp[0], values : values]
             }
         }
         return searchParameters

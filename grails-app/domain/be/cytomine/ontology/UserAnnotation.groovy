@@ -173,6 +173,7 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
         domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
         domain.created = JSONUtils.getJSONAttrDate(json, 'created')
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
 
         domain.slice = JSONUtils.getJSONAttrDomain(json, "slice", new SliceInstance(), true)
         domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)

@@ -63,7 +63,7 @@ class ProjectTests  {
         assert 200 == result.code
         Long id = result.data.id
 
-        result = ProjectAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true, true, true)
+        result = ProjectAPI.list(true, true, true, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
