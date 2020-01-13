@@ -484,7 +484,23 @@ class AlgoAnnotationTests  {
         println  "NB POINTS END=" +annotationAlone.id + "=" + annotationAlone.location.getNumPoints()
 
         println annotationAlone.location.toText()
+    }
 
+    void testCountAnnotationByProject() {
+        def result = AlgoAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationByProjectWithDates() {
+        Date startDate = new Date()
+        def result = AlgoAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
     }
 
 }

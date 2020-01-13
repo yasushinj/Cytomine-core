@@ -30,18 +30,18 @@ import grails.converters.JSON
  */
 class ImageInstanceAPI extends DomainAPI {
 
-    static def listByProject(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json"
+    static def listLightByUser(Long id, Long max = 0, Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/user/$id/imageinstance/light.json?max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
-    static def listByUser(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/user/$id/imageinstance/light.json"
+    static def listByUser(Long userId, def searchParameters = [], Long max = 0, Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/user/$userId/imageinstance.json?${convertSearchParameters(searchParameters)}&max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
-    static def listByProject(Long id, int offset, int max, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json"
+    static def listByProject(Long id, Integer max = 0, Integer offset = 0, def searchParameters = [], String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?${convertSearchParameters(searchParameters)}&max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
@@ -55,13 +55,18 @@ class ImageInstanceAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
-    static def listByProjectTree(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?tree=true"
+    static def listByProjectTree(Long id, Long max = 0 , Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?tree=true&max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
-    static def listByProjectWithLastActivity(Long id, String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?withLastActivity=true"
+    static def listByProjectWithLastActivity(Long id, Long max = 0, Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?withLastActivity=true&max=$max&offset=$offset"
+        return doGET(URL, username, password)
+    }
+
+    static def listByProjectLight(Long id, Long max = 0 , Long offset = 0, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$id/imageinstance.json?light=true&max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
@@ -75,6 +80,10 @@ class ImageInstanceAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def getBounds(Long projectId, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/project/$projectId/bounds/imageinstance.json"
+        return doGET(URL, username, password)
+    }
 
 
     static def create(String jsonImageInstance, String username, String password) {
@@ -129,6 +138,11 @@ class ImageInstanceAPI extends DomainAPI {
 //    "/api/imageinstance/$id/copyimagedata"(controller :"restImageInstance") {
 //        action = [POST:"copyAnnotationFromSameAbstractImage"]
 //    }
+
+    static def download(Long id, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/imageinstance/" + id + "/download"
+        return doGET(URL, username, password)
+    }
 
 
 

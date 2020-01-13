@@ -238,7 +238,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     def computeGIS() {
-        def image = this.image.baseImage
+        def image = this.image
 
         //compute unit
         if (image.resolution == null) {
@@ -307,6 +307,7 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         def boundaries = retrieveCropParams(params)
         def parameters = boundaries
         parameters.id = image.baseImage.id
+        parameters.format = params.format
         return parameters
     }
 
@@ -330,12 +331,13 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
             boundaries.location = location.toText()
             if(params.color) boundaries.color = params.color
             if(params.thickness) boundaries.thickness = params.thickness
-            if(params.square) boundaries.square = params.square
         }
         if (params.get('increaseArea')) {
             boundaries.increaseArea = params.get('increaseArea')
         }
-
+        if(params.square) {
+            boundaries.square = params.square
+        }
 
         if (params.mask) {
             boundaries.mask = true

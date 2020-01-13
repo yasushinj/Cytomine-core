@@ -24,13 +24,6 @@ class AnnotationUrlMappings {
 
     static mappings = {
 
-//        /**
-//         * Annotation search
-//         */
-//        "/api/annotation/search.$format"(controller:"restAnnotationDomain"){
-//            action = []
-//        }
-
         /**
          * Annotation generic
          */
@@ -66,6 +59,14 @@ class AnnotationUrlMappings {
         }
 
         /**
+         * Annotation search
+         */
+        "/api/annotation/search.$format"(controller:"restAnnotationDomain"){
+            action = [GET: "search",POST:"search"]
+        }
+
+
+        /**
          * User Annotation
          */
         "/api/userannotation.$format"(controller:"restUserAnnotation"){
@@ -76,6 +77,9 @@ class AnnotationUrlMappings {
         }
         "/api/user/$id/userannotation/count.$format"(controller:"restUserAnnotation"){
             action = [GET: "countByUser"]
+        }
+        "/api/project/$project/userannotation/count.$format"(controller:"restUserAnnotation"){
+            action = [GET: "countByProject"]
         }
         "/api/userannotation/$id/crop.$format"(controller: "restUserAnnotation"){
             action = [GET:"crop"]
@@ -95,6 +99,9 @@ class AnnotationUrlMappings {
         "/api/user/$id/reviewedannotation/count.$format"(controller:"restReviewedAnnotation"){
             action = [GET: "countByUser"]
         }
+        "/api/project/$project/reviewedannotation/count.$format"(controller:"restReviewedAnnotation"){
+            action = [GET: "countByProject"]
+        }
         "/api/reviewedannotation/$id/crop.$format"(controller: "restReviewedAnnotation"){
             action = [GET:"crop"]
         }
@@ -108,6 +115,9 @@ class AnnotationUrlMappings {
         /**
          * Algo Annotation
          */
+        "/api/project/$project/algoannotation/count.$format"(controller:"restAlgoAnnotation"){
+            action = [GET: "countByProject"]
+        }
         "/api/algoannotation/method/union.$format"(controller:"restAlgoAnnotation"){
             action = [PUT:"union", GET:"union"]
         }
@@ -222,6 +232,8 @@ class AnnotationUrlMappings {
             action = [GET:"list"]
         }
 
-
+        "/api/project/$project/annotationaction/count.$format"(controller: "restAnnotationAction"){
+            action = [GET:"countByProject"]
+        }
     }
 }

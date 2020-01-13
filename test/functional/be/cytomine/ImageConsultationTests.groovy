@@ -25,6 +25,7 @@ import be.cytomine.test.Infos
 import be.cytomine.test.http.ImageConsultationAPI
 import be.cytomine.test.http.ImageInstanceAPI
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 class ImageConsultationTests {
 
@@ -126,5 +127,22 @@ class ImageConsultationTests {
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json.collection.size() == 2
+    }
+
+    void testCountAnnotationByProject() {
+        def result = ImageConsultationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationByProjectWithDates() {
+        Date startDate = new Date()
+        def result = ImageConsultationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
     }
 }

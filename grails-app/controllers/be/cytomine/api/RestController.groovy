@@ -17,10 +17,12 @@ package be.cytomine.api
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ServerException
 import be.cytomine.test.HttpClient
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
@@ -101,7 +103,7 @@ class RestController {
             responseResult(result)
         } catch (CytomineException e) {
             log.error(e)
-            response([success: false, errors: e.msg], e.code)
+            response([success: false, errors: e.msg, errorValues : e.values], e.code)
         }
     }
 
@@ -130,16 +132,38 @@ class RestController {
      * @param data Data ro send
      * @return response
      */
+    // TODO see ImageInstanceController to think how to make it more flexible
     protected def response(data) {
         withFormat {
             json {
-                render data as JSON
+                def result = data as JSON
+
+                if(isFilterResponseEnabled()) result = filterResponse(result)
+
+                render result
             }
             jsonp {
                 response.contentType = 'application/javascript'
                 render "${params.callback}(${data as JSON})"
             }
         }
+    }
+
+    private grails.converters.JSON filterResponse(grails.converters.JSON response){
+        JSONObject json = JSON.parse(response.toString())
+        if(json.containsKey("collection")) {
+            for(JSONObject element : json.collection) {
+                filterOneElement(element)
+            }
+        } else {
+            filterOneElement(json)
+        }
+
+        return json as JSON
+    }
+
+    protected void filterOneElement(JSONObject element){
+        if(isFilterResponseEnabled()) throw new ServerException("Filter enabled but no filter defined")
     }
 
     /**
@@ -357,7 +381,30 @@ class RestController {
         }
     }
 
+    static def allowedOperators = ["equals","like","ilike","lte", "gte", "in"]
+    final protected def getSearchParameters(){
+        def searchParameters = []
+        for(def param : params){
+            if (param.key ==~ /.+\[.+\]/) {
+                String[] tmp = param.key.split('\\[')
+                String operator = tmp[1].substring(0,tmp[1].length()-1)
 
+                def values = param.value
+                if(operator.equals("in")) {
+                    if(values.contains(",")) values = values.split(",") as List
+                }
+                if(values instanceof List) values = values.collect {URLDecoder.decode(it.toString(), "UTF-8")}
+                else values = URLDecoder.decode(values.toString(), "UTF-8")
+
+                if(operator.contains("like")) {
+                    values = values.replace('*','%')
+                }
+
+                if(allowedOperators.contains(operator)) searchParameters << [operator : operator, field : tmp[0], values : values]
+            }
+        }
+        return searchParameters
+    }
     /**
      * Substract the collection with offset (min) and max
      * @param collection Full collection
@@ -372,4 +419,9 @@ class RestController {
         def maxForCollection = Math.min(collection.size() - offset, max)
         return collection.subList(offset, offset + maxForCollection)
     }
+
+    protected boolean isFilterResponseEnabled() {
+        return false
+    }
+
 }

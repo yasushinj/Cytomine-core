@@ -32,7 +32,9 @@ class ImageConsultationUrlMappings {
         "/api/project/$project/user/$user/imageconsultation.$format"(controller:"restImageConsultation") {
             action = [GET : "listImageConsultationByProjectAndUser"]
         }
-
+        "/api/project/$project/imageconsultation/count.$format"(controller:"restImageConsultation") {
+            action = [GET : "countByProject"]
+        }
         "/api/imageconsultation/resume.$format" (controller:"restImageConsultation") {
             action = [GET : "resumeByUserAndProject"]
         }

@@ -112,4 +112,20 @@ class RestImageConsultationController extends RestController {
         }
     }
 
+    @RestApiMethod(description="Get the number of image consultations in the specified project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Only image consultations after this date will be counted (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Only image consultations before this date will be counted (optional)"),
+    ])
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+
+        Long startDate = params.long("startDate")
+        Long endDate = params.long("endDate")
+
+        responseSuccess(imageConsultationService.countByProject(project, startDate, endDate))
+    }
+
 }

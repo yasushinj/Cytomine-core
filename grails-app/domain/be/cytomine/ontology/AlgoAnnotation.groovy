@@ -147,6 +147,7 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
             domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
             domain.created = JSONUtils.getJSONAttrDate(json, 'created')
             domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+            domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
             domain.location = new WKTReader().read(json.location)
             domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
             domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)

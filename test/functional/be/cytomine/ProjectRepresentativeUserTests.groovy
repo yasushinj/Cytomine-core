@@ -113,6 +113,31 @@ class ProjectRepresentativeUserTests {
         assert 404 == result.code
     }
 
+    void testDeleteProjectRepresentativeUserByProjectAndUser() {
+        ProjectRepresentativeUser refToDelete = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        assert refToDelete.save(flush: true)!= null
+        def id = refToDelete.id
+        def idProject = refToDelete.project.id
+        def idUser = refToDelete.user.id
+        def result = ProjectRepresentativeUserAPI.deleteByUser(idUser, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        def showResult = ProjectRepresentativeUserAPI.show(id, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == showResult.code
+
+        result = ProjectRepresentativeUserAPI.undo()
+        assert 200 == result.code
+
+        result = ProjectRepresentativeUserAPI.show(id, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = ProjectRepresentativeUserAPI.redo()
+        assert 200 == result.code
+
+        result = ProjectRepresentativeUserAPI.show(id, idProject, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
+
     void testDeleteDependentUser() {
         //init user creator
         def USERNAME2 = "user2";

@@ -39,13 +39,19 @@ class AlgoAnnotationAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+    static def listByProject(Long id, List<Long> tags, boolean noTag = false, String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/annotation.json?includeAlgo=true&project=$id&tags="+tags.join(",")
+        if (noTag) URL+="&noTag=true"
+        return doGET(URL, username, password)
+    }
+
     static def listByProject(Long id, Long idUser, Long idImage, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/annotation.json?project=$id&users="+idUser+"&images="+idImage
         return doGET(URL, username, password)
     }
 
     static def listByProjectAndTerm(Long idProject, Long idTerm, Long idUser,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/annotation.json?term=$idTerm&project=$idProject&users="+idUser
+        String URL = Infos.CYTOMINEURL + "api/annotation.json?term=$idTerm&project=$idProject&user="+idUser
         return doGET(URL, username, password)
     }
 
@@ -119,6 +125,13 @@ class AlgoAnnotationAPI extends DomainAPI {
     static def union(def idImage, def idUser, def idTerm, def minIntersectionLength, def bufferLength, def area, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/algoannotation/method/union.json?idImage=$idImage&idUser=$idUser&idTerm=$idTerm&minIntersectionLength=$minIntersectionLength&bufferLength=$bufferLength&area=$area"
         return doPUT(URL,"",username,password)
+    }
+
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/algoannotation/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
+        return doGET(URL, username, password)
     }
 
 }

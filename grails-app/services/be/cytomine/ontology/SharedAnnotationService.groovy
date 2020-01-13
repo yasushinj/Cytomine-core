@@ -135,6 +135,9 @@ class SharedAnnotationService extends ModelService {
             }
         } catch (FileNotFoundException e) {
             annnotationCrop = null
+        } catch (Exception e) {
+            println e.getClass()
+            e.printStackTrace()
         }
         def attachments = []
         if (annnotationCrop != null) {

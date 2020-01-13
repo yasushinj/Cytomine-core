@@ -104,7 +104,7 @@ class DataTablesService {
                     WHERE project_id = ${project.id}
                     AND ai.deleted IS NULL
                     AND ii.deleted IS NULL
-                    AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
+                    AND ${(_search? "ai.original_filename ilike :filename" : "")}
                     ${getAclWhere()}
                     UNION
                     SELECT DISTINCT ai.id, ai.original_filename, ai.created as created, false
@@ -114,7 +114,7 @@ class DataTablesService {
                                      FROM abstract_image ai LEFT OUTER JOIN image_instance ii ON ii.base_image_id = ai.id
                                      WHERE project_id = ${project.id}
                                      AND ii.deleted IS NULL)
-                    AND ${(_search? "ai.original_filename ilike '%${_search}%'" : "")}
+                    AND ${(_search? "ai.original_filename ilike :filename" : "")}
                      ${getAclWhere()}
                     ORDER BY created desc
                 """
@@ -140,7 +140,7 @@ class DataTablesService {
 
             def data = []
             def sql = new Sql(dataSource)
-            sql.eachRow(request) {
+            sql.eachRow(request, [filename : _search]) {
                 def img = [:]
                 img.id=it[0]
                 img.originalFilename=it[1]
@@ -171,41 +171,45 @@ class DataTablesService {
 
     }
 
-    private def getUploadedFilesTable(def params, String _search, String col, String sort, String property){
+    public def getUploadedFilesTable(def params, String _search, String col, String sort, String property){
         String order = "uf.created"
         if(property) {
             if(property.equals("size") || property.equals("created")) {
                 order = "uf.$property"
-            }else {
+            }else if (property.equals("globalSize") || property.equals("nbChildren")){
                 order = "$property"
             }
         }
         order += sort.equals("asc") ? " ASC" : " DESC"
+        String fromClause =
+                "FROM uploaded_file uf\n" +
+                        "  LEFT JOIN (\n" +
+                        "    SELECT * FROM uploaded_file\n" +
+                        "  ) tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id)\n" +
+                        "  LEFT JOIN (\n" +
+                        "    SELECT * FROM uploaded_file\n" +
+                        "  ) parent ON parent.id = uf.parent_id\n"
+        String whereClause =
+                "WHERE uf.content_type NOT similar to '%zip|ome%' AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') \n" +
+                        "AND uf.user_id = "+cytomineService.currentUser.id+" \n" +
+                        "AND uf.original_filename ILIKE :filename \n"
+        int limit = params.int('max',0)
         String request =
                 "SELECT uf.id, uf.content_type as contentType, uf.created, uf.filename, uf.original_filename as originalFilename, uf.size, uf.status, \n" +
                         "parent.original_filename as parentFilename, uf.parent_id as parentId, \n" +
                         "COUNT(tree.id) as nbChildren, " +
                         "COALESCE(SUM(tree.size),0)+uf.size as globalSize, " +
                         "CASE WHEN COUNT(tree.id) = 0 THEN uf.image_id ELSE MAX(tree.image_id) END as preview_image_id \n" +
-                        "FROM uploaded_file uf\n" +
-                        "  LEFT JOIN (\n" +
-                        "    SELECT * FROM uploaded_file\n" +
-                        "  ) tree ON (tree.l_tree <@ uf.l_tree AND tree.id != uf.id)\n" +
-                        "  LEFT JOIN (\n" +
-                        "    SELECT * FROM uploaded_file\n" +
-                        "  ) parent ON parent.id = uf.parent_id\n" +
-                        "WHERE uf.content_type NOT similar to '%zip|ome%' AND (uf.parent_id is null OR parent.content_type similar to '%zip|ome%') \n" +
-                        "AND uf.user_id = "+cytomineService.currentUser.id+" \n" +
-                        "AND uf.original_filename LIKE '"+_search+"' \n" +
+                        fromClause +
+                        whereClause +
                         "GROUP BY uf.id, parent.original_filename \n" +
-                        "ORDER BY "+order+"\n" /*+
-                        "LIMIT "+params.max+" OFFSET "+ params.offset
-        params.max = 0;
-        params.offset = 0; ==> will not return the total size so pagination will not work !
-        */
+                        "ORDER BY "+order+"\n" +
+                        ((limit > 0) ? "LIMIT $limit \n " : "") +
+                        "OFFSET "+ params.int('offset',0)
+
         def data = []
         def sql = new Sql(dataSource)
-        sql.eachRow(request) {
+        sql.eachRow(request, [filename : _search]) {
             def row = [:]
             int i = 0
             row.id = it[i++]
@@ -225,9 +229,18 @@ class DataTablesService {
             row.thumbURL =  ((row.status == UploadedFile.DEPLOYED || row.status == UploadedFile.CONVERTED) && imageId) ? UrlApi.getAbstractImageThumbURL(imageId) : null
             data << row
         }
+
+        String countRequest = "SELECT COUNT (DISTINCT uf.id) \n" +
+                        fromClause +
+                        whereClause
+        long total
+        sql.eachRow(countRequest, [filename : _search, order : order]) {
+            total = it[0]
+        }
+
         sql.close()
 
-        return data
+        return [data:data, total : total]
 
     }
 

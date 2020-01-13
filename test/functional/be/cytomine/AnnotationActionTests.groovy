@@ -20,9 +20,9 @@ import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AnnotationActionAPI
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 class AnnotationActionTests {
-
 
     void testAddAction() {
         def annotation = BasicInstanceBuilder.getUserAnnotation()
@@ -56,17 +56,17 @@ class AnnotationActionTests {
     }
 
     void testListAfterThan() {
-        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(BasicInstanceBuilder.getProject(),true)
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(BasicInstanceBuilder.getProject(), true)
         def image = annotation.image
         def json = JSON.parse("{image:${image.id}, annotationIdent:${annotation.id}, action:Test}")
 
-        def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def result = AnnotationActionAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         Long created = Long.parseLong(JSON.parse(result.data).created)
         Long creator = JSON.parse(result.data).user
 
-        result = AnnotationActionAPI.listByImage(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, created)
+        result = AnnotationActionAPI.listByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, created)
         assert 200 == result.code
         assert JSON.parse(result.data).collection.size() == 1
 
@@ -74,12 +74,28 @@ class AnnotationActionTests {
         assert 200 == result.code
         assert JSON.parse(result.data).collection.size() == 1
 
-        result = AnnotationActionAPI.listByImage(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, created+1)
+        result = AnnotationActionAPI.listByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, created + 1)
         assert 200 == result.code
         assert JSON.parse(result.data).collection.size() == 0
 
-        result = AnnotationActionAPI.listByImageAndUser(image.id, creator, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, created+1)
+        result = AnnotationActionAPI.listByImageAndUser(image.id, creator, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, created + 1)
         assert 200 == result.code
         assert JSON.parse(result.data).collection.size() == 0
+    }
+    void testCountAnnotationActionsByProject() {
+        def result = AnnotationActionAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationActionsByProjectWithDates() {
+        Date startDate = new Date()
+        def result = AnnotationActionAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
     }
 }

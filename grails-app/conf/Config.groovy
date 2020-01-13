@@ -83,8 +83,7 @@ cytomine.jobdata.filesystem = false
 cytomine.jobdata.filesystemPath = "algo/data/"
 
 // RabbitMQ server
-grails.messageBrokerServerURL = "rabbitmq:5672"
-grails.LTIConsumer = []
+grails.messageBrokerServerURL = "localhost:5672"
 
 // set per-environment serverURL stem for creating absolute links
 environments {
@@ -99,14 +98,16 @@ environments {
         grails.resources.adhoc.patterns = ['/images/*', '/js/*']
     }
     production {
-        grails.serverURL = "http://localhost:8086"
+        grails.UIURL = null
+        grails.serverURL = "http://localhost-core"
         grails.uploadURL = "http://localhost:9090"
         grails.plugin.springsecurity.useBasicAuth = false
         grails.resources.adhoc.patterns = ['/images/*', '/js/*','/css/jsondoc/*']
         grails.retrievalServerURL = []
     }
     development {
-        grails.serverURL = "http://localhost-core:8080"
+        grails.UIURL = "http://localhost:8080"
+        grails.serverURL = "http://localhost:8080"
         grails.uploadURL = "http://localhost-upload"
         grails.imageServerURL = ["http://localhost-ims"]
         grails.retrievalServerURL = ["http://localhost-retrieval"]
@@ -377,14 +378,77 @@ cytomine.customUI.global = [
 ]
 
 cytomine.customUI.project = [
-        "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        //tabs
         "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
-        //"project-imagegroups-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
-        "project-properties-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
+        "project-activities-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
+        "project-information-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
-        "project-usersconfiguration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false]
-        //"project-explore-spectra-panel":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false]
+
+        //explore
+        "project-explore-hide-tools":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-overview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-info":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-digital-zoom":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-link":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-color-manipulation":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-layers":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-ontology":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-review":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-job":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-property":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-follow":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-guided-tour":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+
+        //annotation details
+        "project-explore-annotation-main":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-geometry-info":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-info":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-comments":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-preview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-properties":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-description":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-panel":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-terms":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-attached-files":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-annotation-creation-info":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+
+        //annotation tools
+        "project-tools-main":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-select":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-point":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-line":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-freehand-line":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-arrow":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-rectangle":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-diamond":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-circle":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-polygon":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-freehand-polygon":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-magic":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-freehand":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-union":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-diff":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-fill":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-rule":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-edit": ["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-resize":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-rotate":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-move":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-delete":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-screenshot":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-tools-undo-redo":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+
+        //graphs
+        "project-annotations-term-piegraph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-annotations-term-bargraph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-annotations-users-graph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-annotated-slides-term-graph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-annotated-slides-users-graph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-annotation-graph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-users-global-activities-graph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-users-heatmap-graph":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
 ]
 
 environments {
@@ -403,12 +467,6 @@ environments {
 }
 
 
-grails.admin.email = "info@cytomine.org"
-grails.notification.email = ""
-grails.notification.password = ""
-grails.notification.smtp.host = "smtp.gmail.com"
-grails.notification.smtp.port = "587"
-
 grails.client = "NO"
 
 grails.plugin.springsecurity.password.algorithm = 'SHA-256'
@@ -420,3 +478,17 @@ cytomine.middleware.rabbitmq.password = "router"
 
 //limitations
 cytomine.annotation.maxNumberOfPoint = 200
+
+
+// instance hoster configurations
+grails.admin.email = "info@cytomine.org"
+grails.notification.email = ""
+grails.notification.password = ""
+grails.notification.smtp.host = "smtp.gmail.com"
+grails.notification.smtp.port = "587"
+
+grails.instanceHostWebsite = "https://www.cytomine.org"
+grails.instanceHostSupportMail = "support@cytomine.coop"
+grails.instanceHostPhoneNumber = null
+
+grails.defaultLanguage = "ENGLISH"

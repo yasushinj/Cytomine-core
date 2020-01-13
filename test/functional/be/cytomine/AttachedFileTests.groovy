@@ -23,7 +23,7 @@ import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AttachedFileAPI
 import be.cytomine.test.http.DomainAPI
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -37,25 +37,25 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  */
 class AttachedFileTests {
 
-  void testListAttachedFile() {
-      def result = AttachedFileAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json.collection instanceof JSONArray
-  }
+    void testListAttachedFile() {
+        def result = AttachedFileAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+    }
 
-  void testShowAttachedFile() {
-      def domain = BasicInstanceBuilder.getAttachedFileNotExist(true)
-      println domain.domainClassName
-      println domain.domainIdent
+    void testShowAttachedFile() {
+        def domain = BasicInstanceBuilder.getAttachedFileNotExist(true)
+        println domain.domainClassName
+        println domain.domainIdent
 
-      Project.list().each{println it.id}
+        Project.list().each{println it.id}
 
-      def result = AttachedFileAPI.show(domain.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json instanceof JSONObject
-  }
+        def result = AttachedFileAPI.show(domain.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+    }
 
     void testShowAttachedFileNotExist() {
         def result = AttachedFileAPI.show(-99, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -100,32 +100,32 @@ class AttachedFileTests {
     }
 
 
-  void testDownloadNoSecurity() {
+    void testDownloadNoSecurity() {
 
-      //TODO: TEMPORARY disable security (juste for access). There is an issue:
-      //if we copy layers from image x - project 1 to image x - project 2, users may not have the right to download the file
+        //TODO: TEMPORARY disable security (juste for access). There is an issue:
+        //if we copy layers from image x - project 1 to image x - project 2, users may not have the right to download the file
 
-      //create user guest
-      User guest = BasicInstanceBuilder.getUser("testDownloadForGuest","password")
+        //create user guest
+        User guest = BasicInstanceBuilder.getUser("testDownloadForGuest","password")
 
-      //create a project in r/o
-      Project project = BasicInstanceBuilder.getProjectNotExist()
-      project.mode = Project.EditingMode.READ_ONLY
-      BasicInstanceBuilder.saveDomain(project)
+        //create a project in r/o
+        Project project = BasicInstanceBuilder.getProjectNotExist()
+        project.mode = Project.EditingMode.READ_ONLY
+        BasicInstanceBuilder.saveDomain(project)
 
-      //add an annotation to project
-      UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(project, true)
+        //add an annotation to project
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(project, true)
 
-      //add attached file to annotation
-      AttachedFile attachedFile = BasicInstanceBuilder.getAttachedFileNotExist(false)
-      attachedFile.setDomain(annotation)
-      BasicInstanceBuilder.saveDomain(attachedFile)
+        //add attached file to annotation
+        AttachedFile attachedFile = BasicInstanceBuilder.getAttachedFileNotExist(false)
+        attachedFile.setDomain(annotation)
+        BasicInstanceBuilder.saveDomain(attachedFile)
 
-      //try to download attached file
-      def result = AttachedFileAPI.show(attachedFile.id, "testDownloadForGuest", "password")
-      assert 403 == result.code
+        //try to download attached file
+        def result = AttachedFileAPI.show(attachedFile.id, "testDownloadForGuest", "password")
+        assert 403 == result.code
 
-  }
+    }
 
     void testDeleteAttachedFileCorrect() {
         def attachedFileToAdd = BasicInstanceBuilder.getAttachedFileNotExist(true)

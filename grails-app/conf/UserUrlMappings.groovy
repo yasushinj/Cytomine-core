@@ -56,8 +56,8 @@ class UserUrlMappings {
             action = [GET:"listByGroup"]
         }
 
-        "/api/project/$id/user.$format"(controller: "restUser"){
-            action = [GET:"showByProject",POST:"addUser"]
+        "/api/project/$project/user.$format"(controller: "restUser"){
+            action = [GET:"showByProject", POST:"addUsersToProject", DELETE:"deleteUsersFromProject"]
         }
         "/api/project/$id/admin.$format"(controller: "restUser"){
             action = [GET:"showAdminByProject"]
@@ -112,6 +112,14 @@ class UserUrlMappings {
 
         "/api/user/$id/lock"(controller:"restUser"){
             action = [POST:"lock", DELETE:"unlock"]
+        }
+        //To normalize. TODO The entrypoint without format will be removed
+        "/api/user/$id/lock.$format"(controller:"restUser"){
+            action = [POST:"lock", DELETE:"unlock"]
+        }
+
+        "/api/user/security_check.json"(controller:"restUser"){
+            action = [GET:"checkPassword", POST:"checkPassword"]
         }
 
         "/api/user/$id/password.$format"(controller:"restUser"){

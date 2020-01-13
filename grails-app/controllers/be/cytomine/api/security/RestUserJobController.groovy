@@ -236,8 +236,8 @@ class RestUserJobController extends RestController {
                         item.created = job.created.getTime()
                         item.algo = true
                         item.isDeleted = job.dataDeleted
+                        userJobs << item
                     }
-                    userJobs << item
                 }
                 responseSuccess(userJobs)
             }
@@ -280,6 +280,7 @@ class RestUserJobController extends RestController {
         userJob.passwordExpired = user.passwordExpired
         userJob.user = user
         userJob.job = job
+        userJob.origin = "JOB"
         Date date = new Date()
 
         try {

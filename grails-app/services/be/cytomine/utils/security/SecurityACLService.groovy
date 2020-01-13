@@ -54,6 +54,7 @@ class SecurityACLService {
         def simpleObject =  Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
         if (simpleObject) {
             def containerObjects = simpleObject."$method"()
+            if(containerObjects.size() == 0) throw new ForbiddenException("ACL error: ${className} with id ${id}. Cannot find any related object to check permission")
             def atLeastOne = containerObjects.find {
                 it.checkPermission(permission,currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser))
             }
@@ -162,7 +163,7 @@ class SecurityACLService {
         try {
             def domain = Class.forName(className, false, Thread.currentThread().contextClassLoader).read(id)
             if (domain) {
-                checkFullOrRestrictedForOwner(domain, owner ? domain."$owner" : null)
+                checkFullOrRestrictedForOwner(domain, (owner && domain.hasProperty(owner)) ? domain."$owner" : null)
             } else {
                 throw new ObjectNotFoundException("ACL error: ${className} with id ${id} was not found! Unable to process auth checking")
             }
@@ -214,14 +215,14 @@ class SecurityACLService {
 
     public List<Ontology> getOntologyList(SecUser user) {
         //faster method
-        if (currentRoleServiceProxy.isAdminByNow(user)) return Ontology.list()
+        if (currentRoleServiceProxy.isAdminByNow(user)) return Ontology.findAllByDeletedIsNull()
         else {
             return Ontology.executeQuery(
                     "select distinct ontology "+
                             "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, Ontology as ontology "+
                             "where aclObjectId.objectId = ontology.id " +
                             "and aclEntry.aclObjectIdentity = aclObjectId.id "+
-                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"'")
+                            "and aclEntry.sid = aclSid.id and aclSid.sid like '"+user.username+"' and ontology.deleted is null")
         }
     }
 
@@ -303,7 +304,19 @@ class SecurityACLService {
         }
     }
 
-    public def checkIsAdminContainer(CytomineDomain domain,SecUser currentUser) {
+    public def checkIsSameUserOrCreator(SecUser user,SecUser currentUser, CytomineDomain domain) {
+        boolean sameUser = (user.id == currentUser.id)
+        sameUser |= currentRoleServiceProxy.isAdminByNow(currentUser)
+        sameUser |= (currentUser instanceof UserJob && user.id==((UserJob)currentUser).user.id)
+
+        boolean creator = (currentRoleServiceProxy.isAdminByNow(currentUser) || (currentUser.id==domain.userDomainCreator().id))
+
+        if (!sameUser && !creator) {
+            throw new ForbiddenException("You don't have the right to read this resource!")
+        }
+    }
+
+    public def checkIsAdminContainer(CytomineDomain domain,SecUser currentUser = null) {
         if (domain) {
             if (!domain.container().checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser))) {
                 throw new ForbiddenException("You don't have the right to do this. You must be the creator or the container admin")
@@ -358,5 +371,9 @@ class SecurityACLService {
             throw new ForbiddenException("User must be in this group!")
     }
 
+
+    public def isAdminByNow(SecUser user) {
+        return currentRoleServiceProxy.isAdminByNow(user)
+    }
 
 }

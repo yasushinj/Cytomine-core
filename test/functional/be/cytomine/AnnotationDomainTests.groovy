@@ -42,15 +42,14 @@ class AnnotationDomainTests {
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        assert json.collection.size() == 1
+        assert json.collection.size() == 2
 
         result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        //TODO : includeAlgo remove the parameter users in the RestAnnotationDomainController ==> change that
-        assert json.collection.size() == 1
+        assert json.collection.size() == 2
 
         users = users.reverse()
         result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
@@ -58,8 +57,27 @@ class AnnotationDomainTests {
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        //TODO : includeAlgo remove the parameter users in the RestAnnotationDomainController ==> change that
+        assert json.collection.size() == 2
+
+        result = AnnotationDomainAPI.delete(userAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
         assert json.collection.size() == 1
+
+        result = AnnotationDomainAPI.delete(algoAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 0
     }
 
     void testSearchAnnotationFromUsers() {
@@ -67,7 +85,7 @@ class AnnotationDomainTests {
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
         UserAnnotation userAnnotation = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, true)
         UserAnnotation userAnnotation2 = BasicInstanceBuilder.getUserAnnotationNotExist(project, image, true)
-        ArrayList<Long> users = new ArrayList<>();
+        ArrayList<Long> users = new ArrayList<>()
         users.add(userAnnotation.user.id)
         users.add(userAnnotation2.user.id)
 
@@ -78,13 +96,35 @@ class AnnotationDomainTests {
 
         assert json.collection.size() == 2
 
+        ArrayList<Long> images = new ArrayList<>()
+        images.add(userAnnotation.image.id)
+        result = AnnotationDomainAPI.listByImagesAndUsersByPOST(images,users, false, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 2
+
+
+
         result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        //TODO : includeAlgo remove the parameter users in the RestAnnotationDomainController ==> change that
-        assert json.collection.size() == 0
+        assert json.collection.size() == 2
+
+
+        result = AnnotationDomainAPI.delete(userAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImagesAndUsersByPOST(images,users, false, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 1
+
     }
 
     void testSearchAnnotationFromJobs() {
@@ -110,6 +150,18 @@ class AnnotationDomainTests {
         assert json instanceof JSONObject
 
         assert json.collection.size() == 2
+
+
+        result = AnnotationDomainAPI.delete(algoAnnotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = AnnotationDomainAPI.listByImageAndUsers(image.id,users,true, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.collection.size() == 1
+
     }
 
 

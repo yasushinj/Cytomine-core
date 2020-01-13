@@ -17,17 +17,19 @@ package be.cytomine.api.image
 */
 
 import be.cytomine.Exception.CytomineException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.InvalidRequestException
 import be.cytomine.api.RestController
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.multidim.ImageGroup
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.project.Project
+import be.cytomine.security.SecUser
 import be.cytomine.sql.ReviewedAnnotationListing
 import be.cytomine.test.HttpClient
-import be.cytomine.utils.Description
+import be.cytomine.meta.Description
 import be.cytomine.utils.GeometryUtils
 import be.cytomine.utils.Task
 import com.vividsolutions.jts.geom.Geometry
@@ -37,10 +39,12 @@ import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
 import groovy.sql.Sql
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 
 import java.awt.image.BufferedImage
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Created by IntelliJ IDEA.
@@ -69,6 +73,7 @@ class RestImageInstanceController extends RestController {
     def propertyService
     def securityACLService
     def imageGroupService
+    def statsService
 
     final static int MAX_SIZE_WINDOW_REQUEST = 5000 * 5000 //5k by 5k pixels
 
@@ -87,7 +92,16 @@ class RestImageInstanceController extends RestController {
 
     @RestApiMethod(description="Get all image instance available for the current user", listing = true)
     def listByUser() {
-        responseSuccess(imageInstanceService.list(cytomineService.currentUser))
+        String sortColumn = params.sortColumn ? params.sortColumn : "created"
+        String sortDirection = params.sortDirection ? params.sortDirection : "desc"
+        SecUser user = secUserService.read(params.long('user'))
+        def result = imageInstanceService.list(user, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'))
+        responseSuccess([collection : result.data, size : result.total])
+    }
+
+    @RestApiMethod(description="Get a lighted list of all image instance available for the current user", listing = true)
+    def listLightByUser() {
+        responseSuccess(imageInstanceService.listLight(cytomineService.currentUser))
     }
 
     @RestApiMethod(description="Get the last opened image for the current user", listing = true)
@@ -101,25 +115,26 @@ class RestImageInstanceController extends RestController {
 
     @RestApiMethod(description="Get all image instance for a specific project", listing = true)
     @RestApiParams(params=[
-    @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
+    @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The project id"),
     @RestApiParam(name="tree", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Get a tree (with parent image as node)"),
     @RestApiParam(name="sortColumn", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Column sort (created by default)"),
     @RestApiParam(name="sortDirection", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Sort direction (desc by default)"),
     @RestApiParam(name="search", type="string", paramType = RestApiParamType.QUERY, description = "(optional) Original filename search filter (all by default)"),
-    @RestApiParam(name="withLastActivity", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Return the last consultation of current user in each image. Not compatible with tree, excludeimagegroup and datatables parameters ")
+    @RestApiParam(name="withLastActivity", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional) Return the last consultation of current user in each image. Not compatible with tree, excludeimagegroup and datatables parameters "),
+    @RestApiParam(name="light", type="boolean", paramType = RestApiParamType.QUERY, description = "(optional, default false) If true, the returned list will only contain id, instanceFilename and blindedName properties. Not compatible with tree, excludeimagegroup, datatables and withLastActivity parameters")
     ])
     def listByProject() {
-        Project project = projectService.read(params.long('id'))
+        Project project = projectService.read(params.long('project'))
         if(params.excludeimagegroup){
             String sortColumn = params.sortColumn ? params.sortColumn : "created"
             String sortDirection = params.sortDirection ? params.sortDirection : "desc"
             String search = params.sSearch
-            if(params.excludeimagegroup == "any"){
+            if(params.excludeimagegroup == "any") {
                 if(project){
                     responseSuccess(imageInstanceService.listWithoutAnyGroup(project, sortColumn, sortDirection, search))
                 }
                 else{
-                    responseNotFound("ImageInstance", "Project", params.id)
+                    responseNotFound("ImageInstance", "Project", params.project)
                 }
             }
             else{
@@ -128,7 +143,7 @@ class RestImageInstanceController extends RestController {
                     responseSuccess(imageInstanceService.listWithoutGroup(project, group, sortColumn, sortDirection, search))
                 }
                 else{
-                    responseNotFound("ImageInstance", "Project", params.id)
+                    responseNotFound("ImageInstance", "Project", params.project)
                 }
             }
         }
@@ -138,25 +153,27 @@ class RestImageInstanceController extends RestController {
             responseSuccess(dataTablesService.process(params, ImageInstance, where, fieldFormat,project))
         }
         else if (project && !params.tree) {
-            String sortColumn = params.sortColumn ? params.sortColumn : "created"
-            String sortDirection = params.sortDirection ? params.sortDirection : "desc"
-            String search = params.search
+            String sortColumn = params.sort ?: "created"
+            String sortDirection = params.order ?: "desc"
             def extended = [:]
             if(params.withLastActivity) extended.put("withLastActivity",params.withLastActivity)
             def imageList
-            if(extended.isEmpty()){
-                imageList = imageInstanceService.list(project, sortColumn, sortDirection, search)
+            if(extended.isEmpty()) {
+                boolean light = params.getBoolean("light")
+                def result = imageInstanceService.list(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), light)
+                imageList = [collection : result.data, size : result.total]
             } else {
-                imageList = imageInstanceService.listExtended(project, sortColumn, sortDirection, search, extended)
+                def result = imageInstanceService.listExtended(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), extended)
+                imageList = [collection : result.data, size : result.total]
             }
 
             responseSuccess(imageList)
         }
         else if (project && params.tree && params.boolean("tree"))  {
-            responseSuccess(imageInstanceService.listTree(project))
+            responseSuccess(imageInstanceService.listTree(project, params.long('max'), params.long('offset')))
         }
         else {
-            responseNotFound("ImageInstance", "Project", params.id)
+            responseNotFound("ImageInstance", "Project", params.project)
         }
     }
 
@@ -169,7 +186,7 @@ class RestImageInstanceController extends RestController {
     ])
     def next() {
         def image = imageInstanceService.read(params.long('id'))
-        def next = ImageInstance.findAllByProjectAndCreatedLessThan(image.project,image.created,[sort:'created',order:'desc',max:1])
+        def next = ImageInstance.findAllByProjectAndCreatedLessThanAndDeletedIsNull(image.project,image.created,[sort:'created',order:'desc',max:1])
         if(next && !next.isEmpty()) {
             responseSuccess(next.first())
         } else {
@@ -183,7 +200,7 @@ class RestImageInstanceController extends RestController {
     ])
     def previous() {
         def image = imageInstanceService.read(params.long('id'))
-        def previous = ImageInstance.findAllByProjectAndCreatedGreaterThan(image.project,image.created,[sort:'created',order:'asc',max:1])
+        def previous = ImageInstance.findAllByProjectAndCreatedGreaterThanAndDeletedIsNull(image.project,image.created,[sort:'created',order:'asc',max:1])
         if(previous && !previous.isEmpty()) {
             responseSuccess(previous.first())
         } else {
@@ -482,12 +499,19 @@ class RestImageInstanceController extends RestController {
         Long id = params.long("id")
         Boolean parent = params.boolean("parent", false)
         ImageInstance imageInstance = imageInstanceService.read(id)
-        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage, parent)
+        securityACLService.check(imageInstance, READ)
+        Project project = imageInstance.project
+
+        boolean canDownload = project.areImagesDownloadable
+        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage)
+
+        if(!canDownload) securityACLService.checkIsAdminContainer(project)
+
         if (downloadURL) {
             log.info "redirect $downloadURL"
             redirect (url : downloadURL)
         } else
-            responseNotFound("Download link for", id)
+            responseNotFound("Download link for Image Instance", id)
     }
 
     /*def metadata() {
@@ -535,5 +559,84 @@ class RestImageInstanceController extends RestController {
         responseSuccess([url : url.url])
     }
 
+    def bounds() {
+        def images
+
+        Project project = Project.read(params.projectId)
+        securityACLService.check(project, READ)
+        images = ImageInstance.findAllByProject(project)
+
+        def bounds = statsService.bounds(ImageInstance, images)
+
+        def abstractImages = images.collect{it.baseImage}
+        bounds.put("width", [min : abstractImages.min{it.width}?.width, max : abstractImages.max{it.width}?.width])
+        bounds.put("height", [min : abstractImages.min{it.height}?.height, max : abstractImages.max{it.height}?.height])
+        bounds.put("magnification", [list : images.collect{it.magnification}.unique(), min : bounds["magnification"]?.min, max : bounds["magnification"]?.max])
+        bounds.put("resolution", [list : images.collect{it.resolution}.unique(), min : bounds["resolution"]?.min, max : bounds["resolution"]?.max])
+        bounds.put("format", [list : abstractImages.collect{it.mime?.extension}.unique()])
+        bounds.put("mimeType", [list : abstractImages.collect{it.mime?.mimeType}.unique()])
+
+        responseSuccess(bounds)
+    }
+
+
+    // as I have one field that I override differently if I am a manager, I overrided all the response method until the super method is more flexible
+    @Override
+    protected def response(data) {
+        withFormat {
+            json {
+                def result = data as JSON
+
+                boolean filterEnabled = false
+                Project project
+
+                if(params.project){
+                    project = Project.read(params.long("project"))
+                    filterEnabled = project.blindMode
+                } else if(params.id && params.action.GET != "windowUrl"){
+                    project = ImageInstance.read(params.long("id"))?.project
+                    if(project) filterEnabled = project.blindMode
+                }
+
+                if(filterEnabled){
+                    boolean manager = false
+                    if(project) {
+                        try{
+                            securityACLService.checkIsAdminContainer(project, cytomineService.currentUser)
+                            manager = true
+                        } catch(ForbiddenException e){}
+                    }
+
+                    JSONObject json = JSON.parse(result.toString())
+                    if(json.containsKey("collection")) {
+                        for(JSONObject element : json.collection) {
+                            filterOneElement(element, manager)
+                        }
+                    } else {
+                        filterOneElement(json, manager)
+                    }
+
+                    result = json as JSON
+                }
+
+                render result
+            }
+            jsonp {
+                response.contentType = 'application/javascript'
+                render "${params.callback}(${data as JSON})"
+            }
+        }
+    }
+
+
+    protected void filterOneElement(JSONObject element, boolean manager) {
+        if(!manager) {
+            element['instanceFilename'] = null
+            element['filename'] = null
+            element['originalFilename'] = null
+            element['path'] = null
+            element['fullPath'] = null
+        }
+    }
 
 }

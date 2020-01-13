@@ -16,7 +16,7 @@ package be.cytomine.test.http
 * limitations under the License.
 */
 
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.test.Infos
 import grails.converters.JSON
 

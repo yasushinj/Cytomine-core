@@ -114,6 +114,7 @@ class Term extends CytomineDomain implements Serializable, Comparable {
         domain.comment = JSONUtils.getJSONAttrStr(json,'comment')
         domain.color = JSONUtils.getJSONAttrStr(json,'color')
         domain.ontology = JSONUtils.getJSONAttrDomain(json, "ontology", new Ontology(), true)
+        domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
 
         if (!domain.name) {
             throw new WrongArgumentException("Term name cannot be null")

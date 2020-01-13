@@ -65,6 +65,12 @@ class RestUploadedFileController extends RestController {
             //if view is datatables, change way to store data
         } else if (params.datatables) {
             uploadedFiles = dataTablesService.process(params, UploadedFile, null, null, null)
+        } else if (params.detailed) {
+            String searchRequest = getSearchParameters().find {it.field == "originalFilename" && it.operator == "ilike"}?.values
+            searchRequest = searchRequest ? "%"+searchRequest+"%" : "%"
+
+            def result = dataTablesService.getUploadedFilesTable(params, searchRequest, null, params.order, params.sort)
+            uploadedFiles = [collection : result.data, size : result.total]
         } else {
             Boolean onlyRoots
             if(params.onlyRoots) {
@@ -75,9 +81,11 @@ class RestUploadedFileController extends RestController {
                 parent = Long.parseLong(params.parent)
             }
             if(params.all){
-                uploadedFiles = uploadedFileService.list()
+                def result = uploadedFileService.list()
+                uploadedFiles = [collection : result.data, size : result.total]
             } else {
-                uploadedFiles = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots)
+                def result = uploadedFileService.list((User)secUserService.getUser(cytomineService.getCurrentUser().id), parent, onlyRoots, params.sort, params.order, params.long('max'), params.long('offset'))
+                uploadedFiles = [collection : result.data, size : result.total]
             }
         }
 

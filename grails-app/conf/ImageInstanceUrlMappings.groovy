@@ -33,8 +33,11 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/next.$format"(controller: "restImageInstance"){
             action = [GET:"next"]
         }
-        "/api/user/$user/imageinstance/light.$format"(controller: "restImageInstance"){
+        "/api/user/$user/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByUser"]
+        }
+        "/api/user/$user/imageinstance/light.$format"(controller: "restImageInstance"){
+            action = [GET:"listLightByUser"]
         }
         "/api/imageinstance/$id/previous.$format"(controller: "restImageInstance"){
             action = [GET:"previous"]
@@ -54,7 +57,7 @@ class ImageInstanceUrlMappings {
         "/api/imageinstance/$id/associated/$label.$format"(controller: "restImageInstance"){
             action = [GET:"label"]
         }
-        "/api/project/$id/imageinstance.$format"(controller: "restImageInstance"){
+        "/api/project/$project/imageinstance.$format"(controller: "restImageInstance"){
             action = [GET:"listByProject"]
         }
 
@@ -84,6 +87,9 @@ class ImageInstanceUrlMappings {
         }
         "/api/imageinstance/$idImage/nested/$id.$format"(controller: "restNestedImageInstance"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]
+        }
+        "/api/project/$projectId/bounds/imageinstance.$format"(controller:"restImageInstance"){
+            action = [GET:"bounds"]
         }
     }
 }

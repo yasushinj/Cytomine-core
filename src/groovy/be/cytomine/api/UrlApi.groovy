@@ -1,5 +1,7 @@
 package be.cytomine.api
 
+import be.cytomine.image.AbstractImage
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -120,9 +122,18 @@ class UrlApi {
         return "${serverUrl()}/api/annotation/$idAnnotation/crop.$format" + (maxSize? "?maxSize=$maxSize" :"")
     }
 
-    static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null, def format="png") {
+    static def getCompleteAnnotationCropDrawedWithAnnotationId(Long idAnnotation, def maxSize = null) {
+        String params = (maxSize ? "maxSize=$maxSize&" : "") + "draw=true&complete=true"
+        return "${serverUrl()}/api/annotation/$idAnnotation/crop.png?" + params
+    }
+
+    static def getAssociatedImage(Long idAbstractImage, String label, def maxSize = null) {
+        if(label == "macro") {
+            AbstractImage abstractImage = AbstractImage.read(idAbstractImage)
+            if(["image/pyrtiff", "image/tiff", "image/tif", "image/jp2"].contains(abstractImage?.mimeType)) return null
+        }
         String size = maxSize ? "?maxWidth=$maxSize" : "";
-        return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label" + ".$format$size"
+        return "${serverUrl()}/api/abstractimage/$idAbstractImage/associated/$label" + ".png$size"
     }
 
     static def getThumbImage(Long idAbstractImage, def maxSize, def format="png") {
@@ -187,7 +198,7 @@ class UrlApi {
      * @return full cytomine url
      */
     static def getAnnotationURL(Long idProject, Long idImage, Long idAnnotation) {
-        return  "${serverUrl()}/#tabs-image-$idProject-$idImage-$idAnnotation"
+        return  "${UIUrl()}/#/project/$idProject/image/$idImage/annotation/$idAnnotation"
     }
 
     /**
@@ -198,11 +209,11 @@ class UrlApi {
      * @return full cytomine url
      */
     static def getBrowseImageInstanceURL(Long idProject, Long idImage) {
-        return  "${serverUrl()}/#tabs-image-$idProject-$idImage-"
+        return  "${UIUrl()}/#/project/$idProject/image/$idImage"
     }
 
     static def getDashboardURL(Long idProject) {
-        return  "${serverUrl()}/#tabs-dashboard-$idProject"
+        return  "${UIUrl()}/#/project/$idProject"
     }
 
     /**
@@ -217,5 +228,9 @@ class UrlApi {
 
     static def serverUrl() {
         Holders.getGrailsApplication().config.grails.serverURL
+    }
+
+    static def UIUrl() {
+        return Holders.getGrailsApplication().config.grails.UIURL?:serverUrl()
     }
 }

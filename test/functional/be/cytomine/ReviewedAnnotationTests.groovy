@@ -65,6 +65,23 @@ class ReviewedAnnotationTests  {
         assert json.total >= 0
     }
 
+    void testCountAnnotationByProject() {
+        def result = ReviewedAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationByProjectWithDates() {
+        Date startDate = new Date()
+        def result = ReviewedAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
     void testAddReviewedAnnotationCorrect() {
         def annotationToAdd = BasicInstanceBuilder.getReviewedAnnotationNotExist()
         def json = JSON.parse(annotationToAdd.encodeAsJSON())
@@ -588,6 +605,11 @@ class ReviewedAnnotationTests  {
         result = ReviewedAnnotationAPI.addReviewAnnotation(annotation.id, annotation.termsId(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         def json = JSON.parse(result.data)
         def idReviewAnnotation = json.reviewedannotation.id
+        assert 200 == result.code
+
+        annotation.refresh()
+        assert annotation.countReviewedAnnotations == 1
+        result = ReviewedAnnotationAPI.show(idReviewAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
         result = ReviewedAnnotationAPI.removeReviewAnnotation(annotation.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)

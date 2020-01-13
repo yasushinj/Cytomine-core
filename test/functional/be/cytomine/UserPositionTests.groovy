@@ -32,16 +32,49 @@ import grails.converters.JSON
 class UserPositionTests  {
 
 
-    void testListByUser() {
+    void testLastByUser() {
         def image = BasicInstanceBuilder.getImageInstance()
-       def result = UserPositionAPI.listLastByUser(image.id,BasicInstanceBuilder.user1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       assert 200 == result.code
-   }
+        def result = UserPositionAPI.listLastByUser(image.id,BasicInstanceBuilder.user1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
+
+    void testLastBroadcastByUser() {
+        def image = BasicInstanceBuilder.getImageInstance()
+        def json = "{image:${image.id},topLeftX:100, topLeftY:100, topRightX: 200, topRightY:100, bottomLeftX: 100, bottomLeftY : 200, bottomRightX : 200; bottomRightY : 200, zoom: 1}"
+        def result = UserPositionAPI.create(image.id, json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        Long creator = JSON.parse(result.data).user
+
+        result = UserPositionAPI.listLastByUser(image.id, creator, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true)
+        assert 200 == result.code
+        assert JSON.parse(result.data).id == null
+
+        json = "{image:${image.id},topLeftX:100, topLeftY:100, topRightX: 200, topRightY:100, bottomLeftX: 100, bottomLeftY : 200, bottomRightX : 200; bottomRightY : 200, zoom: 1, broadcast: true}"
+        UserPositionAPI.create(image.id, json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = UserPositionAPI.listLastByUser(image.id, creator, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true)
+        assert 200 == result.code
+        assert JSON.parse(result.data).id != null
+    }
 
     void testListByImage() {
         def image = BasicInstanceBuilder.getImageInstance()
         def result = UserPositionAPI.listLastByImage(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+    }
+
+    void testListBroadcastByImage() {
+        def image = BasicInstanceBuilder.getImageInstance()
+        def json = "{image:${image.id},topLeftX:100, topLeftY:100, topRightX: 200, topRightY:100, bottomLeftX: 100, bottomLeftY : 200, bottomRightX : 200; bottomRightY : 200, zoom: 1}"
+        UserPositionAPI.create(image.id, json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        def result = UserPositionAPI.listLastByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true)
+        assert 200 == result.code
+        assert JSON.parse(result.data).users.size() == 0
+
+        json = "{image:${image.id},topLeftX:100, topLeftY:100, topRightX: 200, topRightY:100, bottomLeftX: 100, bottomLeftY : 200, bottomRightX : 200; bottomRightY : 200, zoom: 1, broadcast: true}"
+        UserPositionAPI.create(image.id, json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = UserPositionAPI.listLastByImage(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, true)
+        assert 200 == result.code
+        assert JSON.parse(result.data).users.size() == 1
     }
 
     void testList() {

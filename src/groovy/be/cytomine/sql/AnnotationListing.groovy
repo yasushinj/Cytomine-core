@@ -59,6 +59,7 @@ abstract class AnnotationListing {
     def usersForTermAlgo = null
     def reviewUsers
     def terms = null
+    def tags = null
     def images = null
     def afterThan = null
     def beforeThan = null
@@ -67,6 +68,7 @@ abstract class AnnotationListing {
 
     def notReviewedOnly = false
     def noTerm = false
+    def noTag = false
     def noAlgoTerm = false
     def multipleTerm = false
 
@@ -182,6 +184,7 @@ abstract class AnnotationListing {
                         getUsersConst() +
                         getReviewUsersConst() +
                         getImagesConst() +
+                        getTagsConst() +
                         getImageConst() +
                         getTermConst() +
                         getTermsConst() +
@@ -200,8 +203,19 @@ abstract class AnnotationListing {
                         getMaxDistanceAnnotationConst() +
                         getBeforeThan() +
                         getAfterThan() +
+                        getNotDeleted() +
                         createOrderBy()
 
+        if(term || terms){
+            sqlColumns = sqlColumns.findAll{it.key != "term" && it.key != "annotationTerms" && it.key != "userTerm"}
+
+            return "SELECT DISTINCT a.*, at.term_id as term , at.id as annotationTerms, at.user_id as userTerm\n " +
+                    "FROM ("+
+                    getSelect(sqlColumns) + getFrom() + whereRequest +
+                    " ) a \n" +
+                    "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id " +
+                    "ORDER BY a.id DESC"
+        }
         return getSelect(sqlColumns) + getFrom() + whereRequest
 
     }
@@ -264,6 +278,16 @@ abstract class AnnotationListing {
             return (images ? "AND a.image_id IN (${images.join(",")})\n" : "")
         }
 
+    }
+
+    def getTagsConst() {
+        if (tags && noTag) {
+            return "AND (tda.tag_id IN (${tags.join(',')}) OR tda.tag_id IS NULL)\n"
+        } else if (tags) {
+            return "AND tda.tag_id IN (${tags.join(',')})\n"
+        } else {
+            return ""
+        }
     }
 
     def getImageConst() {
@@ -412,6 +436,9 @@ abstract class AnnotationListing {
             return ""
         }
     }
+    def getNotDeleted() {
+        return "AND a.deleted IS NULL\n"
+    }
 
     @Override
     public String toString(){
@@ -497,6 +524,7 @@ class UserAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
         if (multipleTerm) {
             from = "$from, annotation_term at, annotation_term at2 "
             where = "$where" +
@@ -550,7 +578,7 @@ class UserAnnotationListing extends AnnotationListing {
         if (orderByRate) {
             return "ORDER BY aat.rate desc"
         } else if (!orderBy) {
-            return "ORDER BY a.id desc " + (columnToPrint.contains("term") ? ", term " : "")
+            return "ORDER BY a.id desc " + ((term || terms || columnToPrint.contains("term")) ? ", at.term_id " : "")
         } else {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         }
@@ -636,6 +664,8 @@ class AlgoAnnotationListing extends AnnotationListing {
                     "AND u.job_id = j.id\n" +
                     "AND j.software_id = s.id\n"
         }
+
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }
@@ -764,6 +794,8 @@ class ReviewedAnnotationListing extends AnnotationListing {
             where = "$where AND a.user_id = u.id \n"
         }
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
+
         return from + "\n" + where
     }
 
@@ -827,7 +859,7 @@ class ReviewedAnnotationListing extends AnnotationListing {
         if (orderBy) {
             return "ORDER BY " + orderBy.collect { it.key + " " + it.value }.join(", ")
         } else {
-            return "ORDER BY a.id desc " + (columnToPrint.contains("term") ? ", term " : "")
+            return "ORDER BY a.id desc " + ((term || terms) ? ", at.term_id " : "")
         }
     }
 }
@@ -885,6 +917,8 @@ class RoiAnnotationListing extends AnnotationListing {
             from = "$from, sec_user u "
             where = "$where AND a.user_id = u.id \n"
         }
+
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }

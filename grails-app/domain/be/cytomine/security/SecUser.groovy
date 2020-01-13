@@ -56,6 +56,8 @@ class SecUser extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "If true, password is expired",useForCreation = false,presentInResponse = false)
     boolean passwordExpired
 
+    @RestApiObjectField(description = "The way this user was created.")
+    String origin
 
     @RestApiObjectFields(params=[
             @RestApiObjectField(apiFieldName = "algo", description = "If true, user is a userjob",allowedType = "boolean",useForCreation = false)
@@ -68,6 +70,7 @@ class SecUser extends CytomineDomain implements Serializable {
         newPassword(nullable : true, blank : false)
         publicKey nullable : true, blank : false, unique: true
         privateKey (nullable : true, blank : false)
+        origin (blank : false)
         id unique: true
     }
 
@@ -86,6 +89,7 @@ class SecUser extends CytomineDomain implements Serializable {
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['username'] = domain?.username
+        returnArray['origin'] = domain?.origin
         returnArray['algo'] = domain?.algo()
         returnArray
     }

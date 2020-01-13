@@ -1,5 +1,9 @@
 package be.cytomine.utils
 
+import be.cytomine.meta.AttachedFile
+import be.cytomine.meta.Configuration
+import be.cytomine.meta.Description
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -62,9 +66,9 @@ class RestUrlTests {
             [clazz:SearchEngineFilter, filters : []],
             [clazz:Group, filters : []],
             [clazz:User, filters : []],
-            [clazz:AttachedFile, filters : []],
+            [clazz:AttachedFile, filters: []],
             [clazz:Configuration, filters: []],
-            [clazz:Description, filters : []],
+            [clazz:Description, filters: []],
             [clazz:News, filters : []]
     ]
     def snake_case = [

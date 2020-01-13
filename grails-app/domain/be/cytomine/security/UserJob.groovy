@@ -28,9 +28,6 @@ class UserJob extends SecUser {
 
     def springSecurityService
 
-    /**
-     * Human user that launch algo
-     */
     @RestApiObjectField(description = "Human user that launch the job")
     User user
 

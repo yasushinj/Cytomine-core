@@ -35,8 +35,14 @@ class AnnotationActionAPI extends DomainAPI {
 
     static def listByImageAndUser(Long idImage,Long idUser, String username, String password, Long afterThan = null, Long beforeThan = null) {
         String URL = Infos.CYTOMINEURL + "/api/imageinstance/$idImage/annotationactions.json?user=$idUser&showDetails=true"
-        if(afterThan) URL += "&afterThan=$afterThan"
-        if(beforeThan) URL += "&beforeThan=$beforeThan"
+        if (afterThan) URL += "&afterThan=$afterThan"
+        if (beforeThan) URL += "&beforeThan=$beforeThan"
+    }
+
+    static def countByProject(Long id, String username, String password, Long startDate=null, Long endDate=null) {
+        String URL = Infos.CYTOMINEURL + "/api/project/$id/annotationaction/count.json?" +
+                (startDate ? "&startDate=$startDate" : "") +
+                (endDate ? "&endDate=$endDate" : "")
         return doGET(URL, username, password)
     }
 }

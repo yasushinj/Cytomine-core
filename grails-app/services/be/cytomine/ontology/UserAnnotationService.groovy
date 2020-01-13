@@ -22,6 +22,7 @@ import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
+import be.cytomine.meta.Property
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.server.RetrievalServer
 import be.cytomine.processing.Job
@@ -39,6 +40,7 @@ import com.vividsolutions.jts.io.ParseException
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
 import grails.converters.JSON
+import grails.transaction.Transactional
 import groovy.sql.Sql
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.hibernate.criterion.Restrictions
@@ -48,6 +50,7 @@ import org.hibernate.spatial.criterion.SpatialRestrictions
 import static org.springframework.security.acls.domain.BasePermission.READ
 
 //import org.hibernatespatial.criterion.SpatialRestrictions
+@Transactional
 class UserAnnotationService extends ModelService {
 
     static transactional = true
@@ -76,6 +79,7 @@ class UserAnnotationService extends ModelService {
         def annotation = UserAnnotation.read(id)
         if (annotation) {
             securityACLService.check(annotation.container(),READ)
+            checkDeleted(annotation)
         }
         annotation
     }
@@ -101,6 +105,14 @@ class UserAnnotationService extends ModelService {
     def count(User user, Project project = null) {
         if(project) return UserAnnotation.countByUserAndProject(user, project)
         return UserAnnotation.countByUser(user)
+    }
+
+    def countByProject(Project project, Date startDate, Date endDate) {
+        String request = "SELECT COUNT(*) FROM UserAnnotation WHERE project = $project.id " +
+                (startDate ? "AND created > '$startDate' " : "") +
+                (endDate ? "AND created < '$endDate' " : "")
+        def result = UserAnnotation.executeQuery(request)
+        return result[0]
     }
 
     /**
@@ -366,14 +378,14 @@ class UserAnnotationService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(UserAnnotation domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+        //We don't delete domain, we juste change a flag
+        def jsonNewData = JSON.parse(domain.encodeAsJSON())
+        jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()
-        //securityACLService.checkIsSameUserOrAdminContainer(domain,domain.user,currentUser)
         securityACLService.checkFullOrRestrictedForOwner(domain,domain.user)
-        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-        return executeCommand(c,domain,null)
-//        new Sql(dataSource).execute("delete from annotation_term where user_annotation_id=${domain.id}",[])
-//        new Sql(dataSource).execute("delete from user_annotation where id=${domain.id}",[])
-//        return [status:200,data:[]]
+        Command c = new EditCommand(user: currentUser, transaction: transaction)
+        c.delete = true
+        return executeCommand(c,domain,jsonNewData)
     }
 
     def abstractImageService
@@ -438,7 +450,7 @@ class UserAnnotationService extends ModelService {
     }
 
     def getStringParamsI18n(def domain) {
-        return [domain.user.toString(), domain.image?.getFileName()]
+        return [cytomineService.getCurrentUser().toString(), domain.image?.getFileName(), domain.user.toString()]
     }
 
 

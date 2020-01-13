@@ -57,6 +57,9 @@ class Project extends CytomineDomain implements Serializable {
     @RestApiObjectField(description = "Blind mode (if true, image filename are hidden)",mandatory = false)
     boolean blindMode = false
 
+    @RestApiObjectField(description = "Allow contributors to download image instances (if true, image can be downloaded)",mandatory = false)
+    boolean areImagesDownloadable = false
+
     /**
      * Number of projects user annotations
      */
@@ -127,6 +130,7 @@ class Project extends CytomineDomain implements Serializable {
     static constraints = {
         name(maxSize: 150, unique: true, blank: false)
         discipline(nullable: true)
+        ontology(nullable: true)
     }
 
     /**
@@ -179,13 +183,14 @@ class Project extends CytomineDomain implements Serializable {
 
         domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
         domain.name = JSONUtils.getJSONAttrStr(json, 'name',true)
-        domain.ontology = JSONUtils.getJSONAttrDomain(json, "ontology", new Ontology(), true)
+        domain.ontology = JSONUtils.getJSONAttrDomain(json, "ontology", new Ontology(), false)
         domain.discipline = JSONUtils.getJSONAttrDomain(json, "discipline", new Discipline(), false)
 
         domain.retrievalDisable = JSONUtils.getJSONAttrBoolean(json, 'retrievalDisable', false)
         domain.retrievalAllOntology = JSONUtils.getJSONAttrBoolean(json, 'retrievalAllOntology', true)
 
         domain.blindMode = JSONUtils.getJSONAttrBoolean(json, 'blindMode', false)
+        domain.areImagesDownloadable = JSONUtils.getJSONAttrBoolean(json, 'areImagesDownloadable', false)
         domain.created = JSONUtils.getJSONAttrDate(json, 'created')
         domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
         domain.deleted = JSONUtils.getJSONAttrDate(json, "deleted")
@@ -223,6 +228,7 @@ class Project extends CytomineDomain implements Serializable {
         returnArray['ontologyName'] = domain?.ontology?.name
         returnArray['discipline'] = domain?.discipline?.id
         returnArray['blindMode'] = (domain?.blindMode != null &&  domain?.blindMode)
+        returnArray['areImagesDownloadable'] = (domain?.areImagesDownloadable != null &&  domain?.areImagesDownloadable)
         returnArray['disciplineName'] = domain?.discipline?.name
         returnArray['numberOfSlides'] = domain?.countSamples()
         returnArray['numberOfImages'] = domain?.countImageInstance()

@@ -22,11 +22,13 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.SharedAnnotation
 import be.cytomine.ontology.Term
+import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Controller that handle request on annotation created by software (job)
@@ -79,6 +81,24 @@ class  RestAlgoAnnotationController extends RestController {
         else {
             responseNotFound("Annotation", params.id)
         }
+    }
+
+    /**
+     * Count annotations
+     */
+    @RestApiMethod(description="Count the number of annotation in the project")
+    @RestApiResponseObject(objectIdentifier = "[total:x]")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created after this date (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created before this date (optional)")
+    ])
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+        Date startDate = params.startDate ? new Date(params.long("startDate")) : null
+        Date endDate = params.endDate ? new Date(params.long("endDate")) : null
+        responseSuccess([total: algoAnnotationService.countByProject(project, startDate, endDate)])
     }
 
     /**
@@ -152,10 +172,15 @@ class  RestAlgoAnnotationController extends RestController {
             @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
             @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users)"),
             @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
-            @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
+            @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+            @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
+            @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)"),
     ])
     def downloadDocumentByProject() {
-        reportService.createAnnotationDocuments(params.long('id'),params.terms,params.noTerm,params.multipleTerms,params.users,params.images,params.format,response,"ALGOANNOTATION")
+        Long afterThan = params.getLong('afterThan')
+        Long beforeThan = params.getLong('beforeThan')
+        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.noTerm, params.multipleTerms,
+                params.users, params.images, afterThan, beforeThan, params.format, response, "ALGOANNOTATION")
     }
 
 

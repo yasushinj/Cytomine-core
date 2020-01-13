@@ -42,15 +42,30 @@ class StatsUrlMappings {
         "/api/project/$id/stats/annotationevolution.$format"(controller:"stats"){
             action = [GET:"statAnnotationEvolution"]
         }
+        "/api/project/$id/stats/algoannotationevolution.$format"(controller:"stats"){
+            action = [GET:"statAlgoAnnotationEvolution"]
+        }
+        "/api/project/$id/stats/reviewedannotationevolution.$format"(controller:"stats"){
+            action = [GET:"statReviewedAnnotationEvolution"]
+        }
+
+        "/api/project/$project/stats/annotationactionsevolution.$format"(controller:"stats"){
+            action = [GET:"statAnnotationActionsEvolution"]
+        }
 
         // term
         "/api/term/$id/project/stat.$format"(controller:"stats"){
             action = [GET:"statAnnotationTermedByProject"]
         }
         // social
-        // project connection
-        "/api/total/project/connections.$format"(controller:"stats") {
-            action = [GET:"totalNumberOfConnectionsByProject"]
+
+        "/api/project/$project/stats/connectionsevolution.$format"(controller:"stats") {
+            action = [GET:"statConnectionsEvolution"]
+        }
+
+        // image consultation
+        "/api/project/$project/stats/imageconsultationsevolution.$format"(controller:"stats") {
+            action = [GET:"statImageConsultationsEvolution"]
         }
 
         //image server
@@ -86,6 +101,11 @@ class StatsUrlMappings {
             action = [GET:"statRetrievalEvolutionByTerm"]
         }
 
+
+        // project connection
+        "/api/total/project/connections.$format"(controller:"stats") {
+            action = [GET:"totalNumberOfConnectionsByProject"]
+        }
         // global
         "/api/total/$domain.$format"(controller:"stats"){
             action = [GET:"totalDomains"]
@@ -96,7 +116,6 @@ class StatsUrlMappings {
         "/api/stats/currentStats.$format"(controller:"stats"){
             action = [GET:"statsOfCurrentActions"]
         }
-
 
     }
 }

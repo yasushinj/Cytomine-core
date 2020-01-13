@@ -34,8 +34,6 @@ class PersistentImageConsultation extends CytomineDomain {
 
     static transients = ['id','updated','deleted','class','extraProperties']
 
-    static belongsTo = [user : SecUser, image : ImageInstance, project: Project]
-
     @RestApiObjectField(description = "The user")
     Long user
     @RestApiObjectField(description = "The consulted image")
@@ -103,6 +101,7 @@ class PersistentImageConsultation extends CytomineDomain {
     public Object clone() {
         PersistentImageConsultation result = new PersistentImageConsultation()
         result.user = user;
+        result.project = project
         result.projectConnection = projectConnection;
         result.time = time;
         result.image = image;

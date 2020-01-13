@@ -1,5 +1,7 @@
 package be.cytomine
 
+import be.cytomine.meta.Property
+
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -23,7 +25,7 @@ import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.SearchAPI
-import be.cytomine.utils.Description
+import be.cytomine.meta.Description
 import grails.converters.JSON
 
 class SearchEngineTests {

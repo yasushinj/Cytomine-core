@@ -29,7 +29,8 @@ import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.User
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
+import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
@@ -121,7 +122,7 @@ class AbstractImageService extends ModelService {
 
         }
         if(project) {
-            TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProject(project).collect{it.baseImage.id})
+            TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProjectAndDeletedIsNull(project).collect{it.baseImage.id})
 
             def result = []
 
@@ -172,6 +173,7 @@ class AbstractImageService extends ModelService {
         securityACLService.checkAtLeastOne(image,WRITE)
         transactionService.start()
         SecUser currentUser = cytomineService.getCurrentUser()
+        def attributes = JSON.parse(image.encodeAsJSON())
         def res = executeCommand(new EditCommand(user: currentUser), image,jsonNewData)
         AbstractImage abstractImage = res.object
 
@@ -188,6 +190,62 @@ class AbstractImageService extends ModelService {
                 sai.save(flush:true,failOnError: true)
             }
         }
+        Integer magnification = JSONUtils.getJSONAttrInteger(attributes,'magnification',null)
+        Double resolution = JSONUtils.getJSONAttrDouble(attributes,"resolution",null)
+
+        boolean magnificationUpdated = magnification != abstractImage.magnification
+        boolean resolutionUpdated = resolution != abstractImage.resolution
+
+        def images = []
+        if(resolutionUpdated && magnificationUpdated ) {
+            if(resolution!= null && magnification!= null) {
+                images.addAll(ImageInstance.findAllByBaseImageAndResolutionAndMagnification(image,resolution, magnification))
+            } else if(resolution!= null) {
+                images.addAll(ImageInstance.findAllByBaseImageAndResolutionAndMagnificationIsNull(image,resolution))
+            } else if(magnification!= null) {
+                images.addAll(ImageInstance.findAllByBaseImageAndResolutionIsNullAndMagnification(image,magnification))
+            } else {
+                images.addAll(ImageInstance.findAllByBaseImageAndResolutionIsNullAndMagnificationIsNull(image))
+            }
+
+            images.each {
+                def json = JSON.parse(it.encodeAsJSON())
+                json.resolution = abstractImage.resolution
+                json.magnification = abstractImage.magnification
+                imageInstanceService.update(it, json)
+            }
+        }
+        //ii with same res & magn than ai were updated so we will fetch only ii with same res and different magn
+        if(resolutionUpdated) {
+            images = []
+            if(resolution!= null) {
+                images.addAll(ImageInstance.findAllByBaseImageAndResolution(image,resolution))
+            } else {
+                images.addAll(ImageInstance.findAllByBaseImageAndResolutionIsNull(image))
+            }
+
+            images.each {
+                def json = JSON.parse(it.encodeAsJSON())
+                json.resolution = abstractImage.resolution
+                imageInstanceService.update(it, json)
+            }
+
+        }
+        if(magnificationUpdated) {
+            images = []
+            if(magnification!= null) {
+                images.addAll(ImageInstance.findAllByBaseImageAndMagnification(image,magnification))
+            } else {
+                images.addAll(ImageInstance.findAllByBaseImageAndMagnificationIsNull(image))
+            }
+
+            images.each {
+                def json = JSON.parse(it.encodeAsJSON())
+                json.magnification = abstractImage.magnification
+                imageInstanceService.update(it, json)
+            }
+        }
+
         return res
     }
 
@@ -245,7 +303,7 @@ class AbstractImageService extends ModelService {
         } else{
             def instances = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain)
             throw new ForbiddenException("Abstract Image has instances in active projects : "+instances.collect{it.project.name}.join(",")
-                    +" with the following names : "+instances.collect{it.instanceFilename}.unique().join(","));
+                    +" with the following names : "+instances.collect{it.instanceFilename}.unique().join(","), [projectNames:instances.collect{it.project.name},imageNames:instances.collect{it.instanceFilename}.unique()]);
         }
     }
 
@@ -265,7 +323,8 @@ class AbstractImageService extends ModelService {
         String imageServerURL = abstractImage.getRandomImageServerURL()
         String fif = URLEncoder.encode(abstractImage.absolutePath, "UTF-8")
         String mimeType = abstractImage.mimeType
-        String url = "$imageServerURL/image/crop.$params.format?fif=$fif&mimeType=$mimeType"
+        String format = params.format
+        String url = "$imageServerURL/image/crop.$format?fif=$fif&mimeType=$mimeType"
 
         String query = params.collect { key, value ->
             if (value instanceof String)

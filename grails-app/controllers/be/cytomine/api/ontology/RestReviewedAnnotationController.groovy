@@ -26,11 +26,13 @@ import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.ReviewedAnnotation
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
+import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.utils.Task
 import grails.converters.JSON
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
+import static org.springframework.security.acls.domain.BasePermission.READ
 
 /**
  * Controller for reviewed annotation
@@ -70,6 +72,21 @@ class RestReviewedAnnotationController extends RestController {
     @RestApiResponseObject(objectIdentifier = "[total:x]")
     def countByUser() {
         responseSuccess([total:reviewedAnnotationService.count(cytomineService.currentUser)])
+    }
+
+    @RestApiMethod(description="Count the number of annotation in the project")
+    @RestApiResponseObject(objectIdentifier = "[total:x]")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created after this date (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY,description = "Only count the annotations created before this date (optional)")
+    ])
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+        Date startDate = params.startDate ? new Date(params.long("startDate")) : null
+        Date endDate = params.endDate ? new Date(params.long("endDate")) : null
+        responseSuccess([total: reviewedAnnotationService.countByProject(project, startDate, endDate)])
     }
 
     @RestApiMethod(description="Get the number of review for each user in an image")
@@ -495,12 +512,17 @@ class RestReviewedAnnotationController extends RestController {
     @RestApiParams(params=[
         @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The project id"),
         @RestApiParam(name="terms", type="list", paramType = RestApiParamType.QUERY,description = "The annotation terms id (if empty: all terms)"),
-        @RestApiParam(name="users", type="list", paramType = RestApiParamType.QUERY,description = "The annotation users id (if empty: all users)"),
+        @RestApiParam(name="reviewUsers", type="list", paramType = RestApiParamType.QUERY,description = "The annotation reviewers id (if empty: all users)"),
         @RestApiParam(name="images", type="list", paramType = RestApiParamType.QUERY,description = "The annotation images id (if empty: all images)"),
+        @RestApiParam(name="afterThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created before this date will not be returned"),
+        @RestApiParam(name="beforeThan", type="Long", paramType = RestApiParamType.QUERY, description = "(Optional) Annotations created after this date will not be returned"),
         @RestApiParam(name="format", type="string", paramType = RestApiParamType.QUERY,description = "The report format (pdf, xls,...)")
     ])
     def downloadDocumentByProject() {
-        reportService.createAnnotationDocuments(params.long('id'),params.terms,params.noTerm,params.multipleTerms,params.users,params.images,params.format,response,"REVIEWEDANNOTATION")
+        Long afterThan = params.getLong('afterThan')
+        Long beforeThan = params.getLong('beforeThan')
+        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.noTerm, params.multipleTerms,
+                params.reviewUsers, params.images, afterThan, beforeThan, params.format, response, "REVIEWEDANNOTATION")
     }
 
 

@@ -20,7 +20,9 @@ import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.ObjectNotFoundException
 import be.cytomine.api.RestController
 import be.cytomine.image.ImageInstance
+import be.cytomine.project.Project
 import be.cytomine.security.User
+import static org.springframework.security.acls.domain.BasePermission.READ
 import org.restapidoc.annotation.RestApi
 import org.restapidoc.annotation.RestApiMethod
 import org.restapidoc.annotation.RestApiParam
@@ -34,6 +36,8 @@ class RestAnnotationActionController extends RestController {
     def annotationActionService
     def imageInstanceService
     def secUserService
+    def projectService
+    def securityACLService
 
     @RestApiMethod(description="Record an action performed by a user on an annotation.")
     @RestApiParams(params=[
@@ -65,4 +69,22 @@ class RestAnnotationActionController extends RestController {
         Long beforeThan = params.long("beforeThan")
         responseSuccess(annotationActionService.list(image, user, afterThan, beforeThan))
     }
+
+    @RestApiMethod(description="Get the number of annotation actions in the specified project")
+    @RestApiParams(params=[
+            @RestApiParam(name="project", type="long", paramType = RestApiParamType.PATH, description = "The identifier of the project"),
+            @RestApiParam(name="startDate", type="long", paramType = RestApiParamType.QUERY, description = "Only actions after this date will be counted (optional)"),
+            @RestApiParam(name="endDate", type="long", paramType = RestApiParamType.QUERY, description = "Only actions before this date will be counted (optional)"),
+            @RestApiParam(name="type", type="string", paramType = RestApiParamType.QUERY, description = "(Optional) If specified, only annotation action of this type will be taken into account"),
+    ])
+    def countByProject() {
+        Project project = projectService.read(params.project)
+        securityACLService.check(project, READ)
+
+        Long startDate = params.long("startDate")
+        Long endDate = params.long("endDate")
+
+        responseSuccess(annotationActionService.countByProject(project, startDate, endDate, params.type))
+    }
+
 }

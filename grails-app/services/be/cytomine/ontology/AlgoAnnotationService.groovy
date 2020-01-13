@@ -19,6 +19,7 @@ package be.cytomine.ontology
 import be.cytomine.AnnotationDomain
 import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
+import be.cytomine.meta.Property
 import be.cytomine.image.ImageInstance
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
@@ -33,9 +34,12 @@ import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.ParseException
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.io.WKTWriter
+import grails.converters.JSON
+import grails.transaction.Transactional
 
 import static org.springframework.security.acls.domain.BasePermission.READ
 
+@Transactional
 class AlgoAnnotationService extends ModelService {
 
     static transactional = true
@@ -61,8 +65,17 @@ class AlgoAnnotationService extends ModelService {
         def annotation = AlgoAnnotation.read(id)
         if (annotation) {
             securityACLService.check(annotation.container(),READ)
+            checkDeleted(annotation)
         }
         annotation
+    }
+
+    def countByProject(Project project, Date startDate, Date endDate) {
+        String request = "SELECT COUNT(*) FROM AlgoAnnotation WHERE project = $project.id " +
+                (startDate ? "AND created > '$startDate' " : "") +
+                (endDate ? "AND created < '$endDate' " : "")
+        def result = AlgoAnnotation.executeQuery(request)
+        return result[0]
     }
 
     def list(Project project,def propertiesToShow = null) {
@@ -229,15 +242,19 @@ class AlgoAnnotationService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(AlgoAnnotation domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
+        //We don't delete domain, we juste change a flag
+        def jsonNewData = JSON.parse(domain.encodeAsJSON())
+        jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.checkIsCreator(domain,currentUser)
-        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
-        return executeCommand(c,domain,null)
+        Command c = new EditCommand(user: currentUser, transaction: transaction)
+        c.delete = true
+        return executeCommand(c,domain,jsonNewData)
     }
 
 
     def getStringParamsI18n(def domain) {
-        return [domain.user.toString(), domain.image?.baseImage?.filename]
+        return [cytomineService.getCurrentUser().toString(), domain.image?.getFileName(), domain.user.toString()]
     }
 
     def afterAdd(def domain, def response) {

@@ -1,5 +1,4 @@
 package be.cytomine
-
 /*
 * Copyright (c) 2009-2019. Authors: see NOTICE file.
 *
@@ -18,23 +17,17 @@ package be.cytomine
 
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.server.Storage
-import be.cytomine.ontology.Property
+import be.cytomine.meta.Property
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AbstractImageAPI
+import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.utils.UpdateData
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 
-/**
- * Created by IntelliJ IDEA.
- * User: lrollus
- * Date: 16/02/11
- * Time: 13:49
- * To change this template use File | Settings | File Templates.
- */
 class AbstractImageTests {
 
     void testListImages() {
@@ -179,6 +172,65 @@ class AbstractImageTests {
       json = JSON.parse(showResult.data)
       BasicInstanceBuilder.compare(data.mapNew, json)
   }
+
+    void testEditMagnification() {
+
+        def ai = BasicInstanceBuilder.getAbstractImageNotExist(true)
+        def ii = BasicInstanceBuilder.getImageInstanceNotExist(BasicInstanceBuilder.getProject(), false)
+        ii.baseImage = ai
+        ii.save(true)
+
+        assert ii.resolution == ai.resolution
+        assert ii.magnification == ai.magnification
+
+        def updatedImage = JSON.parse((String)ai.encodeAsJSON())
+        updatedImage.resolution = 2.5d
+        updatedImage.magnification = 20
+        def result = AbstractImageAPI.update(ai.id, updatedImage.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.abstractimage.resolution == 2.5
+        assert json.abstractimage.magnification == 20
+        updatedImage = json.abstractimage
+
+        result = ImageInstanceAPI.show(ii.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.resolution == 2.5
+        assert json.magnification == 20
+
+        json.magnification = 40
+
+        result = ImageInstanceAPI.update(ii.id, json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.imageinstance.resolution == 2.5
+        assert json.imageinstance.magnification == 40
+
+        updatedImage.resolution = 6
+        updatedImage.magnification = 10
+        result = AbstractImageAPI.update(ai.id, updatedImage.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.abstractimage.resolution == 6
+        assert json.abstractimage.magnification == 10
+
+
+        result = ImageInstanceAPI.show(ii.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+
+        assert json.resolution == 6
+        assert json.magnification == 40
+    }
+
 
   void testDeleteImage()  {
       def imageToDelete = BasicInstanceBuilder.getAbstractImage()

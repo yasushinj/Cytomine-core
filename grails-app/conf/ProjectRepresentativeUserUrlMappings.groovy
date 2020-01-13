@@ -18,7 +18,7 @@ class ProjectRepresentativeUserUrlMappings {
 
     static mappings = {
         "/api/project/$idProject/representative.$format"(controller:"restProjectRepresentativeUser"){
-            action = [GET: "listByProject",POST:"add"]
+            action = [GET: "listByProject",POST:"add", DELETE:"delete"]
         }
         "/api/project/$idProject/representative/$id.$format"(controller:"restProjectRepresentativeUser"){
             action = [GET:"show", DELETE:"delete"]

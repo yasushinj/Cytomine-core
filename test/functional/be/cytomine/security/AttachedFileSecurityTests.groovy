@@ -21,12 +21,13 @@ import be.cytomine.ontology.UserAnnotation
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
+import be.cytomine.test.http.AbstractImageAPI
 import be.cytomine.test.http.AttachedFileAPI
 import be.cytomine.test.http.ImageInstanceAPI
 import be.cytomine.test.http.JobAPI
 import be.cytomine.test.http.ProjectAPI
 import be.cytomine.test.http.UserAnnotationAPI
-import be.cytomine.utils.AttachedFile
+import be.cytomine.meta.AttachedFile
 import com.mongodb.util.JSON
 
 class AttachedFileSecurityTests extends SecurityTestsAbstract{
@@ -255,9 +256,17 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         assert 200 == result.code
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
+        result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
 
         project.mode = Project.EditingMode.READ_ONLY
         BasicInstanceBuilder.saveDomain(project)
+
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 403 == result.code
 
         result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
@@ -269,12 +278,19 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         project.mode = Project.EditingMode.RESTRICTED
         BasicInstanceBuilder.saveDomain(project)
 
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
         result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
+        assert 200 == result.code
+
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
 
         project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
@@ -403,29 +419,41 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
 
-        project.mode = Project.EditingMode.RESTRICTED
-        BasicInstanceBuilder.saveDomain(project)
-
-        result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-        result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 200 == result.code
-        result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
-        assert 403 == result.code
-
         project.mode = Project.EditingMode.READ_ONLY
         BasicInstanceBuilder.saveDomain(project)
 
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 403 == result.code
         result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 403 == result.code
+
+        project.mode = Project.EditingMode.RESTRICTED
+        BasicInstanceBuilder.saveDomain(project)
+
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
+        result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
 
         project.mode = Project.EditingMode.CLASSIC
         BasicInstanceBuilder.saveDomain(project)
 
+        result = AttachedFileAPI.upload(attachedFile.domainClassName,attachedFile.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        idAttachedFile = JSON.parse(result.data).id
+        result = AttachedFileAPI.download(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        result = AttachedFileAPI.show(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
 
@@ -506,6 +534,36 @@ class AttachedFileSecurityTests extends SecurityTestsAbstract{
         result = AttachedFileAPI.delete(idAttachedFile,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2)
         assert 200 == result.code
 
+    }
+
+    void testAbstractImageAttachedFile() {
+        //Get user1
+        User user1 = getUser1()
+
+        //Get user2
+        User user2 = getUser2()
+
+        def abstractImage = BasicInstanceBuilder.getAbstractImageNotExist(true)
+        def result = AbstractImageAPI.create(BasicInstanceBuilder.getAbstractImageNotExist().encodeAsJSON(), USERNAME1, PASSWORD1)
+        assert 200 == result.code
+        abstractImage = result.data
+
+        def attachedFileToAdd = BasicInstanceBuilder.getAttachedFileNotExist(false)
+        attachedFileToAdd.domainClassName = abstractImage.class.name
+        attachedFileToAdd.domainIdent = abstractImage.id
+
+        result = AttachedFileAPI.upload(attachedFileToAdd.domainClassName,attachedFileToAdd.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),USERNAME2, PASSWORD2)
+        assert 403 == result.code
+
+        result = AttachedFileAPI.upload(attachedFileToAdd.domainClassName,attachedFileToAdd.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),USERNAME1, PASSWORD1)
+        assert 403 == result.code
+
+        abstractImage = AbstractImageAPI.buildBasicAbstractImage(USERNAME1, PASSWORD1)
+        attachedFileToAdd.domainClassName = abstractImage.class.name
+        attachedFileToAdd.domainIdent = abstractImage.id
+
+        result = AttachedFileAPI.upload(attachedFileToAdd.domainClassName,attachedFileToAdd.domainIdent,new File("test/functional/be/cytomine/utils/simpleFile.txt"),USERNAME1, PASSWORD1)
+        assert 200 == result.code
     }
 
 }
