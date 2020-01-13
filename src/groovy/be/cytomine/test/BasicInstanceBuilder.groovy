@@ -762,6 +762,9 @@ class BasicInstanceBuilder {
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            UploadedFile uf = getUploadedFileNotExist()
+            uf.image = image
+            saveDomain(uf)
             return image
         } else {
             checkDomain(image)
