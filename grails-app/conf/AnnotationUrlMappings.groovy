@@ -225,14 +225,14 @@ class AnnotationUrlMappings {
         /**
          * Tracking
          */
-        "/api/annotationaction.$format"(controller: "restAnnotationAction"){
+        "/api/annotation_action.$format"(controller: "restAnnotationAction"){
             action = [POST:"add"]
         }
-        "/api/imageinstance/$image/annotationactions.$format" (controller : "restAnnotationAction") {
+        "/api/imageinstance/$image/annotation_action.$format" (controller : "restAnnotationAction") {
             action = [GET:"list"]
         }
 
-        "/api/project/$project/annotationaction/count.$format"(controller: "restAnnotationAction"){
+        "/api/project/$project/annotation_action/count.$format"(controller: "restAnnotationAction"){
             action = [GET:"countByProject"]
         }
     }

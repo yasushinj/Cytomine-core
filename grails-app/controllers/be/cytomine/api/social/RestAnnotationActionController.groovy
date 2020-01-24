@@ -29,6 +29,8 @@ import org.restapidoc.annotation.RestApiParam
 import org.restapidoc.annotation.RestApiParams
 import org.restapidoc.pojo.RestApiParamType
 
+import static org.springframework.security.acls.domain.BasePermission.WRITE
+
 
 @RestApi(name = "Social | annotation action services", description = "Methods to manage actions performed on annotations")
 class RestAnnotationActionController extends RestController {
@@ -62,6 +64,7 @@ class RestAnnotationActionController extends RestController {
     ])
     def list() {
         ImageInstance image = imageInstanceService.read(params.image)
+        securityACLService.checkIsAdminContainer(image)
         User user = secUserService.read(params.user)
         if(params.user != null && user == null) throw new ObjectNotFoundException("Invalid user")
 
@@ -79,7 +82,7 @@ class RestAnnotationActionController extends RestController {
     ])
     def countByProject() {
         Project project = projectService.read(params.project)
-        securityACLService.check(project, READ)
+        securityACLService.check(project, WRITE)
 
         Long startDate = params.long("startDate")
         Long endDate = params.long("endDate")

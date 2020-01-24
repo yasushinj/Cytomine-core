@@ -42,7 +42,6 @@ class AnnotationActionService extends ModelService {
     }
 
     def list(ImageInstance image, User user, Long afterThan = null, Long beforeThan = null) {
-        securityACLService.check(image, WRITE)
         return AnnotationAction.createCriteria().list(sort: "created", order: "asc") {
             if (user) eq("user", user)
             eq("image", image)

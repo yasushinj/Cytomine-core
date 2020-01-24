@@ -40,6 +40,7 @@ import be.cytomine.project.ProjectDefaultLayer
 import be.cytomine.project.ProjectRepresentativeUser
 import be.cytomine.search.SearchEngineFilter
 import be.cytomine.security.*
+import be.cytomine.social.AnnotationAction
 import be.cytomine.social.LastUserPosition
 import be.cytomine.social.PersistentImageConsultation
 import be.cytomine.social.PersistentProjectConnection
@@ -1895,6 +1896,14 @@ class BasicInstanceBuilder {
                 imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
                 project: image.project.id)
         insert ? insertDomain(consult) : checkDomain(consult)
+    }
+
+    static AnnotationAction getAnnotationActionNotExist(UserAnnotation annot, boolean insert = false) {
+        AnnotationAction action = new AnnotationAction(image : annot.image.id, action: "TEST",
+                annotationIdent: annot.id, annotationClassName: annot.getClass().name,
+                annotationCreator: annot.user, project: annot.project,
+                user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id)
+        insert ? insertDomain(action) : checkDomain(action)
     }
 
     static PersistentUserPosition getPersistentUserPosition(ImageInstance image, User user, boolean insert = false){
