@@ -41,14 +41,7 @@ import grails.util.Environment
 import grails.util.Holders
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
-import org.json.simple.JSONObject
 
-/**
- * Cytomine
- * User: stevben
- * Date: 13/03/13
- * Time: 11:59
- */
 class BootstrapUtilsService {
 
     def cytomineService

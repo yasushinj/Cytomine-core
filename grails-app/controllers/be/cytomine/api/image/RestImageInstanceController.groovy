@@ -503,7 +503,7 @@ class RestImageInstanceController extends RestController {
         Project project = imageInstance.project
 
         boolean canDownload = project.areImagesDownloadable
-        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage)
+        String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage, parent)
 
         if(!canDownload) securityACLService.checkIsAdminContainer(project)
 
