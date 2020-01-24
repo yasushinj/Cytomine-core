@@ -45,6 +45,7 @@ import grails.plugin.springsecurity.acl.AclSid
 import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 import org.apache.commons.collections.ListUtils
+import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.util.ReflectionUtils
 
@@ -242,14 +243,21 @@ class SecUserService extends ModelService {
     def lock(SecUser user){
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(!user.enabled) throw new InvalidRequestException("User already locked !")
-        user.enabled = false
-        user.save(failOnError: true)
+        def json = user.encodeAsJSON()
+        json = new JSONObject(json)
+        json.enabled = false
+
+        return executeCommand(new EditCommand(user: cytomineService.currentUser),user, json)
+
     }
     def unlock(SecUser user){
         securityACLService.checkAdmin(cytomineService.currentUser)
         if(user.enabled) throw new InvalidRequestException("User already unlocked !")
-        user.enabled = true
-        user.save(failOnError: true)
+        def json = user.encodeAsJSON()
+        json = new JSONObject(json)
+        json.enabled = true
+
+        return executeCommand(new EditCommand(user: cytomineService.currentUser),user, json)
     }
 
     def listWithRoles() {

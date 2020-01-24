@@ -341,7 +341,7 @@ class RestUserController extends RestController {
     ])
     def lock() {
         SecUser user = SecUser.get(params.id)
-        response(secUserService.lock(user))
+        responseResult(secUserService.lock(user))
     }
 
     @RestApiMethod(description="Unlock an user")
@@ -350,7 +350,7 @@ class RestUserController extends RestController {
     ])
     def unlock() {
         SecUser user = SecUser.get(params.id)
-        response(secUserService.unlock(user))
+        responseResult(secUserService.unlock(user))
     }
 
 
