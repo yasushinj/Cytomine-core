@@ -83,26 +83,27 @@ class DisciplineTests  {
 
   void testUpdateDisciplineCorrect() {
       def discipline = BasicInstanceBuilder.getDiscipline()
-      def data = UpdateData.createUpdateSet(discipline,[name: ["OLDNAME","NEWNAME"]])
+      def data = UpdateData.createUpdateSet(discipline,[name: [discipline.name,"NEWNAME"]])
       def result = DisciplineAPI.update(discipline.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
       def json = JSON.parse(result.data)
       assert json instanceof JSONObject
       int idDiscipline = json.discipline.id
 
-      def showResult = DisciplineAPI.show(idDiscipline, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      json = JSON.parse(showResult.data)
+      result = DisciplineAPI.show(idDiscipline, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      json = JSON.parse(result.data)
       BasicInstanceBuilder.compare(data.mapNew, json)
 
-      showResult = DisciplineAPI.undo()
+      result = DisciplineAPI.undo()
       assert 200 == result.code
-      showResult = DisciplineAPI.show(idDiscipline, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      BasicInstanceBuilder.compare(data.mapOld, JSON.parse(showResult.data))
+      result = DisciplineAPI.show(idDiscipline, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      BasicInstanceBuilder.compare(data.mapOld, JSON.parse(result.data))
 
-      showResult = DisciplineAPI.redo()
+
+      result = DisciplineAPI.redo()
       assert 200 == result.code
-      showResult = DisciplineAPI.show(idDiscipline, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      BasicInstanceBuilder.compare(data.mapNew, JSON.parse(showResult.data))
+      result = DisciplineAPI.show(idDiscipline, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      BasicInstanceBuilder.compare(data.mapNew, JSON.parse(result.data))
   }
 
   void testUpdateDisciplineNotExist() {
@@ -150,8 +151,8 @@ class DisciplineTests  {
       def result = DisciplineAPI.delete(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
 
-      def showResult = DisciplineAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 404 == showResult.code
+      result = DisciplineAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      assert 404 == result.code
 
       result = DisciplineAPI.undo()
       assert 200 == result.code

@@ -133,19 +133,19 @@ class TermTests  {
        assert json instanceof JSONObject
        int idTerm = json.term.id
  
-       def showResult = TermAPI.show(idTerm, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       json = JSON.parse(showResult.data)
+       result = TermAPI.show(idTerm, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+       json = JSON.parse(result.data)
        BasicInstanceBuilder.compare(data.mapNew, json)
- 
-       showResult = TermAPI.undo()
+
+       result = TermAPI.undo()
        assert 200 == result.code
-       showResult = TermAPI.show(idTerm, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       BasicInstanceBuilder.compare(data.mapOld, JSON.parse(showResult.data))
- 
-       showResult = TermAPI.redo()
+       result = TermAPI.show(idTerm, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+       BasicInstanceBuilder.compare(data.mapOld, JSON.parse(result.data))
+
+       result = TermAPI.redo()
        assert 200 == result.code
-       showResult = TermAPI.show(idTerm, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-       BasicInstanceBuilder.compare(data.mapNew, JSON.parse(showResult.data))
+       result = TermAPI.show(idTerm, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+       BasicInstanceBuilder.compare(data.mapNew, JSON.parse(result.data))
    }
  
    void testUpdateTermNotExist() {

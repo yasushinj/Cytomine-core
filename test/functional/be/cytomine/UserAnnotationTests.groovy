@@ -262,41 +262,41 @@ class UserAnnotationTests  {
 
         Long commandId = JSON.parse(result.data).command
 
-        def showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        json = JSON.parse(showResult.data)
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        json = JSON.parse(result.data)
         BasicInstanceBuilder.compare(data.mapNew, json)
 
-        showResult = UserAnnotationAPI.undo()
+        result = UserAnnotationAPI.undo()
         assert 200 == result.code
-        showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        BasicInstanceBuilder.compare(data.mapOld, JSON.parse(showResult.data))
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        BasicInstanceBuilder.compare(data.mapOld, JSON.parse(result.data))
 
-        showResult = UserAnnotationAPI.redo()
+        result = UserAnnotationAPI.redo()
         assert 200 == result.code
-        showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(showResult.data))
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(result.data))
 
         result = UserAnnotationAPI.create(BasicInstanceBuilder.getUserAnnotationNotExist().encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
 
-        showResult = UserAnnotationAPI.undo()
+        result = UserAnnotationAPI.undo()
         assert 200 == result.code
-        showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(showResult.data))
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(result.data))
 
-        showResult = UserAnnotationAPI.redo()
+        result = UserAnnotationAPI.redo()
         assert 200 == result.code
-        showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(showResult.data))
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(result.data))
 
-        showResult = UserAnnotationAPI.undo(commandId)
+        result = UserAnnotationAPI.undo(commandId)
         assert 200 == result.code
-        showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        BasicInstanceBuilder.compare(data.mapOld, JSON.parse(showResult.data))
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        BasicInstanceBuilder.compare(data.mapOld, JSON.parse(result.data))
 
-        showResult = UserAnnotationAPI.redo(commandId)
+        result = UserAnnotationAPI.redo(commandId)
         assert 200 == result.code
-        showResult = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(showResult.data))
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        BasicInstanceBuilder.compare(data.mapNew, JSON.parse(result.data))
     }
 
     void testEditUserAnnotationOutOfBoundsGeom() {
