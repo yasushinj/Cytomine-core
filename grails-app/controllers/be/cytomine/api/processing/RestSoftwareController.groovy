@@ -150,9 +150,9 @@ class RestSoftwareController extends RestController {
                 String filename = ((AbstractMultipartHttpServletRequest) request).getParameter('filename')
                 if(!filename) filename = f.originalFilename
 
-                String sourcePath = grailsApplication.config.cytomine.software.path.softwareSources+"/"+software.id+"/"+filename
-                File source = new File(sourcePath)
-                if(!source.parentFile.exists()) println(source.parentFile.mkdir())
+                String sourcePath = software.id+"/"+filename
+                File source = new File((grailsApplication.config.cytomine.software.path.softwareSources as String)+"/"+sourcePath)
+                if(!source.parentFile.exists()) source.parentFile.mkdir()
                 f.transferTo(source)
 
                 log.info "Upload $filename for domain software with id = $id at ${source.path}"
@@ -196,7 +196,9 @@ class RestSoftwareController extends RestController {
             if(u.isAbsolute()) {
                 redirect (url : u)
             } else {
-                String softwaresPath = grailsApplication.config.cytomine.software.path.softwareSources+"/"+software.id +"/" + software.version+ ".zip"
+                String globalFilePath = grailsApplication.config.cytomine.software.path.softwareSources
+                String softwaresPath = globalFilePath+"/"+software.sourcePath
+
                 File f = new File(softwaresPath)
 
                 if(!f.exists()) {
