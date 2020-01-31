@@ -186,6 +186,10 @@ class BootStrap {
             }
         }
 
+        def softwareSourceDirectory = new File(grailsApplication.config.cytomine.software.path.softwareSources as String)
+        if (!softwareSourceDirectory.exists()) softwareSourceDirectory.mkdirs()
+
+
         log.info "init change for old version..."
         // TODO : delete this sql in v2.1
         exists = new Sql(dataSource).rows("SELECT column_name " +
