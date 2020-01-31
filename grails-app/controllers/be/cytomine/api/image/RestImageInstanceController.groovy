@@ -114,10 +114,14 @@ class RestImageInstanceController extends RestController {
     ])
     def listByProject() {
         Project project = projectService.read(params.long('project'))
+        boolean light = params.getBoolean("light")
         if (params.datatables) {
             def where = "project_id = ${project.id}"
             def fieldFormat = []
             responseSuccess(dataTablesService.process(params, ImageInstance, where, fieldFormat,project))
+        }
+        else if (project && light) {
+            responseSuccess(imageInstanceService.listLight(project))
         }
         else if (project && !params.tree) {
             String sortColumn = params.sort ?: "created"
@@ -126,7 +130,6 @@ class RestImageInstanceController extends RestController {
             if(params.withLastActivity) extended.put("withLastActivity",params.withLastActivity)
             def imageList
             if(extended.isEmpty()) {
-                boolean light = params.getBoolean("light")
                 def result = imageInstanceService.list(project, sortColumn, sortDirection, searchParameters, params.long('max'), params.long('offset'), light)
                 imageList = [collection : result.data, size : result.total]
             } else {
