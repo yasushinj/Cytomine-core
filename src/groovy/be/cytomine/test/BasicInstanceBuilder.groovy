@@ -1,7 +1,7 @@
 package be.cytomine.test
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -762,6 +762,9 @@ class BasicInstanceBuilder {
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            UploadedFile uf = getUploadedFileNotExist()
+            uf.image = image
+            saveDomain(uf)
             return image
         } else {
             checkDomain(image)

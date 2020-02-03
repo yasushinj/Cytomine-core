@@ -1,7 +1,7 @@
 package be.cytomine.api.image
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -498,12 +498,19 @@ class RestImageInstanceController extends RestController {
     def download() {
         Long id = params.long("id")
         ImageInstance imageInstance = imageInstanceService.read(id)
+        securityACLService.check(imageInstance, READ)
+        Project project = imageInstance.project
+
+        boolean canDownload = project.areImagesDownloadable
         String downloadURL = abstractImageService.downloadURI(imageInstance.baseImage)
+
+        if(!canDownload) securityACLService.checkIsAdminContainer(project)
+
         if (downloadURL) {
             log.info "redirect $downloadURL"
             redirect (url : downloadURL)
         } else
-            responseNotFound("Download link for", id)
+            responseNotFound("Download link for Image Instance", id)
     }
 
     /*def metadata() {

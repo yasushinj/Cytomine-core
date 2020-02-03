@@ -1,7 +1,7 @@
 package be.cytomine.utils.security
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -316,7 +316,7 @@ class SecurityACLService {
         }
     }
 
-    public def checkIsAdminContainer(CytomineDomain domain,SecUser currentUser) {
+    public def checkIsAdminContainer(CytomineDomain domain,SecUser currentUser = null) {
         if (domain) {
             if (!domain.container().checkPermission(ADMINISTRATION,currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser))) {
                 throw new ForbiddenException("You don't have the right to do this. You must be the creator or the container admin")
