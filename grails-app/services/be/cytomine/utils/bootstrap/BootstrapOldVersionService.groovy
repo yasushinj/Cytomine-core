@@ -79,23 +79,13 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(grailsApplication.metadata.'app.version')
     }
 
-    void initv2_0_1() {
-        log.info "2.0.1"
+    void initv2_1_0() {
+        log.info "2.1.0"
         new Sql(dataSource).executeUpdate("ALTER TABLE version DROP COLUMN IF EXISTS number;")
     }
 
-    void initv1_9_9() {
-        log.info "1.9.9"
-        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
-            systemUser.origin = "SYSTEM"
-            systemUser.save();
-        }
-
-        new Sql(dataSource).executeUpdate("UPDATE sec_user SET origin = 'BOOTSTRAP' WHERE origin IS NULL;")
-    }
-
-    void initv1_2_2() {
-        log.info "1.2.2"
+    void initv2_0_0() {
+        log.info "2.0.0"
         new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
 
         new Sql(dataSource).executeUpdate("UPDATE sec_user SET language = 'ENGLISH';")
@@ -112,6 +102,12 @@ class BootstrapOldVersionService {
         db.annotationAction.update([:], [$set:[annotationClassName: 'be.cytomine.ontology.UserAnnotation']], false, true)
         db.annotationAction.update([:], [$unset:[annotation:'']], false, true)
 
+        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
+            systemUser.origin = "SYSTEM"
+            systemUser.save();
+        }
+
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET origin = 'BOOTSTRAP' WHERE origin IS NULL;")
     }
 
     void initv1_2_1() {
