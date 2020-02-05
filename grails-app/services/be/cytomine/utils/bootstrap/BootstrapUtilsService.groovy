@@ -195,16 +195,6 @@ class BootstrapUtilsService {
         //Default project values
         //configs << new Configuration(key: , value: , readingRole: )
 
-        //LDAP values
-        configs << new Configuration(key: "ldap_active", value: grailsApplication.config.grails.plugin.springsecurity.ldap.active, readingRole: allUsers)
-        if(grailsApplication.config.grails.plugin.springsecurity.ldap.active) {
-            configs << new Configuration(key: "ldap_context_server", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.server, readingRole: adminRole)
-            configs << new Configuration(key: "ldap_search_base", value: grailsApplication.config.grails.plugin.springsecurity.ldap.search.base, readingRole: adminRole)
-            configs << new Configuration(key: "ldap_context_managerDn", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerDn, readingRole: adminRole)
-            configs << new Configuration(key: "ldap_context_managerPassword", value: grailsApplication.config.grails.plugin.springsecurity.ldap.context.managerPassword, readingRole: adminRole)
-            //grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
-        }
-        
 
         configs.each { config ->
             if (config.validate()) {

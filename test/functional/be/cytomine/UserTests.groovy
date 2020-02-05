@@ -593,12 +593,6 @@ class UserTests  {
         assert 200 == UserAPI.signature(user.username,"newpassword").code
     }
 
-//    void testLDAP() {
-//        def result = UserAPI.isInLDAP("u212435",Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-//        assert 200 == result.code
-//        assert true == JSON.parse(result.data).result
-//    }
-
     void testListUsersWithLastActivity(){
         def connection = BasicInstanceBuilder.getProjectConnection(true)
 

@@ -232,11 +232,6 @@ class UserAPI extends DomainAPI {
 //        return doGET(URL,username, password)
 //    }
 
-    static def isInLDAP(String usernameToAsk,String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/ldap/${usernameToAsk}/user.json"
-        return doGET(URL, username, password)
-    }
-
     static def listUsersWithLastActivity(Long idProject, Long max = 0, Long offset = 0, String username, String password) {
         String URL = Infos.CYTOMINEURL + "api/project/${idProject}/usersActivity.json?max=$max&offset=$offset"
         return doGET(URL, username, password)

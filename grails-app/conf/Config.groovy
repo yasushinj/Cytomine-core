@@ -260,57 +260,8 @@ grails.plugin.springsecurity.interceptUrlMap = [
 grails.plugin.springsecurity.rejectIfNoRule = false
 grails.plugin.springsecurity.fii.rejectPublicInvocations = false
 
-/* Read CAS/LDAP config. A bad thing with Grails external config is that all config data from config properties file
-   is set AFTER ldap/cas config. So we read config data from file directly and we force flag (active)
-   def flag = readFromConfigFile()
-   if(flag) grails.config.flag = true
- */
-
-File configFile = new File("${userHome}/.grails/cytomineconfig.groovy")
-
-boolean cas = false
-println "${configFile.path}="+configFile.exists()
-if(configFile.exists()) {
-    config = new ConfigSlurper().parse(configFile.text)
-    println config
-    cas = config.grails.plugin.springsecurity.cas.active
-}
-
-println "cas.active="+cas
-if(cas) {
-    println("enable CAS")
-    grails.plugin.springsecurity.cas.useSingleSignout = true
-    grails.plugin.springsecurity.cas.active = true
-    grails.plugin.springsecurity.ldap.active = true
-    grails.plugin.springsecurity.logout.afterLogoutUrl =''
-
-} else {
-    println("disable CAS")
-    grails.plugin.springsecurity.cas.useSingleSignout = false
-    grails.plugin.springsecurity.cas.active = false
-    grails.plugin.springsecurity.ldap.active = false
-    grails.plugin.springsecurity.interceptUrlMap.remove('/*')
-}
-grails.plugin.springsecurity.cas.loginUri = '/login'
-grails.plugin.springsecurity.cas.serverUrlPrefix = ''
-
 //allow an admin to connect as a other user
 grails.plugin.springsecurity.useSwitchUserFilter = true
-
-grails.plugin.springsecurity.cas.serviceUrl = 'http://localhost:8080/j_spring_cas_security_check'
-
-// LDAP Configuration
-grails.plugin.springsecurity.auth.loginFormUrl = '/'
-grails.plugin.springsecurity.ldap.search.base = ''
-grails.plugin.springsecurity.ldap.context.managerDn = ''
-grails.plugin.springsecurity.ldap.context.managerPassword = ''
-grails.plugin.springsecurity.ldap.context.server = ''
-grails.plugin.springsecurity.ldap.authorities.groupSearchBase = ''
-grails.plugin.springsecurity.ldap.mapper.userDetailsClass= 'inetOrgPerson'// 'org.springframework.security.ldap.userdetails.InetOrgPerson'
-grails.plugin.springsecurity.ldap.mapper.usePassword= true
-grails.plugin.springsecurity.ldap.authorities.ignorePartialResultException = true
-grails.plugin.springsecurity.ldap.authorities.retrieveDatabaseRoles = true
-grails.plugin.springsecurity.ldap.context.anonymousReadOnly = true
 
 
 // Added by the Spring Security Core plugin:

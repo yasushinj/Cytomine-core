@@ -90,12 +90,6 @@ class UserUrlMappings {
         "/api/project/$id/usersActivity.$format"(controller: "restUser"){
             action = [GET:"listUsersWithLastActivity"]
         }
-        "/api/ldap/user.$format"(controller:"restUser"){
-            action = [POST:"addFromLDAP"]
-        }
-        "/api/ldap/$username/user.$format"(controller:"restUser"){
-            action = [GET:"isInLdap"]
-        }
 
 
         "/api/domain/$domainClassName/$domainIdent/user/$user.$format"(controller:"restACL"){
