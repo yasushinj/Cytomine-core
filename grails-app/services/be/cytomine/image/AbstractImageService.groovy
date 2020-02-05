@@ -34,6 +34,11 @@ import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.hibernate.criterion.DetachedCriteria
+import org.hibernate.criterion.Projections
+import org.hibernate.criterion.Restrictions
+import org.hibernate.criterion.Subqueries
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
@@ -50,7 +55,6 @@ class AbstractImageService extends ModelService {
     def imagePropertiesService
     def transactionService
     def storageService
-    def groupService
     def imageInstanceService
     def attachedFileService
     def currentRoleServiceProxy
@@ -112,28 +116,41 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def list(SecUser user, Project project = null) {
-        List<AbstractImage> images
+    def list(SecUser user, Project project = null, String sortedProperty = null, String sortDirection = null, Long max  = 0, Long offset = 0, searchParameters = []) {
+        def validSearchParameters = getDomainAssociatedSearchParameters(AbstractImage, searchParameters)
+
+        def result
         if(currentRoleServiceProxy.isAdminByNow(user)) {
-            images = AbstractImage.list()
+            result =  criteriaRequestWithPagination(AbstractImage, max, offset, {
+                isNull("deleted")
+            }, validSearchParameters, sortedProperty, sortDirection)
         } else {
             List<Storage> storages = securityACLService.getStorageList(cytomineService.currentUser)
-            images = StorageAbstractImage.findAllByStorageInList(storages).collect{it.abstractImage}.findAll{!it.deleted}
 
+            def subQuery = DetachedCriteria.forClass(StorageAbstractImage, 'sai')
+            subQuery.createAlias("sai.storage", "s")
+            subQuery.add(Restrictions.in('s.id', storages.collect{it.id}))
+            subQuery.createAlias("sai.abstractImage", "ai")
+            subQuery.setProjection(Projections.groupProperty("ai.id"))
+
+            result =  criteriaRequestWithPagination(AbstractImage, max, offset, {
+                isNull("deleted")
+                add(Subqueries.propertyIn("this.id", subQuery))
+            }, validSearchParameters, sortedProperty, sortDirection)
         }
         if(project) {
+            List<AbstractImage> images = result.data
             TreeSet<Long> inProjectImagesId = new TreeSet<>(ImageInstance.findAllByProjectAndDeletedIsNull(project).collect{it.baseImage.id})
 
-            def result = []
-
-            for(AbstractImage image : images){
-                def data = AbstractImage.getDataFromDomain(image)
-                data.inProject = (inProjectImagesId.contains(image.id))
-                result << data
+            def data = []
+            images.each { image ->
+                def ai = AbstractImage.getDataFromDomain(image)
+                ai.inProject = (inProjectImagesId.contains(image.id))
+                data << ai
             }
-            return result
+            result.data = data
         }
-        return images
+        return result
     }
 
     /**
@@ -141,7 +158,7 @@ class AbstractImageService extends ModelService {
      * @param json New domain data
      * @return Response structure (created domain data,..)
      */
-    def add(def json) throws CytomineException {
+    def add(JSONObject json) throws CytomineException {
         transactionService.start()
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new AddCommand(user: currentUser)

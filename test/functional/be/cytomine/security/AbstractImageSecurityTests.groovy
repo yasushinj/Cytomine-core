@@ -63,20 +63,6 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
       assert 200 == result.code
       Project project = result.data
 
-      result = AbstractImageAPI.list(true,project.id,SecurityTestsAbstract.USERNAMEADMIN,SecurityTestsAbstract.PASSWORDADMIN)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      println json
-      println json.aaData
-      println json.aaData.find{it.id==image1.id}
-      assert 2<=json.aaData.size() //may be more image because all images are available for admin (images from previous test)
-      assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
-      assert (true ==AbstractImageAPI.containsInJSONList(image2.id,json))
-      assert !json.aaData.find{it.id==image1.id}.inProject
-      assert !json.aaData.find{it.id==image2.id}.inProject
-
-//      ImageInstance image =
-//      BasicInstanceBuilder.saveDomain(image)
       //Add image instance to project
       ImageInstance image = new ImageInstance(project:project,baseImage: image1, user: user1)
       println image
@@ -87,12 +73,9 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
       println "project=${project.id}"
       println "baseImage=${image1.id}"
 
-      result = AbstractImageAPI.list(true,project.id,SecurityTestsAbstract.USERNAMEADMIN,SecurityTestsAbstract.PASSWORDADMIN)
-      assert 200 == result.code
-      assert 2<=JSON.parse(result.data).aaData.size()
-
       result = AbstractImageAPI.list(SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
       assert 200 == result.code
+      def json = JSON.parse(result.data)
       assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
 
       assert 200 == AbstractImageAPI.show(image1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).code
@@ -132,16 +115,9 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
         assert 200 == result.code
         Project project = result.data
 
-        result = AbstractImageAPI.list(true,project.id,user1.username,SecurityTestsAbstract.PASSWORD1)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert 1==json.aaData.size()
-
-        assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
-        assert (false ==AbstractImageAPI.containsInJSONList(image2.id,json))
-
         result = AbstractImageAPI.list(user1.username, SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
+        def json = JSON.parse(result.data)
         assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
 
         assert 200 == AbstractImageAPI.show(image1.id,user1.username,SecurityTestsAbstract.PASSWORD1).code

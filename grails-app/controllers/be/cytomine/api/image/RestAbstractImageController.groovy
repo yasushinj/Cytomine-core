@@ -46,12 +46,11 @@ import java.awt.image.BufferedImage
 @RestApi(name = "abstract image services", description = "Methods for managing an image. See image instance service to manage an instance of image in a project.")
 class RestAbstractImageController extends RestController {
 
-    def imagePropertiesService
     def abstractImageService
     def cytomineService
     def projectService
     def imageSequenceService
-    def dataTablesService
+    def securityACLService
 
     /**
      * List all abstract image available on cytomine
@@ -68,11 +67,8 @@ class RestAbstractImageController extends RestController {
     def list() {
         SecUser user = cytomineService.getCurrentUser()
         Project project = projectService.read(params.long("project"))
-        if (params.datatables) {
-            responseSuccess(dataTablesService.process(params, AbstractImage, null, [],project))
-        }  else {
-            responseSuccess(abstractImageService.list(user, project))
-        }
+        def result = abstractImageService.list(user, project, params.sort, params.order, params.long('max'), params.long('offset'), searchParameters)
+        responseSuccess([collection : result.data, size : result.total])
     }
 
     /**
@@ -225,6 +221,7 @@ class RestAbstractImageController extends RestController {
     }
 
     def download() {
+        securityACLService.checkGuest(cytomineService.getCurrentUser())
         String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")))
         log.info "redirect url"
         redirect (url : url)
