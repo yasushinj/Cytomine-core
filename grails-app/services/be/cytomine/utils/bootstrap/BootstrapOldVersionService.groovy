@@ -94,6 +94,11 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
+    void initv2_1_0() {
+        log.info "2.1.0"
+        new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN IF NOT EXISTS are_images_downloadable BOOLEAN;")
+    }
+
     void initv2_0_0() {
         log.info "2.0.0"
         new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
