@@ -96,7 +96,7 @@ class BootstrapOldVersionService {
 
     void initv2_1_0() {
         log.info "2.1.0"
-        new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN IF NOT EXISTS are_images_downloadable BOOLEAN;")
+        new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN IF NOT EXISTS are_images_downloadable BOOLEAN DEFAULT FALSE;")
     }
 
     void initv2_0_0() {
