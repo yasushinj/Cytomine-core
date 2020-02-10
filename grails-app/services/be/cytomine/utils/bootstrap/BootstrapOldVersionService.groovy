@@ -36,6 +36,7 @@ import be.cytomine.meta.Property
 import be.cytomine.ontology.Track
 import be.cytomine.processing.ImageFilter
 import be.cytomine.project.Project
+import be.cytomine.project.ProjectLastActivity
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
 import be.cytomine.security.SecUserSecRole
@@ -214,6 +215,19 @@ class BootstrapOldVersionService {
         log.info "Image server: Remove no more used columns"
         bootstrapUtilsService.dropSqlColumn("image_server", "service")
         bootstrapUtilsService.dropSqlColumn("image_server", "class_name")
+
+
+        /****** UPLOADED FILE (1) ******/
+        if (bootstrapUtilsService.checkSqlColumnExistence('uploaded_file', 'image_id')) {
+            log.info "Migration of uploaded files (1)"
+
+            log.info "Set uploaded files with valid images and status to 'uploaded' as 'deployed'"
+            sql.executeUpdate("UPDATE uploaded_file SET status = 2 WHERE image_id IS NOT NULL and status = 0;");
+
+            log.info "Remove erroneous uploaded files (filename duplicates)"
+            sql.executeUpdate("DELETE FROM uploaded_file WHERE size > 0 AND parent_id IS NOT NULL AND image_id IN (SELECT image_id FROM uploaded_file GROUP BY image_id, size HAVING count(*) = 2);")
+            sql.executeUpdate("DELETE FROM uploaded_file WHERE size = 0 AND image_id IN (SELECT image_id FROM uploaded_file GROUP BY image_id HAVING COUNT(*) = 2);")
+        }
 
 
         /****** ABSTRACT SLICE ******/
@@ -408,18 +422,15 @@ class BootstrapOldVersionService {
 
 
         /****** UPLOADED FILE ******/
-        log.info "Migration of uploaded files"
+        log.info "Migration of uploaded files (2)"
         if (bootstrapUtilsService.checkSqlColumnExistence('uploaded_file', 'image_id')) {
-            def hasIG = abstractImagesFromImageGroupToSlices.size() > 0
-
             log.info("Uploaded file: Change direction of UF - AI relation and use the root as AI uploaded file")
             sql.executeUpdate("update abstract_image " +
                     "set uploaded_file_id = cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) " +
                     "from uploaded_file " +
                     "where abstract_image.id = image_id " +
                     "and uploaded_file_id is null " +
-                    "and cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) IN (SELECT id FROM uploaded_file) " +
-                    ((hasIG) ? 'and abstract_image.id NOT IN (' + abstractImagesFromImageGroupToSlices.keySet().join(',') + '); ' : ";"))
+                    "and cast(ltree2text(subltree(uploaded_file.l_tree, 0, 1)) as bigint) IN (SELECT id FROM uploaded_file);")
         }
 
         log.info "Uploaded file: Remove no more used columns"
