@@ -58,6 +58,7 @@ beans = {
     }
     successRedirectHandler(CustomSavedRequestAwareAuthenticationSuccessHandler) {
         alwaysUseDefaultTargetUrl = false
+        useReferer = false
         //defaultTargetUrl = '/'
     }
 
