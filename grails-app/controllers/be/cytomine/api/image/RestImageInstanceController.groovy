@@ -443,7 +443,7 @@ class RestImageInstanceController extends RestController {
     def window() {
         ImageInstance imageInstance = imageInstanceService.read(params.long("id"))
         if (imageInstance) {
-            if (params.mask || params.alphaMask || params.draw || params.type in ['draw', 'mask', 'alphaMask'])
+            if (params.mask || params.alphaMask || params.alphaMask || params.draw || params.type in ['draw', 'mask', 'alphaMask', 'alphamask'])
                 params.location = getWKTGeometry(imageInstance, params)
             responseByteArray(imageServerService.window(imageInstance.baseImage, params, false))
         } else {
