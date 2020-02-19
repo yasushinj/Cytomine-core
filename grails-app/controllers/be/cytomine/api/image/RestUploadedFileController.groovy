@@ -199,6 +199,7 @@ class RestUploadedFileController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def downloadUploadedFile(){
+        securityACLService.checkGuest(cytomineService.getCurrentUser())
         UploadedFile up = uploadedFileService.get(params.long('id'));
         if (up) {
             String url = uploadedFileService.downloadURI(up)
