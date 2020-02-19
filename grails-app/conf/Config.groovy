@@ -329,7 +329,7 @@ grails.plugins.dynamicController.mixins = [
 
 // Rest API Doc plugin
 grails.plugins.restapidoc.docVersion = "0.1"
-grails.plugins.restapidoc.basePath = "http://demo.cytomine.coop"
+grails.plugins.restapidoc.basePath = grails.serverURL
 grails.plugins.restapidoc.customClassName = "be.cytomine.api.doc.CustomResponseDoc"
 grails.plugins.restapidoc.controllerPrefix = "Rest"
 grails.plugins.restapidoc.grailsDomainDefaultType = "long"
