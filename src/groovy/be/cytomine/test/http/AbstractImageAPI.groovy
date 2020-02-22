@@ -24,15 +24,10 @@ import be.cytomine.test.Infos
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 
-/**
- * User: lrollus
- * Date: 6/12/11
- * This class implement all method to easily get/create/update/delete/manage AbstractImage to Cytomine with HTTP request during functional test
- */
 class AbstractImageAPI extends DomainAPI {
 
-    static def list(String username, String password) {
-        String URL = Infos.CYTOMINEURL + "api/abstractimage.json"
+    static def list(Integer max = 0, Integer offset = 0, def searchParameters = [], String username, String password) {
+        String URL = Infos.CYTOMINEURL + "api/abstractimage.json?${convertSearchParameters(searchParameters)}&max=$max&offset=$offset"
         return doGET(URL, username, password)
     }
 
