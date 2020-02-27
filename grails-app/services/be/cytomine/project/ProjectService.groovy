@@ -633,7 +633,7 @@ class ProjectService extends ModelService {
         def group2 = [$group : [_id : '$_id.project', "users" :[$sum:1]]]
         def result;
 
-        result = db.persistentConnection.aggregate(
+        result = db.lastConnection.aggregate(
                 match,
                 group1,
                 group2
