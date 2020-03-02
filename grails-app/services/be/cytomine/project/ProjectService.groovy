@@ -1,7 +1,7 @@
 package be.cytomine.project
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -216,7 +216,7 @@ class ProjectService extends ModelService {
             where = "WHERE aclSid.sid like '"+user.username+"' and p.deleted is null "
         }
         else {
-            select = "SELECT  p.* "
+            select = "SELECT DISTINCT(p.id), p.* "
             from = "FROM project p "
             where = "WHERE p.deleted is null "
         }
@@ -633,7 +633,7 @@ class ProjectService extends ModelService {
         def group2 = [$group : [_id : '$_id.project', "users" :[$sum:1]]]
         def result;
 
-        result = db.persistentConnection.aggregate(
+        result = db.lastConnection.aggregate(
                 match,
                 group1,
                 group2

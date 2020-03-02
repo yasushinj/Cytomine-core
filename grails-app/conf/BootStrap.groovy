@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ class BootStrap {
             Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'),grailsApplication.metadata.'app.version')
         }
 
-        // TODO : delete this sql in v2.1
+        // TODO : delete this sql in v3.0
         boolean exists = new Sql(dataSource).rows("SELECT column_name " +
                 "FROM information_schema.columns " +
                 "WHERE table_name='sec_user' and column_name='origin';").size() == 1;
@@ -187,7 +187,7 @@ class BootStrap {
         }
 
         log.info "init change for old version..."
-        // TODO : delete this sql in v2.1
+        // TODO : delete this sql in v3.0
         exists = new Sql(dataSource).rows("SELECT column_name " +
                 "FROM information_schema.columns " +
                 "WHERE table_name='version' and column_name='major';").size() == 1;

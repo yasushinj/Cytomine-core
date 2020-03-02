@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.utils.JSONUtils
+import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
@@ -163,67 +164,70 @@ class ReviewedAnnotation extends AnnotationDomain implements Serializable {
      * @param domain Domain that must be filled
      * @param json JSON containing data
      * @return Domain with json data filled
-     */     
-     static ReviewedAnnotation insertDataIntoDomain(def json,def domain=new ReviewedAnnotation()) {
-         try {
-             domain.id = JSONUtils.getJSONAttrLong(json,'id',null)
-             domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
-             domain.created = JSONUtils.getJSONAttrDate(json, 'created')
-             domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
-             domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
-             domain.location = new WKTReader().read(json.location)
+     */
+    static ReviewedAnnotation insertDataIntoDomain(def json, def domain = new ReviewedAnnotation()) {
+        domain.id = JSONUtils.getJSONAttrLong(json, 'id', null)
+        domain.created = JSONUtils.getJSONAttrDate(json, 'created')
+        domain.updated = JSONUtils.getJSONAttrDate(json, 'updated')
+        domain.deleted = JSONUtils.getJSONAttrDate(json, 'deleted')
 
-             domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
-             domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
-             domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
-             domain.reviewUser = JSONUtils.getJSONAttrDomain(json, "reviewUser", new SecUser(), true)
+        domain.image = JSONUtils.getJSONAttrDomain(json, "image", new ImageInstance(), true)
+        domain.project = JSONUtils.getJSONAttrDomain(json, "project", new Project(), true)
+        domain.user = JSONUtils.getJSONAttrDomain(json, "user", new SecUser(), true)
+        domain.reviewUser = JSONUtils.getJSONAttrDomain(json, "reviewUser", new SecUser(), true)
 
-             Long annotationParentId = JSONUtils.getJSONAttrLong(json, 'parentIdent', -1)
-             if (annotationParentId == -1) {
-                 annotationParentId = JSONUtils.getJSONAttrLong(json, 'annotation', -1)
-             }
-             try {
-                 AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(annotationParentId)
-                 domain.parentClassName = annotation.class.getName()
-                 domain.parentIdent = annotation.id
-             } catch(Exception e) {
-                //parent is deleted...
-              }
+        domain.status = JSONUtils.getJSONAttrInteger(json, 'status', 0)
+        domain.geometryCompression = JSONUtils.getJSONAttrDouble(json, 'geometryCompression', 0)
 
-             domain.status = JSONUtils.getJSONAttrInteger(json, 'status', 0)
+        if (json.location && json.location instanceof Geometry) {
+            domain.location = json.location
+        } else {
+            try {
+                domain.location = new WKTReader().read(json.location)
+            } catch (com.vividsolutions.jts.io.ParseException ex) {
+                throw new WrongArgumentException(ex.toString())
+            }
+        }
 
+        if (!domain.location) {
+            throw new WrongArgumentException("Geo is null: 0 points")
+        }
 
-             if(domain.terms) {
-                 //remove all review term
-                 domain.terms.clear()
-             }
+        if (domain.location.getNumPoints() < 1) {
+            throw new WrongArgumentException("Geometry is empty:" + domain.location.getNumPoints() + " points")
+        }
 
-             if (json.terms == null || json.terms.equals("null")) {
-                 throw new WrongArgumentException("Term list was not found")
-             }
+        /* Parent annotation */
+        Long annotationParentId = JSONUtils.getJSONAttrLong(json, 'parentIdent', -1)
+        if (annotationParentId == -1) {
+            annotationParentId = JSONUtils.getJSONAttrLong(json, 'annotation', -1)
+        }
+        try {
+            AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(annotationParentId)
+            domain.parentClassName = annotation.class.getName()
+            domain.parentIdent = annotation.id
+        } catch (Exception ignored) {
+            //parent is deleted...
+        }
 
-             json.terms.each {
-                 Term term = Term.read(it)
-                 if(term.ontology!=domain.project.ontology) {
-                     throw new WrongArgumentException("Term ${term} from ontology ${term.ontology} is not in ontology from the annotation project (${domain.project.ontology}")
-                 }
+        /* Terms of reviewed annotation */
+        if (json.terms == null || json.terms.equals("null")) {
+            throw new WrongArgumentException("Term list was not found")
+        }
 
-                 domain.addToTerms(term)
+        if (domain.terms) {
+            domain.terms.clear() //remove all review term
+        }
 
-             }
-
-             if (!domain.location) {
-                 throw new WrongArgumentException("Geo is null: 0 points")
-             }
-             if (domain.location.getNumPoints() < 1) {
-                 throw new WrongArgumentException("Geometry is empty:" + domain.location.getNumPoints() + " points")
-             }
-
-         } catch (com.vividsolutions.jts.io.ParseException ex) {
-             throw new WrongArgumentException(ex.toString())
-         }
-         return domain;
-     }
+        json.terms.each {
+            Term term = Term.read(it)
+            if (term.ontology != domain.project.ontology) {
+                throw new WrongArgumentException("Term ${term} from ontology ${term.ontology} is not in ontology from the annotation project (${domain.project.ontology}")
+            }
+            domain.addToTerms(term)
+        }
+        return domain
+    }
 
     /**
      * Define fields available for JSON response

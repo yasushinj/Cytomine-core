@@ -1,7 +1,7 @@
 package be.cytomine.utils.bootstrap
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -98,21 +98,17 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'), grailsApplication.metadata.'app.version')
     }
 
-    void initv1_9_9() {
-        log.info "1.9.9"
-        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
-            systemUser.origin = "SYSTEM"
-            systemUser.save();
-        }
-
-        new Sql(dataSource).executeUpdate("UPDATE sec_user SET origin = 'BOOTSTRAP' WHERE origin IS NULL;")
+    void initv2_1_0() {
+        log.info "2.1.0"
+        new Sql(dataSource).executeUpdate("ALTER TABLE project ADD COLUMN IF NOT EXISTS are_images_downloadable BOOLEAN DEFAULT FALSE;")
+        noSQLCollectionService.dropIndex("lastConnection", "date_1")
     }
 
-    void initv1_2_2() {
-        log.info "1.2.2"
+    void initv2_0_0() {
+        log.info "2.0.0"
         new Sql(dataSource).executeUpdate("ALTER TABLE project ALTER COLUMN ontology_id DROP NOT NULL;")
 
-        new Sql(dataSource).executeUpdate("UPDATE sec_user SET language = 'ENGLISH';")
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET language = 'ENGLISH' WHERE language IS NULL;")
         new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ALTER COLUMN language SET DEFAULT 'ENGLISH';")
         new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ALTER COLUMN language SET NOT NULL;")
         new Sql(dataSource).executeUpdate("ALTER TABLE sec_user DROP COLUMN IF EXISTS skype_account;")
@@ -125,6 +121,13 @@ class BootstrapOldVersionService {
         db.annotationAction.update([:], [$rename:[annotation:'annotationIdent']], false, true)
         db.annotationAction.update([:], [$set:[annotationClassName: 'be.cytomine.ontology.UserAnnotation']], false, true)
         db.annotationAction.update([:], [$unset:[annotation:'']], false, true)
+
+        for(User systemUser :User.findAllByUsernameInList(['ImageServer1', 'superadmin', 'admin', 'rabbitmq', 'monitoring'])){
+            systemUser.origin = "SYSTEM"
+            systemUser.save();
+        }
+
+        new Sql(dataSource).executeUpdate("UPDATE sec_user SET origin = 'BOOTSTRAP' WHERE origin IS NULL;")
 
     }
 

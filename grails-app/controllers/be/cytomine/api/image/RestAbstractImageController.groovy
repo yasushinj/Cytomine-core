@@ -1,7 +1,7 @@
 package be.cytomine.api.image
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -46,12 +46,11 @@ import java.awt.image.BufferedImage
 @RestApi(name = "Image | abstract image services", description = "Methods for managing an image. See image instance service to manage an instance of image in a project.")
 class RestAbstractImageController extends RestController {
 
-    def imagePropertiesService
     def abstractImageService
     def cytomineService
     def projectService
     def imageSequenceService
-    def dataTablesService
+    def securityACLService
 
     /**
      * List all abstract image available on cytomine
@@ -69,11 +68,8 @@ class RestAbstractImageController extends RestController {
     def list() {
         SecUser user = cytomineService.getCurrentUser()
         Project project = projectService.read(params.long("project"))
-        if (params.datatables) {
-            responseSuccess(dataTablesService.process(params, AbstractImage, null, [],project))
-        }  else {
-            responseSuccess(abstractImageService.list(user, project))
-        }
+        def result = abstractImageService.list(user, project, params.sort, params.order, params.long('max'), params.long('offset'), searchParameters)
+        responseSuccess([collection : result.data, size : result.total])
     }
 
     /**
@@ -227,6 +223,7 @@ class RestAbstractImageController extends RestController {
     }
 
     def download() {
+        securityACLService.checkGuest(cytomineService.getCurrentUser())
         String url = abstractImageService.downloadURI(abstractImageService.read(params.long("id")), params.boolean("parent", false))
         log.info "redirect url"
         redirect (url : url)

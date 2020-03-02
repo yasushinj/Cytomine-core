@@ -26,3 +26,7 @@ Full documentation can be found [online](https://documentation.cytomine.org/)
 ## How to install it
 
 See our [Cytomine-bootstrap](https://github.com/cytomine/Cytomine-bootstrap) project to install it with Docker
+
+## Code of Conduct
+
+We subscribe to the [Contributor Convenant Code of Conduct](https://documentation.cytomine.org/Code-of-Conduct) for a respectful community.
