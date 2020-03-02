@@ -1,7 +1,7 @@
 package be.cytomine.api.image
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -198,6 +198,7 @@ class RestUploadedFileController extends RestController {
             @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The uploaded file id")
     ])
     def downloadUploadedFile(){
+        securityACLService.checkGuest(cytomineService.getCurrentUser())
         UploadedFile up = uploadedFileService.get(params.long('id'));
         if (up) {
             String url = uploadedFileService.downloadURI(up)

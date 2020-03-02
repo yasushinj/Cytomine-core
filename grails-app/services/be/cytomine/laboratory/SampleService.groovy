@@ -1,7 +1,7 @@
 package be.cytomine.laboratory
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class SampleService extends ModelService {
 
     //TODO:: secure ACL (from abstract image)
     def list(User user) {
-        def abstractImageAvailable = abstractImageService.list(user)
+        def abstractImageAvailable = abstractImageService.list(user).data
         if(abstractImageAvailable.isEmpty()) {
             return []
         } else {

@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -158,8 +158,8 @@ class AlgoAnnotationService extends ModelService {
 
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationForm.toString(),minPoint,maxPoint)
-            json.location = new WKTWriter().write(data.geometry)
+            def data = simplifyGeometryService.simplifyPolygon(annotationForm,minPoint,maxPoint)
+            json.location = data.geometry
             json.geometryCompression = data.rate
         } catch (Exception e) {
             log.error("Cannot simplify:" + e)

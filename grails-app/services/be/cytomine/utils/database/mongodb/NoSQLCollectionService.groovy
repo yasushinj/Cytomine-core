@@ -1,7 +1,7 @@
 package be.cytomine.utils.database.mongodb
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,13 +16,8 @@ package be.cytomine.utils.database.mongodb
 * limitations under the License.
 */
 
-/**
- * Created by IntelliJ IDEA.
- * User: lrollus
- * Date: 7/07/11
- * Time: 15:16
- * Service used to create index at the application begining
- */
+import com.mongodb.CommandFailureException
+
 class NoSQLCollectionService {
 
     def sessionFactory
@@ -52,5 +47,14 @@ class NoSQLCollectionService {
         db.persistentUserPosition.drop()
     }
 
+    public def dropIndex(String collection, String name) {
+        log.info "Drop index $name from $collection collection"
+        def db = mongo.getDB(getDatabaseName())
+        try {
+            db."${collection}".dropIndex(name)
+        } catch(CommandFailureException e){
+            log.error (collection+" : "+e.message)
+        }
+    }
 
 }

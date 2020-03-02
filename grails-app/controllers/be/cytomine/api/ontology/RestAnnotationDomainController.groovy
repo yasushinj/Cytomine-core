@@ -1,7 +1,7 @@
 package be.cytomine.api.ontology
 
 /*
-* Copyright (c) 2009-2019. Authors: see NOTICE file.
+* Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -709,7 +709,7 @@ class RestAnnotationDomainController extends RestController {
             AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(idAnnotation)
 
             //apply simplify
-            def result = simplifyGeometryService.simplifyPolygon(annotation.location.toText(),minPoint,maxPoint)
+            def result = simplifyGeometryService.simplifyPolygon(annotation.location,minPoint,maxPoint)
             annotation.location = result.geometry
             annotation.geometryCompression = result.rate
             userAnnotationService.saveDomain(annotation)  //saveDomain is same method in algo/reviewedannotationservice
