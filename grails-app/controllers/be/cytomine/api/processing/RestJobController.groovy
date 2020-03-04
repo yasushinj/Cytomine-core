@@ -203,6 +203,24 @@ class RestJobController extends RestController {
         return responseSuccess(job)
     }
 
+    @RestApiMethod(description="Get the execution log of a job")
+    @RestApiParams(params=[
+            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH,description = "The job id")
+    ])
+    def getLog() {
+        Job job = jobService.read(params.long('id'))
+        if(!job){
+            responseNotFound("Job", params.id)
+        } else {
+            def data = jobService.getLog(job)
+            if (data) {
+                responseSuccess(data)
+            } else {
+                responseNotFound("Logs of Job", params.id)
+            }
+        }
+    }
+
     /**
      * Delete the full data set build by the job
      * This method will delete: annotation prediction, uploaded files,...

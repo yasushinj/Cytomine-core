@@ -21,6 +21,7 @@ import be.cytomine.Exception.WrongArgumentException
 */
 
 import be.cytomine.command.*
+import be.cytomine.meta.AttachedFile
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.security.SecUserSecRole
@@ -126,7 +127,7 @@ class JobService extends ModelService {
         where = "WHERE true = true "
 
         if(joinSoftware) {
-            select +=", ${softwareAlias}.name as softwareName "
+            select +=", ${softwareAlias}.name as softwareName, ${softwareAlias}.software_version as softwareVersion "
             from += "JOIN software $softwareAlias ON ${softwareAlias}.id = ${jobAlias}.software_id "
         }
         if(extended.withUser) {
@@ -186,6 +187,7 @@ class JobService extends ModelService {
             map["class"] = Job.class
             map['project'] = [id : map['projectId']]
             map['software'] = [id : map['softwareId'], name:map['softwarename']]
+            map['software'].getMetaClass().fullName = { return map['softwarename'] + ("${map['softwareversion']}".trim() ? map['softwareversion'] : "") }
 
             def line = Job.getDataFromDomain(map)
             line.putAt('username', map.username)
@@ -279,6 +281,17 @@ class JobService extends ModelService {
 
     def getStringParamsI18n(def domain) {
         return [domain.id, domain.software.name]
+    }
+
+    def getLog(Job job) {
+        def log = AttachedFile.findByDomainClassNameAndDomainIdentAndFilename("be.cytomine.processing.Job", job.id, "log.out")
+
+        if (!log) {
+            return null
+        }
+        def ret = AttachedFile.getDataFromDomain(log)
+        ret['data'] = new String(log.data);
+        return ret
     }
 
     List<UserJob> getAllLastUserJob(Project project, Software software) {
