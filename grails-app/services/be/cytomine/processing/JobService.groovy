@@ -126,7 +126,7 @@ class JobService extends ModelService {
         where = "WHERE true = true "
 
         if(joinSoftware) {
-            select +=", ${softwareAlias}.name as softwareName "
+            select +=", ${softwareAlias}.name as softwareName, ${softwareAlias}.software_version as softwareVersion "
             from += "JOIN software $softwareAlias ON ${softwareAlias}.id = ${jobAlias}.software_id "
         }
         if(extended.withUser) {
@@ -186,6 +186,7 @@ class JobService extends ModelService {
             map["class"] = Job.class
             map['project'] = [id : map['projectId']]
             map['software'] = [id : map['softwareId'], name:map['softwarename']]
+            map['software'].getMetaClass().fullName = { return map['softwarename'] + ("${map['softwareversion']}".trim() ? map['softwareversion'] : "") }
 
             def line = Job.getDataFromDomain(map)
             line.putAt('username', map.username)
