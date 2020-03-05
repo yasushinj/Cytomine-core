@@ -913,13 +913,6 @@ class ProjectService extends ModelService {
 //        }
 //    }
 //
-//    def deleteDependentProperty(Project project, Transaction transaction, Task task = null) {
-//        Property.findAllByDomainIdent(project.id).each {
-//            propertyService.delete(it,transaction,null,false)
-//        }
-//
-//    }
-//
 //    def deleteDependentNestedImageInstance(Project project, Transaction transaction,Task task=null) {
 //        NestedImageInstance.findAllByProject(project).each {
 //            it.delete(flush: true)

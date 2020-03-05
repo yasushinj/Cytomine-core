@@ -25,6 +25,11 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.annotations.DependencyOrder
 import be.cytomine.command.Command
 import be.cytomine.command.DeleteCommand
+import be.cytomine.command.Transaction
+import be.cytomine.meta.AttachedFile
+import be.cytomine.meta.Description
+import be.cytomine.meta.Property
+import be.cytomine.meta.TagDomainAssociation
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.UserAnnotation
 import org.springframework.util.ReflectionUtils
@@ -48,6 +53,10 @@ abstract class ModelService {
     def cytomineService
     def grailsApplication
     def taskService
+    def attachedFileService
+    def descriptionService
+    def propertyService
+    def tagDomainAssociationService
     //def securityACLService
     boolean saveOnUndoRedoStack = true
 
@@ -142,7 +151,7 @@ abstract class ModelService {
             }
             //remove all dependent domains
 
-            def allServiceMethods = this.getClass().getDeclaredMethods()
+            def allServiceMethods = this.getClass().getMethods()
             def dependencyMethods = allServiceMethods.findAll{it.name.startsWith("deleteDependent")}.unique({it.name})
 
             def (ordered, unordered) = dependencyMethods.split { it.annotations.findAll{it instanceof DependencyOrder}.size() > 0  }
@@ -644,4 +653,24 @@ abstract class ModelService {
         return [data : data, total : total]
     }
 
+    def deleteDependentAttachedFile(CytomineDomain domain, Transaction transaction, Task task = null) {
+        AttachedFile.findAllByDomainClassNameAndDomainIdent(domain.class.name, domain.id).each {
+            attachedFileService.delete(it, transaction,null, false)
+        }
+    }
+    def deleteDependentDescription(CytomineDomain domain, Transaction transaction, Task task = null) {
+        Description.findAllByDomainClassNameAndDomainIdent(domain.class.name, domain.id).each {
+            descriptionService.delete(it, transaction,null, false)
+        }
+    }
+    def deleteDependentProperty(CytomineDomain domain, Transaction transaction, Task task = null) {
+        Property.findAllByDomainClassNameAndDomainIdent(domain.class.name, domain.id).each {
+            propertyService.delete(it, transaction,null, false)
+        }
+    }
+    def deleteDependentTagDomainAssociation(CytomineDomain domain, Transaction transaction, Task task = null) {
+        TagDomainAssociation.findAllByDomainClassNameAndDomainIdent(domain.class.name, domain.id).each {
+            tagDomainAssociationService.delete(it, transaction,null, false)
+        }
+    }
 }

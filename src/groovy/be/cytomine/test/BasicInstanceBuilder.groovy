@@ -110,6 +110,7 @@ class BasicInstanceBuilder {
     }
 
     static boolean checkIfDomainExist(def domain, boolean exist=true) {
+        log.info("checkIfDomainExist for "+ domain.class.name+ " " +domain.id)
         try {
             domain.refresh()
         } catch(DataRetrievalFailureException e){
@@ -954,9 +955,9 @@ class BasicInstanceBuilder {
         getJobDataNotExist(saveDomain(getJobNotExist()))
     }
 
-    static JobData getJobDataNotExist(Job job) {
+    static JobData getJobDataNotExist(Job job, boolean save = false) {
         JobData jobData =  new JobData(job:job, key : "TESTKEY", filename: "filename.jpg")
-        checkDomain(jobData)
+        save ? saveDomain(jobData) : checkDomain(jobData)
     }
 
     static JobData getJobData() {
