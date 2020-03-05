@@ -509,13 +509,6 @@ class AbstractImageService extends ModelService {
         }
     }
 
-    def deleteDependentAttachedFile(AbstractImage ai, Transaction transaction,Task task=null) {
-        AttachedFile.findAllByDomainIdentAndDomainClassName(ai.id, ai.class.getName()).each {
-            attachedFileService.delete(it,transaction,null,false)
-        }
-    }
-
-
     def deleteDependentNestedFile(AbstractImage ai, Transaction transaction,Task task=null) {
         //TODO: implement this with command (nestedFileService should be create)
         NestedFile.findAllByAbstractImage(ai).each {
