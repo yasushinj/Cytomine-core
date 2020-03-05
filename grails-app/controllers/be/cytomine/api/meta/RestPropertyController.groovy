@@ -105,7 +105,7 @@ class RestPropertyController extends RestController {
         if(domain) {
             responseSuccess(propertyService.list(domain))
         } else {
-            responseNotFound("ImageInstance",params.idImageInstance)
+            responseNotFound("Cytomine domain "+params.get("domainClassName"),params.long('domainIdent'))
         }
     }
 
