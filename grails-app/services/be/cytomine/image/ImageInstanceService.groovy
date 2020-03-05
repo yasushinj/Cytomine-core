@@ -808,13 +808,6 @@ class ImageInstanceService extends ModelService {
 //        }
 //    }
 //
-//    def deleteDependentProperty(ImageInstance image, Transaction transaction, Task task = null) {
-//        Property.findAllByDomainIdent(image.id).each {
-//            propertyService.delete(it,transaction,null,false)
-//        }
-//
-//    }
-//
 //    def deleteDependentNestedImageInstance(ImageInstance image, Transaction transaction,Task task=null) {
 //        NestedImageInstance.findAllByParent(image).each {
 //            it.delete(flush: true)
