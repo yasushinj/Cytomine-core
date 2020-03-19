@@ -1,5 +1,7 @@
 package be.cytomine.api.processing
 
+import be.cytomine.Exception.CytomineException
+
 /*
 * Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
@@ -130,53 +132,63 @@ class RestSoftwareController extends RestController {
     }
 
     @RestApiMethod(description="Upload the sources of a software")
-    @RestApiParams(params=[
-            @RestApiParam(name="id", type="long", paramType = RestApiParamType.PATH, description = "The software id")
-    ])
     def upload() {
         log.info "Upload software source"
-        Long id = params.long("id")
-        Software software = softwareService.read(id)
-        securityACLService.check(software.container(),WRITE)
 
-        // check if software has not softwareUserRepository && software has not already been uploaded
-        if(software.softwareUserRepository != null || software.sourcePath != null) {
-            responseError(new ForbiddenException("This software has already source files. You cannot upload new sources"))
-        }
-        else {
-            if(request instanceof AbstractMultipartHttpServletRequest) {
-                MultipartFile f = ((AbstractMultipartHttpServletRequest) request).getFile('files[]')
+        params.remove("controller")
+        params.remove("files[]")
+        params.remove("action")
 
-                String filename = ((AbstractMultipartHttpServletRequest) request).getParameter('filename')
-                if(!filename) filename = f.originalFilename
+        try{
+            def result = softwareService.add(new JSONObject(params))
 
-                String sourcePath = software.id+"/"+filename
-                File source = new File((grailsApplication.config.cytomine.software.path.softwareSources as String)+"/"+sourcePath)
-                if(!source.parentFile.exists()) source.parentFile.mkdir()
-                f.transferTo(source)
+            Software software = result.object
 
-                log.info "Upload $filename for domain software with id = $id at ${source.path}"
-                log.info "File size = ${f.size}"
-
-                def json = software.encodeAsJSON()
-                json = new JSONObject(json)
-                json.sourcePath = sourcePath
-
-                def result = softwareService.update(software, json)
-
-                // Sends a message on the communication queue to warn the software router a new queue has been created
-                def message = [requestType: "addSoftware",
-                               //exchange: amqpQueue.exchange,
-                               SoftwareId: software.id]
-
-                JsonBuilder jsonBuilder = new JsonBuilder()
-                jsonBuilder(message)
-                amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
-
-                responseSuccess(result)
-            } else {
-                responseError(new WrongArgumentException("No File attached"))
+            // check if software has not softwareUserRepository && software has not already been uploaded
+            if(software.softwareUserRepository != null || software.sourcePath != null) {
+                responseError(new ForbiddenException("This software has already source files. You cannot upload new sources"))
             }
+            else {
+                if(request instanceof AbstractMultipartHttpServletRequest) {
+                    MultipartFile f = ((AbstractMultipartHttpServletRequest) request).getFile('files[]')
+
+                    String filename = ((AbstractMultipartHttpServletRequest) request).getParameter('filename')
+                    if(!filename) filename = f.originalFilename
+
+                    String sourcePath = software.id+"/"+filename
+                    File source = new File((grailsApplication.config.cytomine.software.path.softwareSources as String)+"/"+sourcePath)
+                    if(!source.parentFile.exists()) source.parentFile.mkdir()
+                    f.transferTo(source)
+
+                    log.info "Upload $filename for domain software $software.name at ${source.path}"
+                    log.info "File size = ${f.size}"
+
+                    def json = software.encodeAsJSON()
+                    json = new JSONObject(json)
+                    json.sourcePath = sourcePath
+
+                    softwareService.update(software, json)
+
+                    // Sends a message on the communication queue to warn the software router a new queue has been created
+                    def message = [requestType: "addSoftware",
+                                   //exchange: amqpQueue.exchange,
+                                   SoftwareId: software.id]
+
+                    JsonBuilder jsonBuilder = new JsonBuilder()
+                    jsonBuilder(message)
+                    amqpQueueService.publishMessage(AmqpQueue.findByName("queueCommunication"), jsonBuilder.toString())
+
+                    result.data.software.sourcePath = sourcePath
+
+                    responseSuccess(result)
+                } else {
+                    responseError(new WrongArgumentException("No File attached"))
+                }
+            }
+        } catch (CytomineException e) {
+            log.error("add error:" + e.msg)
+            log.error(e)
+            response([success: false, errors: e.msg], e.code)
         }
     }
 

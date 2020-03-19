@@ -187,7 +187,7 @@ class BootStrap {
         }
 
         def softwareSourceDirectory = new File(grailsApplication.config.cytomine.software.path.softwareSources as String)
-        if (!softwareSourceDirectory.exists()) softwareSourceDirectory.mkdirs()
+        if (!softwareSourceDirectory.exists() && !softwareSourceDirectory.mkdirs()) log.error "Software Sources folder doesn't exist"
 
 
         log.info "init change for old version..."

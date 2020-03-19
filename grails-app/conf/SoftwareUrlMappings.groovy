@@ -24,7 +24,7 @@ class SoftwareUrlMappings {
         "/api/software/$id.$format"(controller:"restSoftware"){
             action = [GET:"show",PUT:"update", DELETE:"delete"]
         }
-        "/api/software/$id/upload"(controller:"restSoftware"){
+        "/api/software/upload"(controller:"restSoftware"){
             action = [POST:"upload"]
         }
         "/api/software/$id/download"(controller:"restSoftware"){
