@@ -51,11 +51,11 @@ class JobRuntimeService {
         def values = [:]
 
         parameters.each { parameter ->
-            println parameter.name
+            log.debug parameter.name
 
             JobParameter jobParameter = JobParameter.findByJobAndSoftwareParameter(job, parameter as SoftwareParameter)
 
-            println jobParameter
+            log.debug jobParameter
 
             String value = parameter.defaultValue
             if (jobParameter)
@@ -92,6 +92,12 @@ class JobRuntimeService {
             command = command.replaceAll(regex, replacement)
         }
 
+        //from previous method, only optional parameters left
+        def unassignedValues = parameters.findAll{!values.collect{it.key.id}.contains(it.id)}
+        unassignedValues.each { softwareParameter ->
+            String regex = "${softwareParameter.valueKey.replace("[", "\\[").replace("]", "\\]")}"
+            command = command.replaceAll(regex, "")
+        }
         return command.split(' ')
     }
 

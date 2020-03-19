@@ -127,12 +127,12 @@ class JobService extends ModelService {
         where = "WHERE true = true "
 
         if(joinSoftware) {
-            select +=", ${softwareAlias}.name as softwareName "
+            select +=", ${softwareAlias}.name as software_name, ${softwareAlias}.software_version as software_version "
             from += "JOIN software $softwareAlias ON ${softwareAlias}.id = ${jobAlias}.software_id "
         }
         def usernameParams = [:]
         if(extended.withUser) {
-            select +=", $userAlias.* "
+            select +=", $userAlias.*, uj.id as user_job_id "
             from += "LEFT OUTER JOIN sec_user uj ON uj.job_id = ${jobAlias}.id "
             from += "LEFT OUTER JOIN sec_user $userAlias ON uj.user_id = ${userAlias}.id "
 
@@ -199,7 +199,7 @@ class JobService extends ModelService {
 
             for(int i =1; i<=((GroovyResultSet) it).getMetaData().getColumnCount(); i++){
                 String key = ((GroovyResultSet) it).getMetaData().getColumnName(i)
-                String objectKey = key.replaceAll( "(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() } )
+                String objectKey = key.replaceAll("(_)([A-Za-z0-9])", { Object[] test -> test[2].toUpperCase() })
 
 
                 map.putAt(objectKey, it[key])
@@ -208,10 +208,25 @@ class JobService extends ModelService {
             // I mock methods and fields to pass through getDataFromDomain of Project
             map["class"] = Job.class
             map['project'] = [id : map['projectId']]
-            map['software'] = [id : map['softwareId'], name:map['softwarename']]
+            map['software'] = [
+                    id             : map['softwareId'],
+                    name           : map['softwareName'],
+                    softwareVersion: map['softwareVersion'],
+                    fullName       : { _ ->
+                        if (map['softwareVersion']?.trim())
+                            return "${map['softwareName']} (${map['softwareVersion']})"
+
+                        return map['softwareName'];
+                    }
+            ]
+            map['processingServer'] = [id: map['processingServerId']]
+
 
             def line = Job.getDataFromDomain(map)
-            line.putAt('username', map.username)
+            if (extended.withUser) {
+                line.putAt('username', map.username)
+                line.putAt('userJob', map.userJobId)
+            }
             data << line
 
         }
