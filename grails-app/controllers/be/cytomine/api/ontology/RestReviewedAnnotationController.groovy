@@ -30,6 +30,14 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import be.cytomine.utils.Task
 import grails.converters.JSON
+import org.apache.commons.io.IOUtils
+import org.apache.http.HttpResponse
+import org.apache.http.NameValuePair
+import org.apache.http.client.HttpClient
+import org.apache.http.client.entity.UrlEncodedFormEntity
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.message.BasicNameValuePair
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -54,6 +62,7 @@ class RestReviewedAnnotationController extends RestController {
     def reportService
     def imageProcessingService
     def securityACLService
+    def abstractImageService
 
     /**
      * List all reviewed annotation available for the user
@@ -544,10 +553,48 @@ class RestReviewedAnnotationController extends RestController {
     ])
     def crop() {
         ReviewedAnnotation annotation = ReviewedAnnotation.read(params.long("id"))
-        if (annotation) {
-            redirect (url : annotation.toCropURL(params))
-        } else {
+        if (!annotation) {
             responseNotFound("ReviewedAnnotation", params.id)
+        } else {
+            String url = annotation.toCropURL(params)
+            if(url.length()<3584){
+                log.info "redirect to ${url}"
+                redirect (url : url)
+            } else {
+                def parameters = annotation.toCropParams(params)
+                url = abstractImageService.getCropIMSUrl(parameters)
+
+                //POST request
+                URL destination = new URL(url)
+
+                log.info "URL too long "+url.length()+". Post request to ${destination.protocol}://${destination.host}${destination.path}"
+
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost("${destination.protocol}://${destination.host}${destination.path}");
+
+                def queries = destination.query.split("&")
+                List<NameValuePair> params = new ArrayList<NameValuePair>(queries.size());
+                for(String parameter : queries){
+                    String[] tmp = parameter.split('=');
+                    params.add(new BasicNameValuePair(tmp[0], URLDecoder.decode(tmp[1])));
+                }
+                httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+
+                HttpResponse httpResponse = httpclient.execute(httppost);
+                InputStream instream = httpResponse.getEntity().getContent()
+
+                byte[] bytesOut = IOUtils.toByteArray(instream);
+                response.contentLength = bytesOut.length;
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                if(parameters.format == "png") {
+                    response.setHeader("Content-Type", "image/png")
+                } else {
+                    response.setHeader("Content-Type", "image/jpeg")
+                }
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
+            }
         }
 
     }

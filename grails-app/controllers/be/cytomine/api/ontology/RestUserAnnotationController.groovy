@@ -243,7 +243,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             String url = annotation.toCropURL(params)
-            if(url.length()<2000){
+            if(url.length()<3584){
                 log.info "redirect to ${url}"
                 redirect (url : url)
             } else {
