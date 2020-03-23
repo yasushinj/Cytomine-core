@@ -140,6 +140,29 @@ class SimplifyGeometryService {
     }
 
 
+    def simplifyPolygonForCrop(def geometry) {
+
+        if (geometry.numPoints < 100)
+            return reduceGeometryPrecision(geometry)
+
+        double index = 2d
+        int max = 1000
+        while (index < max) {
+            geometry = TopologyPreservingSimplifier.simplify(geometry, index)
+            if (geometry.numPoints < 150) {
+                break
+            }
+            index = (index + 5) * 1.1
+        }
+
+        return reduceGeometryPrecision(geometry)
+    }
+
+    def reduceGeometryPrecision(def geometry, int scale = 100) {
+        GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(new PrecisionModel(scale))
+        return reducer.reduce(geometry)
+    }
+
     def simplifyPolygonTextSize(String location) {
         String result = location
         //limit the size (text) for the geometry (url max lenght)
