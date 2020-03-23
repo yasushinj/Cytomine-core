@@ -26,8 +26,8 @@ import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
 import be.cytomine.processing.RoiAnnotation
 import be.cytomine.project.Project
+import be.cytomine.utils.GeometryUtils
 import be.cytomine.utils.GisUtils
-import com.vividsolutions.jts.geom.Envelope
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import groovy.sql.Sql
@@ -268,39 +268,9 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         return response
     }
 
-    def getBoundaries(Boolean draw = false) {
-        //get num points
-        int imageWidth = image.baseImage.getWidth()
-        int imageHeight = image.baseImage.getHeight()
-        if (location.getNumPoints()>1) {
-            Envelope env = location.getEnvelopeInternal();
-            Integer maxY = env.getMaxY();
-            Integer minX = env.getMinX();
-            Integer width = env.getWidth();
-            Integer height = env.getHeight();
-            if(draw) {
-                maxY += 2
-                minX -= 2
-                // 2 before
-                // 1 by line
-                // 2 after
-                width += 6
-                height += 6
-            }
-            return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
-        } else if (location.getNumPoints() == 1) {
-            Envelope env = location.getEnvelopeInternal();
-            Integer maxY = env.getMaxY()+50;
-            Integer minX = env.getMinX()-50;
-            Integer width = 100;
-            Integer height = 100;
-            return [topLeftX: minX, topLeftY: maxY, width: width, height: height, imageWidth: imageWidth, imageHeight : imageHeight]
-        }
-    }
-
     def toCropURL(params=[:]) {
         def boundaries = retrieveCropParams(params)
-        return UrlApi.getCropURL(image.baseImage.id, boundaries, params.format)
+        return UrlApi.getCropURL(image.baseImage.id, boundaries, boundaries.format)
     }
 
     def toCropParams(params=[:]) {
@@ -319,7 +289,20 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
     }
 
     public LinkedHashMap<String, Integer> retrieveCropParams(params) {
-        def boundaries = getBoundaries(Boolean.parseBoolean(params.draw))
+// In the window service, boundaries are already set and do not correspond to geometry/location boundaries
+        def geometry = location
+
+        def boundaries = params.boundaries
+        if (!boundaries && geometry) {
+            boundaries = GeometryUtils.getGeometryBoundaries(geometry)
+        }
+
+        boundaries.imageWidth = image.baseImage.getWidth()
+        boundaries.imageHeight = image.baseImage.getHeight()
+
+
+        if (params.format) boundaries.format = params.format
+        else boundaries.format = "png"
 
         if (params.zoom) boundaries.zoom = params.zoom
         if (params.maxSize) boundaries.maxSize = params.maxSize
@@ -342,7 +325,8 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         }
         if (params.alphaMask) {
             boundaries.alphaMask = true
-            boundaries.location = location.toText()//location.toText()
+            boundaries.location = location.toText()
+            boundaries.format = "png"
         }
 
         if(location instanceof com.vividsolutions.jts.geom.Point && !params.point.equals("false")) {
@@ -350,10 +334,19 @@ abstract class AnnotationDomain extends CytomineDomain implements Serializable {
         }
 
         boolean complete = Boolean.parseBoolean(params.complete)
-        if (boundaries.location && !complete) {
-            //limit the size (text) for the geometry (url max lenght)
-            boundaries.location = simplifyGeometryService.simplifyPolygonTextSize(boundaries.location)
-        }
+        if (complete && geometry)
+            boundaries.location = simplifyGeometryService.reduceGeometryPrecision(location)
+        else if (geometry)
+            boundaries.location = simplifyGeometryService.simplifyPolygonForCrop(location)
+
+        boundaries.location = boundaries.location.toText()
+
+        if (params.colormap) boundaries.colormap = params.colormap
+        if (params.inverse) boundaries.inverse = params.inverse
+        if (params.bits) boundaries.bits = params.bits
+        if (params.contrast) boundaries.contrast = params.contrast
+        if (params.gamma) boundaries.gamma = params.gamma
+
         boundaries
     }
 

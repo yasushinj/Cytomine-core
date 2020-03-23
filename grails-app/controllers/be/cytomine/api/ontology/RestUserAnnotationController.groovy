@@ -42,7 +42,7 @@ import static org.springframework.security.acls.domain.BasePermission.READ
 /**
  * Controller for annotation created by user
  */
-@RestApi(name = "user annotation services", description = "Methods for managing an annotation created by a human user")
+@RestApi(name = "Ontology | user annotation services", description = "Methods for managing an annotation created by a human user")
 class RestUserAnnotationController extends RestController {
 
     def userAnnotationService
@@ -239,7 +239,7 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             String url = annotation.toCropURL(params)
-            if(url.length()<2000){
+            if(url.length()<3584){
                 log.info "redirect to ${url}"
                 redirect (url : url)
             } else {
