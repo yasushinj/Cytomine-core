@@ -231,7 +231,7 @@ abstract class AnnotationListing {
             }
             return "SELECT " + requestHeadList.join(', ') + " \n"
         } else {
-            return "SELECT kmeans(ARRAY[ST_X(st_centroid(location)), ST_Y(st_centroid(location))], 5) OVER (), location\n"
+            return "SELECT ST_ClusterKMeans(location, 5) OVER () AS kmeans, location\n"
         }
 
     }
@@ -351,12 +351,11 @@ abstract class AnnotationListing {
                 throw new ObjectNotFoundException("Term $term not exist!")
             }
             addIfMissingColumn('term')
-            return " AND at.term_id = ${term}\n"
+            return " AND (at.term_id = ${term}" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
     }
-
     def getParentsConst() {
         if (parents) {
             return " AND a.parent_ident IN (${parents.join(",")})\n"
@@ -369,7 +368,7 @@ abstract class AnnotationListing {
     def getTermsConst() {
         if (terms) {
             addIfMissingColumn('term')
-            return "AND at.term_id IN (${terms.join(',')})\n"
+            return "AND (at.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -531,16 +530,19 @@ class UserAnnotationListing extends AnnotationListing {
                     "AND a.id = at.user_annotation_id\n" +
                     " AND a.id = at2.user_annotation_id\n" +
                     " AND at.id <> at2.id \n" +
-                    " AND at.term_id <> at2.term_id \n"
-        } else if (noTerm) {
-            from = "$from LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
-            where = "$where AND at.id IS NULL \n"
+                    " AND at.term_id <> at2.term_id \n"+
+                    " AND at.deleted IS NULL\n"+
+                    " AND at2.deleted IS NULL\n"
+        } else if (noTerm && !(term || terms)) {
+            from += "LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
+            where = "$where AND (at.id IS NULL OR at.deleted IS NOT NULL) \n"
         } else if (noAlgoTerm) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
-            where = "$where AND aat.id IS NULL \n"
+            where = "$where AND (aat.id IS NULL OR aat.deleted IS NOT NULL) \n"
         } else {
             if (columnToPrint.contains('term')) {
                 from = "$from LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id"
+                where = "$where AND at.deleted IS NULL \n"
             }
 
         }
@@ -559,6 +561,7 @@ class UserAnnotationListing extends AnnotationListing {
         if (columnToPrint.contains('algo')) {
             from = "$from, algo_annotation_term aat "
             where = "$where AND aat.annotation_ident = a.id\n"
+            where = "$where AND aat.deleted IS NULL\n"
         }
 
         return from + "\n" + where
@@ -642,14 +645,17 @@ class AlgoAnnotationListing extends AnnotationListing {
                     "AND a.id = aat.annotation_ident\n" +
                     " AND a.id = aat2.annotation_ident\n" +
                     " AND aat.id <> aat2.id \n" +
-                    " AND aat.term_id <> aat2.term_id \n"
-        } else if (noTerm || noAlgoTerm) {
+                    " AND aat.term_id <> aat2.term_id \n" +
+                    " AND aat.deleted is NULL \n"+
+                    " AND aat2.deleted is NULL \n"
+        } else if ((noTerm || noAlgoTerm) && !(term || terms)) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_job_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
-            where = "$where AND aat.id IS NULL \n"
+            where = "$where AND (aat.id IS NULL OR aat.deleted IS NOT NULL) \n"
 
         } else {
             if (columnToPrint.contains('term')) {
                 from = "$from LEFT OUTER JOIN algo_annotation_term aat ON a.id = aat.annotation_ident"
+                where = "$where AND aat.deleted IS NULL \n"
             }
         }
         if (columnToPrint.contains('image')) {
@@ -677,7 +683,7 @@ class AlgoAnnotationListing extends AnnotationListing {
     def getTermConst() {
         if (term) {
             addIfMissingColumn('term')
-            return " AND aat.term_id = ${term}\n"
+            return " AND (aat.term_id = ${term}" + ((noTerm) ? " OR aat.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -687,7 +693,7 @@ class AlgoAnnotationListing extends AnnotationListing {
 
         if (terms) {
             addIfMissingColumn('term')
-            return "AND aat.term_id IN (${terms.join(',')})\n"
+            return "AND (aat.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR aat.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -773,12 +779,12 @@ class ReviewedAnnotationListing extends AnnotationListing {
                     "AND a.id = at.reviewed_annotation_terms_id\n" +
                     " AND a.id = at2.reviewed_annotation_terms_id\n" +
                     " AND at.term_id <> at2.term_id \n"
-        } else if (noTerm) {
+        } else if (noTerm && !(term || terms)) {
             from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
             where = "$where AND at.reviewed_annotation_terms_id IS NULL \n"
         } else {
             if (columnToPrint.contains('term')) {
-                from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id"
+                from = "$from LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
             }
 
         }
