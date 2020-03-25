@@ -530,16 +530,19 @@ class UserAnnotationListing extends AnnotationListing {
                     "AND a.id = at.user_annotation_id\n" +
                     " AND a.id = at2.user_annotation_id\n" +
                     " AND at.id <> at2.id \n" +
-                    " AND at.term_id <> at2.term_id \n"
+                    " AND at.term_id <> at2.term_id \n"+
+                    " AND at.deleted IS NULL\n"+
+                    " AND at2.deleted IS NULL\n"
         } else if (noTerm && !(term || terms)) {
             from += "LEFT JOIN (SELECT * from annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) at ON a.id = at.user_annotation_id "
-            where = "$where AND at.id IS NULL \n"
+            where = "$where AND (at.id IS NULL OR at.deleted IS NOT NULL) \n"
         } else if (noAlgoTerm) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
-            where = "$where AND aat.id IS NULL \n"
+            where = "$where AND (aat.id IS NULL OR aat.deleted IS NOT NULL) \n"
         } else {
             if (columnToPrint.contains('term')) {
                 from = "$from LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id"
+                where = "$where AND at.deleted IS NULL \n"
             }
 
         }
@@ -558,6 +561,7 @@ class UserAnnotationListing extends AnnotationListing {
         if (columnToPrint.contains('algo')) {
             from = "$from, algo_annotation_term aat "
             where = "$where AND aat.annotation_ident = a.id\n"
+            where = "$where AND aat.deleted IS NULL\n"
         }
 
         return from + "\n" + where
@@ -641,14 +645,17 @@ class AlgoAnnotationListing extends AnnotationListing {
                     "AND a.id = aat.annotation_ident\n" +
                     " AND a.id = aat2.annotation_ident\n" +
                     " AND aat.id <> aat2.id \n" +
-                    " AND aat.term_id <> aat2.term_id \n"
+                    " AND aat.term_id <> aat2.term_id \n" +
+                    " AND aat.deleted is NULL \n"+
+                    " AND aat2.deleted is NULL \n"
         } else if ((noTerm || noAlgoTerm) && !(term || terms)) {
             from = "$from LEFT JOIN (SELECT * from algo_annotation_term x ${users ? "where x.user_job_id IN (${users.join(",")})" : ""}) aat ON a.id = aat.annotation_ident "
-            where = "$where AND aat.id IS NULL \n"
+            where = "$where AND (aat.id IS NULL OR aat.deleted IS NOT NULL) \n"
 
         } else {
             if (columnToPrint.contains('term')) {
                 from = "$from LEFT OUTER JOIN algo_annotation_term aat ON a.id = aat.annotation_ident"
+                where = "$where AND aat.deleted IS NULL \n"
             }
         }
         if (columnToPrint.contains('image')) {
