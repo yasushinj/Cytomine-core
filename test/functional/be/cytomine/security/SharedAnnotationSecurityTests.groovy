@@ -93,6 +93,7 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
          */
 
         ProjectAPI.addUserProject(project.id, getUser2().id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        ProjectAPI.addUserProject(project.id, getUser3().id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
 
         def sharedAnnotation = BasicInstanceBuilder.getSharedAnnotationNotExist()
         sharedAnnotation.annotationClassName = annotation1.class.name
@@ -104,7 +105,7 @@ class SharedAnnotationSecurityTests extends SecurityTestsAbstract {
         json.subject = "subject for test mail"
         json.message = "message for test mail"
 
-        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
+        result = AnnotationCommentAPI.create(sharedAnnotation.annotationIdent,sharedAnnotation.annotationClassName,json.toString(), SecurityTestsAbstract.USERNAME3, SecurityTestsAbstract.PASSWORD3)
         if(mode == Project.EditingMode.CLASSIC) {
             expectedResult = 200;
         } else{
