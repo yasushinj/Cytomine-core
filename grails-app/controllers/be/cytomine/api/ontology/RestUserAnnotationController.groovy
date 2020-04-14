@@ -317,8 +317,10 @@ class RestUserAnnotationController extends RestController {
 
 
     public Object addOne(def service, def json) {
-        def minPoint = params.getLong('minPoint')
-        def maxPoint = params.getLong('maxPoint')
+        def minPoint = json.minPoint ? Double.parseDouble(json.minPoint.toString()) : null
+        def maxPoint = json.maxPoint ? Double.parseDouble(json.maxPoint.toString()) : null
+        if(minPoint == null) minPoint = params.getLong('minPoint')
+        if(maxPoint == null) maxPoint = params.getLong('maxPoint')
 
         def result = userAnnotationService.add(json,minPoint,maxPoint)
         return result
