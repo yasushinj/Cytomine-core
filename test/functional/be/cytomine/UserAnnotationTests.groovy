@@ -89,6 +89,18 @@ class UserAnnotationTests  {
         assert 200 == result.code
     }
 
+    void testAddBigUserAnnotationWithMaxNumberOfPoint() {
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotationNotExist()
+        annotationToAdd.location = new WKTReader().read(new File('test/functional/be/cytomine/utils/very_big_annotation.txt').text)
+        int maxPoints = 100
+        def result = UserAnnotationAPI.create(annotationToAdd.encodeAsJSON(), 0, maxPoints, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        int idAnnotation = result.data.id
+        assert result.data.location.numPoints <= maxPoints
+
+        result = UserAnnotationAPI.show(idAnnotation, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
     void testAddUserAnnotationCorrect() {
         def annotationToAdd = BasicInstanceBuilder.getUserAnnotation()
         def result = UserAnnotationAPI.create(annotationToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
