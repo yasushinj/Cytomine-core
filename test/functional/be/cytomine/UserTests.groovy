@@ -222,6 +222,29 @@ class UserTests  {
         assert 200 == result .code
     }
 
+    void testAddUserInvalidUsername() {
+        def userToAdd = BasicInstanceBuilder.getUserNotExist()
+        userToAdd.username = " invalid "
+        def result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        userToAdd.username = "invalid "
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        userToAdd.username = " invalid"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        userToAdd.username = "in valid"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        userToAdd.username = "valid92_06"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+    }
+
     void testAddUserInvalidEmail() {
         def user = BasicInstanceBuilder.getUser()
         def userToAdd = BasicInstanceBuilder.getUserNotExist()
