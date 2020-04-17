@@ -170,7 +170,7 @@ class UserAPI extends DomainAPI {
     static def create(String json, String username, String password) {
         JSONElement jsonWithPassword = JSON.parse(json)
         if(jsonWithPassword.password==null || jsonWithPassword.password.toString()=="null") {
-            jsonWithPassword.password = "toto"
+            jsonWithPassword.password = "defaultPassword"
             jsonWithPassword.oldPassword = password
         }
         String URL = Infos.CYTOMINEURL + "api/user.json"

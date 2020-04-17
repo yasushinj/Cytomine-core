@@ -213,12 +213,12 @@ class UserTests  {
 
         userToAdd = BasicInstanceBuilder.getUserNotExist()
         jsonWithPassword = JSON.parse(userToAdd.encodeAsJSON())
-        jsonWithPassword.password = "12345"
+        jsonWithPassword.password = "123456"
 
         result = UserAPI.create(jsonWithPassword.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        result = UserAPI.checkPassword("12345",userToAdd.username,"12345")
+        result = UserAPI.checkPassword("123456",userToAdd.username,"123456")
         assert 200 == result .code
     }
 
