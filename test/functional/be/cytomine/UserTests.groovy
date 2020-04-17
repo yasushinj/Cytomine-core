@@ -26,6 +26,7 @@ import be.cytomine.test.http.UserAPI
 import be.cytomine.utils.UpdateData
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 
 /**
@@ -202,6 +203,24 @@ class UserTests  {
 
     }
 
+    void testAddUserInvalidPassword() {
+        def userToAdd = BasicInstanceBuilder.getUserNotExist()
+        JSONElement jsonWithPassword = JSON.parse(userToAdd.encodeAsJSON())
+        jsonWithPassword.password = "123"
+
+        def result = UserAPI.create(jsonWithPassword.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        userToAdd = BasicInstanceBuilder.getUserNotExist()
+        jsonWithPassword = JSON.parse(userToAdd.encodeAsJSON())
+        jsonWithPassword.password = "12345"
+
+        result = UserAPI.create(jsonWithPassword.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        result = UserAPI.checkPassword("12345",userToAdd.username,"12345")
+        assert 200 == result .code
+    }
 
     void testAddUserInvalidEmail() {
         def user = BasicInstanceBuilder.getUser()
@@ -215,11 +234,6 @@ class UserTests  {
         assert 200 == result.code
         userToAdd = BasicInstanceBuilder.getUserNotExist()
         userToAdd.email = "somperson@someschool.school"
-        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-
-        userToAdd = BasicInstanceBuilder.getUserNotExist()
-        userToAdd.email = "vandana.bunwaree@llb.school"
         result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }
