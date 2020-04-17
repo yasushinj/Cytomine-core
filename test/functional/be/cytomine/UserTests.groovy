@@ -236,11 +236,19 @@ class UserTests  {
         result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 400 == result.code
 
-        userToAdd.username = "in valid"
+        userToAdd.username = "is valid"
         result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 400 == result.code
+        assert 200 == result.code
 
-        userToAdd.username = "valid92_06"
+        userToAdd.username = "valid.92_06"
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        userToAdd.username = "ù%Ôë.ã6."
+        result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        userToAdd.username = "Jean-Charles-Marc-Édouard"
         result = UserAPI.create(userToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
     }

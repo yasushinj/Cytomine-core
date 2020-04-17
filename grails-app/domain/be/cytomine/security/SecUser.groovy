@@ -65,7 +65,7 @@ class SecUser extends CytomineDomain implements Serializable {
     static transients = ["newPassword", "currentTransaction", "nextTransaction"]
 
     static constraints = {
-        username (blank: false, matches: "^[^\\s]+")
+        username (blank: false, matches: "^[^\\ ].*[^\\ ]\$")
         password blank: false
         newPassword(nullable : true, blank : false)
         publicKey nullable : true, blank : false, unique: true
