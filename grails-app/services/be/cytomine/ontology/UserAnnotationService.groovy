@@ -174,6 +174,7 @@ class UserAnnotationService extends ModelService {
         Collection<UserAnnotation> annotationsInRoi = []
 
         annotationsInRoi = UserAnnotation.createCriteria()
+                .add(Restrictions.isNull("deleted"))
                 .add(Restrictions.in("user.id", userIDS))
                 .add(Restrictions.eq("image.id", image.id))
                 .add(SpatialRestrictions.intersects("location",bbox))
