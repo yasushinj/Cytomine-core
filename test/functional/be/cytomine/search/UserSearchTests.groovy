@@ -202,6 +202,38 @@ class UserSearchTests {
         assert json.collection[0].containsKey("role")
         assert json.size == 2
 
+
+        searchParameters = [[operator : "in", field : "projectRole", value: "contributor"]]
+
+        result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection[0].containsKey("role")
+        assert json.size == 1
+
+
+        searchParameters = [[operator : "in", field : "projectRole", value: "representative"]]
+
+        result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size == 0
+
+
+        def pur = BasicInstanceBuilder.getProjectRepresentativeUserNotExist()
+        pur.project = project
+        pur.user = u2
+        BasicInstanceBuilder.saveDomain(pur)
+        searchParameters = [[operator : "in", field : "projectRole", value: "representative"]]
+
+        result = UserAPI.searchAndList(project.id,"project","user", true, true, true, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection[0].containsKey("role")
+        assert json.size == 1
     }
 
 
