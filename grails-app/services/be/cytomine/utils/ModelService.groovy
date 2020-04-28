@@ -299,12 +299,12 @@ abstract class ModelService {
                 }
                 resp = [domain:resp.data.get(objectName).id, status : resp.status]
             } catch(WrongArgumentException | CytomineException e){
-                log.info e.printStackTrace()
+                log.info(((CytomineException)e).getMessage())
+                log.error(((CytomineException)e).getStackTrace().collect {it.toString()}.join("\n"))
                 errors << [data:json[i], message : e.msg]
                 resp = [message : e.msg, status : e.code]
             } catch(Exception e) {
-                log.info e
-                log.info e.printStackTrace()
+                e.printStackTrace()
                 resp = [message : e.toString(), status : 500]
             }
 
