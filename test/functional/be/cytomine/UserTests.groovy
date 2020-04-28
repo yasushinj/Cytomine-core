@@ -206,19 +206,19 @@ class UserTests  {
     void testAddUserInvalidPassword() {
         def userToAdd = BasicInstanceBuilder.getUserNotExist()
         JSONElement jsonWithPassword = JSON.parse(userToAdd.encodeAsJSON())
-        jsonWithPassword.password = "123"
+        jsonWithPassword.password = "123456"
 
         def result = UserAPI.create(jsonWithPassword.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 400 == result.code
 
         userToAdd = BasicInstanceBuilder.getUserNotExist()
         jsonWithPassword = JSON.parse(userToAdd.encodeAsJSON())
-        jsonWithPassword.password = "123456"
+        jsonWithPassword.password = "12345678"
 
         result = UserAPI.create(jsonWithPassword.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        result = UserAPI.checkPassword("123456",userToAdd.username,"123456")
+        result = UserAPI.checkPassword("12345678",userToAdd.username,"12345678")
         assert 200 == result .code
     }
 
