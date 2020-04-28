@@ -107,9 +107,25 @@ class BootstrapOldVersionService {
             new Sql(dataSource).executeUpdate("ALTER TABLE processing_server DROP COLUMN IF EXISTS url;")
             new Sql(dataSource).executeUpdate("DELETE FROM processing_server;")
         }
+        exists = new Sql(dataSource).rows("SELECT COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'processing_server' and COLUMN_NAME = 'username';").size() > 0
+        if (!exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE processing_server ADD COLUMN IF NOT EXISTS name VARCHAR NOT NULL;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE processing_server ADD CONSTRAINT unique_name UNIQUE (name);")
+            new Sql(dataSource).executeUpdate("ALTER TABLE processing_server ADD COLUMN IF NOT EXISTS username VARCHAR NOT NULL;")
+            new Sql(dataSource).executeUpdate("ALTER TABLE processing_server ADD COLUMN IF NOT EXISTS index INTEGER NOT NULL;")
+        }
 
         new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN IF EXISTS service_name;")
         new Sql(dataSource).executeUpdate("ALTER TABLE software DROP COLUMN IF EXISTS result_sample;")
+        def constraints = new Sql(dataSource).rows("SELECT CONSTRAINT_NAME " +
+                "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS " +
+                "WHERE TABLE_NAME = 'software' and CONSTRAINT_TYPE = 'UNIQUE';")
+        exists = constraints.size() == 1
+        if (exists) {
+            new Sql(dataSource).executeUpdate("ALTER TABLE software DROP CONSTRAINT "+constraints[0].constraint_name+";")
+        }
 
         new Sql(dataSource).executeUpdate("UPDATE software SET deprecated = false WHERE deprecated IS NULL;")
         new Sql(dataSource).executeUpdate("UPDATE software_parameter SET server_parameter = false WHERE server_parameter IS NULL;")
