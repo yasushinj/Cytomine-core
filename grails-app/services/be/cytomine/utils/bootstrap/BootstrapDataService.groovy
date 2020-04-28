@@ -37,7 +37,6 @@ class BootstrapDataService {
     def initData() {
 
         recreateTableFromNotDomainClass()
-        amqpQueueConfigService.initAmqpQueueConfigDefaultValues()
 
         def imagingServer = bootstrapUtilsService.createNewImagingServer()
         def filters = [
@@ -138,9 +137,8 @@ class BootstrapDataService {
         rabbitMQUser.setPublicKey(grailsApplication.config.grails.rabbitMQPublicKey)
         rabbitMQUser.save(flush : true)
 
-        //TODO tests
-        SoftwareUserRepository sur = new SoftwareUserRepository(provider : "GitHub", username: "Cytomine-ULiege", dockerUsername : "cytomineuliege", prefix : "S_")
-        //sur.save(failOnError: true)
+        SoftwareUserRepository sur = new SoftwareUserRepository(provider : "GitHub", username: "cytomine", dockerUsername : "cytomine", prefix : "S_")
+        sur.save(failOnError: true)
     }
 
     public void recreateTableFromNotDomainClass() {
