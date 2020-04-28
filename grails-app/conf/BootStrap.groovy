@@ -112,15 +112,7 @@ class BootStrap {
 
         if(Version.count()==0) {
             log.info "Version was not set, set to last version"
-            Version.setCurrentVersion(Long.parseLong(grailsApplication.metadata.'app.versionDate'),grailsApplication.metadata.'app.version')
-        }
-
-        // TODO : delete this sql in v3.0
-        boolean exists = new Sql(dataSource).rows("SELECT column_name " +
-                "FROM information_schema.columns " +
-                "WHERE table_name='sec_user' and column_name='origin';").size() == 1;
-        if (!exists) {
-            new Sql(dataSource).executeUpdate("ALTER TABLE sec_user ADD COLUMN origin VARCHAR;")
+            Version.setCurrentVersion(grailsApplication.metadata.'app.version')
         }
 
         //Initialize marshallers and services
@@ -191,16 +183,6 @@ class BootStrap {
 
 
         log.info "init change for old version..."
-        // TODO : delete this sql in v3.0
-        exists = new Sql(dataSource).rows("SELECT column_name " +
-                "FROM information_schema.columns " +
-                "WHERE table_name='version' and column_name='major';").size() == 1;
-        if (!exists) {
-            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN major integer;")
-            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN minor integer;")
-            new Sql(dataSource).executeUpdate("ALTER TABLE version ADD COLUMN patch integer;")
-        }
-
         bootstrapOldVersionService.execChangeForOldVersion()
 
         log.info "create multiple IS and Retrieval..."
