@@ -37,6 +37,8 @@ class BootstrapDataService {
     def initData() {
 
         recreateTableFromNotDomainClass()
+        amqpQueueConfigService.initAmqpQueueConfigDefaultValues()
+        bootstrapUtilsService.initRabbitMq()
 
         def imagingServer = bootstrapUtilsService.createNewImagingServer()
         def filters = [
