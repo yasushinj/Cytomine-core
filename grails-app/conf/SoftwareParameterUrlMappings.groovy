@@ -27,5 +27,8 @@ class SoftwareParameterUrlMappings {
         "/api/software/$id/software_parameter.$format"(controller:"restSoftwareParameter"){
             action = [GET: "listBySoftware"]
         }
+        "/api/software/$id/parameter.$format"(controller:"restSoftwareParameter"){
+            action = [GET: "listBySoftware"]
+        }
     }
 }
