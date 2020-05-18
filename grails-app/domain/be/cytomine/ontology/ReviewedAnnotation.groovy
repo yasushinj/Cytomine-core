@@ -256,7 +256,7 @@ class ReviewedAnnotation extends AnnotationDomain implements Serializable {
      */
     void checkAlreadyExist() {
         ReviewedAnnotation.withNewSession {
-                ReviewedAnnotation reviewed = ReviewedAnnotation.findByParentIdent(parentIdent)
+                ReviewedAnnotation reviewed = ReviewedAnnotation.findByParentIdentAndDeletedIsNull(parentIdent)
                 if(reviewed!=null && (reviewed.id!=id))  {
                     throw new AlreadyExistException("This annotation is already reviewed!")
                 }
