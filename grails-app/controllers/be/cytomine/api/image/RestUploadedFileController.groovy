@@ -17,6 +17,7 @@ package be.cytomine.api.image
 */
 
 import be.cytomine.api.RestController
+import be.cytomine.Exception.MiddlewareException
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
 import be.cytomine.image.Mime
@@ -268,20 +269,25 @@ class RestUploadedFileController extends RestController {
             uploadedFile.image = abstractImage
             uploadedFile.save(flush:true,failOnError: true)
 
-            imagePropertiesService.clear(abstractImage)
-            imagePropertiesService.populate(abstractImage)
-            imagePropertiesService.extractUseful(abstractImage)
-            abstractImage.save(flush: true,failOnError: true)
-            log.info "Image = ${uploadedFile.image?.id}"
+            try {
+                imagePropertiesService.clear(abstractImage)
+                imagePropertiesService.populate(abstractImage)
+                imagePropertiesService.extractUseful(abstractImage)
+                abstractImage.save(flush: true,failOnError: true)
+                log.info "Image = ${uploadedFile.image?.id}"
 
-            uploadedFile.getProjects()?.each { project_id ->
-                Project project = projectService.read(project_id)
-                projects << project
-                ImageInstance imageInstance = new ImageInstance( baseImage : abstractImage, project:  project, user :currentUser)
-                imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
+                uploadedFile.getProjects()?.each { project_id ->
+                    Project project = projectService.read(project_id)
+                    projects << project
+                    ImageInstance imageInstance = new ImageInstance( baseImage : abstractImage, project:  project, user :currentUser)
+                    imageInstanceService.add(JSON.parse(imageInstance.encodeAsJSON()))
+                }
+            } catch(MiddlewareException e){
+                uploadedFile.status = UploadedFile.ERROR_DEPLOYMENT
+                uploadedFile.save(flush:true,failOnError: true)
+                responseError(e)
+                return
             }
-
-
 
         } else {
             sample.errors?.each {

@@ -18,6 +18,7 @@ package be.cytomine.image
 
 import be.cytomine.meta.Property
 import grails.converters.JSON
+import be.cytomine.Exception.MiddlewareException
 
 /**
  * Cytomine
@@ -62,9 +63,6 @@ class ImagePropertiesService implements Serializable{
 
 
     def extractUseful(AbstractImage image) {
-        def magnificationProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.magnification")
-        if (magnificationProperty) image.setMagnification(Integer.parseInt(magnificationProperty.getValue()))
-        else log.info "magnificationProperty is null"
         //Width
         def widthProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.width")
         if (widthProperty) image.setWidth(Integer.parseInt(widthProperty.getValue()))
@@ -73,6 +71,13 @@ class ImagePropertiesService implements Serializable{
         def heightProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.height")
         if (heightProperty) image.setHeight(Integer.parseInt(heightProperty.getValue()))
         else log.error "heightProperty is null"
+        if(!widthProperty || !heightProperty){
+            throw new MiddlewareException("Width or Height cannot be determined")
+        }
+        //Magnification
+        def magnificationProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.magnification")
+        if (magnificationProperty) image.setMagnification(Integer.parseInt(magnificationProperty.getValue()))
+        else log.info "magnificationProperty is null"
         //Resolution
         def resolutionProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.resolution")
         if (resolutionProperty) image.setResolution(Float.parseFloat(resolutionProperty.getValue()))
