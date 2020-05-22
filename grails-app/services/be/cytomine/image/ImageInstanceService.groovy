@@ -315,6 +315,7 @@ class ImageInstanceService extends ModelService {
         if(sortColumn.equals("numberOfReviewedAnnotations")) sortColumn = "countImageReviewedAnnotations"
 
         String sortedProperty = ReflectionUtils.findField(ImageInstance, sortColumn) ? "${imageInstanceAlias}." + sortColumn : null
+        if(sortColumn.equals("blindedName")) sortColumn = "id"
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(AbstractImage, sortColumn) ? abstractImageAlias + "." + sortColumn : null
         if(!sortedProperty) sortedProperty = ReflectionUtils.findField(Mime, sortColumn) ? mimeAlias + "." + sortColumn : null
         if(!sortedProperty) throw new CytomineMethodNotYetImplementedException("ImageInstance list sorted by $sortDirection is not implemented")
