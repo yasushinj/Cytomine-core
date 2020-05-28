@@ -639,6 +639,7 @@ class AlgoAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
         if (multipleTerm) {
             from = "$from, algo_annotation_term aat, algo_annotation_term aat2 "
             where = "$where" +
@@ -670,8 +671,6 @@ class AlgoAnnotationListing extends AnnotationListing {
                     "AND u.job_id = j.id\n" +
                     "AND j.software_id = s.id\n"
         }
-
-        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }
@@ -773,6 +772,8 @@ class ReviewedAnnotationListing extends AnnotationListing {
         def where = "WHERE true\n"
 
 
+        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
+
         if (multipleTerm) {
             from = "$from, reviewed_annotation_term at, reviewed_annotation_term at2 "
             where = "$where" +
@@ -799,8 +800,6 @@ class ReviewedAnnotationListing extends AnnotationListing {
             from = "$from, sec_user u "
             where = "$where AND a.user_id = u.id \n"
         }
-
-        if(tags) from += " LEFT OUTER JOIN tag_domain_association tda ON a.id = tda.domain_ident AND tda.domain_class_name = '${getDomainClass()}' "
 
         return from + "\n" + where
     }
