@@ -18,8 +18,10 @@
 import be.cytomine.image.ImageProcessingService
 import be.cytomine.utils.CytomineMailService
 import be.cytomine.image.multidim.ImageGroupHDF5Service
+import be.cytomine.image.ImagePropertiesService
 import be.cytomine.middleware.ImageServerService
 import be.cytomine.processing.ImageRetrievalService
+import be.cytomine.image.AbstractImage
 import be.cytomine.security.SecUser
 import be.cytomine.test.Infos
 import be.cytomine.utils.Version
@@ -215,6 +217,10 @@ class BootStrap {
         //mock mail service
         CytomineMailService.metaClass.send = {
             String from, String[] to, String cc, String subject, String message, def attachment -> println "\n\n mocked mail send \n\n";
+        }
+
+        ImagePropertiesService.metaClass.extractUseful = {
+            AbstractImage abstractImage -> println "\n\n mocked extractUseful \n\n"; return null
         }
     }
 
