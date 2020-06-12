@@ -255,16 +255,16 @@ class BasicInstanceBuilder {
     }
 
     static ImageInstance getImageInstance() {
-        getImageInstanceNotExist(BasicInstanceBuilder.getProject(),true)
+        getImageInstanceNotExist(getProject(),true)
     }
 
-    static ImageInstance getImageInstanceNotExist(Project project = BasicInstanceBuilder.getProject(), boolean save = false) {
+    static ImageInstance getImageInstanceNotExist(Project project = getProject(), boolean save = false) {
         ImageInstance image = new ImageInstance(
-                baseImage: BasicInstanceBuilder.getAbstractImageNotExist(true),
+                baseImage: getAbstractImageNotExist(true),
                 project: project,
-                //slide: BasicInstanceBuilder.getSlide(),
+                //slide: getSlide(),
                 user: User.findByUsername(Infos.SUPERADMINLOGIN))
-        save ? BasicInstanceBuilder.saveDomain(image) : BasicInstanceBuilder.checkDomain(image)
+        save ? saveDomain(image) : checkDomain(image)
     }
 
 
@@ -272,16 +272,16 @@ class BasicInstanceBuilder {
         saveDomain(getNestedImageInstanceNotExist())
     }
 
-    static NestedImageInstance getNestedImageInstanceNotExist(ImageInstance imageInstance = BasicInstanceBuilder.getImageInstance(), boolean save = false) {
+    static NestedImageInstance getNestedImageInstanceNotExist(ImageInstance imageInstance = getImageInstance(), boolean save = false) {
         NestedImageInstance nestedImage = new NestedImageInstance(
                 baseImage: getAbstractImageNotExist(true),
                 parent: imageInstance,
                 x: 10,
                 y: 20,
                 project: imageInstance.project,
-                //slide: BasicInstanceBuilder.getSlide(),
+                //slide: getSlide(),
                 user: imageInstance.user)
-        save ? BasicInstanceBuilder.saveDomain(nestedImage) : BasicInstanceBuilder.checkDomain(nestedImage)
+        save ? saveDomain(nestedImage) : checkDomain(nestedImage)
     }
 
     static AlgoAnnotation getAlgoAnnotationNotExist(Project project, boolean save = false) {
@@ -675,7 +675,7 @@ class BasicInstanceBuilder {
         )
 
         sharedannotation.receivers = new HashSet<User>();
-        sharedannotation.receivers.add(BasicInstanceBuilder.getUser( Infos.ADMINLOGIN, Infos.ADMINPASSWORD))
+        sharedannotation.receivers.add(getUser( Infos.ADMINLOGIN, Infos.ADMINPASSWORD))
         saveDomain(sharedannotation)
     }
 
@@ -688,7 +688,7 @@ class BasicInstanceBuilder {
                 annotationClassName: annotation.class.name
         )
         sharedannotation.receivers = new HashSet<User>();
-        sharedannotation.receivers.add(BasicInstanceBuilder.getSuperAdmin( Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD))
+        sharedannotation.receivers.add(getSuperAdmin( Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD))
         save ? saveDomain(sharedannotation) : checkDomain(sharedannotation)
     }
 
@@ -1589,7 +1589,7 @@ class BasicInstanceBuilder {
             imageServer.service = "/image/tile"
             imageServer.url =  urlImageServer
             imageServer.available = true
-            BasicInstanceBuilder.saveDomain(imageServer)
+            saveDomain(imageServer)
         }
 
         Mime mime = Mime.findByMimeType("image/pyrtiff")
@@ -1597,7 +1597,7 @@ class BasicInstanceBuilder {
             mime = new Mime()
             mime.mimeType = "image/pyrtiff"
             mime.extension = "tif"
-            BasicInstanceBuilder.saveDomain(mime)
+            saveDomain(mime)
         }
 
         MimeImageServer mimeImageServer = MimeImageServer.findByMimeAndImageServer(mime,imageServer)
@@ -1605,7 +1605,7 @@ class BasicInstanceBuilder {
             mimeImageServer = new MimeImageServer()
             mimeImageServer.mime = mime
             mimeImageServer.imageServer = imageServer
-            BasicInstanceBuilder.saveDomain(mimeImageServer)
+            saveDomain(mimeImageServer)
         }
 
         Storage storage = Storage.findByUser(user)
@@ -1614,7 +1614,7 @@ class BasicInstanceBuilder {
             storage.basePath = "/data/test.cytomine.coop/1"
             storage.name = "lrollus test storage"
             storage.user = user
-            BasicInstanceBuilder.saveDomain(storage)
+            saveDomain(storage)
         }
 
         ImageServerStorage imageServerStorage = ImageServerStorage.findByImageServerAndStorage(imageServer,storage)
@@ -1622,7 +1622,7 @@ class BasicInstanceBuilder {
             imageServerStorage = new ImageServerStorage()
             imageServerStorage.storage = storage
             imageServerStorage.imageServer = imageServer
-            BasicInstanceBuilder.saveDomain(imageServerStorage)
+            saveDomain(imageServerStorage)
         }
 
         AbstractImage abstractImage = AbstractImage.findByFilename("1383567901006/test.tif")
@@ -1638,7 +1638,7 @@ class BasicInstanceBuilder {
             abstractImage.mime = mime
             abstractImage.originalFilename = "test01.jpg"
             abstractImage.user = user
-            BasicInstanceBuilder.saveDomain(abstractImage)
+            saveDomain(abstractImage)
         }
 
         StorageAbstractImage storageAbstractImage =  StorageAbstractImage.findByStorageAndAbstractImage(storage,abstractImage)
@@ -1646,14 +1646,14 @@ class BasicInstanceBuilder {
             storageAbstractImage = new StorageAbstractImage()
             storageAbstractImage.abstractImage = abstractImage
             storageAbstractImage.storage = storage
-            BasicInstanceBuilder.saveDomain(storageAbstractImage)
+            saveDomain(storageAbstractImage)
         }
 
         Project project = Project.findByName("testimage")
         if(!project) {
-            project = BasicInstanceBuilder.getProjectNotExist(true)
+            project = getProjectNotExist(true)
             project.name = "testimage"
-            BasicInstanceBuilder.saveDomain(project)
+            saveDomain(project)
         }
 
         UploadedFile uploadedFile = UploadedFile.findByPath(abstractImage.filename)
@@ -1669,7 +1669,7 @@ class BasicInstanceBuilder {
             uploadedFile.storages = [storage.id]
             uploadedFile.projects = [project.id]
             uploadedFile.size = 0 //fake
-            BasicInstanceBuilder.saveDomain(uploadedFile)
+            saveDomain(uploadedFile)
         }
 
         ImageInstance imageInstance = ImageInstance.findByBaseImageAndProject(abstractImage,project)
@@ -1678,7 +1678,7 @@ class BasicInstanceBuilder {
             imageInstance.baseImage = abstractImage
             imageInstance.project = project
             imageInstance.user = User.findByUsername(Infos.SUPERADMINLOGIN)
-            BasicInstanceBuilder.saveDomain(imageInstance)
+            saveDomain(imageInstance)
         }
 
 
@@ -1686,7 +1686,7 @@ class BasicInstanceBuilder {
         if (!imagingServer) {
             imagingServer = new ImagingServer()
             imagingServer.url = "http://image.cytomine.be"
-            BasicInstanceBuilder.saveDomain(imagingServer)
+            saveDomain(imagingServer)
         }
 
         ReviewedAnnotation.findAllByImage(imageInstance).each {
