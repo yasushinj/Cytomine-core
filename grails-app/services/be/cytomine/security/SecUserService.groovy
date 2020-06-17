@@ -766,6 +766,9 @@ class SecUserService extends ModelService {
                 if(project.ontology) {
                     log.info "addUserToProject ontology=" + project.ontology + " username=" + user?.username + " ADMIN=" + admin
                     permissionService.addPermission(project.ontology, user.username, READ)
+                    if(admin) {
+                        permissionService.addPermission(project.ontology, user.username, ADMINISTRATION)
+                    }
                 }
             }
         }

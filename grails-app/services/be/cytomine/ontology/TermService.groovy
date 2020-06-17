@@ -17,6 +17,7 @@ package be.cytomine.ontology
 */
 
 import be.cytomine.Exception.ConstraintException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.command.*
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
@@ -42,6 +43,7 @@ class TermService extends ModelService {
     def relationTermService
     def modelService
     def securityACLService
+    def ontologyService
 
     def dataSource
 
@@ -124,6 +126,9 @@ class TermService extends ModelService {
     def add(def json) {
         securityACLService.check(json.ontology, Ontology,WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
+        Ontology ontology = ontologyService.read(json.ontology)
+        if(!ontologyService.haveAssociatedProjectsPermission(ontology, currentUser))
+            throw new ForbiddenException("Ontology is linked with other projects that you don't have permission. Cannot add term!")
         return executeCommand(new AddCommand(user: currentUser),null,json)
     }
 
@@ -136,6 +141,8 @@ class TermService extends ModelService {
     def update(Term term, def jsonNewData) {
         securityACLService.check(term.container(),WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
+        if(!ontologyService.haveAssociatedProjectsPermission(term.ontology, currentUser))
+            throw new ForbiddenException("Ontology is linked with other projects that you don't have permission. Cannot modify term!")
         return executeCommand(new EditCommand(user: currentUser), term,jsonNewData)
     }
 
@@ -154,6 +161,8 @@ class TermService extends ModelService {
 
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),DELETE)
+        if(!ontologyService.haveAssociatedProjectsPermission(domain.ontology, currentUser))
+            throw new ForbiddenException("Ontology is linked with other projects that you don't have permission. Cannot delete term!")
         Command c = new EditCommand(user: currentUser, transaction: transaction)
         c.delete = true
         return executeCommand(c,domain,jsonNewData)

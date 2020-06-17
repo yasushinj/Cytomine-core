@@ -17,11 +17,13 @@ package be.cytomine.ontology
 */
 
 import be.cytomine.Exception.ConstraintException
+import be.cytomine.Exception.ForbiddenException
 import be.cytomine.Exception.CytomineException
 import be.cytomine.annotations.DependencyOrder
 import be.cytomine.command.*
 import be.cytomine.project.Project
 import be.cytomine.security.SecUser
+import be.cytomine.security.User
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
 import grails.converters.JSON
@@ -38,6 +40,7 @@ class OntologyService extends ModelService {
     def transactionService
     def termService
     def securityACLService
+    def projectService
 
     def currentDomain() {
         return Ontology
@@ -98,6 +101,8 @@ class OntologyService extends ModelService {
     def update(Ontology domain, def jsonNewData) throws CytomineException {
         securityACLService.check(domain,WRITE)
         SecUser currentUser = cytomineService.getCurrentUser()
+        if(!haveAssociatedProjectsPermission(domain, currentUser))
+            throw new ForbiddenException("Ontology is linked with other projects that you don't have permission. Cannot modify ontology!")
         return executeCommand(new EditCommand(user: currentUser),domain,jsonNewData)
     }
 
@@ -127,6 +132,18 @@ class OntologyService extends ModelService {
 
     def afterAdd(def domain, def response) {
         aclUtilService.addPermission(domain, cytomineService.currentUser.username, BasePermission.ADMINISTRATION)
+    }
+
+    boolean haveAssociatedProjectsPermission(Ontology domain, SecUser user){
+        //check if manager of all associated project
+        def allProjectList = Project.findAllByOntologyAndDeletedIsNull(domain).sort{it.id}
+        def managedProjectList = projectService.listByAdmin(user).collect{it.id}.sort()
+        def relatedProjectNotManaged = allProjectList.collect{it.id}-managedProjectList
+
+        if (!relatedProjectNotManaged.isEmpty()) {
+            return false
+        }
+        return true
     }
 
     @DependencyOrder(order = 0)
