@@ -234,4 +234,35 @@ class OntologySecurityTests extends SecurityTestsAbstract {
         assert (200 == OntologyAPI.show(ontology.id,USERNAME2,PASSWORD2).code)
         assert(true==OntologyAPI.containsInJSONList(ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
     }
+
+    void testOntologyAccessForProjectUser() {
+
+        //Get user1
+        User user1 = BasicInstanceBuilder.getUser(USERNAME1,PASSWORD1)
+        //Get user2
+        User user2 = BasicInstanceBuilder.getUser(USERNAME2,PASSWORD2)
+
+        //Create new project (user1)
+        def result = ProjectAPI.create(BasicInstanceBuilder.getProjectNotExist().encodeAsJSON(),USERNAME1,PASSWORD1)
+        assert 200 == result.code
+        Project project = result.data
+
+        //Add right to user2
+        def resAddUser = ProjectAPI.addUserProject(project.id,user2.id,USERNAME1,PASSWORD1)
+        assert 200 == resAddUser.code
+
+        //check if user 2 can access/update/delete
+        assert (200 == OntologyAPI.show(project.ontology.id,USERNAME2,PASSWORD2).code)
+        assert (true ==OntologyAPI.containsInJSONList(project.ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
+
+        result = OntologyAPI.create(BasicInstanceBuilder.getOntologyNotExist().encodeAsJSON(),USERNAME1,PASSWORD1)
+        assert 200 == result.code
+        Ontology ontology = result.data
+        project.ontology = ontology
+        project = BasicInstanceBuilder.saveDomain(project)
+
+        assert (200 == OntologyAPI.show(project.ontology.id,USERNAME2,PASSWORD2).code)
+        assert (true ==OntologyAPI.containsInJSONList(project.ontology.id,JSON.parse(OntologyAPI.list(USERNAME2,PASSWORD2).data)))
+    }
+
 }
