@@ -22,6 +22,7 @@ import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.OntologyAPI
 import be.cytomine.test.http.ProjectAPI
+import be.cytomine.utils.UpdateData
 import grails.converters.JSON
 
 /**
@@ -261,12 +262,9 @@ class OntologySecurityTests extends SecurityTestsAbstract {
 
         result = OntologyAPI.create(BasicInstanceBuilder.getOntologyNotExist().encodeAsJSON(),USERNAME1,PASSWORD1)
         Ontology ontology2 = result.data
-        project.ontology = ontology2
-        //project = BasicInstanceBuilder.saveDomain(project)
-        result = ProjectAPI.update(project.id, project.encodeAsJSON(),USERNAME1,PASSWORD1)
+        def data = UpdateData.createUpdateSet(project,[ontology: [project.ontology, ontology2]])
+        result = ProjectAPI.update(project.id, data.postData, USERNAME1,PASSWORD1)
         assert 200 == result.code
-        println "result.data"
-        println result.data
 
         def json = JSON.parse(result.data)
         int idProject = json.project.id
