@@ -45,7 +45,10 @@ class AbstractSlice extends CytomineDomain implements Serializable {
     Integer time
 
     @RestApiObjectFields(params = [
-            @RestApiObjectField(apiFieldName = "rank", description = "The rank of the slice computed as ['channel' + 'image.channels' * ('zStack' + 'image.depth' * 'time')]", useForCreation = false)
+            @RestApiObjectField(apiFieldName = "rank", description = "The rank of the slice computed as ['channel' + 'image.channels' * ('zStack' + 'image.depth' * 'time')]", allowedType = "int", useForCreation = false),
+            @RestApiObjectField(apiFieldName = "path", description = "The internal path of the file", allowedType = "string", useForCreation = false),
+            @RestApiObjectField(apiFieldName = "channelName", description = "Optional channel name", allowedType = "string"),
+            @RestApiObjectField(apiFieldName = "imageServerUrl", description = "URL of the server with tiles", allowedType = "string", useForCreation = false),
     ])
 
     static belongsTo = [AbstractImage]
