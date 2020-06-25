@@ -206,6 +206,9 @@ class ImageInstanceService extends ModelService {
             map['created'] = map['created'].getTime()
             map['deleted'] = map['deleted']?.getTime()
             map['updated'] = map['updated']?.getTime()
+            map['reviewStart'] = map['reviewStart']?.getTime()
+            map['reviewStop'] = map['reviewStop']?.getTime()
+            map['reviewUser'] = map['reviewUserId']
             map['baseImage'] = map['baseImageId']
             map['project'] = map['projectId']
 
