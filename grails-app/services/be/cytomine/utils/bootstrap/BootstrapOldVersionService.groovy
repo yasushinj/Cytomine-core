@@ -83,6 +83,23 @@ class BootstrapOldVersionService {
         Version.setCurrentVersion(grailsApplication.metadata.'app.version')
     }
 
+    void initv3_0_2() {
+        log.info "3.0.2"
+        log.info "ontology permission recalculation"
+        def projects = Project.findAllByDeletedIsNull()
+        short i = 0
+        projects.each { project ->
+            log.info "project $project"
+            secUserService.listUsers(project).each { user ->
+                permissionService.addPermission(project.ontology, user.username, BasePermission.READ)
+            }
+            secUserService.listAdmins(project).each { admin ->
+                permissionService.addPermission(project.ontology, admin.username, BasePermission.ADMINISTRATION)
+            }
+            log.info "$i/${projects.size()}"
+        }
+    }
+
     void initv3_0_0() {
         log.info "3.0.0"
         new Sql(dataSource).executeUpdate("ALTER TABLE version DROP COLUMN IF EXISTS number;")
