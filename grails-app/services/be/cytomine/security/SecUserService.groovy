@@ -79,6 +79,7 @@ class SecUserService extends ModelService {
     def storageService
     def projectRepresentativeUserService
     def imageConsultationService
+    def projectService
     def projectConnectionService
 
     def currentDomain() {
@@ -766,6 +767,9 @@ class SecUserService extends ModelService {
                 if(project.ontology) {
                     log.info "addUserToProject ontology=" + project.ontology + " username=" + user?.username + " ADMIN=" + admin
                     permissionService.addPermission(project.ontology, user.username, READ)
+                    if (admin) {
+                        permissionService.addPermission(project.ontology, user.username, ADMINISTRATION)
+                    }
                 }
             }
         }
@@ -786,7 +790,7 @@ class SecUserService extends ModelService {
         if (project) {
             log.info "deleteUserFromProject project=" + project?.id + " username=" + user?.username + " ADMIN=" + admin
             if(project.ontology) {
-                removeOntologyRightIfNecessary(project, user)
+                removeOntologyRightIfNecessary(project, user, admin)
             }
             if(admin) {
                 permissionService.deletePermission(project, user.username, ADMINISTRATION)
@@ -802,14 +806,20 @@ class SecUserService extends ModelService {
         [data: [message: "OK"], status: 201]
     }
 
-    private void removeOntologyRightIfNecessary(Project project, User user) {
+    private void removeOntologyRightIfNecessary(Project project, User user, boolean admin = false) {
         //we remove the right ONLY if user has no other project with this ontology
         List<Project> projects = securityACLService.getProjectList(user,project.ontology)
         List<Project> otherProjects = projects.findAll{it.id!=project.id}
 
         if(otherProjects.isEmpty()) {
             //user has no other project with this ontology, remove the right!
-            //permissionService.deletePermission(project.ontology,user.username,READ)
+            permissionService.deletePermission(project.ontology,user.username,READ)
+            permissionService.deletePermission(project.ontology,user.username,ADMINISTRATION)
+        } else if(admin) {
+            def managedProjectList = projectService.listByAdmin(user).collect { it.id }
+            if (!otherProjects.any { managedProjectList.contains(it.id) }) {
+                permissionService.deletePermission(project.ontology, user.username, ADMINISTRATION)
+            }
         }
 
     }

@@ -69,6 +69,7 @@ class ProjectService extends ModelService {
     def secRoleService
     def notificationService
     def projectRepresentativeUserService
+    def ontologyService
 
     def currentDomain() {
         Project
@@ -380,7 +381,6 @@ class ProjectService extends ModelService {
 
 
     def listByCreator(User user) {
-        securityACLService.checkIsSameUser(user,cytomineService.currentUser)
         def data = []
         def sql = new Sql(dataSource)
          sql.eachRow("select * from creator_project where user_id = ?",[user.id]) {
@@ -391,7 +391,6 @@ class ProjectService extends ModelService {
     }
 
     def listByAdmin(User user) {
-        securityACLService.checkIsSameUser(user,cytomineService.currentUser)
         def data = []
         def sql = new Sql(dataSource)
         sql.eachRow("select * from admin_project where user_id = ?",[user.id]) {
@@ -402,7 +401,6 @@ class ProjectService extends ModelService {
     }
 
     def listByUser(User user) {
-        securityACLService.checkIsSameUser(user,cytomineService.currentUser)
         def data = []
         def sql = new Sql(dataSource)
         sql.eachRow("select * from user_project where user_id = ?",[user.id]) {
@@ -480,8 +478,9 @@ class ProjectService extends ModelService {
         taskService.updateTask(task,5,"Start editing project ${project.name}")
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(project.container(),WRITE)
+        Ontology ontology = project.ontology
 
-        if(project.ontology?.id != jsonNewData.ontology){
+        if(ontology?.id != jsonNewData.ontology){
             boolean deleteTerms = jsonNewData.forceOntologyUpdate
             long associatedTermsCount
             long userAssociatedTermsCount = 0L
@@ -579,6 +578,10 @@ class ProjectService extends ModelService {
                 log.info "projectDeleteReprs project=${project} user=${repr}"
                 projectRepresentativeUserService.delete(repr)
             }
+        }
+        if(ontology?.id != jsonNewData.ontology){
+            if(ontology) ontologyService.determineRightsForUsers(ontology, secUserService.listUsers(project))
+            if(project.ontology) ontologyService.determineRightsForUsers(project.ontology, secUserService.listUsers(project))
         }
         return result
     }
