@@ -481,7 +481,6 @@ class SecUserService extends ModelService {
     }
 
     def listUsers(Project project, boolean showUserJob = false) {
-        securityACLService.check(project,READ)
         List<User> users = User.executeQuery("select distinct secUser " +
                 "from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, User as secUser "+
                 "where aclObjectId.objectId = "+project.id+" " +
@@ -515,7 +514,6 @@ class SecUserService extends ModelService {
 
 
     def listAdmins(Project project) {
-        securityACLService.check(project,READ)
         def users = SecUser.executeQuery("select distinct secUser from AclObjectIdentity as aclObjectId, AclEntry as aclEntry, AclSid as aclSid, SecUser as secUser "+
                 "where aclObjectId.objectId = "+project.id+" and aclEntry.aclObjectIdentity = aclObjectId.id and aclEntry.mask = 16 and aclEntry.sid = aclSid.id and aclSid.sid = secUser.username and secUser.class = 'be.cytomine.security.User'")
         return users

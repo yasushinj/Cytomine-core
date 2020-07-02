@@ -33,6 +33,7 @@ import grails.converters.JSON
 import grails.plugin.springsecurity.SpringSecurityUtils
 import groovy.sql.Sql
 import org.apache.commons.io.FilenameUtils
+import org.springframework.security.acls.domain.BasePermission
 
 /**
  * Cytomine
@@ -53,6 +54,8 @@ class BootstrapOldVersionService {
     def grailsApplication
     def bootstrapUtilsService
     def dataSource
+    def permissionService
+    def secUserService
     def storageService
     def tableService
     def mongo
@@ -86,18 +89,20 @@ class BootstrapOldVersionService {
     void initv3_0_2() {
         log.info "3.0.2"
         log.info "ontology permission recalculation"
-        def projects = Project.findAllByDeletedIsNull()
+        def projects = Project.findAllByDeletedIsNullAndOntologyIsNotNull()
         short i = 0
-        projects.each { project ->
-            log.info "project $project"
-            secUserService.listUsers(project).each { user ->
-                permissionService.addPermission(project.ontology, user.username, BasePermission.READ)
+        SpringSecurityUtils.doWithAuth("superadmin", {
+            projects.each { project ->
+                log.info "project $project"
+                secUserService.listUsers(project).each { user ->
+                    permissionService.addPermission(project.ontology, user.username, BasePermission.READ)
+                }
+                secUserService.listAdmins(project).each { admin ->
+                    permissionService.addPermission(project.ontology, admin.username, BasePermission.ADMINISTRATION)
+                }
+                log.info "$i/${projects.size()}"
             }
-            secUserService.listAdmins(project).each { admin ->
-                permissionService.addPermission(project.ontology, admin.username, BasePermission.ADMINISTRATION)
-            }
-            log.info "$i/${projects.size()}"
-        }
+        });
     }
 
     void initv3_0_0() {
