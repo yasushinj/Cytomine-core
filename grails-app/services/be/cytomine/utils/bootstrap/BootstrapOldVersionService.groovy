@@ -100,6 +100,7 @@ class BootstrapOldVersionService {
                 secUserService.listAdmins(project).each { admin ->
                     permissionService.addPermission(project.ontology, admin.username, BasePermission.ADMINISTRATION)
                 }
+                i++
                 log.info "$i/${projects.size()}"
             }
         });
