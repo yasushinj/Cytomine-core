@@ -83,6 +83,7 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
      */
     def terms() {
         def criteria = AlgoAnnotationTerm.withCriteria() {
+            isNull('deleted')
             eq('annotationIdent', id)
             projections {
                 groupProperty("term")
@@ -125,7 +126,7 @@ class AlgoAnnotation extends AnnotationDomain implements Serializable {
      * @return Term List
      */
     List<Term> termsForReview() {
-        AlgoAnnotationTerm.findAllByAnnotationIdentAndUserJob(id, user).collect {it.term}.unique()
+        AlgoAnnotationTerm.findAllByAnnotationIdentAndUserJobAndDeletedIsNull(id, user).collect {it.term}.unique()
     }
 
     /**

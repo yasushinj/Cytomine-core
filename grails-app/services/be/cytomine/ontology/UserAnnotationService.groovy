@@ -184,6 +184,7 @@ class UserAnnotationService extends ModelService {
 
         if (!annotationsInRoi.isEmpty()) {
             annotations = (Collection<UserAnnotation>) AnnotationTerm.createCriteria().list {
+                isNull("deleted")
                 inList("term.id", termsIDS)
                 join("userAnnotation")
                 createAlias("userAnnotation", "a")

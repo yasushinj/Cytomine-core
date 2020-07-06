@@ -84,7 +84,7 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
      */
     def terms() {
         if(this.version!=null) {
-            AnnotationTerm.findAllByUserAnnotation(this).collect {it.term}
+            AnnotationTerm.findAllByUserAnnotationAndDeletedIsNull(this).collect {it.term}
         } else {
             return []
         }
@@ -96,7 +96,7 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
      */
     def termsId() {
         if (user.algo()) {
-            return AlgoAnnotationTerm.findAllByAnnotationIdent(this.id).collect{it.term?.id}.unique()
+            return AlgoAnnotationTerm.findAllByAnnotationIdentAndDeletedIsNull(this.id).collect{it.term?.id}.unique()
         } else {
             return terms().collect{it.id}.unique()
         }
@@ -143,7 +143,7 @@ class UserAnnotation extends AnnotationDomain implements Serializable {
     def usersIdByTerm() {
         def results = []
         if(this.version!=null) {
-            AnnotationTerm.findAllByUserAnnotation(this).each { annotationTerm ->
+            AnnotationTerm.findAllByUserAnnotationAndDeletedIsNull(this).each { annotationTerm ->
                 def map = [:]
                 map.id = annotationTerm.id
                 map.term = annotationTerm.term?.id

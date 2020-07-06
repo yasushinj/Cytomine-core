@@ -214,6 +214,7 @@ abstract class AnnotationListing {
                     getSelect(sqlColumns) + getFrom() + whereRequest +
                     " ) a \n" +
                     "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id " +
+                    "WHERE at.deleted IS NULL "
                     "ORDER BY a.id DESC"
         }
         return getSelect(sqlColumns) + getFrom() + whereRequest
