@@ -20,6 +20,7 @@ import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.ontology.Term
 import be.cytomine.ontology.UserAnnotation
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AlgoAnnotationAPI
@@ -87,6 +88,24 @@ class UserAnnotationTests  {
         AnnotationTerm annotationTerm = BasicInstanceBuilder.getAnnotationTerm()
         def result = UserAnnotationAPI.downloadDocumentByProject(annotationTerm.userAnnotation.project.id,annotationTerm.userAnnotation.user.id,annotationTerm.term.id, annotationTerm.userAnnotation.image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
+    }
+
+    void testListUserAnnotationTermsWithCredential() {
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(true)
+        def result = UserAnnotationAPI.show(annotation.id, Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert annotation.terms().size() == 0
+
+        def annotationTerm = BasicInstanceBuilder.getAnnotationTermNotExist(annotation, true)
+
+        assert annotation.terms().size() == 1
+
+        result = AnnotationTermAPI.deleteAnnotationTerm(annotationTerm.userAnnotation.id,annotationTerm.term.id,User.findByUsername(Infos.SUPERADMINLOGIN).id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        assert annotation.terms().size() == 0
     }
 
     void testAddBigUserAnnotationWithMaxNumberOfPoint() {

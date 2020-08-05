@@ -38,10 +38,28 @@ class AnnotationTermTests  {
   }
 
   void testListAnnotationTermByAnnotationWithCredential() {
-    def result = AnnotationTermAPI.listAnnotationTermByAnnotation(BasicInstanceBuilder.getUserAnnotation().id,null,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+    def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(true)
+    def result = AnnotationTermAPI.listAnnotationTermByAnnotation(annotation.id,null,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
     assert 200 == result.code
     def json = JSON.parse(result.data)
     assert json.collection instanceof JSONArray
+    assert json.collection.size() == 0
+    def annotationTerm = BasicInstanceBuilder.getAnnotationTermNotExist(annotation, true)
+
+    result = AnnotationTermAPI.listAnnotationTermByAnnotation(annotation.id,null,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+    assert 200 == result.code
+    json = JSON.parse(result.data)
+    assert json.collection instanceof JSONArray
+    assert json.collection.size() == 1
+
+    result = AnnotationTermAPI.deleteAnnotationTerm(annotationTerm.userAnnotation.id,annotationTerm.term.id,User.findByUsername(Infos.SUPERADMINLOGIN).id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+    assert 200 == result.code
+
+    result = AnnotationTermAPI.listAnnotationTermByAnnotation(annotation.id,null,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+    assert 200 == result.code
+    json = JSON.parse(result.data)
+    assert json.collection instanceof JSONArray
+    assert json.collection.size() == 0
   }
 
   void testListAnnotationTermByAnnotationWithCredentialWithUser() {
