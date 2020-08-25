@@ -234,10 +234,7 @@ class AbstractImageTests {
         println "testDeleteImage=" +result
         assert 200 == result.code
         result = AbstractImageAPI.show(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json.deleted != null
-        assert json.deleted != ""
+        assert 404 == result.code
     }
 
     void testDeleteImageWithData()  {

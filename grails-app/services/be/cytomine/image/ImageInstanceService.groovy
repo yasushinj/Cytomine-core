@@ -22,6 +22,7 @@ import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.multidim.ImageGroup
@@ -759,14 +760,10 @@ class ImageInstanceService extends ModelService {
 //        Command c = new DeleteCommand(user: currentUser,transaction:transaction)
 //        return executeCommand(c,domain,null)
 
-        //We don't delete domain, we juste change a flag
         securityACLService.checkFullOrRestrictedForOwner(domain.container(),domain.user)
-        def jsonNewData = JSON.parse(domain.encodeAsJSON())
-        jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()
-        Command c = new EditCommand(user: currentUser)
-        c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+        Command c = new DeleteCommand(user: currentUser, transaction: transaction)
+        return executeCommand(c,domain,null)
     }
 
     def getStringParamsI18n(def domain) {
@@ -788,7 +785,7 @@ class ImageInstanceService extends ModelService {
     }
 
     def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
-        taskService.updateTask(task,task? "Delete ${UserAnnotation.countByImage(image)} annotations created by user":"")
+        taskService.updateTask(task,task? "Delete ${UserAnnotation.countByImage(image)} annotations created by users":"")
         UserAnnotation.findAllByImage(image).each {
             userAnnotationService.delete(it,transaction,null,false)
         }

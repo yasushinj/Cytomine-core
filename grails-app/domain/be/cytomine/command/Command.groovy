@@ -41,11 +41,9 @@ class Command extends CytomineDomain {
      */
     JSONElement json
 
-    boolean delete = false //with soft delete, editcommand has flag delete
-
     def domain
 
-    static transients = ["json","domain","delete"]
+    static transients = ["json","domain"]
 
     /**
      * User who launch command

@@ -22,6 +22,7 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
+import be.cytomine.command.DeleteCommand
 import be.cytomine.command.EditCommand
 import be.cytomine.command.Transaction
 import be.cytomine.image.server.Storage
@@ -307,16 +308,12 @@ class AbstractImageService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(AbstractImage domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        //We don't delete domain, we juste change a flag
         securityACLService.checkAtLeastOne(domain,WRITE)
 
         if (!isUsed(domain.id)) {
-            def jsonNewData = JSON.parse(domain.encodeAsJSON())
-            jsonNewData.deleted = new Date().time
             SecUser currentUser = cytomineService.getCurrentUser()
-            Command c = new EditCommand(user: currentUser)
-            c.delete = true
-            return executeCommand(c,domain,jsonNewData)
+            Command c = new DeleteCommand(user: currentUser,transaction:transaction)
+            return executeCommand(c,domain,null)
         } else{
             def instances = ImageInstance.findAllByBaseImageAndDeletedIsNull(domain)
             throw new ForbiddenException("Abstract Image has instances in active projects : "+instances.collect{it.project.name}.join(",")

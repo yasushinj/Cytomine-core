@@ -148,15 +148,10 @@ class TermService extends ModelService {
      * @return Response structure (code, old domain,..)
      */
     def delete(Term domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
-        //We don't delete domain, we juste change a flag
-        def jsonNewData = JSON.parse(domain.encodeAsJSON())
-        jsonNewData.deleted = new Date().time
-
         SecUser currentUser = cytomineService.getCurrentUser()
         securityACLService.check(domain.container(),DELETE)
-        Command c = new EditCommand(user: currentUser, transaction: transaction)
-        c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+        Command c = new DeleteCommand(user: currentUser, transaction: transaction)
+        return executeCommand(c,domain,null)
     }
 
     def getStringParamsI18n(def domain) {

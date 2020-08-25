@@ -131,13 +131,13 @@ class ImageInstanceSecurityTests extends SecurityTestsAbstract{
         assert (true ==ImageInstanceAPI.containsInJSONList(image.id,JSON.parse(result.data)))
         //assert (200 == ImageInstanceAPI.update(image,USERNAME2,PASSWORD2).code)
 
-        project.mode = Project.EditingMode.CLASSIC
-        BasicInstanceBuilder.saveDomain(project)
-        assert (200 == ImageInstanceAPI.delete(image,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
-
         project.mode = Project.EditingMode.RESTRICTED
         BasicInstanceBuilder.saveDomain(project)
         assert (403 == ImageInstanceAPI.delete(image,SecurityTestsAbstract.USERNAME3,SecurityTestsAbstract.PASSWORD3).code)
+
+        project.mode = Project.EditingMode.CLASSIC
+        BasicInstanceBuilder.saveDomain(project)
+        assert (200 == ImageInstanceAPI.delete(image,SecurityTestsAbstract.USERNAME2,SecurityTestsAbstract.PASSWORD2).code)
     }
 
     void testImageInstanceSecurityForSimpleUser() {

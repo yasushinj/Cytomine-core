@@ -311,8 +311,6 @@ class ImageInstanceTests  {
         def result = ImageInstanceAPI.delete(imageInstanceToDelete, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
 
-        imageInstanceToDelete.refresh()
-        println "Image=${imageInstanceToDelete.id} ${imageInstanceToDelete.deleted}"
         def showResult = ImageInstanceAPI.show(imageInstanceToDelete.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == showResult.code
 
@@ -467,13 +465,6 @@ class ImageInstanceTests  {
         assert 200 == result.code
         println result.data
 
-
-        image = ImageInstance.read(image.id)
-        println image.id+"=>"+image.deleted  + " version"+image.version
-        image.refresh()
-        println image.id+"=>"+image.deleted + " version"+image.version
-
-        println project.list().collect{it.name}
         project.refresh()
         assert project.countImages == 0
 
@@ -486,9 +477,5 @@ class ImageInstanceTests  {
 
         project.refresh()
         assert project.countImages == 1
-
-        result = ImageInstanceAPI.show(idImage, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-
     }
 }
