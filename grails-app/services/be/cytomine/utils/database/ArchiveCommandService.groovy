@@ -58,18 +58,19 @@ class ArchiveCommandService {
         }
         sql.close()
         log.info "TOTAL=$total"
-        request = "SELECT command.id || ';' || extract(epoch from command.created) || ';' || command_history.prefix_action || ';'  || command.action_message || ';' ||  command.user_id || ';' || command_history.project_id \n" +
+        request = "SELECT command.id || ';' || extract(epoch from command.created) || ';' || command_history.prefix_action || ';'  || command.action_message || ';' ||  command.user_id || ';' || command_history.container_id \n" +
                 "FROM command, command_history\n" +
                 "WHERE command_history.command_id = command.id\n" +
                 "AND extract(epoch from command.created)*1000 < ${before.getTime()} order by command.id asc"
         log.info request
         sql = new Sql(dataSource)
+        File logFile = new File(subdirectory.absolutePath + "/${today.year}-${today.month+1}-${today.date}.log")
         sql.eachRow(request) {
 
             if (i % 10000 == 0) {
                 println "$i/$total"
             }
-            new File(subdirectory.absolutePath + "/${today.year}-${today.month+1}-${today.date}.log").append(it[0]+"\n")
+            logFile.append(it[0]+"\n")
             i++
         }
         sql.close()

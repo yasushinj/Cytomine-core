@@ -71,4 +71,18 @@ class AnnotationIndexService {
         return value
     }
 
+    void delete(ImageInstance image) {
+        String request = "DELETE FROM annotation_index \n" +
+                " WHERE image_id = "+image.id
+        def data = []
+        def sql = new Sql(dataSource)
+
+        sql.execute(request)
+
+        try {
+            sql.close()
+        }catch (Exception e) {}
+        return
+
+    }
 }

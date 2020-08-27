@@ -35,9 +35,11 @@ class CommandHistory extends CytomineDomain {
     Command command
 
     /**
-     * Project concerned by the command
+     * Container of the domain related to the command
      */
-    Project project
+    def container
+    Long containerId
+    String containerClassName
 
     /**
      * Type of operation for the command (undo, redo, nothing)
@@ -50,15 +52,24 @@ class CommandHistory extends CytomineDomain {
     //redondance with command.message (perf)
     String message
 
+    static transients = ["container"]
+
     static constraints = {
-        project(nullable: true)
         prefixAction(nullable:false)
+        containerId(nullable: true)
+        containerClassName(nullable: true)
     }
 
     static mapping = {
         id generator: "assigned"
         command fetch: 'join'
         sort "id"
+    }
+
+    public void setContainer(def domain) {
+        this.container = domain
+        this.containerId = domain?.id
+        this.containerClassName = domain?.class?.name
     }
 
     /**

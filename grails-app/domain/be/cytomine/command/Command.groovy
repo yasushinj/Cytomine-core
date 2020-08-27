@@ -17,7 +17,6 @@ package be.cytomine.command
 */
 
 import be.cytomine.CytomineDomain
-import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import org.codehaus.groovy.grails.web.json.JSONElement
 
@@ -43,7 +42,7 @@ class Command extends CytomineDomain {
 
     def domain
 
-    static transients = ["json","domain"]
+    static transients = ["json","domain", "container"]
 
     /**
      * User who launch command
@@ -52,9 +51,11 @@ class Command extends CytomineDomain {
     Transaction transaction
 
     /**
-     * Project concerned by command
+     * Container of the domain related to the command
      */
-    Project project
+    def container
+    Long containerId
+    String containerClassName
 
     /**
      * Flag that indicate that the message will be show or not for undo/redo
@@ -91,9 +92,10 @@ class Command extends CytomineDomain {
     static constraints = {
         data(type: 'text', nullable: true)
         actionMessage(nullable: true)
-        project(nullable: true)
         serviceName(nullable: true)
         transaction(nullable: true)
+        containerId(nullable: true)
+        containerClassName(nullable: true)
     }
 
     static mapping = {
@@ -133,6 +135,12 @@ class Command extends CytomineDomain {
         actionMessage = message
     }
 
+    public void setContainer(def domain) {
+        this.container = domain
+        this.containerId = domain?.id
+        this.containerClassName = domain?.class?.name
+    }
+
     /**
      * Define fields available for JSON response
      * @param domain Domain source for json value
@@ -140,9 +148,10 @@ class Command extends CytomineDomain {
      */
     static def getDataFromDomain(def domain) {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
-        returnArray['CLASSNAME'] = domain?.class
         returnArray['serviceName'] = domain?.serviceName
         returnArray['action'] = domain?.actionMessage + " by " + domain?.user?.username
+        returnArray['containerId'] = domain?.containerId
+        returnArray['containerClassName'] = domain?.containerClassName
         returnArray['data'] = domain?.data
         returnArray['user'] = domain?.user?.id
         returnArray['type'] = "UNKNOWN"

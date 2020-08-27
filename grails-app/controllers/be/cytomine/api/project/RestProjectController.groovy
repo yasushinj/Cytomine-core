@@ -350,10 +350,10 @@ class RestProjectController extends RestController {
     private def findCommandHistory(List<Project> projects, SecUser user, Integer max, Integer offset,
                                    Boolean fullData, Long startDate, Long endDate) {
         String select = "SELECT ch.id as id, ch.created as created, ch.message as message, " +
-                "ch.prefix_action as prefixAction, ch.user_id as user, ch.project_id as project "
+                "ch.prefix_action as prefixAction, ch.user_id as user, ch.container_id as project "
         String from = "FROM command_history ch "
         String where = "WHERE true " +
-                (projects? "AND ch.project_id IN (${projects.collect{it.id}.join(",")}) " : " ") +
+                (projects? "AND ch.container_class_name = '"+Project.class.name+"' AND ch.container_id IN (${projects.collect{it.id}.join(",")}) " : " ") +
                 (user? "AND ch.user_id =  ${user.id} " : " ") +
                 (startDate ? "AND ch.created > '${new Date(startDate)}' " : "") +
                 (endDate ? "AND ch.created < '${new Date(endDate)}' " : "")

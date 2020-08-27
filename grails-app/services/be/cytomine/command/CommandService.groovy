@@ -72,7 +72,7 @@ class CommandService {
                 log.error c.errors.toString()
             }
             c.save(failOnError: true)
-            CommandHistory ch = new CommandHistory(command: c, prefixAction: "", project: c.project,user: c.user, message: c.actionMessage)
+            CommandHistory ch = new CommandHistory(command: c, prefixAction: "", containerId: c.containerId, containerClassName: c.containerClassName, user: c.user, message: c.actionMessage)
             ch.save(failOnError: true);
             if (c.saveOnUndoRedoStack) {
                 def item = new UndoStackItem(command: c, user: c.user, transaction: c.transaction)
@@ -172,14 +172,15 @@ class CommandService {
      * @param firstUndoStack Undo stack item to move
      */
     private def moveToRedoStack(UndoStackItem firstUndoStack) {
+        Command c = firstUndoStack.getCommand()
         //create new redo stack item
         new RedoStackItem(
-                command: firstUndoStack.getCommand(),
+                command: c,
                 user: firstUndoStack.getUser(),
                 transaction: firstUndoStack.transaction
         ).save(flush: true)
         //save to history stack
-        new CommandHistory(command: firstUndoStack.getCommand(), prefixAction: "UNDO", project: firstUndoStack.getCommand().project, user: firstUndoStack.user, message: firstUndoStack.command.actionMessage).save(failOnError: true)
+        new CommandHistory(command: c, prefixAction: "UNDO", containerId: c.containerId, containerClassName: c.containerClassName, user: firstUndoStack.user, message: c.actionMessage).save(failOnError: true)
         //delete from undo stack
         firstUndoStack.delete(flush: true)
     }
@@ -189,14 +190,15 @@ class CommandService {
      * @param lastRedoStack redo item to move
      */
     private def moveToUndoStack(RedoStackItem lastRedoStack) {
+        Command c = lastRedoStack.getCommand()
         //create the new undo item
         new UndoStackItem(
-                command: lastRedoStack.getCommand(),
+                command: c,
                 user: lastRedoStack.getUser(),
                 transaction: lastRedoStack.transaction,
         ).save(flush: true)
         //add to history stack
-        new CommandHistory(command: lastRedoStack.getCommand(), prefixAction: "REDO", project: lastRedoStack.getCommand().project,user: lastRedoStack.user,message: lastRedoStack.command.actionMessage).save(failOnError: true);
+        new CommandHistory(command: c, prefixAction: "REDO", containerId: c.containerId, containerClassName: c.containerClassName, user: lastRedoStack.user,message: c.actionMessage).save(failOnError: true);
         //delete the redo item
         lastRedoStack.delete(flush: true)
     }

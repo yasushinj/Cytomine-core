@@ -573,4 +573,14 @@ class AbstractImageService extends ModelService {
             it.delete(flush: true)
         }
     }
+
+    def deleteDependentUploadedFile(AbstractImage ai, Transaction transaction,Task task=null) {
+        // not a delete but named this way to be catch by the pre-delete generic method calling
+        UploadedFile.findAllByImage(ai).each {
+            def json = it.encodeAsJSON()
+            json = new JSONObject(json)
+            json.image = null
+            uploadedFileService.update(it, json, transaction)
+        }
+    }
 }

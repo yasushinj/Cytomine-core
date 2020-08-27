@@ -189,8 +189,7 @@ class GeneralTests  {
 
         result = CommandAPI.listAllDeleted(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
-        //TODO fix later into the CommandController
-        assert JSON.parse(result.data).collection.size() == total+1
+        assert JSON.parse(result.data).collection.size() == total+2
     }
 
 

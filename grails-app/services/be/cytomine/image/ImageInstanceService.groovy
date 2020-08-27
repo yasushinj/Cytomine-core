@@ -19,6 +19,7 @@ package be.cytomine.image
 import be.cytomine.Exception.CytomineException
 import be.cytomine.Exception.CytomineMethodNotYetImplementedException
 import be.cytomine.Exception.ForbiddenException
+import be.cytomine.annotations.DependencyOrder
 import be.cytomine.api.UrlApi
 import be.cytomine.command.AddCommand
 import be.cytomine.command.Command
@@ -770,6 +771,7 @@ class ImageInstanceService extends ModelService {
         return [domain.id, domain.instanceFilename == null ? domain.baseImage?.originalFilename : domain.instanceFilename, domain.project.name]
     }
 
+    @DependencyOrder(order = 1)
     def deleteDependentAlgoAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
         taskService.updateTask(task,task? "Delete ${AlgoAnnotation.countByImage(image)} annotations from algo":"")
         AlgoAnnotation.findAllByImage(image).each {
@@ -777,6 +779,7 @@ class ImageInstanceService extends ModelService {
         }
     }
 
+    @DependencyOrder(order = 1)
     def deleteDependentReviewedAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
         taskService.updateTask(task,task? "Delete ${ReviewedAnnotation.countByImage(image)} reviewed annotations":"")
         ReviewedAnnotation.findAllByImage(image).each {
@@ -784,12 +787,20 @@ class ImageInstanceService extends ModelService {
         }
     }
 
+    @DependencyOrder(order = 1)
     def deleteDependentUserAnnotation(ImageInstance image,Transaction transaction, Task task = null) {
         taskService.updateTask(task,task? "Delete ${UserAnnotation.countByImage(image)} annotations created by users":"")
         UserAnnotation.findAllByImage(image).each {
             userAnnotationService.delete(it,transaction,null,false)
         }
     }
+
+    @DependencyOrder(order = 0)
+    def deleteDependentAnnotationIndex(ImageInstance image,Transaction transaction, Task task = null) {
+        taskService.updateTask(task,task? "Delete ${annotationIndexService.list(image).size()} annotations":"")
+        annotationIndexService.delete(image)
+    }
+
 //
 //    def deleteDependentUserPosition(ImageInstance image,Transaction transaction, Task task = null) {
 //        UserPosition.findAllByImage(image).each {

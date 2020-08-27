@@ -677,10 +677,6 @@ class ProjectTests  {
         assert 200 == result.code
         Date stop = new Date()
 
-        project.refresh()
-        assert project.deleted > start
-        assert project.deleted < stop
-
         //check if project is not there
         result = ProjectAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

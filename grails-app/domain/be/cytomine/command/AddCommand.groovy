@@ -17,7 +17,6 @@ package be.cytomine.command
 */
 
 import be.cytomine.CytomineDomain
-import be.cytomine.project.Project
 import grails.converters.JSON
 
 /**
@@ -42,8 +41,8 @@ class AddCommand extends Command {
         newDomain = response.object
         fillCommandInfo(newDomain, response.data.message)
         CytomineDomain container = newDomain?.container()
-        if(container && container instanceof Project) {
-            super.setProject(container)
+        if(container) {
+            super.setContainer(container)
         }
         return response
     }

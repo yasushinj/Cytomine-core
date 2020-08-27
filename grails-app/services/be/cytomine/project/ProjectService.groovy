@@ -23,10 +23,14 @@ import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.image.ImageInstance
 import be.cytomine.ontology.AlgoAnnotation
+import be.cytomine.ontology.AnnotationFilter
 import be.cytomine.ontology.Ontology
 import be.cytomine.ontology.ReviewedAnnotation
 import be.cytomine.ontology.UserAnnotation
+import be.cytomine.processing.ImageFilterProject
+import be.cytomine.processing.Job
 import be.cytomine.processing.Software
+import be.cytomine.processing.SoftwareProject
 import be.cytomine.security.ForgotPasswordToken
 import be.cytomine.security.SecRole
 import be.cytomine.security.SecUser
@@ -54,9 +58,11 @@ class ProjectService extends ModelService {
     def jobService
     def transactionService
     def algoAnnotationService
+    def annotationFilterService
     def annotationTermService
     def algoAnnotationTermService
     def imageInstanceService
+    def imageFilterProjectService
     def reviewedAnnotationService
     def userAnnotationService
     def propertyService
@@ -70,6 +76,7 @@ class ProjectService extends ModelService {
     def notificationService
     def projectRepresentativeUserService
     def ontologyService
+    def softwareProjectService
 
     def currentDomain() {
         Project
@@ -247,10 +254,11 @@ class ProjectService extends ModelService {
         if(extended.withLastActivity) {
             select += ", activities.max_date "
             from += "LEFT OUTER JOIN " +
-                    "( SELECT  project_id, MAX(created) max_date " +
+                    "( SELECT  container_id, MAX(created) max_date " +
                     "  FROM command_history " +
-                    "  GROUP BY project_id " +
-                    ") activities ON p.id = activities.project_id "
+                    "  WHERE container_class_name = '"+Project.class.name+"' " +
+                    "  GROUP BY container_id " +
+                    ") activities ON p.id = activities.container_id "
         }
         if(extended.withMembersCount) {
             select += ", members.member_count "
@@ -376,7 +384,7 @@ class ProjectService extends ModelService {
 
     def lastAction(Project project, def max) {
         securityACLService.check(project, READ)
-        return CommandHistory.findAllByProject(project, [sort: "created", order: "desc", max: max])
+        return CommandHistory.findAllByContainerId(project.id, [sort: "created", order: "desc", max: max])
     }
 
 
@@ -673,12 +681,9 @@ class ProjectService extends ModelService {
         //We don't delete domain, we juste change a flag
         securityACLService.check(domain.container(),ADMINISTRATION)
         securityACLService.checkisNotReadOnly(domain.container())
-        def jsonNewData = JSON.parse(domain.encodeAsJSON())
-        jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()
-        Command c = new EditCommand(user: currentUser)
-        c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+        Command c = new DeleteCommand(user: currentUser)
+        return executeCommand(c,domain,null)
     }
 
     /**
@@ -744,8 +749,8 @@ class ProjectService extends ModelService {
     }
 
     protected def beforeDelete(Project domain) {
-        CommandHistory.findAllByProject(domain).each { it.delete() }
-        Command.findAllByProject(domain).each {
+        CommandHistory.findAllByContainerId(domain.id).each { it.delete() }
+        Command.findAllByContainerId(domain.id).each {
             it
             UndoStackItem.findAllByCommand(it).each { it.delete()}
             RedoStackItem.findAllByCommand(it).each { it.delete()}
@@ -788,42 +793,42 @@ class ProjectService extends ModelService {
         }
     }
 
-//    def deleteDependentImageFilterProject(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${ImageFilterProject.countByProject(project)} links to image filter":"")
-//
-//        ImageFilterProject.findAllByProject(project).each {
-//            imageFilterProjectService.delete(it,transaction,null, false)
-//        }
-//    }
-//
-//    def deleteDependentJob(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${Job.countByProject(project)} jobs":"")
-//
-//        Job.findAllByProject(project).each {
-//            jobService.delete(it,transaction,null, false)
-//        }
-//    }
-//
-//    def deleteDependentSoftwareProject(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${SoftwareProject.countByProject(project)} links to software":"")
-//
-//        SoftwareProject.findAllByProject(project).each {
-//            softwareProjectService.delete(it,transaction,null, false)
-//        }
-//    }
-//
-//    def deleteDependentAlgoAnnotation(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${AlgoAnnotation.countByProject(project)} annotations from algo":"")
-//
-//        AlgoAnnotation.findAllByProject(project).each {
-//            algoAnnotationService.delete(it,transaction, null,false)
-//        }
-//    }
-//
+    def deleteDependentImageFilterProject(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${ImageFilterProject.countByProject(project)} links to image filter":"")
+
+        ImageFilterProject.findAllByProject(project).each {
+            imageFilterProjectService.delete(it,transaction,null, false)
+        }
+    }
+
+    def deleteDependentJob(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${Job.countByProject(project)} jobs":"")
+
+        Job.findAllByProject(project).each {
+            jobService.delete(it,transaction,null, false)
+        }
+    }
+
+    def deleteDependentSoftwareProject(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${SoftwareProject.countByProject(project)} links to software":"")
+
+        SoftwareProject.findAllByProject(project).each {
+            softwareProjectService.delete(it,transaction,null, false)
+        }
+    }
+
+    def deleteDependentAlgoAnnotation(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${AlgoAnnotation.countByProject(project)} annotations from algo":"")
+
+        AlgoAnnotation.findAllByProject(project).each {
+            algoAnnotationService.delete(it,transaction, null,false)
+        }
+    }
+
 //    def deleteDependentAlgoAnnotationTerm(Project project, Transaction transaction,Task task=null) {
 //
 //        taskService.updateTask(task,task? "Delete ${AlgoAnnotationTerm.countByProject(project)} terms for annotation from algo":"")
@@ -833,14 +838,14 @@ class ProjectService extends ModelService {
 //        }
 //    }
 //
-//    def deleteDependentAnnotationFilter(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${AnnotationFilter.countByProject(project)} annotations filters":"")
-//
-//        AnnotationFilter.findAllByProject(project).each {
-//            annotationFilterService.delete(it,transaction,null, false)
-//        }
-//    }
+    def deleteDependentAnnotationFilter(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${AnnotationFilter.countByProject(project)} annotations filters":"")
+
+        AnnotationFilter.findAllByProject(project).each {
+            annotationFilterService.delete(it,transaction,null, false)
+        }
+    }
 
     def deleteDependentImageInstance(Project project, Transaction transaction,Task task=null) {
         taskService.updateTask(task,task? "Delete ${ImageInstance.countByProject(project)} images":"")
@@ -850,45 +855,45 @@ class ProjectService extends ModelService {
         }
     }
 
-//    def deleteDependentReviewedAnnotation(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${ReviewedAnnotation.countByProject(project)} validate annotation":"")
-//
-//        ReviewedAnnotation.findAllByProject(project).each {
-//            reviewedAnnotationService.delete(it,transaction,null, false)
-//        }
-//    }
-//
-//    def deleteDependentUserAnnotation(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Delete ${UserAnnotation.countByProject(project)} annotations created by user":"")
-//
-//        UserAnnotation.findAllByProject(project).each {
-//            userAnnotationService.delete(it,transaction,null, false)
-//        }
-//    }
-//
-//    def deleteDependentHasManyProject(Project project, Transaction transaction,Task task=null) {
-//
-//        taskService.updateTask(task,task? "Remove project from other project retrieval list":"")
-//
-//        //remove Retrieval-project where this project is set
-//       def criteria = Project.createCriteria()
-//        List<Project> projectsThatUseThisProjectForRetrieval = criteria.list {
-//          retrievalProjects {
-//              eq('id', project.id)
-//          }
-//        }
-//
-//        projectsThatUseThisProjectForRetrieval.each {
-//            it.refresh()
-//            it.removeFromRetrievalProjects(project)
-//            it.save(flush: true)
-//        }
-//
-//
-//        project.retrievalProjects?.clear()
-//    }
+    def deleteDependentReviewedAnnotation(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${ReviewedAnnotation.countByProject(project)} validate annotation":"")
+
+        ReviewedAnnotation.findAllByProject(project).each {
+            reviewedAnnotationService.delete(it,transaction,null, false)
+        }
+    }
+
+    def deleteDependentUserAnnotation(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Delete ${UserAnnotation.countByProject(project)} annotations created by user":"")
+
+        UserAnnotation.findAllByProject(project).each {
+            userAnnotationService.delete(it,transaction,null, false)
+        }
+    }
+
+    def deleteDependentHasManyProject(Project project, Transaction transaction,Task task=null) {
+
+        taskService.updateTask(task,task? "Remove project from other project retrieval list":"")
+
+        //remove Retrieval-project where this project is set
+        def criteria = Project.createCriteria()
+        List<Project> projectsThatUseThisProjectForRetrieval = criteria.list {
+            retrievalProjects {
+                eq('id', project.id)
+            }
+        }
+
+        projectsThatUseThisProjectForRetrieval.each {
+            it.refresh()
+            it.removeFromRetrievalProjects(project)
+            it.save(flush: true)
+        }
+
+
+        project.retrievalProjects?.clear()
+    }
 //
 ////
 ////    def deleteDependentTask(Project project, Transaction transaction,Task task=null) {

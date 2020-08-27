@@ -28,10 +28,6 @@ import grails.converters.JSON
 class DeleteCommand extends Command {
 
     def backup
-    /**
-     * Add project link in command
-     */
-    boolean linkProject = true
 
 
     /**
@@ -44,8 +40,8 @@ class DeleteCommand extends Command {
         def oldDomain = domain
         //Init command info
         CytomineDomain container = oldDomain?.container()
-        if(container && container instanceof Project && linkProject) {
-            super.setProject(container)
+        if(container) {
+            super.setContainer(container)
         }
         def response = service.destroy(oldDomain, printMessage)
         fillCommandInfoJSON(backup, response.data.message)

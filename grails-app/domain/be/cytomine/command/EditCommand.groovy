@@ -17,7 +17,6 @@ package be.cytomine.command
 */
 
 import be.cytomine.CytomineDomain
-import be.cytomine.project.Project
 import grails.converters.JSON
 
 /**
@@ -62,8 +61,8 @@ class EditCommand extends Command {
         updatedDomain.insertDataIntoDomain(json,updatedDomain)
         //Init command info
         CytomineDomain container = updatedDomain?.container()
-        if(container && container instanceof Project) {
-            super.setProject(container)
+        if(container) {
+            super.setContainer(container)
         }
         def response = service.edit(updatedDomain, printMessage)
         fillCommandInfo(updatedDomain, oldDomain, response.data.message)
