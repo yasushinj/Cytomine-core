@@ -23,6 +23,7 @@ import be.cytomine.image.server.Storage
 import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
+import be.cytomine.test.http.AbstractImageAPI
 import be.cytomine.test.http.UploadedFileAPI
 import be.cytomine.utils.UpdateData
 import grails.converters.JSON
@@ -249,6 +250,30 @@ class UploadedFileTests {
         json = JSON.parse(result.data)
 
         assert json.parent == uf2.id
+    }
+
+    void testAbstractImageDependency(){
+        def uf = BasicInstanceBuilder.getUploadedFileNotExist()
+        def imageToDelete = BasicInstanceBuilder.getAbstractImage()
+        uf.image = imageToDelete
+        uf.save(flush:true)
+
+        def result = UploadedFileAPI.show(uf.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+
+        assert json.image == imageToDelete.id
+
+        Long id = imageToDelete.id
+        result = AbstractImageAPI.delete(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        println "testDeleteImage=" +result
+        assert 200 == result.code
+
+        result = UploadedFileAPI.show(uf.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+
+        assert json.image instanceof JSONObject.Null
     }
 
 //   void testUploadFileWorkflow() {
