@@ -55,6 +55,8 @@ class DeleteCommand extends Command {
      */
     def undo() {
         initService()
+        reverted = true
+        this.save()
         return service.create(JSON.parse(data), printMessage)
     }
 
@@ -64,6 +66,8 @@ class DeleteCommand extends Command {
      */
     def redo() {
         initService()
+        reverted = false
+        this.save()
         return service.destroy(JSON.parse(data), printMessage)
     }
 }

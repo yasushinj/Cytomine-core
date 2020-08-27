@@ -60,6 +60,8 @@ class Command extends CytomineDomain {
     Long containerId
     String containerClassName
 
+    boolean reverted = false
+
     /**
      * Flag that indicate that the message will be show or not for undo/redo
      */

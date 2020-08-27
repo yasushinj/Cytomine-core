@@ -75,6 +75,8 @@ class EditCommand extends Command {
      */
     def undo() {
         initService()
+        reverted = true
+        this.save()
         return service.edit(JSON.parse(data).get("previous" + domainName()), printMessage)
     }
 
@@ -84,6 +86,8 @@ class EditCommand extends Command {
      */
     def redo() {
         initService()
+        reverted = false
+        this.save()
         return service.edit(JSON.parse(data).get("new" + domainName()), printMessage)
     }
 }
