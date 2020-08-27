@@ -475,11 +475,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
 
         //update, delete image instance (admin data)
-        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(), adminUsername, password).code
         assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
 
         //update, delete image instance (superadmin data)
-        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(), adminUsername, password).code
         assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
     }
 
@@ -836,11 +836,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
 
         //update, delete image instance (admin data)
-        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(), adminUsername, password).code
         assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
 
         //update, delete image instance (superadmin data)
-        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(), adminUsername, password).code
         assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
     }
 
@@ -1203,11 +1203,11 @@ class ProjectSecurityTests extends SecurityTestsAbstract {
         assert 200 == ImageInstanceAPI.delete(imageUser, adminUsername, password).code
 
         //update, delete image instance (admin data)
-        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.update(imageAdmin.id,imageAdmin.encodeAsJSON(), adminUsername, password).code
         assert 200 == ImageInstanceAPI.delete(imageAdmin, adminUsername, password).code
 
         //update, delete image instance (superadmin data)
-        assert 200 == ImageInstanceAPI.update(image.id,imageUser.encodeAsJSON(), adminUsername, password).code
+        assert 200 == ImageInstanceAPI.update(image.id,image.encodeAsJSON(), adminUsername, password).code
         assert 200 == ImageInstanceAPI.delete(image, adminUsername, password).code
     }
 
