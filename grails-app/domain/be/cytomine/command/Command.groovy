@@ -42,6 +42,9 @@ class Command extends CytomineDomain {
 
     def domain
 
+    Long domainId
+    String domainClassName
+
     static transients = ["json","domain", "container"]
 
     /**
@@ -94,6 +97,8 @@ class Command extends CytomineDomain {
         actionMessage(nullable: true)
         serviceName(nullable: true)
         transaction(nullable: true)
+        domainId(nullable: true)
+        domainClassName(nullable: true)
         containerId(nullable: true)
         containerClassName(nullable: true)
     }
@@ -135,6 +140,11 @@ class Command extends CytomineDomain {
         actionMessage = message
     }
 
+    public void setDomain(def domain) {
+        this.domain = domain
+        this.domainId = domain?.id
+        this.domainClassName = domain?.class?.name
+    }
     public void setContainer(def domain) {
         this.container = domain
         this.containerId = domain?.id
@@ -150,6 +160,8 @@ class Command extends CytomineDomain {
         def returnArray = CytomineDomain.getDataFromDomain(domain)
         returnArray['serviceName'] = domain?.serviceName
         returnArray['action'] = domain?.actionMessage + " by " + domain?.user?.username
+        returnArray['domainId'] = domain?.id
+        returnArray['domainClassName'] = domain?.domainClassName
         returnArray['containerId'] = domain?.containerId
         returnArray['containerClassName'] = domain?.containerClassName
         returnArray['data'] = domain?.data
