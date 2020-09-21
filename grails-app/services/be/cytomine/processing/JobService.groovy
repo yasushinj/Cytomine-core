@@ -1,9 +1,5 @@
 package be.cytomine.processing
 
-import be.cytomine.Exception.CytomineMethodNotYetImplementedException
-import be.cytomine.Exception.InvalidRequestException
-import be.cytomine.Exception.WrongArgumentException
-
 /*
 * Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
@@ -20,6 +16,9 @@ import be.cytomine.Exception.WrongArgumentException
 * limitations under the License.
 */
 
+import be.cytomine.Exception.CytomineMethodNotYetImplementedException
+import be.cytomine.Exception.InvalidRequestException
+import be.cytomine.Exception.WrongArgumentException
 import be.cytomine.command.*
 import be.cytomine.meta.AttachedFile
 import be.cytomine.project.Project
