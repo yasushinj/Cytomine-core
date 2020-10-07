@@ -824,11 +824,11 @@ class BasicInstanceBuilder {
             uploadedFile = new UploadedFile(
                     user: User.findByUsername(Infos.SUPERADMINLOGIN),
                     projects:[getProject().id],
-                    storages: [getStorage().id],
+                    storage: getStorage().id,
                     filename: "BASICFILENAME",
+                    imageServer : getImageServer(),
                     originalFilename: "originalFilename",
                     ext: "tiff",
-                    path: "path",
                     contentType: "tiff/ddd",
                     size: 1232l
             )
@@ -841,11 +841,26 @@ class BasicInstanceBuilder {
         UploadedFile uploadedFile = new UploadedFile(
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
                 projects:[getProject().id],
-                storages: [getStorage().id],
+                storage: getStorage(),
                 filename: getRandomString(),
+                imageServer : getImageServer(),
                 originalFilename: "originalFilename",
                 ext: "tiff",
-                path: "path",
+                contentType: "tiff/ddd",
+                size: 1232l
+        )
+        save ? saveDomain(uploadedFile) : checkDomain(uploadedFile)
+    }
+
+    static UploadedFile getUploadedFileNotExist(User user, boolean save = false) {
+        UploadedFile uploadedFile = new UploadedFile(
+                user: User.findByUsername(Infos.SUPERADMINLOGIN),
+                projects:[getProject().id],
+                storage: getStorageNotExist(user, true),
+                filename: getRandomString(),
+                imageServer : getImageServer(),
+                originalFilename: "originalFilename",
+                ext: "tiff",
                 contentType: "tiff/ddd",
                 size: 1232l
         )
@@ -1276,11 +1291,15 @@ class BasicInstanceBuilder {
     }
 
     static Storage getStorageNotExist(boolean save = false) {
-        Storage storage = new Storage(name: getRandomString(), user: User.findByUsername(Infos.SUPERADMINLOGIN))
+        getStorageNotExist(User.findByUsername(Infos.SUPERADMINLOGIN), save)
+    }
+
+    static Storage getStorageNotExist(User user, boolean save = false) {
+        Storage storage = new Storage(name: getRandomString(), user: user)
 
         if(save) {
             saveDomain(storage)
-            Infos.addUserRight(Infos.SUPERADMINLOGIN,storage)
+            Infos.addUserRight(user.username,storage)
         } else {
             checkDomain(storage)
         }
@@ -1376,9 +1395,9 @@ class BasicInstanceBuilder {
 
     static ImageServer getImageServer() {
 
-        def imageServer = ImageServer.findByName("bidon")
+        def imageServer = ImageServer.findByName("testIS")
         if (!imageServer) {
-            imageServer = new ImageServer(name:"bidon",url:"http://bidon.server.com/",service:"service",className:"sample",available:true)
+            imageServer = new ImageServer(name:"testIS",url:"http://test.server.com/",basePath:"/data/test",available:true)
             saveDomain(imageServer)
         }
 
