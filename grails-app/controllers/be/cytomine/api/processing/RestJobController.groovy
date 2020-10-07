@@ -265,8 +265,6 @@ class RestJobController extends RestController {
         }
     }
 
-    def transactionService
-
     /**
      * Delete the full data set build by the job
      * This method will delete: annotation prediction, uploaded files,...
