@@ -53,6 +53,7 @@ import grails.converters.JSON
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.restapidoc.annotation.RestApiObjectField
 import org.springframework.dao.DataRetrievalFailureException
 
 /**
@@ -252,6 +253,20 @@ class BasicInstanceBuilder {
         SecUserSecRole.create(user,SecRole.findByAuthority("ROLE_SUPER_ADMIN"))
         user
     }
+
+    static SliceInstance getSliceInstance() {
+        getSliceInstanceNotExist(BasicInstanceBuilder.getImageInstance(),true)
+    }
+
+    static SliceInstance getSliceInstanceNotExist(ImageInstance image = BasicInstanceBuilder.getImageInstance(), boolean save = false) {
+        SliceInstance slice = new SliceInstance(
+                baseSlice: BasicInstanceBuilder.getAbstractSliceNotExist(image.baseImage, true),
+                image: image,
+                project: image.project
+        )
+        save ? BasicInstanceBuilder.saveDomain(slice) : BasicInstanceBuilder.checkDomain(slice)
+    }
+
 
     static ImageInstance getImageInstance() {
         getImageInstanceNotExist(BasicInstanceBuilder.getProject(),true)
@@ -748,10 +763,30 @@ class BasicInstanceBuilder {
         save ? saveDomain(ifp) : checkDomain(ifp)
     }
 
+    static AbstractSlice getAbstractSlice() {
+        AbstractImage ai = getAbstractImage()
+        AbstractSlice slice = AbstractSlice.findByImageAndChannelAndTimeAndZStack(ai, 0, 0, 0)
+        if(!slice) {
+            slice = new AbstractSlice(image: ai, uploadedFile: ai.uploadedFile, mime: getMime(), channel : 0, zStack : 0, time : 0)
+            slice = saveDomain(slice)
+        }
+        return slice
+    }
+
+    static AbstractSlice getAbstractSliceNotExist(boolean save = false) {
+        getAbstractSliceNotExist(getAbstractImage(), save)
+    }
+
+    static AbstractSlice getAbstractSliceNotExist(AbstractImage ai, boolean save = false) {
+        AbstractSlice slice = new AbstractSlice(image: ai, uploadedFile: ai.uploadedFile, mime: getMime(), channel : getRandomInteger(0,1000), zStack : getRandomInteger(0,1000), time : getRandomInteger(0,1000))
+
+        save ? saveDomain(slice) : checkDomain(slice)
+    }
+
     static AbstractImage getAbstractImage() {
         AbstractImage image = AbstractImage.findByFilename("filename")
         if (!image) {
-            image = new AbstractImage(filename: "filename", scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 16000, height: 16000)
+            image = new AbstractImage(uploadedFile: getUploadedFile(), originalFilename:"originalFilename", width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         }
         image = saveDomain(image)
         saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
@@ -759,7 +794,11 @@ class BasicInstanceBuilder {
     }
 
     static AbstractImage getAbstractImageNotExist(boolean save = false) {
-        def image = new AbstractImage(filename: getRandomString(), scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 16000, height: 16000)
+        getAbstractImageNotExist(getRandomString() , save)
+    }
+
+    static AbstractImage getAbstractImageNotExist(String filename, boolean save = false) {
+        def image = new AbstractImage(uploadedFile: getUploadedFileNotExist(true), originalFilename:filename, width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
@@ -767,11 +806,6 @@ class BasicInstanceBuilder {
         } else {
             checkDomain(image)
         }
-    }
-
-    static AbstractImage getAbstractImageNotExist(String filename, boolean save = false) {
-        def image = new AbstractImage(filename: filename, scanner: getScanner(), sample: null, mime: getMime(), path: "pathpathpath", width: 16000, height: 16000)
-        save ? saveDomain(image) : checkDomain(image)
     }
 
     static StorageAbstractImage getStorageAbstractImage() {
