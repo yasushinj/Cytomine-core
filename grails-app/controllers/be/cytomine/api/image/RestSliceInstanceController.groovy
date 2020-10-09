@@ -41,13 +41,14 @@ class RestSliceInstanceController extends RestController {
     def sliceInstanceService
     def imageServerService
     def abstractImageService
+    def imageInstanceService
 
     @RestApiMethod(description = "Get all slice instances for the given image instance", listing = true)
     @RestApiParams(params = [
             @RestApiParam(name = "id", type = "long", paramType = RestApiParamType.PATH, description = "The image instance id"),
     ])
     def listByImageInstance() {
-        ImageInstance image = ImageInstance.read(params.long("id"))
+        ImageInstance image = imageInstanceService.read(params.long('id'))
         if (image) {
             responseSuccess(sliceInstanceService.list(image))
         }
@@ -77,10 +78,10 @@ class RestSliceInstanceController extends RestController {
             @RestApiParam(name="channel", type="double", paramType = RestApiParamType.PATH, description = "The channel coordinate"),
     ])
     def getByImageInstanceAndCoordinates() {
-        ImageInstance image = abstractImageService.read(params.long('id'))
+        ImageInstance image = imageInstanceService.read(params.long('id'))
         if (image) {
-            SliceInstance sliceInstance = sliceInstanceService.read(image, params.double('channel'),
-                    params.double('zStack'), params.double('time'))
+            SliceInstance sliceInstance = sliceInstanceService.read(image, params.int('channel'),
+                    params.int('zStack'), params.int('time'))
             if (sliceInstance) {
                 responseSuccess(sliceInstance)
             } else {

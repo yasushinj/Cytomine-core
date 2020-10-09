@@ -37,17 +37,19 @@ class SliceInstanceService extends ModelService {
         SliceInstance slice = SliceInstance.read(id)
         if (slice) {
             securityACLService.check(slice.container(), READ)
+            checkDeleted(slice)
         }
         slice
     }
 
-    def read(ImageInstance image, double c, double z, double t) {
+    def read(ImageInstance image, int c, int z, int t) {
         SliceInstance slice = SliceInstance.createCriteria().get {
             createAlias("baseSlice", "as")
             eq("image", image)
             eq("as.channel", c)
             eq("as.zStack", z)
             eq("as.time", t)
+            isNull("deleted")
         }
         if (slice) {
             securityACLService.check(slice.container(), READ)
@@ -60,6 +62,7 @@ class SliceInstanceService extends ModelService {
         SliceInstance.createCriteria().list {
             createAlias("baseSlice", "as")
             eq("image", image)
+            isNull("deleted")
             order("as.time", "asc")
             order("as.zStack", "asc")
             order("as.channel", "asc")
@@ -91,7 +94,7 @@ class SliceInstanceService extends ModelService {
 
     def delete(SliceInstance slice, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         securityACLService.check(slice.container(),READ)
-        securityACLService.checkisNotReadOnly(slice.container())
+        securityACLService.checkFullOrRestrictedForOwner(slice.container(), slice.image.user)
         SecUser currentUser = cytomineService.getCurrentUser()
         def jsonNewData = JSON.parse(slice.encodeAsJSON())
         println jsonNewData
