@@ -784,7 +784,7 @@ class BasicInstanceBuilder {
     }
 
     static AbstractImage getAbstractImage() {
-        AbstractImage image = AbstractImage.findByFilename("filename")
+        AbstractImage image = AbstractImage.findByOriginalFilename("originalFilename")
         if (!image) {
             image = new AbstractImage(uploadedFile: getUploadedFile(), originalFilename:"originalFilename", width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         }
@@ -799,6 +799,17 @@ class BasicInstanceBuilder {
 
     static AbstractImage getAbstractImageNotExist(String filename, boolean save = false) {
         def image = new AbstractImage(uploadedFile: getUploadedFileNotExist(true), originalFilename:filename, width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
+        if(save) {
+            saveDomain(image)
+            saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            return image
+        } else {
+            checkDomain(image)
+        }
+    }
+
+    static AbstractImage getAbstractImageNotExist(UploadedFile uploadedFile, boolean save = false) {
+        def image = new AbstractImage(uploadedFile: uploadedFile, originalFilename:getRandomString(), width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
