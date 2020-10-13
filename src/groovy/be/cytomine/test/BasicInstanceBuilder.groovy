@@ -706,6 +706,21 @@ class BasicInstanceBuilder {
         save ? saveDomain(sharedannotation) : checkDomain(sharedannotation)
     }
 
+    static Track getTrack() {
+        def track = Track.findByName("BasicTrack")
+        if (!track) {
+            track = new Track(name: "BasicTrack", image: getImageInstance(), color: "FF0000", project: getProject())
+            saveDomain(track)
+        }
+        track
+    }
+
+    static Track getTrackNotExist(boolean save = false) {
+        Track track = new Track(name: getRandomString(), image: getImageInstance(), color: "FF0000", project: getProject())
+        save ? saveDomain(track) : checkDomain(track)
+    }
+
+
     static AttachedFile getAttachedFileNotExist(boolean save = false) {
         getAttachedFileNotExist("test/functional/be/cytomine/utils/simpleFile.txt",save)
     }
