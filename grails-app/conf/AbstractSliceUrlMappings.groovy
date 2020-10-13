@@ -18,7 +18,7 @@ class AbstractSliceUrlMappings {
 
     static mappings = {
         "/api/abstractslice.$format"(controller: "restAbstractSlice"){
-            action = [GET:"list", POST:"add"]
+            action = [POST:"add"]
         }
         "/api/abstractslice/$id.$format"(controller: "restAbstractSlice"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]

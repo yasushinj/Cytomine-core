@@ -18,7 +18,7 @@ class SliceInstanceUrlMappings {
 
     static mappings = {
         "/api/sliceinstance.$format"(controller: "restSliceInstance"){
-            action = [GET:"list", POST:"add"]
+            action = [POST:"add"]
         }
         "/api/sliceinstance/$id.$format"(controller: "restSliceInstance"){
             action = [GET:"show", PUT:"update", DELETE:"delete"]
