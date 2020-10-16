@@ -57,16 +57,6 @@ class TrackService extends ModelService {
         Track.findAllByImageAndDeletedIsNull(image)
     }
 
-    def list(SliceInstance slice) {
-        securityACLService.check(slice.container(), READ)
-        AnnotationTrack.createCriteria().list {
-            eq("slice", slice)
-            projection {
-                groupProperty("track")
-            }
-        }
-    }
-
     def list(Project project) {
         securityACLService.check(project, READ)
         Track.findAllByProjectAndDeletedIsNull(project)
