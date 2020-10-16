@@ -716,7 +716,11 @@ class BasicInstanceBuilder {
     }
 
     static Track getTrackNotExist(boolean save = false) {
-        Track track = new Track(name: getRandomString(), image: getImageInstance(), color: "FF0000", project: getProject())
+        getTrackNotExist(getImageInstance(), save)
+    }
+
+    static Track getTrackNotExist(ImageInstance image, boolean save = false) {
+        Track track = new Track(name: getRandomString(), image: image, color: "FF0000", project: getProject())
         save ? saveDomain(track) : checkDomain(track)
     }
 

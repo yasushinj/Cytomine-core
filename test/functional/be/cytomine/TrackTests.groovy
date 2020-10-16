@@ -32,10 +32,18 @@ class TrackTests {
 
     void testListTrackByImageInstanceWithCredential() {
         ImageInstance image = BasicInstanceBuilder.getImageInstance()
+        Track track = BasicInstanceBuilder.getTrackNotExist(image, true)
         def result = TrackAPI.listByImageInstance(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        int size = json.collection.size()
+
+        TrackAPI.delete(track.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = TrackAPI.listByImageInstance(image.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert size == json.collection.size()+1
     }
 
     void testListTrackByImageInstanceWithImageNotExist() {
@@ -45,10 +53,18 @@ class TrackTests {
 
     void testListTrackByProjectWithCredential() {
         Project project = BasicInstanceBuilder.getProject()
+        Track track = BasicInstanceBuilder.getTrackNotExist(BasicInstanceBuilder.getImageInstance(), true)
         def result = TrackAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        int size = json.collection.size()
+
+        TrackAPI.delete(track.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        result = TrackAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert size == json.collection.size()+1
     }
 
     void testListTrackByProjectWithProjectNotExist() {
