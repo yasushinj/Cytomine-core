@@ -47,6 +47,7 @@ class TrackService extends ModelService {
         Track track = Track.read(id)
         if (track) {
             securityACLService.check(track, READ)
+            checkDeleted(track)
         }
         track
     }
