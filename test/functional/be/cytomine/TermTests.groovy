@@ -40,10 +40,19 @@ class TermTests  {
 
   void testListOntologyTermByOntologyWithCredential() {
       Ontology ontology = BasicInstanceBuilder.getOntology()
+      def term = BasicInstanceBuilder.getTermNotExist(ontology, true)
       def result = TermAPI.listByOntology(ontology.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
       def json = JSON.parse(result.data)
       assert json.collection instanceof JSONArray
+      int size = json.collection.size()
+      result = TermAPI.delete(term.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      assert 200 == result.code
+      result = TermAPI.listByOntology(ontology.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      assert 200 == result.code
+      json = JSON.parse(result.data)
+      assert json.collection instanceof JSONArray
+      assert size == json.collection.size()+1
   }
 
   void testListTermOntologyByOntologyWithOntologyNotExist() {
@@ -53,10 +62,19 @@ class TermTests  {
 
     void testListOntologyTermByProjectWithCredential() {
         Project project = BasicInstanceBuilder.getProject()
+        def term = BasicInstanceBuilder.getTermNotExist(project.ontology, true)
         def result = TermAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         def json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
+        int size = json.collection.size()
+        result = TermAPI.delete(term.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        result = TermAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert size == json.collection.size()+1
     }
 
     void testListTermOntologyByProjectWithProjectNotExist() {
@@ -66,10 +84,19 @@ class TermTests  {
 
 
   void testListTermWithCredential() {
+      def term = BasicInstanceBuilder.getTermNotExist(BasicInstanceBuilder.getOntology(), true)
       def result = TermAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code
       def json = JSON.parse(result.data)
       assert json.collection instanceof JSONArray
+      int size = json.collection.size()
+      result = TermAPI.delete(term.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      assert 200 == result.code
+      result = TermAPI.list(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+      assert 200 == result.code
+      json = JSON.parse(result.data)
+      assert json.collection instanceof JSONArray
+      assert size == json.collection.size()+1
   }
 
   void testShowTermWithCredential() {
