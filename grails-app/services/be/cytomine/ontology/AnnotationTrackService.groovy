@@ -69,8 +69,10 @@ class AnnotationTrackService extends ModelService {
     }
 
     def add(def json) {
-        AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(json.annotationIdent, json.annotationClassName)
-        if (!annotation) {
+        AnnotationDomain annotation
+        try {
+            annotation= AnnotationDomain.getAnnotationDomain(json.annotationIdent, json.annotationClassName)
+        } catch(ObjectNotFoundException e) {
             throw new WrongArgumentException("Annotation does not have a valid project.")
         }
         securityACLService.check(annotation .project, READ)
