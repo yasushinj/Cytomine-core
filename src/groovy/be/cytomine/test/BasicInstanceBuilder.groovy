@@ -299,9 +299,11 @@ class BasicInstanceBuilder {
     }
 
     static AlgoAnnotation getAlgoAnnotationNotExist(Project project, boolean save = false) {
+        ImageInstance image = getImageInstanceNotExist(project,true)
         def annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: getImageInstanceNotExist(project,true),
+                image: image,
+                slice: image.referenceSlice,
                 user: getUserJobNotExist(getJobNotExist(true, project), true),
                 project:project
         )
@@ -312,6 +314,7 @@ class BasicInstanceBuilder {
         def annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
+                slice: image.referenceSlice,
                 user: getUserJob(),
                 project:image.project
         )
@@ -320,9 +323,11 @@ class BasicInstanceBuilder {
 
 
     static AlgoAnnotation getAlgoAnnotation() {
+        ImageInstance image = getImageInstance()
         def annotation = AlgoAnnotation.findOrCreateWhere(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: getImageInstance(),
+                image: image,
+                slice: image.referenceSlice,
                 user: getUserJob(),
                 project:getImageInstance().project
         )
@@ -331,9 +336,11 @@ class BasicInstanceBuilder {
 
 
     static AlgoAnnotation getAlgoAnnotationNotExist(Job job = getJob(), UserJob user = getUserJob(),boolean save = false) {
+        ImageInstance image = getImageInstanceNotExist(job.project,true)
         AlgoAnnotation annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:getImageInstanceNotExist(job.project,true),
+                image:image,
+                slice: image.referenceSlice,
                 user: user,
                 project:job.project
         )
@@ -344,6 +351,7 @@ class BasicInstanceBuilder {
         AlgoAnnotation annotation = new AlgoAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image:image,
+                slice: image.referenceSlice,
                 user: user,
                 project:job.project
         )
@@ -429,6 +437,7 @@ class BasicInstanceBuilder {
         ReviewedAnnotation review = getReviewedAnnotationNotExist()
         review.project = image.project
         review.image = image
+        review.slice = image.referenceSlice
         saveDomain(review)
         review
     }
@@ -437,6 +446,7 @@ class BasicInstanceBuilder {
         ReviewedAnnotation review = getReviewedAnnotationNotExist()
         review.project = annotation.project
         review.image = annotation.image
+        review.slice = annotation.slice
         review.location = annotation.location
         review.putParentAnnotation(annotation)
         saveDomain(review)
@@ -448,6 +458,7 @@ class BasicInstanceBuilder {
         def annotation = new ReviewedAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
+                slice: image.referenceSlice,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
                 project:image.project,
                 status : 0,
@@ -471,6 +482,7 @@ class BasicInstanceBuilder {
         def annotation = ReviewedAnnotation.findOrCreateWhere(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
+                slice: image.referenceSlice,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
                 project:image.project,
                 status : 0,
@@ -492,10 +504,12 @@ class BasicInstanceBuilder {
 
     static ReviewedAnnotation getReviewedAnnotationNotExist(Project project, boolean save = false) {
         def basedAnnotation = saveDomain(getUserAnnotationNotExist())
+        ImageInstance image = getImageInstanceNotExist(project,true)
 
         def annotation = new ReviewedAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image: getImageInstanceNotExist(project,true),
+                image: image,
+                slice: image.referenceSlice,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
                 project:project,
                 status : 0,
@@ -511,6 +525,7 @@ class BasicInstanceBuilder {
         def annotation = new ReviewedAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
+                slice: image.referenceSlice,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
                 project:image.project,
                 status : 0,
@@ -522,10 +537,12 @@ class BasicInstanceBuilder {
 
      static ReviewedAnnotation getReviewedAnnotationNotExist() {
          def basedAnnotation = saveDomain(getUserAnnotationNotExist())
+         ImageInstance image = getImageInstance()
 
          def annotation = ReviewedAnnotation.findOrCreateWhere(
                  location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                 image: getImageInstance(),
+                 image: image,
+                 slice: image.referenceSlice,
                  user: User.findByUsername(Infos.SUPERADMINLOGIN),
                  project:getImageInstance().project,
                  status : 0,
@@ -564,6 +581,7 @@ class BasicInstanceBuilder {
         def annotation = UserAnnotation.findOrCreateWhere(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image: image,
+                slice: image.referenceSlice,
                 user: User.findByUsername(Infos.SUPERADMINLOGIN),
                 project:image.project
         )
@@ -589,18 +607,20 @@ class BasicInstanceBuilder {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image:image,
+                slice: image.referenceSlice,
                 user: user,
                 project:project
         )
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
 
-    static UserAnnotation getUserAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
+    static UserAnnotation getUserAnnotationNotExist(SliceInstance slice, String polygon, User user, Term term) {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read(polygon),
-                image:image,
+                image: slice.image,
+                slice: slice,
                 user: user,
-                project:image.project
+                project:slice.project
         )
         annotation = saveDomain(annotation)
 
@@ -616,6 +636,7 @@ class BasicInstanceBuilder {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
                 image:image,
+                slice: image.referenceSlice,
                 user: user,
                 project:image.project
         )
@@ -724,6 +745,37 @@ class BasicInstanceBuilder {
         save ? saveDomain(track) : checkDomain(track)
     }
 
+    static AnnotationTrack getAnnotationTrack() {
+        def at = AnnotationTrack.findByTrackAndAnnotationIdent(getTrack(), getUserAnnotation().id)
+        if (!at) {
+            UserAnnotation ua = getUserAnnotation()
+            at = new AnnotationTrack(track: getTrack(), annotationIdent: ua.id, annotationClassName: ua.class.name, slice: getSliceInstance())
+            saveDomain(at)
+        }
+        at
+    }
+
+    static AnnotationTrack getAnnotationTrack(AnnotationDomain annotation, Track track, SliceInstance slice) {
+        def at = AnnotationTrack.findByTrackAndAnnotationIdent(track, annotation.id)
+        if (!at) {
+            at = new AnnotationTrack(track: track, annotationIdent: annotation.id, annotationClassName: annotation.class.name, slice: slice)
+            saveDomain(at)
+        }
+        at
+    }
+
+    static AnnotationTrack getAnnotationTrackNotExist(boolean save = false) {
+        getAnnotationTrackNotExist(getTrack(), getSliceInstance(), save)
+    }
+
+    static AnnotationTrack getAnnotationTrackNotExist(Track track, SliceInstance slice, boolean save = false) {
+        UserAnnotation ua = getUserAnnotationNotExist()
+        ua.slice = slice
+        ua.image = slice.image
+        ua = ua.save()
+        AnnotationTrack at = new AnnotationTrack(track: track, annotationIdent: ua.id, annotationClassName: ua.class.name, slice: slice)
+        save ? saveDomain(at) : checkDomain(at)
+    }
 
     static AttachedFile getAttachedFileNotExist(boolean save = false) {
         getAttachedFileNotExist("test/functional/be/cytomine/utils/simpleFile.txt",save)
