@@ -76,7 +76,7 @@ class AnnotationTrackService extends ModelService {
             throw new WrongArgumentException("Annotation does not have a valid project.")
         }
         securityACLService.check(annotation .project, READ)
-        securityACLService.checkisNotReadOnly(annotation.project)
+        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
         json.slice = annotation.slice.id
         json.annotationIdent = annotation.id
         json.annotationClassName = annotation.getClass().getName()
@@ -94,7 +94,7 @@ class AnnotationTrackService extends ModelService {
     def delete(AnnotationTrack domain, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         AnnotationDomain annotation = AnnotationDomain.getAnnotationDomain(domain.annotationIdent, domain.annotationClassName)
         securityACLService.check(annotation .project, READ)
-        securityACLService.checkisNotReadOnly(annotation.project)
+        securityACLService.checkFullOrRestrictedForOwner(annotation, annotation.user)
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new DeleteCommand(user: currentUser, transaction: transaction)
         executeCommand(c, domain, null)
