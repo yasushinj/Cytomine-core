@@ -861,6 +861,7 @@ class BasicInstanceBuilder {
         }
         image = saveDomain(image)
         saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+        saveDomain(new AbstractSlice(image: image, channel: 0, zStack: 0, time: 0))
         return image
     }
 
@@ -873,6 +874,7 @@ class BasicInstanceBuilder {
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            saveDomain(new AbstractSlice(uploadedFile: image.uploadedFile, image: image, mime: getMime(),  channel: 0, zStack: 0, time: 0))
             return image
         } else {
             checkDomain(image)
@@ -884,6 +886,7 @@ class BasicInstanceBuilder {
         if(save) {
             saveDomain(image)
             saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            saveDomain(new AbstractSlice(image: image, channel: 0, zStack: 0, time: 0))
             return image
         } else {
             checkDomain(image)
