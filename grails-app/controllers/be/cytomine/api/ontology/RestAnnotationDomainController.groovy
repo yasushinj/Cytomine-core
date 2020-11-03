@@ -1218,7 +1218,7 @@ class RestAnnotationDomainController extends RestController {
         if (coveringAnnotations.isEmpty()) return
 
         //Get the based annotation
-        UserAnnotation based = UserAnnotation.read(coveringAnnotations.first())
+        UserAnnotation based = userAnnotationService.read(coveringAnnotations.first())
 
         //Get the term of the based annotation, it will be the main term
         def basedTerms = based.termsId()
