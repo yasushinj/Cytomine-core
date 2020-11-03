@@ -298,64 +298,18 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
     }
 
 
-     void testFreeHandAnnotationWithProjectAdmin() {
-         //project admin can correct annotation from another user
-         String basedLocation = "POLYGON ((0 0, 0 5000, 10000 5000, 10000 0, 0 0))"
-         String addedLocation = "POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))"
-         String expectedLocation = "POLYGON ((0 0, 0 10000, 10000 10000, 10000 0, 0 0))"
-
-         User user1 = getUser1() //project admin
-         User user2 = getUser2()
-
-         //Create project with user 1
-         SliceInstance slice = SliceInstanceAPI.buildBasicSlice(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-         Project project = slice.image.project
-
-         //Add project right for user 2
-         def resAddUser = ProjectAPI.addUserProject(project.id, user2.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-         Infos.printRight(project)
-         assert 200 == resAddUser.code
-
-         //Add annotation 1 with user1
-         UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
-         annotation.slice = slice
-         annotation.project = project
-         annotation.user = user2
-         def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-         assert 200 == result.code
-         annotation = result.data
-         //add annotation with empty space inside it
-         annotation.location = new WKTReader().read(basedLocation)
-         assert annotation.save(flush: true)  != null
-
-         //correct remove
-         def json = [:]
-         json.location = addedLocation
-         json.image = annotation.image.id
-         json.review = false
-         json.remove = false
-         json.layers = [user2.id,user1.id]
-         result = AnnotationDomainAPI.correctAnnotation(annotation.id, JSONUtils.toJSONString(json),SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-         assert 200 == result.code
-
-         annotation.refresh()
-         assert annotation.user.id == user2.id
-         assert new WKTReader().read(expectedLocation).equals(annotation.location)
-         //assertEquals(expectedLocation,annotationToFill.location.toString())
-    }
-
-
-     void testFreeHandAnnotationWithProjectUser() {
-        //project user cannot correct annotation from another user
+    void testFreeHandAnnotationWithProjectAdmin() {
+        //project admin can correct annotation from another user
         String basedLocation = "POLYGON ((0 0, 0 5000, 10000 5000, 10000 0, 0 0))"
         String addedLocation = "POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))"
+        String expectedLocation = "POLYGON ((0 0, 0 10000, 10000 10000, 10000 0, 0 0))"
 
         User user1 = getUser1() //project admin
         User user2 = getUser2()
 
         //Create project with user 1
-         SliceInstance slice = SliceInstanceAPI.buildBasicSlice(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-         Project project = slice.image.project
+        SliceInstance slice = SliceInstanceAPI.buildBasicSlice(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        Project project = slice.image.project
 
         //Add project right for user 2
         def resAddUser = ProjectAPI.addUserProject(project.id, user2.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
@@ -364,7 +318,53 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
 
         //Add annotation 1 with user1
         UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
-         annotation.slice = slice
+        annotation.slice = slice
+        annotation.project = project
+        annotation.user = user2
+        def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        annotation = result.data
+        //add annotation with empty space inside it
+        annotation.location = new WKTReader().read(basedLocation)
+        assert annotation.save(flush: true)  != null
+
+        //correct remove
+        def json = [:]
+        json.location = addedLocation
+        json.image = annotation.image.id
+        json.review = false
+        json.remove = false
+        json.layers = [user2.id,user1.id]
+        result = AnnotationDomainAPI.correctAnnotation(annotation.id, JSONUtils.toJSONString(json),SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+
+        annotation.refresh()
+        assert annotation.user.id == user2.id
+        assert new WKTReader().read(expectedLocation).equals(annotation.location)
+        //assertEquals(expectedLocation,annotationToFill.location.toString())
+    }
+
+
+    void testFreeHandAnnotationWithProjectUser() {
+        //project user cannot correct annotation from another user
+        String basedLocation = "POLYGON ((0 0, 0 5000, 10000 5000, 10000 0, 0 0))"
+        String addedLocation = "POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))"
+
+        User user1 = getUser1() //project admin
+        User user2 = getUser2()
+
+        //Create project with user 1
+        SliceInstance slice = SliceInstanceAPI.buildBasicSlice(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        Project project = slice.image.project
+
+        //Add project right for user 2
+        def resAddUser = ProjectAPI.addUserProject(project.id, user2.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        Infos.printRight(project)
+        assert 200 == resAddUser.code
+
+        //Add annotation 1 with user1
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
+        annotation.slice = slice
         annotation.project = project
         def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
@@ -382,60 +382,60 @@ class UserAnnotationSecurityTests extends SecurityTestsAbstract {
         json.layers = [user2.id,user1.id]
         result = AnnotationDomainAPI.correctAnnotation(annotation.id, JSONUtils.toJSONString(json),SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
         assert 400 == result.code
-         annotation.refresh()
+        annotation.refresh()
         assert new WKTReader().read(basedLocation).equals(annotation.location)
         //assertEquals(expectedLocation,annotationToFill.location.toString())
     }
 
     void testFreeHandAnnotationWithMultipleAnnotationUser() {
-       //cannot correct annotation if addedlocation has annotations from multiple users
-       String basedLocation = "POLYGON ((0 0, 0 5000, 10000 5000, 10000 0, 0 0))"
-       String addedLocation = "POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))"
+        //cannot correct annotation if addedlocation has annotations from multiple users
+        String basedLocation = "POLYGON ((0 0, 0 5000, 10000 5000, 10000 0, 0 0))"
+        String addedLocation = "POLYGON ((0 5000, 10000 5000, 10000 10000, 0 10000, 0 5000))"
 
-       User user1 = getUser1() //project admin
-       User user2 = getUser2()
+        User user1 = getUser1() //project admin
+        User user2 = getUser2()
 
-       //Create project with user 1
+        //Create project with user 1
         SliceInstance slice = SliceInstanceAPI.buildBasicSlice(SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
         Project project = slice.image.project
 
-       //Add project right for user 2
-       def resAddUser = ProjectAPI.addUserProject(project.id, user2.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-       Infos.printRight(project)
-       assert 200 == resAddUser.code
+        //Add project right for user 2
+        def resAddUser = ProjectAPI.addUserProject(project.id, user2.id, SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        Infos.printRight(project)
+        assert 200 == resAddUser.code
 
-       //Add annotation 1 with user1
-       UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
+        //Add annotation 1 with user1
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
         annotation.slice = slice
-       annotation.project = project
-       def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-       assert 200 == result.code
-       annotation = result.data
-       //add annotation with empty space inside it
-       annotation.location = new WKTReader().read(basedLocation)
-       assert annotation.save(flush: true)  != null
+        annotation.project = project
+        def result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 200 == result.code
+        annotation = result.data
+        //add annotation with empty space inside it
+        annotation.location = new WKTReader().read(basedLocation)
+        assert annotation.save(flush: true)  != null
 
-       //Add annotation 1 with user2
-       annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
+        //Add annotation 1 with user2
+        annotation = BasicInstanceBuilder.getUserAnnotationNotExist()
         annotation.slice = slice
-       annotation.project = project
-       result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
-       assert 200 == result.code
-       annotation = result.data
-       //add annotation with empty space inside it
-       annotation.location = new WKTReader().read(basedLocation)
-       assert annotation.save(flush: true)  != null
+        annotation.project = project
+        result = UserAnnotationAPI.create(annotation.encodeAsJSON(), SecurityTestsAbstract.USERNAME2, SecurityTestsAbstract.PASSWORD2)
+        assert 200 == result.code
+        annotation = result.data
+        //add annotation with empty space inside it
+        annotation.location = new WKTReader().read(basedLocation)
+        assert annotation.save(flush: true)  != null
 
-       //correct remove
-       def json = [:]
-       json.location = addedLocation
-       json.image = annotation.image.id
-       json.review = false
-       json.remove = false
-       json.layers = [user2.id,user1.id]
-       result = AnnotationDomainAPI.correctAnnotation(annotation.id, JSONUtils.toJSONString(json),SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
-       assert 400 == result.code
-   }
+        //correct remove
+        def json = [:]
+        json.location = addedLocation
+        json.image = annotation.image.id
+        json.review = false
+        json.remove = false
+        json.layers = [user2.id,user1.id]
+        result = AnnotationDomainAPI.correctAnnotation(annotation.id, JSONUtils.toJSONString(json),SecurityTestsAbstract.USERNAME1, SecurityTestsAbstract.PASSWORD1)
+        assert 400 == result.code
+    }
 
     void testTargettedFreeHandCorrectionWithNotProjectMember() {
         User user1 = getUser1() //project admin
