@@ -239,9 +239,26 @@ class UserAnnotationTests  {
         assert 400 == result.code
     }
 
+    void testAddUserAnnotationSliceNotExist() {
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotation()
+        def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.slice = -99
+        def result = UserAnnotationAPI.create(updateAnnotation.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
+
+    void testAddUserAnnotationSliceNull() {
+        def annotationToAdd = BasicInstanceBuilder.getUserAnnotation()
+        def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.slice = null
+        def result = UserAnnotationAPI.create(updateAnnotation.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code //referenceSlice is taken
+    }
+
     void testAddUserAnnotationImageNotExist() {
         def annotationToAdd = BasicInstanceBuilder.getUserAnnotation()
         def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.slice = null
         updateAnnotation.image = -99
         def result = UserAnnotationAPI.create(updateAnnotation.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 400 == result.code

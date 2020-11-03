@@ -278,7 +278,13 @@ class BasicInstanceBuilder {
                 project: project,
                 //slide: BasicInstanceBuilder.getSlide(),
                 user: User.findByUsername(Infos.SUPERADMINLOGIN))
-        save ? BasicInstanceBuilder.saveDomain(image) : BasicInstanceBuilder.checkDomain(image)
+        if(save) {
+            saveDomain(image)
+            saveDomain(new SliceInstance(image: image, project: image.project, baseSlice: image.baseImage.referenceSlice))
+            return image
+        } else {
+            checkDomain(image)
+        }
     }
 
 

@@ -1,5 +1,7 @@
 package be.cytomine.test.http
 
+import be.cytomine.image.ImageInstance
+
 /*
 * Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
@@ -17,6 +19,8 @@ package be.cytomine.test.http
 */
 
 import be.cytomine.image.SliceInstance
+import be.cytomine.project.Project
+import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import grails.converters.JSON
 
@@ -55,4 +59,13 @@ class SliceInstanceAPI extends DomainAPI {
         return doGET(URL, username, password)
     }
 
+
+    static SliceInstance buildBasicSlice(String username, String password) {
+        ImageInstance image = ImageInstanceAPI.buildBasicImage(username, password)
+        SliceInstance slice = BasicInstanceBuilder.getSliceInstanceNotExist(image)
+        def result = SliceInstanceAPI.create(slice.encodeAsJSON(), username, password)
+        assert 200==result.code
+        slice = result.data
+        return slice
+    }
 }
