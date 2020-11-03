@@ -18,8 +18,8 @@ package be.cytomine.security
 
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.Storage
-import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.project.Project
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
@@ -52,12 +52,6 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
       AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(true)
       AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(true)
 
-      //Add to storage
-      StorageAbstractImage saa = new StorageAbstractImage(storage: storage,abstractImage: image1)
-      BasicInstanceBuilder.saveDomain(saa)
-      saa = new StorageAbstractImage(storage: storage,abstractImage: image2)
-      BasicInstanceBuilder.saveDomain(saa)
-
       //Create project
       def result = ProjectAPI.create(BasicInstanceBuilder.getProjectNotExist().encodeAsJSON(),SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
       assert 200 == result.code
@@ -66,30 +60,21 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
       result = AbstractImageAPI.list(true,project.id,SecurityTestsAbstract.USERNAMEADMIN,SecurityTestsAbstract.PASSWORDADMIN)
       assert 200 == result.code
       def json = JSON.parse(result.data)
-      println json
-      println json.aaData
-      println json.aaData.find{it.id==image1.id}
-      assert 2<=json.aaData.size() //may be more image because all images are available for admin (images from previous test)
+      assert 2<=json.collection.size() //may be more image because all images are available for admin (images from previous test)
       assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
       assert (true ==AbstractImageAPI.containsInJSONList(image2.id,json))
-      assert !json.aaData.find{it.id==image1.id}.inProject
-      assert !json.aaData.find{it.id==image2.id}.inProject
+      assert !json.collection.find{it.id==image1.id}.inProject
+      assert !json.collection.find{it.id==image2.id}.inProject
 
-//      ImageInstance image =
-//      BasicInstanceBuilder.saveDomain(image)
       //Add image instance to project
       ImageInstance image = new ImageInstance(project:project,baseImage: image1, user: user1)
-      println image
       //check if user 2 can access/update/delete
       result = ImageInstanceAPI.create(image.encodeAsJSON(),SecurityTestsAbstract.USERNAMEADMIN,SecurityTestsAbstract.PASSWORDADMIN)
       assert 200 == result.code
 
-      println "project=${project.id}"
-      println "baseImage=${image1.id}"
-
       result = AbstractImageAPI.list(true,project.id,SecurityTestsAbstract.USERNAMEADMIN,SecurityTestsAbstract.PASSWORDADMIN)
       assert 200 == result.code
-      assert 2<=JSON.parse(result.data).aaData.size()
+      assert 2<=JSON.parse(result.data).collection.size()
 
       result = AbstractImageAPI.list(SecurityTestsAbstract.USERNAMEADMIN, SecurityTestsAbstract.PASSWORDADMIN)
       assert 200 == result.code
@@ -97,7 +82,9 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
 
       assert 200 == AbstractImageAPI.show(image1.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).code
       assert 200 == AbstractImageAPI.create(BasicInstanceBuilder.getAbstractImageNotExist().encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).code
-//      assert 200 == AbstractImageAPI.delete(image1.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
+
+      // image1 has instances in active projects ==> 403
+      assert 403 == AbstractImageAPI.delete(image1.id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD).code
   }
 
     void testAbstractImageSecurityForCytomineUser() {
@@ -112,20 +99,16 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
         Storage storageForbiden = BasicInstanceBuilder.getStorageNotExist(true)
         //don't add acl to this storage
 
-        //Add an image
-        AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(true)
-        AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(true)
-        // getAbstractImageNotExist create a storage & a storage_abstract_image
-        // => Replace the storage in image2 by the storage2 (& the link storage_abstract_image)
-        StorageAbstractImage.findByAbstractImage(image1).delete(flush: true)
-        StorageAbstractImage.findByAbstractImage(image2).delete(flush: true)
+        UploadedFile uploadedFile1 = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedFile1.storage = storage
+        uploadedFile1 = uploadedFile1.save()
+        UploadedFile uploadedFile2 = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedFile2.storage = storageForbiden
+        uploadedFile2 = uploadedFile2.save()
 
-        //Add to storage
-        StorageAbstractImage saa = new StorageAbstractImage(storage: storage,abstractImage: image1)
-        BasicInstanceBuilder.saveDomain(saa)
-        //img 2 should not be available
-        saa = new StorageAbstractImage(storage: storageForbiden,abstractImage: image2)
-        BasicInstanceBuilder.saveDomain(saa)
+        //Add an image
+        AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(uploadedFile1, true)
+        AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(uploadedFile2, true)
 
         //Create project
         def result = ProjectAPI.create(BasicInstanceBuilder.getProjectNotExist().encodeAsJSON(),user1.username,SecurityTestsAbstract.PASSWORD1)
@@ -135,7 +118,7 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
         result = AbstractImageAPI.list(true,project.id,user1.username,SecurityTestsAbstract.PASSWORD1)
         assert 200 == result.code
         def json = JSON.parse(result.data)
-        assert 1==json.aaData.size()
+        assert 1==json.collection.size()
 
         assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
         assert (false ==AbstractImageAPI.containsInJSONList(image2.id,json))
@@ -145,8 +128,12 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
         assert (true ==AbstractImageAPI.containsInJSONList(image1.id,json))
 
         assert 200 == AbstractImageAPI.show(image1.id,user1.username,SecurityTestsAbstract.PASSWORD1).code
+
+        UploadedFile uploadedFile3 = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedFile3.storage = storage
+        uploadedFile3 = uploadedFile3.save()
         json = JSON.parse(BasicInstanceBuilder.getAbstractImageNotExist().encodeAsJSON())
-        json.storage = storage.id
+        json.uploadedFile = uploadedFile3.id
         assert 200 == AbstractImageAPI.create(json.toString(), user1.username,SecurityTestsAbstract.PASSWORD1).code
         assert 200 == AbstractImageAPI.delete(image1.id,user1.username,SecurityTestsAbstract.PASSWORD1).code
 
@@ -154,8 +141,12 @@ class AbstractImageSecurityTests extends SecurityTestsAbstract{
         assert 200 == result.code
         assert (false ==AbstractImageAPI.containsInJSONList(image2.id,json))
         assert 403 == AbstractImageAPI.show(image2.id,user1.username,SecurityTestsAbstract.PASSWORD1).code
+
+        UploadedFile uploadedFile4 = BasicInstanceBuilder.getUploadedFileNotExist()
+        uploadedFile4.storage = storageForbiden
+        uploadedFile4 = uploadedFile4.save()
         json = JSON.parse(BasicInstanceBuilder.getAbstractImageNotExist().encodeAsJSON())
-        json.storage = storageForbiden.id
+        json.uploadedFile = uploadedFile4.id
         assert 403 == AbstractImageAPI.create(json.toString(), user1.username,SecurityTestsAbstract.PASSWORD1).code
         assert 403 == AbstractImageAPI.delete(image2.id,user1.username,SecurityTestsAbstract.PASSWORD1).code
     }

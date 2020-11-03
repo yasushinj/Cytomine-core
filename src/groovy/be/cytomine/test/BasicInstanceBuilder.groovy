@@ -860,8 +860,8 @@ class BasicInstanceBuilder {
             image = new AbstractImage(uploadedFile: getUploadedFile(), originalFilename:"originalFilename", width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         }
         image = saveDomain(image)
-        saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
-        saveDomain(new AbstractSlice(image: image, channel: 0, zStack: 0, time: 0))
+        //saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+        saveDomain(new AbstractSlice(uploadedFile: image.uploadedFile, image: image, mime: getMime(),  channel: 0, zStack: 0, time: 0))
         return image
     }
 
@@ -873,7 +873,7 @@ class BasicInstanceBuilder {
         def image = new AbstractImage(uploadedFile: getUploadedFileNotExist(true), originalFilename:filename, width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         if(save) {
             saveDomain(image)
-            saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            //saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
             saveDomain(new AbstractSlice(uploadedFile: image.uploadedFile, image: image, mime: getMime(),  channel: 0, zStack: 0, time: 0))
             return image
         } else {
@@ -885,15 +885,15 @@ class BasicInstanceBuilder {
         def image = new AbstractImage(uploadedFile: uploadedFile, originalFilename:getRandomString(), width: 16000, height: 16000, depth: 5, duration: 2, channels: 3)
         if(save) {
             saveDomain(image)
-            saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
-            saveDomain(new AbstractSlice(image: image, channel: 0, zStack: 0, time: 0))
+            //saveDomain(new StorageAbstractImage(storage : getStorage(), abstractImage : image))
+            saveDomain(new AbstractSlice(uploadedFile: image.uploadedFile, image: image, mime: getMime(),  channel: 0, zStack: 0, time: 0))
             return image
         } else {
             checkDomain(image)
         }
     }
 
-    static StorageAbstractImage getStorageAbstractImage() {
+    /*static StorageAbstractImage getStorageAbstractImage() {
         def storage = getStorage()
         def abstractImage = getAbstractImage()
         StorageAbstractImage sai = StorageAbstractImage.findByStorageAndAbstractImage(storage, abstractImage)
@@ -902,7 +902,7 @@ class BasicInstanceBuilder {
             saveDomain(sai)
         }
         sai
-    }
+    }*/
 
     static ImagingServer getImagingServer() {
         def ps = ImagingServer.findByUrl("processing_server_url")
@@ -1694,13 +1694,13 @@ class BasicInstanceBuilder {
             BasicInstanceBuilder.saveDomain(abstractImage)
         }
 
-        StorageAbstractImage storageAbstractImage =  StorageAbstractImage.findByStorageAndAbstractImage(storage,abstractImage)
+        /*StorageAbstractImage storageAbstractImage =  StorageAbstractImage.findByStorageAndAbstractImage(storage,abstractImage)
         if(!storageAbstractImage) {
             storageAbstractImage = new StorageAbstractImage()
             storageAbstractImage.abstractImage = abstractImage
             storageAbstractImage.storage = storage
             BasicInstanceBuilder.saveDomain(storageAbstractImage)
-        }
+        }*/
 
         Project project = Project.findByName("testimage")
         if(!project) {

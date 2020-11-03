@@ -18,7 +18,6 @@ package be.cytomine.test.http
 
 import be.cytomine.image.AbstractImage
 import be.cytomine.image.server.Storage
-import be.cytomine.image.server.StorageAbstractImage
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import grails.converters.JSON
@@ -103,8 +102,6 @@ class AbstractImageAPI extends DomainAPI {
         result = StorageAPI.create(BasicInstanceBuilder.getStorageNotExist(false).encodeAsJSON(), username, password)
         assert 200 == result.code
         Storage storage = result.data
-        StorageAbstractImage sai = new StorageAbstractImage(storage : storage, abstractImage : abstractImage)
-        BasicInstanceBuilder.saveDomain(sai)
 
         return abstractImage
     }

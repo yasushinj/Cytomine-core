@@ -57,34 +57,34 @@ class AbstractImageTests {
         assert 200 == result.code
     }
 
-  void testListImagesWithoutCredential() {
-      BasicInstanceBuilder.getAbstractImage()
-      def result = AbstractImageAPI.list(Infos.BADLOGIN, Infos.BADPASSWORD)
-      assert 401 == result.code
-  }
+    void testListImagesWithoutCredential() {
+        BasicInstanceBuilder.getAbstractImage()
+        def result = AbstractImageAPI.list(Infos.BADLOGIN, Infos.BADPASSWORD)
+        assert 401 == result.code
+    }
 
-  void testListByProject() {
-      Project project = BasicInstanceBuilder.getProjectNotExist(true)
-      BasicInstanceBuilder.getImageInstanceNotExist(project, true)
-      def result = AbstractImageAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json.collection instanceof JSONArray
-      assert json.collection.size() == 1
-  }
+    void testListByProject() {
+        Project project = BasicInstanceBuilder.getProjectNotExist(true)
+        BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        def result = AbstractImageAPI.listByProject(project.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.collection.size() == 1
+    }
 
-  void testListByProjectNoExistWithCredential() {
-      def result = AbstractImageAPI.listByProject(-99,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 404 == result.code
-  }
+    void testListByProjectNoExistWithCredential() {
+        def result = AbstractImageAPI.listByProject(-99,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
 
-  void testGetImageWithCredential() {
-      AbstractImage image = BasicInstanceBuilder.getAbstractImage()
-      def result = AbstractImageAPI.show(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json instanceof JSONObject
-  }
+    void testGetImageWithCredential() {
+        AbstractImage image = BasicInstanceBuilder.getAbstractImage()
+        def result = AbstractImageAPI.show(image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+    }
 
 
 
@@ -108,70 +108,134 @@ class AbstractImageTests {
         assert 200 == result.code
     }
 
-  void testAddImageCorrect() {
-      def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
-      String json = imageToAdd.encodeAsJSON()
-      println "encodeAsJSON="+json
-      def result = AbstractImageAPI.create(json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      int id = result.data.id
+    void testAddImageCorrect() {
+        def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        String json = imageToAdd.encodeAsJSON()
+        def result = AbstractImageAPI.create(json, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        int id = result.data.id
 //      result = AbstractImageAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
 //      assert 200 == result.code
-  }
+    }
 
-  void testaddImageWithUnexistingScanner() {
-      def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
-      def json = JSON.parse((String)imageToAdd.encodeAsJSON())
-      json.scanner = -99
-      def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 400 == result.code
-  }
+    void testAddImageWithUnexistingScanner() {
+        def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        def json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.scanner = -99
+        def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
 
-  void testaddImageWithUnexistingSlide() {
-      def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
-      def json = JSON.parse((String)imageToAdd.encodeAsJSON())
-      json.sample = -99
-      def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 400 == result.code
-  }
+    void testAddImageWithUnexistingSlide() {
+        def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        def json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.sample = -99
+        def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
 
-  void testaddImageWithUnexistingMime() {
-      def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
-      def json = JSON.parse((String)imageToAdd.encodeAsJSON())
-      json.mime = -99
-      def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 400 == result.code
-  }
+    void testAddImageWithUnexistingUploadedFile() {
+        def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        def json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.uploadedFile = -99
+        def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
 
-  void testaddImageWithUnexistingImageServer() {
-    def mime = BasicInstanceBuilder.getMimeNotExist()
-      def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
-      def json = JSON.parse((String)imageToAdd.encodeAsJSON())
-      json.mime = mime.id
-      def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 400 == result.code
-  }
+    void testAddImageWithNegativeNumericValues() {
+        def imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        def json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.width = 0
+        def result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
 
-  void testEditImage() {
-      def image = BasicInstanceBuilder.getAbstractImageNotExist(true)
-      def data = UpdateData.createUpdateSet(
-              image,
-                    [height:[10000,900000],
-                      width:[1000,9000],
-                      path:["OLDPATH","NEWPATH"],
-                      scanner:[BasicInstanceBuilder.getScanner(),BasicInstanceBuilder.getNewScannerNotExist(true)],
-                      filename: ["OLDNAME","NEWNAME"]]
-      )
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.height= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
 
-      def result = AbstractImageAPI.update(image.id,data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json instanceof JSONObject
-      int id = json.abstractimage.id
-      def showResult = AbstractImageAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-      json = JSON.parse(showResult.data)
-      BasicInstanceBuilder.compare(data.mapNew, json)
-  }
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.depth= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.duration= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.channels= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        /*imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.physicalSizeX= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.physicalSizeY= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.physicalSizeZ= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.fps= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.magnification= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.resolution= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code*/
+
+        imageToAdd = BasicInstanceBuilder.getAbstractImageNotExist()
+        json = JSON.parse((String)imageToAdd.encodeAsJSON())
+        json.bitDepth= 0
+        result = AbstractImageAPI.create(json.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
+
+    void testEditImage() {
+        def image = BasicInstanceBuilder.getAbstractImageNotExist(true)
+        def data = UpdateData.createUpdateSet(
+                image,
+                [height:[10000,900000],
+                 width:[1000,9000],
+                 duration:[1,2],
+                 scanner:[BasicInstanceBuilder.getScanner(),BasicInstanceBuilder.getNewScannerNotExist(true)],
+                 originalFilename: ["OLDNAME","NEWNAME"]]
+        )
+
+        def result = AbstractImageAPI.update(image.id,data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        int id = json.abstractimage.id
+        def showResult = AbstractImageAPI.show(id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        json = JSON.parse(showResult.data)
+        BasicInstanceBuilder.compare(data.mapNew, json)
+    }
 
     void testEditMagnification() {
 
@@ -191,14 +255,14 @@ class AbstractImageTests {
         def json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        assert json.abstractimage.resolution == 2.5
+        //assert json.abstractimage.resolution == 2.5
         assert json.abstractimage.magnification == 20
         updatedImage = json.abstractimage
 
         result = ImageInstanceAPI.show(ii.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
-        assert json.resolution == 2.5
+        //assert json.resolution == 2.5
         assert json.magnification == 20
 
         json.magnification = 40
@@ -208,7 +272,7 @@ class AbstractImageTests {
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        assert json.imageinstance.resolution == 2.5
+        //assert json.imageinstance.resolution == 2.5
         assert json.imageinstance.magnification == 40
 
         updatedImage.resolution = 6
@@ -227,37 +291,33 @@ class AbstractImageTests {
         json = JSON.parse(result.data)
         assert json instanceof JSONObject
 
-        assert json.resolution == 6
+        //assert json.resolution == 6
         assert json.magnification == 40
     }
 
 
-  void testDeleteImage()  {
-      def imageToDelete = BasicInstanceBuilder.getAbstractImage()
-      Long id = imageToDelete.id
-      def result = AbstractImageAPI.delete(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-      println "testDeleteImage=" +result
-      assert 200 == result.code
-      result = AbstractImageAPI.show(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-      assert 200 == result.code
-      def json = JSON.parse(result.data)
-      assert json.deleted != null
-      assert json.deleted != ""
-  }
+    void testDeleteImage()  {
+        def imageToDelete = BasicInstanceBuilder.getAbstractImage()
+        Long id = imageToDelete.id
+        def result = AbstractImageAPI.delete(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        result = AbstractImageAPI.show(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
 
-  void testDeleteImageWithData()  {
-    def imageToDelete = BasicInstanceBuilder.getImageInstance()
-    def annotation = BasicInstanceBuilder.getUserAnnotation()
-    annotation.image = imageToDelete
-    annotation.save(flush:true)
-      Long id = imageToDelete.baseImage.id
-      def result = AbstractImageAPI.delete(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-      assert 403 == result.code
-  }
+    void testDeleteImageWithData()  {
+        def imageToDelete = BasicInstanceBuilder.getImageInstance()
+        def annotation = BasicInstanceBuilder.getUserAnnotation()
+        annotation.image = imageToDelete
+        annotation.save(flush:true)
+        Long id = imageToDelete.baseImage.id
+        def result = AbstractImageAPI.delete(id,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 403 == result.code
+    }
 
-  void testDeleteImageNoExist()  {
-      def result = AbstractImageAPI.delete(-99,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
-      assert 404 == result.code
-  }
+    void testDeleteImageNoExist()  {
+        def result = AbstractImageAPI.delete(-99,Infos.SUPERADMINLOGIN,Infos.SUPERADMINPASSWORD)
+        assert 404 == result.code
+    }
 
 }
