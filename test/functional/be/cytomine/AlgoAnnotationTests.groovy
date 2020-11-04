@@ -237,11 +237,29 @@ class AlgoAnnotationTests  {
         assert 400 == result.code
     }
 
+    void testAddAlgoAnnotationSliceNotExist() {
+        def annotationToAdd = BasicInstanceBuilder.getAlgoAnnotation()
+        def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.slice = -99
+        def result = AlgoAnnotationAPI.create(updateAnnotation.toString(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 400 == result.code
+    }
+
+    void testAddAlgoAnnotationSliceNull() {
+        def annotationToAdd = BasicInstanceBuilder.getAlgoAnnotation()
+        UserJob user = annotationToAdd.user
+        def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.slice = null
+        def result = AlgoAnnotationAPI.create(updateAnnotation.toString(), user.username, 'PasswordUserJob')
+        assert 200 == result.code //referenceSlice is taken
+    }
+
     void testAddAlgoAnnotationImageNotExist() {
         def annotationToAdd = BasicInstanceBuilder.getAlgoAnnotation()
         UserJob user = annotationToAdd.user
 
         def updateAnnotation = JSON.parse((String)annotationToAdd.encodeAsJSON())
+        updateAnnotation.slice = null
         updateAnnotation.image = -99
         def result = AlgoAnnotationAPI.create(updateAnnotation.toString(), user.username, 'PasswordUserJob')
         assert 400 == result.code
@@ -334,6 +352,23 @@ class AlgoAnnotationTests  {
         def annotationToDelete = annotTerm.retrieveAnnotationDomain()
         def result = AlgoAnnotationAPI.delete(annotationToDelete.id,user.username,'PasswordUserJob')
         assert 200 == result.code
+    }
+
+    void testCountAnnotationByProject() {
+        def result = AlgoAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
+    }
+
+    void testCountAnnotationByProjectWithDates() {
+        Date startDate = new Date()
+        def result = AlgoAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
+        assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject
+        assert json.total >= 0
     }
 
 
@@ -446,9 +481,6 @@ class AlgoAnnotationTests  {
 
     }
 
-
-
-
     void testUnionAlgoAnnotationVeryBigAnnotationMustBeSimplified() {
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist()
         image.save(flush: true)
@@ -484,23 +516,6 @@ class AlgoAnnotationTests  {
         println  "NB POINTS END=" +annotationAlone.id + "=" + annotationAlone.location.getNumPoints()
 
         println annotationAlone.location.toText()
-    }
-
-    void testCountAnnotationByProject() {
-        def result = AlgoAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json instanceof JSONObject
-        assert json.total >= 0
-    }
-
-    void testCountAnnotationByProjectWithDates() {
-        Date startDate = new Date()
-        def result = AlgoAnnotationAPI.countByProject(BasicInstanceBuilder.getProject().id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD, startDate.getTime(), startDate.getTime() - 1000)
-        assert 200 == result.code
-        def json = JSON.parse(result.data)
-        assert json instanceof JSONObject
-        assert json.total >= 0
     }
 
 }
