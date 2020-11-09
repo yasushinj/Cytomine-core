@@ -15,6 +15,8 @@
 */
 
 
+import be.cytomine.image.AbstractSlice
+import be.cytomine.middleware.ImageServer
 import be.cytomine.utils.CytomineMailService
 import be.cytomine.image.multidim.ImageGroupHDF5Service
 import be.cytomine.middleware.ImageServerService
@@ -35,6 +37,8 @@ import org.grails.plugin.resource.URLUtils
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.lang.management.ManagementFactory
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * Bootstrap contains code that must be execute during application (re)start
@@ -216,8 +220,13 @@ class BootStrap {
         ImageGroupHDF5Service.metaClass.callIMSConversion = {
             SecUser currentUser, def imagesFilenames, String filename -> println "\n\n mocked callIMSConversion \n\n";
         }
-        ImageServerService.metaClass.getStorageSpaces = {
-            return [[used : 0, available : 10]]
+        ImageServerService.metaClass.crop = {
+            AbstractSlice slice, params, urlOnly, parametersOnly -> println "\n\n mocked crop \n\n";
+                return Files.readAllBytes(Paths.get("test/functional/be/cytomine/utils/images/crop.jpg"));
+        }
+        ImageServerService.metaClass.storageSpace = {
+            ImageServer is -> println "\n\n mocked storageSpace \n\n";
+            return [used : 1, available: 1];
         }
         //mock services which use Retrieval
         ImageRetrievalService.metaClass.doRetrievalIndex = {
