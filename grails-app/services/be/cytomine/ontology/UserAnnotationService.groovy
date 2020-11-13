@@ -32,6 +32,7 @@ import be.cytomine.security.User
 import be.cytomine.security.UserJob
 import be.cytomine.sql.AnnotationListing
 import be.cytomine.sql.UserAnnotationListing
+import be.cytomine.utils.GeometryUtils
 import be.cytomine.utils.JSONUtils
 import be.cytomine.utils.ModelService
 import be.cytomine.utils.Task
@@ -236,7 +237,7 @@ class UserAnnotationService extends ModelService {
             throw new WrongArgumentException("Annotation location not valid")
         }
 
-        if(!annotationForm.isValid()){
+        if(!annotationForm.isValid()|| annotationForm.getNumPoints() < 1){
             throw new WrongArgumentException("Annotation location not valid")
         }
 
@@ -248,6 +249,11 @@ class UserAnnotationService extends ModelService {
         Geometry imageBounds = new WKTReader().read("POLYGON((0 0,0 $im.baseImage.height,$im.baseImage.width $im.baseImage.height,$im.baseImage.width 0,0 0))")
 
         annotationForm = annotationForm.intersection(imageBounds)
+
+        def boundaries = GeometryUtils.getGeometryBoundaries(annotationForm)
+        if(boundaries.width == 0 || boundaries.height == 0){
+            throw new WrongArgumentException("Annotation dimension not valid")
+        }
 
         //simplify annotation
         try {
