@@ -17,6 +17,7 @@ package be.cytomine.test.http
 */
 
 import be.cytomine.image.AbstractImage
+import be.cytomine.image.UploadedFile
 import be.cytomine.image.server.Storage
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
@@ -94,15 +95,11 @@ class AbstractImageAPI extends DomainAPI {
     }
 
     static AbstractImage buildBasicAbstractImage(String username, String password) {
-        AbstractImage abstractImage = BasicInstanceBuilder.getAbstractImageNotExist()
+        UploadedFile uploadedFile = UploadedFileAPI.buildBasicUploadedFile(username, password)
+        AbstractImage abstractImage = BasicInstanceBuilder.getAbstractImageNotExist(uploadedFile)
         def result = AbstractImageAPI.create(abstractImage.encodeAsJSON(), username, password)
         assert 200 == result.code
         abstractImage = result.data
-
-        result = StorageAPI.create(BasicInstanceBuilder.getStorageNotExist(false).encodeAsJSON(), username, password)
-        assert 200 == result.code
-        Storage storage = result.data
-
         return abstractImage
     }
 
