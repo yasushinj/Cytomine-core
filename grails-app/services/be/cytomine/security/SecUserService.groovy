@@ -176,7 +176,9 @@ class SecUserService extends ModelService {
         if(sortColumn == "role") {
             sort = "ORDER BY $sortColumn $sortDirection, u.id ASC "
         } else if(sortColumn == "fullName"){
-            sort = "ORDER BY u.firstname $sortDirection "
+            sort = "ORDER BY u.firstname $sortDirection, u.id "
+        } else if(sortColumn != "id"){ //avoid random sort when multiple values of the
+            sort = "ORDER BY u.$sortColumn $sortDirection, u.id "
         } else sort = "ORDER BY u.$sortColumn $sortDirection "
 
         String request = select + from + where + search + groupBy + sort
