@@ -82,8 +82,7 @@ class ImageConsultationService extends ModelService {
 
                     String filename;
                     if(image) {
-                        filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                        if(image.project.blindMode) filename = image.getBlindedName()
+                        filename = image.getBlindInstanceFilename();
                     } else {
                         filename = "Image "+imageInstanceId
                     }
@@ -136,8 +135,7 @@ class ImageConsultationService extends ModelService {
             if(!image){
                 image = ImageInstance.read(it["image"])
                 if(image) {
-                    filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                    if(image.project.blindMode) filename = image.getBlindedName()
+                    filename = image.getBlindInstanceFilename()
                 } else {
                     filename = "Image "+it["image"]
                 }
@@ -226,8 +224,7 @@ class ImageConsultationService extends ModelService {
             }
             String filename;
             if(image) {
-                filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                if(image.project.blindMode) filename = image.getBlindedName()
+                filename = image.getBlindInstanceFilename()
             } else {
                 filename = "Image "+imageInstanceId
             }
@@ -304,8 +301,7 @@ class ImageConsultationService extends ModelService {
             ImageInstance image = ImageInstance.read(it["_id"].image)
             String filename;
             if(image) {
-                filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
-                if(image.project.blindMode) filename = image.getBlindedName()
+                filename = image.getBlindInstanceFilename()
             } else {
                 filename = "Image "+it["_id"].image
             }
