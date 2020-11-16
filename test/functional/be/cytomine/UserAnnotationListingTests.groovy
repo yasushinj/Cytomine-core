@@ -17,6 +17,7 @@ package be.cytomine
 */
 
 import be.cytomine.image.ImageInstance
+import be.cytomine.image.SliceInstance
 import be.cytomine.ontology.*
 import be.cytomine.processing.Job
 import be.cytomine.project.Project
@@ -317,7 +318,7 @@ class UserAnnotationListingTests {
         //generic way test
         checkUserAnnotationResultNumber("bbox=${e.replace(" ","%20")}&image=${dataSet.image.id}&user=${dataSet.user.id}",3)
 
-        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(dataSet.image,e,dataSet.user,dataSet.term)
+        UserAnnotation annotation = BasicInstanceBuilder.getUserAnnotationNotExist(dataSet.slice,e,dataSet.user,dataSet.term)
 
         checkUserAnnotationResultNumber("bboxAnnotation=${annotation.id}&image=${dataSet.image.id}&user=${dataSet.user.id}",4)
 
@@ -799,16 +800,17 @@ class UserAnnotationListingTests {
     def createAnnotationSet() {
         Project project = BasicInstanceBuilder.getProjectNotExist(true)
         ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(project, true)
+        SliceInstance slice = BasicInstanceBuilder.getSliceInstanceNotExist(image, true)
         User me = User.findByUsername(Infos.SUPERADMINLOGIN)
         Term term =  BasicInstanceBuilder.getTermNotExist(project.ontology,true)
 
-        UserAnnotation a1 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
-        UserAnnotation a2 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
-        UserAnnotation a3 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, term)
+        UserAnnotation a1 =  BasicInstanceBuilder.getUserAnnotationNotExist(slice, me, term)
+        UserAnnotation a2 =  BasicInstanceBuilder.getUserAnnotationNotExist(slice, me, term)
+        UserAnnotation a3 =  BasicInstanceBuilder.getUserAnnotationNotExist(slice, me, term)
 
-        UserAnnotation a4 =  BasicInstanceBuilder.getUserAnnotationNotExist(image, me, null)
+        UserAnnotation a4 =  BasicInstanceBuilder.getUserAnnotationNotExist(slice, me, null)
 
-        return [project:project,image:image,user:me,term:term,annotations:[a1,a2,a3,a4]]
+        return [project:project,slice:slice,image:image,user:me,term:term,annotations:[a1,a2,a3,a4]]
     }
 
 }

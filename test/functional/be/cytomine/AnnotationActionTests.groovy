@@ -19,6 +19,7 @@ package be.cytomine
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AnnotationActionAPI
+import be.cytomine.test.http.SliceInstanceAPI
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONObject
 
@@ -33,8 +34,9 @@ class AnnotationActionTests {
     }
 
     void testList() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def annotation = BasicInstanceBuilder.getUserAnnotation()
+        def slice = SliceInstanceAPI.buildBasicSlice(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(slice, true)
+        def image = slice.image
         def json = JSON.parse("{image:${image.id}, annotationIdent:${annotation.id}, action:Test}")
 
         def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
@@ -56,9 +58,10 @@ class AnnotationActionTests {
     }
 
     void testListAfterThan() {
-        def image = BasicInstanceBuilder.getImageInstance()
-        def annotation = BasicInstanceBuilder.getUserAnnotation()
-        def json = JSON.parse("{image:${image.id}, annotation:${annotation.id}, action:Test}")
+        def slice = SliceInstanceAPI.buildBasicSlice(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(slice, true)
+        def image = slice.image
+        def json = JSON.parse("{image:${image.id}, annotationIdent:${annotation.id}, action:Test}")
 
         def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
