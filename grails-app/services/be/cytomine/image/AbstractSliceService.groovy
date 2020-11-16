@@ -41,12 +41,12 @@ class AbstractSliceService extends ModelService {
     }
 
     def list(AbstractImage image) {
-        securityACLService.checkAtLeastOne(image, READ)
+        securityACLService.check(image, READ)
         AbstractSlice.findAllByImage(image)
     }
 
     def list(UploadedFile uploadedFile) {
-        securityACLService.checkAtLeastOne(uploadedFile, READ)
+        securityACLService.check(uploadedFile, READ)
         AbstractSlice.findAllByUploadedFile(uploadedFile)
     }
 
