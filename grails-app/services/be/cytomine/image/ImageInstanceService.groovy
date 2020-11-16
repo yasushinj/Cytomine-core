@@ -749,6 +749,10 @@ class ImageInstanceService extends ModelService {
         }
     }
 
+    def beforeDelete(ImageInstance domain) {
+        SliceInstance.findAllByImage(domain).each { it.delete() }
+    }
+
     /**
      * Update this domain with new data from json
      * @param domain Domain to update
