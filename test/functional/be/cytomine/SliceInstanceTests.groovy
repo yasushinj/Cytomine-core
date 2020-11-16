@@ -1,5 +1,7 @@
 package be.cytomine
 
+import be.cytomine.image.ImageInstance
+
 /*
 * Copyright (c) 2009-2020. Authors: see NOTICE file.
 *
@@ -17,6 +19,7 @@ package be.cytomine
 */
 
 import be.cytomine.image.SliceInstance
+import be.cytomine.security.User
 import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.ImageInstanceAPI
@@ -47,7 +50,10 @@ class SliceInstanceTests {
     }
 
     void testGetByImageInstanceAndCoordinates() {
-        def result = SliceInstanceAPI.getByImageInstanceAndCoordinates(BasicInstanceBuilder.getImageInstanceNotExist(BasicInstanceBuilder.getProjectNotExist(true), true).id, 0, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        ImageInstance image = BasicInstanceBuilder.getImageInstanceNotExist(BasicInstanceBuilder.getProjectNotExist(true))
+        BasicInstanceBuilder.saveDomain(image)
+
+        def result = SliceInstanceAPI.getByImageInstanceAndCoordinates(image.id, 0, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 404 == result.code
 
         SliceInstance slice = BasicInstanceBuilder.getSliceInstance()
