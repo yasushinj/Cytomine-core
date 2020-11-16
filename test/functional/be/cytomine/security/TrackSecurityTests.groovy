@@ -27,7 +27,7 @@ import grails.converters.JSON
 class TrackSecurityTests extends SecurityTestsAbstract {
 
 
-    void testTermSecurityForCytomineAdmin() {
+    void testTrackSecurityForCytomineAdmin() {
 
         //Get user1
         User user1 = BasicInstanceBuilder.getUser(USERNAME1,PASSWORD1)
@@ -58,7 +58,7 @@ class TrackSecurityTests extends SecurityTestsAbstract {
         assert (200 == TrackAPI.delete(track.id,USERNAMEADMIN,PASSWORDADMIN).code)
     }
 
-    void testTermSecurityForSimpleUser() {
+    void testTrackSecurityForSimpleUser() {
 
         //Get user1
         User user1 = BasicInstanceBuilder.getUser(USERNAME1,PASSWORD1)
@@ -89,7 +89,7 @@ class TrackSecurityTests extends SecurityTestsAbstract {
         assert (403 == TrackAPI.delete(track.id,USERNAME2,PASSWORD2).code)
     }
 
-    void testTermSecurityForAnonymous() {
+    void testTrackSecurityForAnonymous() {
         //Get user1
         User user1 = BasicInstanceBuilder.getUser(USERNAME1,PASSWORD1)
 
@@ -118,7 +118,7 @@ class TrackSecurityTests extends SecurityTestsAbstract {
     }
 
 
-    void testTermSecurityForProjectManager() {
+    void testTrackSecurityForProjectManager() {
 
         //Get user1
         User user1 = BasicInstanceBuilder.getUser(USERNAME1,PASSWORD1)
@@ -186,7 +186,7 @@ class TrackSecurityTests extends SecurityTestsAbstract {
 
     }
 
-    void testTermSecurityForProjectUser() {
+    void testTrackSecurityForProjectUser() {
 
         //Get user1
         User user1 = BasicInstanceBuilder.getUser(USERNAME1,PASSWORD1)
@@ -195,7 +195,7 @@ class TrackSecurityTests extends SecurityTestsAbstract {
         //Get user2
         User user3 = BasicInstanceBuilder.getUser(USERNAME3,PASSWORD3)
 
-        //Create new project (user1)
+        //Create new project (user3)
         def result = ProjectAPI.create(BasicInstanceBuilder.getProjectNotExist().encodeAsJSON(),SecurityTestsAbstract.USERNAME3,SecurityTestsAbstract.PASSWORD3)
         assert 200 == result.code
         Project project = result.data
@@ -222,14 +222,18 @@ class TrackSecurityTests extends SecurityTestsAbstract {
         assert (200 == TrackAPI.update(track.id,track.encodeAsJSON(),USERNAME2,PASSWORD2).code)
         assert (200 == TrackAPI.delete(track.id,USERNAME2,PASSWORD2).code)
 
-        project.mode = Project.EditingMode.READ_ONLY
-        BasicInstanceBuilder.saveDomain(project)
 
         result = TrackAPI.create(trackToAdd.encodeAsJSON(),USERNAME1,PASSWORD1)
         assert 200 == result.code
         track = result.data
 
-        //check if user 2 cannot access/update/delete
+        project.mode = Project.EditingMode.READ_ONLY
+        BasicInstanceBuilder.saveDomain(project)
+
+        result = TrackAPI.create(trackToAdd.encodeAsJSON(),USERNAME1,PASSWORD1)
+        assert 403 == result.code
+
+        //check if user 2 cannot update/delete
         assert (200 == TrackAPI.show(track.id,USERNAME2,PASSWORD2).code)
         assert TrackAPI.containsInJSONList(track.id,JSON.parse(TrackAPI.listByProject(track.project.id,USERNAME2,PASSWORD2).data))
         assert TrackAPI.containsInJSONList(track.id,JSON.parse(TrackAPI.listByImageInstance(track.image.id,USERNAME2,PASSWORD2).data))
@@ -240,11 +244,11 @@ class TrackSecurityTests extends SecurityTestsAbstract {
         project.mode = Project.EditingMode.RESTRICTED
         BasicInstanceBuilder.saveDomain(project)
 
-        //check if user 2 cannot access/update/delete
+        //check if user 2 cannot update/delete
         assert (200 == TrackAPI.show(track.id,USERNAME2,PASSWORD2).code)
         assert TrackAPI.containsInJSONList(track.id,JSON.parse(TrackAPI.listByProject(track.project.id,USERNAME2,PASSWORD2).data))
         assert TrackAPI.containsInJSONList(track.id,JSON.parse(TrackAPI.listByImageInstance(track.image.id,USERNAME2,PASSWORD2).data))
-        assert (200 == TrackAPI.update(track.id,track.encodeAsJSON(),USERNAME1,PASSWORD1).code)
+        assert (403 == TrackAPI.update(track.id,track.encodeAsJSON(),USERNAME1,PASSWORD1).code)
         assert (403 == TrackAPI.update(track.id,track.encodeAsJSON(),USERNAME2,PASSWORD2).code)
         assert (403 == TrackAPI.delete(track.id,USERNAME2,PASSWORD2).code)
 
