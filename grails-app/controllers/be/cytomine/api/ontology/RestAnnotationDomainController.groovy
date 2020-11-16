@@ -615,8 +615,8 @@ class RestAnnotationDomainController extends RestController {
                 data.id = annotation.id
                 data.area = (int) Math.floor(annotation.area)
                 data.perimeter = (int) Math.floor(annotation.perimeter)
-                data.XCentroid = (int) Math.floor(annotation.x)
-                data.YCentroid = (int) Math.floor(annotation.y)
+                data.XCentroid = (int) Math.floor(annotation.centroid.x)
+                data.YCentroid = (int) Math.floor(annotation.centroid.y)
 
                 data.image = annotation.image
                 data.filename = annotation.originalfilename
