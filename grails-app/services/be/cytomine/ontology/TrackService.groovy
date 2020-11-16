@@ -88,7 +88,7 @@ class TrackService extends ModelService {
         json.project = project.id
 
         securityACLService.check(project, READ)
-        securityACLService.checkisNotReadOnly(project)
+        securityACLService.checkFullOrRestrictedForOwner(image, image.user)
 
         SecUser currentUser = cytomineService.getCurrentUser()
         Command c = new AddCommand(user: currentUser)
@@ -97,7 +97,7 @@ class TrackService extends ModelService {
 
     def update(Track track, def json) {
         securityACLService.check(track, READ)
-        securityACLService.checkisNotReadOnly(track)
+        securityACLService.checkFullOrRestrictedForOwner(track.image, track.image.user)
         SecUser currentUser = cytomineService.getCurrentUser()
 
         ImageInstance image = imageInstanceService.read(json.image)
@@ -110,7 +110,7 @@ class TrackService extends ModelService {
 
     def delete(Track track, Transaction transaction = null, Task task = null, boolean printMessage = true) {
         securityACLService.check(track, READ)
-        securityACLService.checkisNotReadOnly(track)
+        securityACLService.checkFullOrRestrictedForOwner(track.image, track.image.user)
 
         SecUser currentUser = cytomineService.getCurrentUser()
         def jsonNewData = JSON.parse(track.encodeAsJSON())
