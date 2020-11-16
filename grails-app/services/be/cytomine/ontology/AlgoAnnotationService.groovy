@@ -164,6 +164,17 @@ class AlgoAnnotationService extends ModelService {
             throw new WrongArgumentException("Annotation location is not valid")
         }
 
+        def envelope = annotationShape.getEnvelopeInternal()
+        if (envelope.minX < 0 ||
+                envelope.minY < 0 ||
+                envelope.maxX > image.baseImage.width ||
+                envelope.maxY > image.baseImage.height) {
+            double maxX = Math.min(annotationShape.getEnvelopeInternal().maxX, image.baseImage.width)
+            double maxY = Math.min(annotationShape.getEnvelopeInternal().maxY, image.baseImage.height)
+            Geometry insideBounds = new WKTReader().read("POLYGON((0 0,0 $maxY,$maxX $maxY,$maxX 0,0 0))")
+            annotationShape = annotationShape.intersection(insideBounds)
+        }
+
         //simplify annotation
         try {
             def data = simplifyGeometryService.simplifyPolygon(annotationShape, minPoint, maxPoint)

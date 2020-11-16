@@ -97,7 +97,8 @@ class UserAnnotationService extends ModelService {
         ))
     }
 
-    def listIncluded(ImageInstance image, String geometry, SecUser user, List<Long> terms, AnnotationDomain annotation = null, def propertiesToShow = null) {
+    def listIncluded(ImageInstance image, String geometry, SecUser user, List<Long> terms, AnnotationDomain annotation = null,
+                     def propertiesToShow = null) {
         securityACLService.check(image.container(), READ)
         annotationListingService.executeRequest(new UserAnnotationListing(
                 columnToPrint: propertiesToShow,
@@ -118,7 +119,8 @@ class UserAnnotationService extends ModelService {
      * @param job Job that make prediction
      * @return
      */
-    def list(Project project, List<Long> userList, Term realTerm, Term suggestedTerm, Job job, def propertiesToShow = null) {
+    def list(Project project, List<Long> userList, Term realTerm, Term suggestedTerm, Job job,
+             def propertiesToShow = null) {
         securityACLService.check(project.container(), READ)
         if (userList.isEmpty()) {
             return []
@@ -218,8 +220,7 @@ class UserAnnotationService extends ModelService {
             slice = sliceInstanceService.read(json.slice)
             image = slice?.image
             project = slice?.project
-        }
-        else if (json.image) {
+        } else if (json.image) {
             image = imageInstanceService.read(json.image)
             slice = image?.referenceSlice
             project = image?.project
@@ -239,8 +240,7 @@ class UserAnnotationService extends ModelService {
         SecUser currentUser = cytomineService.getCurrentUser()
         if (!json.user) {
             json.user = currentUser.id
-        }
-        else if (json.user != currentUser.id) {
+        } else if (json.user != currentUser.id) {
             securityACLService.checkFullOrRestrictedForOwner(project)
         }
 
@@ -256,8 +256,21 @@ class UserAnnotationService extends ModelService {
             throw new WrongArgumentException("Annotation location is not valid")
         }
 
+        def envelope = annotationShape.getEnvelopeInternal()
+        if (envelope.minX < 0 ||
+                envelope.minY < 0 ||
+                envelope.maxX > image.baseImage.width ||
+                envelope.maxY > image.baseImage.height) {
+            double maxX = Math.min(annotationShape.getEnvelopeInternal().maxX, image.baseImage.width)
+            double maxY = Math.min(annotationShape.getEnvelopeInternal().maxY, image.baseImage.height)
+            Geometry insideBounds = new WKTReader().read("POLYGON((0 0,0 $maxY,$maxX $maxY,$maxX 0,0 0))")
+            annotationShape = annotationShape.intersection(insideBounds)
+        }
+
         //simplify annotation
         try {
+            if(minPoint != null) minPoint = Long.parseLong(minPoint)
+            if(maxPoint != null) maxPoint = Long.parseLong(maxPoint)
             def data = simplifyGeometryService.simplifyPolygon(annotationShape, minPoint, maxPoint)
             json.location = data.geometry
             json.geometryCompression = data.rate
@@ -347,9 +360,31 @@ class UserAnnotationService extends ModelService {
             throw new WrongArgumentException("Annotation location is not valid")
         }
 
+        ImageInstance im = imageInstanceService.read(jsonNewData.image)
+        if(!im){
+            throw new WrongArgumentException("Annotation not associated with a valid image")
+        }
+        def envelope = annotationShape.getEnvelopeInternal()
+        if (envelope.minX < 0 ||
+                envelope.minY < 0 ||
+                envelope.maxX > im.baseImage.width ||
+                envelope.maxY > im.baseImage.height) {
+            double maxX = Math.min(annotationShape.getEnvelopeInternal().maxX, im.baseImage.width)
+            double maxY = Math.min(annotationShape.getEnvelopeInternal().maxY, im.baseImage.height)
+            Geometry insideBounds = new WKTReader().read("POLYGON((0 0,0 $maxY,$maxX $maxY,$maxX 0,0 0))")
+            annotationShape = annotationShape.intersection(insideBounds)
+        }
+
         //simplify annotation
         try {
-            def data = simplifyGeometryService.simplifyPolygon(annotationShape, jsonNewData.geometryCompression)
+            double rate
+            if(jsonNewData.geometryCompression != null && !jsonNewData.geometryCompression instanceof org.codehaus.groovy.grails.web.json.JSONObject.Null)
+                rate = Double.parseDouble(jsonNewData.geometryCompression)
+            else if(jsonNewData.geometryCompression instanceof org.codehaus.groovy.grails.web.json.JSONObject.Null)
+                rate = 0d
+
+            def data = simplifyGeometryService.simplifyPolygon(annotationShape, rate)
+
             jsonNewData.location = data.geometry
             jsonNewData.geometryCompression = data.rate
         } catch (Exception e) {
@@ -387,10 +422,10 @@ class UserAnnotationService extends ModelService {
         def jsonNewData = JSON.parse(domain.encodeAsJSON())
         jsonNewData.deleted = new Date().time
         SecUser currentUser = cytomineService.getCurrentUser()
-        securityACLService.checkFullOrRestrictedForOwner(domain,domain.user)
+        securityACLService.checkFullOrRestrictedForOwner(domain, domain.user)
         Command c = new EditCommand(user: currentUser, transaction: transaction)
         c.delete = true
-        return executeCommand(c,domain,jsonNewData)
+        return executeCommand(c, domain, jsonNewData)
     }
 
     def afterDelete(def domain, def response) {
@@ -418,10 +453,10 @@ class UserAnnotationService extends ModelService {
         def collection = []
         slices.each { slice ->
             collection << add(new JSONObject([
-                    slice: slice.id,
+                    slice   : slice.id,
                     location: userAnnotation.location.toString(),
-                    terms: userAnnotation.termsId(),
-                    tracks: userAnnotation.tracksId()
+                    terms   : userAnnotation.termsId(),
+                    tracks  : userAnnotation.tracksId()
             ]))
         }
 
@@ -475,12 +510,12 @@ class UserAnnotationService extends ModelService {
     }
 
     def annotationTrackService
+
     def deleteDependentAnnotationTrack(UserAnnotation ua, Transaction transaction, Task task = null) {
         AnnotationTrack.findAllByAnnotationIdent(ua.id).each {
             annotationTrackService.delete(it, transaction, task)
         }
     }
-
 
     /**
      * List all annotation with a very light strcuture: id, project and crop url
