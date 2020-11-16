@@ -100,7 +100,7 @@ class ImageInstanceService extends ModelService {
 
         securityACLService.checkIsSameUser(user, cytomineService.currentUser)
 
-        String imageInstanceAlias = "ii"
+        String imageInstanceAlias = "ui"
         String abstractImageAlias = "ai"
 
         if (!sortColumn) sortColumn = "created"
@@ -120,7 +120,7 @@ class ImageInstanceService extends ModelService {
         validatedSearchParameters.findAll { !it.property.contains(".") }.each {
             it.property = "${imageInstanceAlias}." + it.property
         }
-        validatedSearchParameters.findAll { it.property == "ii.instanceFilename" }.each { it.property = "name" }
+        validatedSearchParameters.findAll { it.property == "ui.instanceFilename" }.each { it.property = "name" }
 
         boolean joinAI = validatedSearchParameters.any {it.property.contains(abstractImageAlias + ".")} || sortedProperty.contains(abstractImageAlias + ".")
 
@@ -153,7 +153,7 @@ class ImageInstanceService extends ModelService {
             search += sqlSearchConditions.abstractImage
         }
         if(sqlSearchConditions.tags){
-            from += "LEFT OUTER JOIN tag_domain_association tda ON ii.id = tda.domain_ident AND tda.domain_class_name = 'be.cytomine.image.ImageInstance' "
+            from += "LEFT OUTER JOIN tag_domain_association tda ON ui.id = tda.domain_ident AND tda.domain_class_name = 'be.cytomine.image.ImageInstance' "
             search +=" AND "
             search += sqlSearchConditions.tags
         }
