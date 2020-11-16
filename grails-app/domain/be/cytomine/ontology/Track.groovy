@@ -51,7 +51,7 @@ class Track extends CytomineDomain {
 
     void checkAlreadyExist() {
         Track.withNewSession {
-            Track track = Track.findByNameAndImage(name, image)
+            Track track = Track.findByNameAndImageAndDeletedIsNull(name, image)
             if (track != null && track?.id != id) {
                 throw new AlreadyExistException("Track ${track?.name} already exist!")
             }
