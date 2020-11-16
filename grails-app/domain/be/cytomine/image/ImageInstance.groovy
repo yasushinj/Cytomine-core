@@ -291,13 +291,13 @@ class ImageInstance extends CytomineDomain implements Serializable {
 
     String getBlindOriginalFilename() {
         if (project?.blindMode)
-            return "[BLIND] ${baseImage?.id}"
+            return "${baseImage?.id}"
         return baseImage?.originalFilename
     }
 
     String getBlindInstanceFilename() {
         if (project?.blindMode)
-            return "[BLIND] ${id}"
+            return "${baseImage?.id}"
         else if (instanceFilename && instanceFilename?.trim() != '')
             return instanceFilename
         else
