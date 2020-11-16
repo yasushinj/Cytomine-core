@@ -45,7 +45,7 @@ class SampleService extends ModelService {
 
     //TODO:: secure ACL (from abstract image)
     def list(User user) {
-        def abstractImageAvailable = abstractImageService.list(user)
+        def abstractImageAvailable = abstractImageService.list(user).data
         if(abstractImageAvailable.isEmpty()) {
             return []
         } else {

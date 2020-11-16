@@ -52,11 +52,11 @@ class StatsService extends ModelService {
         }
 
         projects.each { project ->
-            def layers = secUserService.listLayers(project)
+            def layers = secUserService.listLayers(project).collect {it.id}
             if(!layers.isEmpty()) {
                 def annotations = UserAnnotation.createCriteria().list {
                     eq("project", project)
-                    inList("user", layers)
+                    inList("user.id", layers)
                 }
                 annotations.each { annotation ->
                     if (annotation.terms().contains(term)) {
