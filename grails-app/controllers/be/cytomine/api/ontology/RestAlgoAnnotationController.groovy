@@ -26,6 +26,7 @@ import be.cytomine.project.Project
 import be.cytomine.security.SecUser
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.restapidoc.annotation.*
 import org.restapidoc.pojo.RestApiParamType
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -116,6 +117,14 @@ class  RestAlgoAnnotationController extends RestController {
             @RestApiParam(name="POST JSON: maxPoint", type="int", paramType = RestApiParamType.QUERY, required = false, description = "Maximum number of point that constitute the annotation")
     ])
     def add(){
+        if(request.JSON instanceof JSONObject) {
+            if(params.minPoint && !(params.minPoint instanceof org.codehaus.groovy.runtime.NullObject)) request.JSON.put("minPoint", params.minPoint)
+            if(params.maxPoint && !(params.maxPoint instanceof org.codehaus.groovy.runtime.NullObject)) request.JSON.put("maxPoint", params.maxPoint)
+        } else if(request.JSON instanceof JSONArray) {
+            request.JSON.each {println it}
+            if(params.minPoint && !(params.minPoint instanceof org.codehaus.groovy.runtime.NullObject)) request.JSON.each{it.put("minPoint", params.minPoint)}
+            if(params.maxPoint && !(params.maxPoint instanceof org.codehaus.groovy.runtime.NullObject)) request.JSON.each{it.put("maxPoint", params.maxPoint)}
+        }
         add(algoAnnotationService, request.JSON)
     }
 
