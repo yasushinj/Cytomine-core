@@ -702,9 +702,9 @@ class RestUserController extends RestController {
         DateTime thirtySecondsAgo = new DateTime().minusSeconds(30)
         def result = db.lastUserPosition.aggregate(
                 [$match : [ project : project.id, created:[$gt:thirtySecondsAgo.toDate()]]],
-                [$project:[user:1,image:1,imageName:1,created:1]],
-                [$group : [_id : [ user: '$user', image: '$image',imageName: '$imageName'], "date":[$max:'$created']]],
-                [$group : [_id : [ user: '$_id.user'], "position":[$push: [id: '$_id.image',image: '$_id.image', filename: '$_id.imageName', originalFilename: '$_id.imageName', date: '$date']]]]
+                [$project:[user:1,image:1,slice:1,imageName:1,created:1]],
+                [$group : [_id : [ user: '$user', slice: '$slice'], "date":[$max:'$created'], image: [$first:'$image'],imageName: [$first:'$imageName']]],
+                [$group : [_id : [ user: '$_id.user'], "position":[$push: [id: '$_id.image',slice: '$_id.slice', image: '$image', filename: '$imageName', originalFilename: '$imageName', date: '$date']]]]
         )
 
         def usersWithPosition = []
