@@ -146,8 +146,8 @@ class AlgoAnnotationService extends ModelService {
         securityACLService.checkisNotReadOnly(project)
 
         SecUser currentUser = cytomineService.getCurrentUser()
+        if (!currentUser.algo()) throw new WrongArgumentException("user $currentUser is not an userjob")
         json.user = currentUser.id
-        //TODO: check current user is algo
 
         def minPoint = json.minPoint
         def maxPoint = json.maxPoint
