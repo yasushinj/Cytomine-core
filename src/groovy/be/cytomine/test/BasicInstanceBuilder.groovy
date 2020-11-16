@@ -605,8 +605,16 @@ class BasicInstanceBuilder {
         getUserAnnotationNotExist(project,getImageInstanceNotExist(project, true),save)
     }
 
+    static UserAnnotation getUserAnnotationNotExist(SliceInstance slice, boolean save = false) {
+        getUserAnnotationNotExist(slice, User.findByUsername(Infos.SUPERADMINLOGIN),save)
+    }
+
     static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image,boolean save = false) {
         getUserAnnotationNotExist(project, image, User.findByUsername(Infos.SUPERADMINLOGIN), save)
+    }
+
+    static UserAnnotation getUserAnnotationNotExist(SliceInstance slice, User user, boolean save = false) {
+        getUserAnnotationNotExist(project, slice.image, user, save)
     }
 
     static UserAnnotation getUserAnnotationNotExist(Project project = getImageInstance().project, ImageInstance image, User user, boolean save = false) {
@@ -639,12 +647,15 @@ class BasicInstanceBuilder {
     }
 
     static UserAnnotation getUserAnnotationNotExist(ImageInstance image, User user, Term term) {
+        getUserAnnotationNotExist(image.referenceSlice, user, term)
+    }
+    static UserAnnotation getUserAnnotationNotExist(SliceInstance slice, User user, Term term) {
         UserAnnotation annotation = new UserAnnotation(
                 location: new WKTReader().read("POLYGON ((1983 2168, 2107 2160, 2047 2074, 1983 2168))"),
-                image:image,
-                slice: image.referenceSlice,
+                image:slice.image,
+                slice: slice,
                 user: user,
-                project:image.project
+                project:slice.image.project
         )
         annotation = saveDomain(annotation)
 
@@ -689,12 +700,13 @@ class BasicInstanceBuilder {
         save ? saveDomain(annotation) : checkDomain(annotation)
     }
 
-    static ReviewedAnnotation getReviewedAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
-        def annotation = getUserAnnotationNotExist(image,polygon,user,term)
+    static ReviewedAnnotation getReviewedAnnotationNotExist(SliceInstance slice, String polygon, User user, Term term) {
+        def annotation = getUserAnnotationNotExist(slice,polygon,user,term)
 
         def reviewedAnnotation = ReviewedAnnotation.findOrCreateWhere(
                 location: annotation.location,
                 image: annotation.image,
+                slice : slice,
                 user: user,
                 project:annotation.project,
                 status : 0,
@@ -703,6 +715,9 @@ class BasicInstanceBuilder {
         reviewedAnnotation.putParentAnnotation(annotation)
         reviewedAnnotation.addToTerms(term)
         saveDomain(reviewedAnnotation)
+    }
+    static ReviewedAnnotation getReviewedAnnotationNotExist(ImageInstance image, String polygon, User user, Term term) {
+        getReviewedAnnotationNotExist(image.referenceSlice, polygon, user, term)
     }
 
 
@@ -1644,11 +1659,10 @@ class BasicInstanceBuilder {
         ImageServer imageServer = ImageServer.findByUrl(urlImageServer)
         if(!imageServer) {
             imageServer = new ImageServer()
-            imageServer.className = "IIPResolver"
-            imageServer.name = "IIP-Openslide2"
-            imageServer.service = "/image/tile"
+            imageServer.name = "IMS-test"
             imageServer.url =  urlImageServer
             imageServer.available = true
+            imageServer.basePath = "/tmp/"
             BasicInstanceBuilder.saveDomain(imageServer)
         }
 
@@ -1676,38 +1690,6 @@ class BasicInstanceBuilder {
             BasicInstanceBuilder.saveDomain(storage)
         }
 
-        ImageServerStorage imageServerStorage = ImageServerStorage.findByImageServerAndStorage(imageServer,storage)
-        if(!imageServerStorage) {
-            imageServerStorage = new ImageServerStorage()
-            imageServerStorage.storage = storage
-            imageServerStorage.imageServer = imageServer
-            BasicInstanceBuilder.saveDomain(imageServerStorage)
-        }
-
-        AbstractImage abstractImage = AbstractImage.findByFilename("1383567901006/test.tif")
-        if(!abstractImage) {
-            abstractImage = new AbstractImage()
-            abstractImage.filename = "1383567901006/test.tif"
-            abstractImage.originalFilename = "test.tif"
-            abstractImage.path = "1383567901006/test.tif"
-            abstractImage.width = 25088
-            abstractImage.height = 37888
-            abstractImage.magnification = 8
-            abstractImage.resolution = 0.65d
-            abstractImage.mime = mime
-            abstractImage.originalFilename = "test01.jpg"
-            abstractImage.user = user
-            BasicInstanceBuilder.saveDomain(abstractImage)
-        }
-
-        /*StorageAbstractImage storageAbstractImage =  StorageAbstractImage.findByStorageAndAbstractImage(storage,abstractImage)
-        if(!storageAbstractImage) {
-            storageAbstractImage = new StorageAbstractImage()
-            storageAbstractImage.abstractImage = abstractImage
-            storageAbstractImage.storage = storage
-            BasicInstanceBuilder.saveDomain(storageAbstractImage)
-        }*/
-
         Project project = Project.findByName("testimage")
         if(!project) {
             project = BasicInstanceBuilder.getProjectNotExist(true)
@@ -1715,21 +1697,34 @@ class BasicInstanceBuilder {
             BasicInstanceBuilder.saveDomain(project)
         }
 
-        UploadedFile uploadedFile = UploadedFile.findByPath(abstractImage.filename)
+        UploadedFile uploadedFile = UploadedFile.findByOriginalFilename("originalFilename")
         if (!uploadedFile) {
             uploadedFile = new UploadedFile()
-            uploadedFile.image = abstractImage
-            uploadedFile.ext = abstractImage.mime.extension
-            uploadedFile.contentType = abstractImage.mime.mimeType
-            uploadedFile.filename = abstractImage.filename
-            uploadedFile.originalFilename = abstractImage.originalFilename
-            uploadedFile.user = abstractImage.user
-            uploadedFile.path = storage.getBasePath()
-            uploadedFile.storages = [storage.id]
+            uploadedFile.ext = "test"
+            uploadedFile.contentType = "test"
+            uploadedFile.filename = "test.tif"
+            uploadedFile.originalFilename = "test.tif"
+            uploadedFile.user = user
+            uploadedFile.storage = storage
             uploadedFile.projects = [project.id]
             uploadedFile.size = 0 //fake
             BasicInstanceBuilder.saveDomain(uploadedFile)
         }
+
+        AbstractImage abstractImage = AbstractImage.findByOriginalFilename("1383567901006/test.tif")
+        if(!abstractImage) {
+            abstractImage = new AbstractImage()
+            abstractImage.originalFilename = "test.tif"
+            abstractImage.width = 25088
+            abstractImage.height = 37888
+            abstractImage.magnification = 8
+            abstractImage.resolution = 0.65d
+            abstractImage.originalFilename = "test01.jpg"
+            abstractImage.user = user
+            abstractImage.uploadedFile = uploadedFile
+            BasicInstanceBuilder.saveDomain(abstractImage)
+        }
+        saveDomain(new AbstractSlice(uploadedFile: abstractImage.uploadedFile, image: abstractImage, mime: mime,  channel: 0, zStack: 0, time: 0))
 
         ImageInstance imageInstance = ImageInstance.findByBaseImageAndProject(abstractImage,project)
         if(!imageInstance) {
@@ -1929,7 +1924,7 @@ class BasicInstanceBuilder {
     static PersistentImageConsultation getImageConsultationNotExist(boolean insert = false) {
         def connection = getProjectConnection(true)
         ImageInstance image = getImageInstanceNotExist(Project.read(connection.project), true)
-        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.instanceFilename,
+        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.getBlindInstanceFilename(),
                 imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
                 project: image.project.id)
         insert ? insertDomain(consult) : checkDomain(consult)
@@ -1939,7 +1934,7 @@ class BasicInstanceBuilder {
         connection.project = projectId;
         insertDomain(connection)
         ImageInstance image = getImageInstanceNotExist(Project.read(projectId), true)
-        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.instanceFilename,
+        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.getBlindInstanceFilename(),
                 imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
                 project: image.project.id)
         insert ? insertDomain(consult) : checkDomain(consult)
@@ -1949,26 +1944,22 @@ class BasicInstanceBuilder {
         def connection = getProjectConnection()
         connection.project = image.project.id;
         insertDomain(connection)
-        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.instanceFilename,
+        PersistentImageConsultation consult = new PersistentImageConsultation(image : image.id, imageName: image.getBlindInstanceFilename(),
                 imageThumb: 'NO THUMB', mode:"test", user:getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD).id,
                 project: image.project.id)
         insert ? insertDomain(consult) : checkDomain(consult)
     }
 
-    static PersistentUserPosition getPersistentUserPosition(ImageInstance image, User user, boolean insert = false){
-        LastUserPosition tmpPosition = new LastUserPosition(user:user.id, image: image.id,
-                imageName: image.instanceFilename, project:image.project, session: "test", zoom:0, rotation : 0.0)
+    static PersistentUserPosition getPersistentUserPosition(SliceInstance slice, User user, boolean insert = false){
+        LastUserPosition tmpPosition = new LastUserPosition(user:user.id, slice:slice.id, image: slice.image.id,
+                imageName: slice.image.getBlindInstanceFilename(), project:slice.image.project, session: "test", zoom:0, rotation : 0.0)
 
         insert ? insertDomain(tmpPosition) : checkDomain(tmpPosition)
 
-        PersistentUserPosition position = new PersistentUserPosition(user:user.id, image: image.id,
-                imageName: image.instanceFilename, project:image.project, session: "test", zoom:0, rotation : 0.0)
+        PersistentUserPosition position = new PersistentUserPosition(user:user.id, slice:slice.id, image: slice.image.id,
+                imageName: slice.image.getBlindInstanceFilename(), project:slice.image.project, session: "test", zoom:0, rotation : 0.0)
 
         insert ? insertDomain(position) : checkDomain(position)
-    }
-
-    static PersistentUserPosition getPersistentUserPosition(ImageInstance image, boolean insert = false){
-        getPersistentUserPosition(image, getUser(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD), insert)
     }
 
     static ImageGroupHDF5 getImageGroupHDF5() {
