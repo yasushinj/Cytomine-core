@@ -366,7 +366,7 @@ class ImageInstanceSearchTests {
         assert json.collection instanceof JSONArray
         assert ImageInstanceAPI.containsInJSONList(img1.id,json)
 
-        searchParameters = [[operator : "ilike", field : "name", value:img1.getFileName()]]
+        searchParameters = [[operator : "ilike", field : "name", value:img1.getBlindInstanceFilename()]]
 
         result = ImageInstanceAPI.listByUser(BasicInstanceBuilder.getUser2().id, searchParameters, 0, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code

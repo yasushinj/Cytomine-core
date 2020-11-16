@@ -73,7 +73,7 @@ class UserAnnotationListingTests {
         expectedProp = ['showBasic', 'showImage']
         result = UserAnnotationAPI.listByImage(dataSet.image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD,expectedProp)
         json = (JSON.parse(result.data))
-        checkForProperties(json.collection.get(0),['id','originalfilename'],['term','location'])
+        checkForProperties(json.collection.get(0),['id','originalFilename'],['term','location'])
 
         expectedProp = ['showWKT', 'hideWKT','hideBasic','hideMeta']
         result = UserAnnotationAPI.listByImage(dataSet.image.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD,expectedProp)
