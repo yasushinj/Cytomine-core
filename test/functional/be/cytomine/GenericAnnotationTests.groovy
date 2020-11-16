@@ -891,6 +891,20 @@ class GenericAnnotationTests  {
         assert annotation.location.numPoints <= getPointMultiplyByGeometriesOrInteriorRings(annotation.location, maxPoint)
         assert annotation.location.numPoints >= getPointMultiplyByGeometriesOrInteriorRings(annotation.location, minPoint)
 
+
+        //test update and DouglasPeuckerSimplifier
+
+        def jsonUpdate = JSON.parse((String)annotation.encodeAsJSON())
+        String expected = "POLYGON ((120 120, 140 199, 160 200, 180 199, 220 120, 122 122, 120 120))"
+        println jsonUpdate.geometryCompression
+        jsonUpdate.geometryCompression = 10.0
+        jsonUpdate.location = "POLYGON ((120 120, 121 121, 122 122, 220 120, 180 199, 160 200, 140 199, 120 120))"
+        result = UserAnnotationAPI.update(annotation.id, jsonUpdate.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+
+        assert 200 == result.code
+        def json = JSON.parse(result.data).annotation
+
+        assert json.location == expected
     }
 
 
