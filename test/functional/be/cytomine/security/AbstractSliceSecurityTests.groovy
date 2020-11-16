@@ -25,6 +25,7 @@ import be.cytomine.test.BasicInstanceBuilder
 import be.cytomine.test.Infos
 import be.cytomine.test.http.AbstractSliceAPI
 import be.cytomine.test.http.ProjectAPI
+import be.cytomine.test.http.UploadedFileAPI
 import grails.converters.JSON
 
 class AbstractSliceSecurityTests extends SecurityTestsAbstract{
@@ -38,12 +39,8 @@ class AbstractSliceSecurityTests extends SecurityTestsAbstract{
         //Get admin user
         User admin = getUserAdmin()
 
-        Storage storage = BasicInstanceBuilder.getStorageNotExist(true)
-
-        Infos.addUserRight(user1.username,storage)
-
         //Add an image
-        UploadedFile uf1 = BasicInstanceBuilder.getUploadedFileNotExist(user1,true)
+        UploadedFile uf1 = UploadedFileAPI.buildBasicUploadedFile(SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
         AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(uf1,true)
         UploadedFile uf2 = BasicInstanceBuilder.getUploadedFileNotExist(true)
         AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(uf2,true)
@@ -83,12 +80,8 @@ class AbstractSliceSecurityTests extends SecurityTestsAbstract{
         //Get admin user
         User admin = getUserAdmin()
 
-        Storage storage = BasicInstanceBuilder.getStorageNotExist(user1,true)
-
-        Infos.addUserRight(user1.username,storage)
-
         //Add an image
-        UploadedFile uf1 = BasicInstanceBuilder.getUploadedFileNotExist(user1,true)
+        UploadedFile uf1 = UploadedFileAPI.buildBasicUploadedFile(SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
         AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(uf1,true)
         UploadedFile uf2 = BasicInstanceBuilder.getUploadedFileNotExist(true)
         AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(uf2,true)
@@ -126,12 +119,8 @@ class AbstractSliceSecurityTests extends SecurityTestsAbstract{
         //Get admin user
         User admin = getUserAdmin()
 
-        Storage storage = BasicInstanceBuilder.getStorageNotExist(user1,true)
-
-        Infos.addUserRight(user1.username,storage)
-
         //Add an image
-        UploadedFile uf1 = BasicInstanceBuilder.getUploadedFileNotExist(user1,true)
+        UploadedFile uf1 = UploadedFileAPI.buildBasicUploadedFile(SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
         AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(uf1,true)
         UploadedFile uf2 = BasicInstanceBuilder.getUploadedFileNotExist(true)
         AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(uf2,true)
@@ -168,12 +157,8 @@ class AbstractSliceSecurityTests extends SecurityTestsAbstract{
         //Get admin user
         User admin = getUserAdmin()
 
-        Storage storage = BasicInstanceBuilder.getStorageNotExist(user1,true)
-
-        Infos.addUserRight(user1.username,storage)
-
         //Add an image
-        UploadedFile uf1 = BasicInstanceBuilder.getUploadedFileNotExist(user1,true)
+        UploadedFile uf1 = UploadedFileAPI.buildBasicUploadedFile(SecurityTestsAbstract.USERNAME1,SecurityTestsAbstract.PASSWORD1)
         AbstractImage image1 = BasicInstanceBuilder.getAbstractImageNotExist(uf1,true)
         UploadedFile uf2 = BasicInstanceBuilder.getUploadedFileNotExist(true)
         AbstractImage image2 = BasicInstanceBuilder.getAbstractImageNotExist(uf2,true)
