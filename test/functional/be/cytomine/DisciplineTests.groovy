@@ -82,7 +82,8 @@ class DisciplineTests  {
   }
 
   void testUpdateDisciplineCorrect() {
-      def discipline = BasicInstanceBuilder.getDiscipline()
+      def discipline = BasicInstanceBuilder.getDisciplineNotExist()
+      discipline = BasicInstanceBuilder.saveDomain(discipline)
       def data = UpdateData.createUpdateSet(discipline,[name: ["OLDNAME","NEWNAME"]])
       def result = DisciplineAPI.update(discipline.id, data.postData,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
       assert 200 == result.code

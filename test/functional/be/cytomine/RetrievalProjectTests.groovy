@@ -212,7 +212,7 @@ class RetrievalProjectTests  {
 
     void testUpdateProjectRetrievalAddProject() {
         //project with AO=T
-        Project projectToAdd = BasicInstanceBuilder.getProject()
+        Project projectToAdd = BasicInstanceBuilder.getProjectNotExist()
         projectToAdd.retrievalAllOntology = false;
         projectToAdd.retrievalDisable = false;
         projectToAdd.retrievalProjects?.clear()

@@ -405,8 +405,8 @@ class UserSearchTests {
         assert json.size == totalSize
         size = totalSize
         assert json.collection.size() == size
-        id1 = json.collection[0].id
-        id2 = json.collection[-1].id
+        String origin1 = json.collection[0].origin
+        String origin2 = json.collection[-1].origin
 
         result = UserAPI.list( "origin", "asc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -414,7 +414,7 @@ class UserSearchTests {
         assert json.collection instanceof JSONArray
         assert json.size == size
         assert json.collection.size() == 1
-        assert json.collection[0].id == id1
+        assert json.collection[0].origin == origin1
 
         result = UserAPI.list("origin", "desc", 1, 0, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
@@ -422,7 +422,7 @@ class UserSearchTests {
         assert json.collection instanceof JSONArray
         assert json.size == size
         assert json.collection.size() == 1
-        assert json.collection[0].id != id1
+        assert json.collection[0].origin == origin2
     }
 
     void testProjectUserSort(){

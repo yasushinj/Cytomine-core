@@ -161,6 +161,7 @@ class ImageInstanceTests  {
 
     void testAddImageInstanceAlreadyExist() {
         def imageToAdd = BasicInstanceBuilder.getImageInstanceNotExist()
+        imageToAdd = BasicInstanceBuilder.saveDomain(imageToAdd)
         def result = ImageInstanceAPI.create(imageToAdd.encodeAsJSON(), Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 409 == result.code
     }
