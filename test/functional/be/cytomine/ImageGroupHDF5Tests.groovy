@@ -42,7 +42,10 @@ class ImageGroupHDF5Tests {
     void testDeleteImageGroupHDF5(){
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
         def result = ImageGroupHDF5API.delete(imageGroupHDF5.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
-        assert 200 == result.code
+        assert 403 == result.code
+        def json = JSON.parse(result.data)
+        assert json.errors.contains("removed")
+        //assert 200 == result.code
     }
 
     void testAddImageGroupHDF5() {
@@ -51,13 +54,8 @@ class ImageGroupHDF5Tests {
         println imageGroupHDF5
         def result = ImageGroupHDF5API.create(((ImageGroupHDF5)imageGroupHDF5).encodeAsJSON(), Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
         // invalid because no imageSequence
-        assert 400 == result.code
-
-
-        /*int resID = result.data.id
-
-        result = ImageGroupHDF5API.show(resID, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
-        assert 200 == result.code*/
+        assert 403 == result.code
+        //assert 400 == result.code
     }
 
 
@@ -82,9 +80,12 @@ class ImageGroupHDF5Tests {
         ImageGroupHDF5 imageGroupHDF5 = BasicInstanceBuilder.getImageGroupHDF5()
         println imageGroupHDF5
         def result = ImageGroupHDF5API.show(imageGroupHDF5.id, Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
-        assert 200 == result.code
+        assert 403 == result.code
         def json = JSON.parse(result.data)
-        assert json instanceof JSONObject
+        assert json.errors.contains("removed")
+        /*assert 200 == result.code
+        def json = JSON.parse(result.data)
+        assert json instanceof JSONObject*/
     }
 
     void testShowImageGroupFromImageGroupId(){
@@ -94,7 +95,10 @@ class ImageGroupHDF5Tests {
         BasicInstanceBuilder.saveDomain(imageGroupHDF5)
 
         def result = ImageGroupHDF5API.showFromImageGroup(imageGroup.id ,Infos.ANOTHERLOGIN, Infos.ANOTHERPASSWORD)
-        assert 200 == result.code
+        assert 403 == result.code
+        def json = JSON.parse(result.data)
+        assert json.errors.contains("removed")
+        //assert 200 == result.code
 
     }
 

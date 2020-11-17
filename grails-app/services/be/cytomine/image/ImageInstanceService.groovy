@@ -21,7 +21,6 @@ import be.cytomine.Exception.CytomineMethodNotYetImplementedException
 import be.cytomine.Exception.ForbiddenException
 import be.cytomine.api.UrlApi
 import be.cytomine.command.*
-import be.cytomine.image.multidim.ImageSequence
 import be.cytomine.ontology.AlgoAnnotation
 import be.cytomine.ontology.AnnotationTerm
 import be.cytomine.meta.Property
@@ -58,7 +57,6 @@ class ImageInstanceService extends ModelService {
     def algoAnnotationService
     def dataSource
     def reviewedAnnotationService
-    def imageSequenceService
     def propertyService
     def annotationIndexService
     def securityACLService
@@ -843,12 +841,6 @@ class ImageInstanceService extends ModelService {
     def deleteDependentAnnotationAction(ImageInstance image, Transaction transaction, Task task = null) {
         AnnotationAction.findAllByImage(image).each {
             it.delete()
-        }
-    }
-
-    def deleteDependentImageSequence(ImageInstance image, Transaction transaction, Task task = null) {
-        ImageSequence.findAllByImage(image).each {
-            imageSequenceService.delete(it, transaction, null, false)
         }
     }
 
