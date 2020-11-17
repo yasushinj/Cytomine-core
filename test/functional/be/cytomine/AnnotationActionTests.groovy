@@ -33,7 +33,7 @@ class AnnotationActionTests {
         assert 200 == result.code
     }
 
-    void testList() {
+    void testListByImage() {
         def slice = SliceInstanceAPI.buildBasicSlice(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(slice, true)
         def image = slice.image
@@ -53,6 +53,30 @@ class AnnotationActionTests {
         assert JSON.parse(result.data).collection.size() == 1
 
         result = AnnotationActionAPI.listByImageAndUser(image.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        assert JSON.parse(result.data).collection.size() == 0
+    }
+
+    void testListBySlice() {
+        def slice = SliceInstanceAPI.buildBasicSlice(Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        def annotation = BasicInstanceBuilder.getUserAnnotationNotExist(slice, true)
+        def image = slice.image
+        def json = JSON.parse("{slice:${slice.id}, annotationIdent:${annotation.id}, action:Test}")
+
+        def result = AnnotationActionAPI.create(json.toString(),Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+
+        Long creator = JSON.parse(result.data).user
+
+        result = AnnotationActionAPI.listBySlice(slice.id,Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        assert JSON.parse(result.data).collection.size() == 1
+
+        result = AnnotationActionAPI.listBySliceAndUser(slice.id, creator, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        assert JSON.parse(result.data).collection.size() == 1
+
+        result = AnnotationActionAPI.listBySliceAndUser(slice.id, BasicInstanceBuilder.user1.id, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
         assert 200 == result.code
         assert JSON.parse(result.data).collection.size() == 0
     }

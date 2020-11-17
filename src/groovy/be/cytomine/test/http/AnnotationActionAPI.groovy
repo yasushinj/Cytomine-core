@@ -46,4 +46,18 @@ class AnnotationActionAPI extends DomainAPI {
         if(beforeThan) URL += "&beforeThan=$beforeThan"
         return doGET(URL, username, password)
     }
+
+    static def listBySlice(Long idSlice, String username, String password, Long afterThan = null, Long beforeThan = null) {
+        String URL = Infos.CYTOMINEURL + "/api/sliceinstance/$idSlice/annotationactions.json?showDetails=true"
+        if(afterThan) URL += "&afterThan=$afterThan"
+        if(beforeThan) URL += "&beforeThan=$beforeThan"
+        return doGET(URL, username, password)
+    }
+
+    static def listBySliceAndUser(Long idSlice,Long idUser, String username, String password, Long afterThan = null, Long beforeThan = null) {
+        String URL = Infos.CYTOMINEURL + "/api/sliceinstance/$idSlice/annotationactions.json?user=$idUser&showDetails=true"
+        if(afterThan) URL += "&afterThan=$afterThan"
+        if(beforeThan) URL += "&beforeThan=$beforeThan"
+        return doGET(URL, username, password)
+    }
 }

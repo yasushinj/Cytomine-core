@@ -232,7 +232,10 @@ class AnnotationUrlMappings {
             action = [POST:"add"]
         }
         "/api/imageinstance/$image/annotationactions.$format" (controller : "restAnnotationAction") {
-            action = [GET:"list"]
+            action = [GET:"listByImage"]
+        }
+        "/api/sliceinstance/$slice/annotationactions.$format" (controller : "restAnnotationAction") {
+            action = [GET:"listBySlice"]
         }
 
         "/api/project/$project/annotationaction/count.$format"(controller: "restAnnotationAction"){
