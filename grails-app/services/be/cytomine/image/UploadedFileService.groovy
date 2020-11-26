@@ -165,6 +165,7 @@ class UploadedFileService extends ModelService {
 
         if (fif) {
             String downloadURL = ImageServer.list().get(0).url
+            fif = URLEncoder.encode(fif, "UTF-8")
             downloadURL += "/image/download?fif=$fif"
             if(uploadedFile.image) downloadURL += "&mimeType=${uploadedFile.image.mimeType}"
             return downloadURL
