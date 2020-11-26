@@ -111,6 +111,8 @@ class SharedAnnotationService extends ModelService {
             params.format = "png"
             params.alphaMask = true
 
+            if(!params.maxSize) params.maxSize = 256
+
             String cropURL = annotation.toCropURL(params)
             if (cropURL != null) {
                 log.info "Load image from " + annotation.toCropURL(params)
