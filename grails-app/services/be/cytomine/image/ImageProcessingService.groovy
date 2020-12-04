@@ -77,7 +77,12 @@ class ImageProcessingService {
     public BufferedImage getImageFromURL(String url) throws MalformedURLException, IOException, Exception {
         log.debug("readBufferedImageFromURL:"+url);
         URL URL = new URL(url);
-        HttpHost targetHost = new HttpHost(URL.getHost(), URL.getPort());
+        HttpHost targetHost
+        if(url.substring(0,8).equals("https://")){
+            targetHost = new HttpHost(URL.getHost(), 443, "https");
+        } else {
+            targetHost = new HttpHost(URL.getHost(), URL.getPort());
+        }
         log.debug("targetHost:"+targetHost);
         DefaultHttpClient client = new DefaultHttpClient();
         log.debug("client:"+client);
