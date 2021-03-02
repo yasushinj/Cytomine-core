@@ -305,8 +305,47 @@ class RestUserAnnotationController extends RestController {
         UserAnnotation annotation = UserAnnotation.read(params.long("id"))
         if (annotation) {
             params.alphaMask = true
-            // redirect to AbstractImageController crop
-            redirect (url : annotation.toCropURL(params))
+            // Quickfix : bypass AbstractImageController crop and redirect to IMS
+            String redirection = abstractImageService.crop(annotation.toCropParams(params), (new URI(annotation.toCropURL(params))).query)
+            log.info "redirect to "+redirection
+
+
+            if(redirection.length()<2000){
+                log.info "redirect $redirection"
+                redirect (url : redirection)
+            } else {
+                URL url = new URL(redirection)
+
+                log.info "URL too long "+redirection.length()+". Post request to ${url.protocol}://${url.host}${url.path}"
+
+                def queries = url.query.split("&")
+                List<NameValuePair> parameters = new ArrayList<NameValuePair>(queries.size());
+                for(String parameter : queries){
+                    String[] tmp = parameter.split('=');
+                    parameters.add(new BasicNameValuePair(tmp[0], URLDecoder.decode(tmp[1])));
+                }
+
+                org.apache.http.client.HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost("${url.protocol}://${url.host}${url.path}");
+
+                httppost.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
+
+                HttpResponse httpResponse = httpclient.execute(httppost);
+                InputStream instream = httpResponse.getEntity().getContent()
+
+                byte[] bytesOut = IOUtils.toByteArray(instream);
+                response.contentLength = bytesOut.length;
+                response.setHeader("Connection", "Keep-Alive")
+                response.setHeader("Accept-Ranges", "bytes")
+                if(params.format == "png") {
+                    response.setHeader("Content-Type", "image/png")
+                } else {
+                    response.setHeader("Content-Type", "image/jpeg")
+                }
+                response.getOutputStream() << bytesOut
+                response.getOutputStream().flush()
+            }
+
         } else {
             responseNotFound("UserAnnotation", params.id)
         }
