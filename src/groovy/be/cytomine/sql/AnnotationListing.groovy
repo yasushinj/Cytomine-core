@@ -207,15 +207,42 @@ abstract class AnnotationListing {
                         createOrderBy()
 
         if(term || terms){
+            def request = "SELECT DISTINCT a.*, "
             sqlColumns = sqlColumns.findAll{it.key != "term" && it.key != "annotationTerms" && it.key != "userTerm"}
+            if (this instanceof  AlgoAnnotationListing) {
+                request += "aat.term_id as term, aat.id as annotationTerms, aat.user_job_id as userTerm "
+            } else if (this instanceof ReviewedAnnotationListing) {
+                request += "at.term_id as term, 0 as annotationTerms, a.user as userTerm "
+            } else {
+                request += "at.term_id as term, at.id as annotationTerms, at.user_id as userTerm "
+            }
 
-            return "SELECT DISTINCT a.*, at.term_id as term , at.id as annotationTerms, at.user_id as userTerm\n " +
-                    "FROM ("+
-                    getSelect(sqlColumns) + getFrom() + whereRequest +
-                    " ) a \n" +
-                    "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id " +
-                    "WHERE at.deleted IS NULL "
-                    "ORDER BY a.id DESC"
+            request += "FROM (" + getSelect(sqlColumns) + getFrom() + whereRequest + ") a \n"
+
+            if (this instanceof AlgoAnnotationListing) {
+                request += "LEFT OUTER JOIN algo_annotation_term aat ON aat.annotation_ident = a.id "
+            } else if (this instanceof ReviewedAnnotationListing) {
+                request += "LEFT OUTER JOIN reviewed_annotation_term at ON a.id = at.reviewed_annotation_terms_id "
+            } else {
+                request += "LEFT OUTER JOIN annotation_term at ON a.id = at.user_annotation_id "
+            }
+
+            request += "WHERE true "
+            if (this instanceof AlgoAnnotationListing) {
+                request += "AND aat.deleted IS NULL "
+            } else if (!(this instanceof ReviewedAnnotationListing)) {
+                request += "AND at.deleted IS NULL "
+            }
+            request += "ORDER BY a.id desc "
+
+            if (this instanceof AlgoAnnotationListing) {
+                request += ", aat.term_id "
+            }
+            else {
+                request += ", at.term_id "
+            }
+
+            return request
         }
         return getSelect(sqlColumns) + getFrom() + whereRequest
 
@@ -380,7 +407,7 @@ abstract class AnnotationListing {
     def getTermsConst() {
         if (terms) {
             addIfMissingColumn('term')
-            return "AND (at.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
+            return "AND ((at.term_id IN (${terms.join(',')}) AND at.deleted IS NULL)" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -520,7 +547,7 @@ class UserAnnotationListing extends AnnotationListing {
                     wkt: [location: 'a.wkt_location'],
                     gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
                     term: [term: 'at.term_id', annotationTerms: 'at.id', userTerm: 'at.user_id'],
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
+                    image: [originalfilename: 'ai.original_filename', instancefilename: 'COALESCE(ii.instance_filename, ai.original_filename)'],
                     algo: [id: 'aat.id', rate: 'aat.rate', idTerm: 'aat.term_id', idExpectedTerm: 'aat.expected_term_id'],
                     user: [creator: 'u.username', lastname: 'u.lastname', firstname: 'u.firstname']
             ]
@@ -636,7 +663,7 @@ class AlgoAnnotationListing extends AnnotationListing {
                     wkt: [location: 'a.wkt_location'],
                     gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
                     term: [term: 'aat.term_id', annotationTerms: 'aat.id', userTerm: 'aat.user_job_id', rate: 'aat.rate'],
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
+                    image: [originalfilename: 'ai.original_filename', instancefilename: 'COALESCE(ii.instance_filename, ai.original_filename)'],
                     user: [creator: 'u.username', software: 's.name', job: 'j.created']
             ]
 
@@ -703,7 +730,7 @@ class AlgoAnnotationListing extends AnnotationListing {
 
         if (terms) {
             addIfMissingColumn('term')
-            return "AND (aat.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR aat.term_id IS NULL" : "") + ")\n"
+            return "AND ((aat.term_id IN (${terms.join(',')}) AND aat.deleted IS NULL)" + ((noTerm) ? " OR aat.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
@@ -768,7 +795,7 @@ class ReviewedAnnotationListing extends AnnotationListing {
                     wkt: [location: 'a.wkt_location'],
                     gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
                     term: [term: 'at.term_id', annotationTerms: "0", userTerm: 'a.user_id'],//user who add the term, is the user that create reviewedannotation (a.user_id)
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
+                    image: [originalfilename: 'ai.original_filename', instancefilename: 'COALESCE(ii.instance_filename, ai.original_filename)'],
                     algo: [id: 'aat.id', rate: 'aat.rate'],
                     user: [creator: 'u.username', lastname: 'u.lastname', firstname: 'u.firstname']
             ]
@@ -910,7 +937,7 @@ class RoiAnnotationListing extends AnnotationListing {
                     ],
                     wkt: [location: 'a.wkt_location'],
                     gis: [area: 'area', areaUnit: 'area_unit', perimeter: 'perimeter', perimeterUnit: 'perimeter_unit', x: 'ST_X(ST_centroid(a.location))', y: 'ST_Y(ST_centroid(a.location))'],
-                    image: [originalfilename: 'ai.original_filename', instancefilename: 'ii.instance_filename'],
+                    image: [originalfilename: 'ai.original_filename', instancefilename: 'COALESCE(ii.instance_filename, ai.original_filename)'],
                     user: [creator: 'u.username', lastname: 'u.lastname', firstname: 'u.firstname']
             ]
 
