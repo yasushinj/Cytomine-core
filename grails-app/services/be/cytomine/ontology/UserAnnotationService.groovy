@@ -250,9 +250,11 @@ class UserAnnotationService extends ModelService {
 
         annotationForm = annotationForm.intersection(imageBounds)
 
-        def boundaries = GeometryUtils.getGeometryBoundaries(annotationForm)
-        if(boundaries.width == 0 || boundaries.height == 0){
-            throw new WrongArgumentException("Annotation dimension not valid")
+        if(!(annotationForm.geometryType.equals("LineString"))) {
+            def boundaries = GeometryUtils.getGeometryBoundaries(annotationForm)
+            if(boundaries == null || boundaries.width == 0 || boundaries.height == 0){
+                throw new WrongArgumentException("Annotation dimension not valid")
+            }
         }
 
         //simplify annotation
