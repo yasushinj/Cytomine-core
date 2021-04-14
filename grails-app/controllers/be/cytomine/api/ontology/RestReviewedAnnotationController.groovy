@@ -530,7 +530,7 @@ class RestReviewedAnnotationController extends RestController {
     def downloadDocumentByProject() {
         Long afterThan = params.getLong('afterThan')
         Long beforeThan = params.getLong('beforeThan')
-        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.boolean("noTerm"), params.boolean("multipleTerms"),
+        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.boolean("noTerm", false), params.boolean("multipleTerms", false),
                 params.reviewUsers, params.images, afterThan, beforeThan, params.format, response, "REVIEWEDANNOTATION")
     }
 
