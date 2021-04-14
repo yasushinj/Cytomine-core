@@ -891,6 +891,7 @@ class ImageInstanceService extends ModelService {
         def validParameters = getDomainAssociatedSearchParameters(ImageInstance, searchParameters)
 
         String abstractImageAlias = "ai"
+        String imageInstanceAlias = "ii"
         validParameters.addAll(getDomainAssociatedSearchParameters(AbstractImage, searchParameters).collect {[operator:it.operator, property:abstractImageAlias+"."+it.property, value:it.value]})
         validParameters.addAll(getDomainAssociatedSearchParameters(Mime, searchParameters).collect {[operator:it.operator, property:"mime."+it.property, value:it.value]})
 
@@ -911,6 +912,10 @@ class ImageInstanceService extends ModelService {
             log.debug "The following search parameters have not been validated: "+searchParameters
         }
 
+        validParameters.findAll { it.property.equals("baseImage") }.each {
+            it.property = "base_image_id"
+            it.value = it.value.id
+        }
         return validParameters
     }
 
