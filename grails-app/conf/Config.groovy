@@ -338,6 +338,21 @@ cytomine.customUI.project = [
         "project-information-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
 
+        //image details
+        "project-explore-image-overview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        //"project-explore-image-status":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-description":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-tags":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-properties":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-attached-files":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-slide-preview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-original-filename":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        /*"project-explore-image-format":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-vendor":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-size":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-resolution":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-magnification":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],*/
+
         //explore
         "project-explore-hide-tools":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-explore-overview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
