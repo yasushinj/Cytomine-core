@@ -71,7 +71,7 @@ class ImagePropertiesService implements Serializable{
         def heightProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.height")
         if (heightProperty) image.setHeight(Integer.parseInt(heightProperty.getValue()))
         else log.error "heightProperty is null"
-        if(!widthProperty || !heightProperty){
+        if((!widthProperty && !image.width) || (!heightProperty && !image.height)){
             throw new MiddlewareException("Width or Height cannot be determined")
         }
         //Magnification
