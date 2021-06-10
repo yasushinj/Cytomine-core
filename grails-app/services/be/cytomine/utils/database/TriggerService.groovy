@@ -120,9 +120,9 @@ class TriggerService {
                 SET count_image_annotations = count_image_annotations + 1
                 WHERE image_instance.id = NEW.image_id;
 
-                UPDATE project
-                SET count_annotations = count_annotations + 1
-                WHERE project.id = NEW.project_id;
+                --UPDATE project
+                --SET count_annotations = count_annotations + 1
+                --WHERE project.id = NEW.project_id;
 
                 SELECT count(*) INTO alreadyExist FROM annotation_index WHERE user_id = NEW.user_id AND image_id = NEW.image_id;
                 IF (alreadyExist=0) THEN
@@ -164,9 +164,9 @@ class TriggerService {
 
                 END IF;
                 IF NEW.deleted IS NULL AND OLD.deleted IS NOT NULL THEN
-                    UPDATE project
-                    SET count_annotations = count_annotations + 1
-                    WHERE project.id = OLD.project_id;
+                    --UPDATE project
+                    --SET count_annotations = count_annotations + 1
+                    --WHERE project.id = OLD.project_id;
 
                     UPDATE image_instance
                     SET count_image_annotations = count_image_annotations + 1
@@ -174,9 +174,9 @@ class TriggerService {
 
                     UPDATE annotation_index SET count_annotation = count_annotation+1, version = version+1 WHERE user_id = OLD.user_id AND image_id = OLD.image_id;
                 ELSEIF NEW.deleted IS NOT NULL AND OLD.deleted IS NULL THEN
-                    UPDATE project
-                    SET count_annotations = count_annotations - 1
-                    WHERE project.id = OLD.project_id;
+                    --UPDATE project
+                    --SET count_annotations = count_annotations - 1
+                    --WHERE project.id = OLD.project_id;
 
                     UPDATE image_instance
                     SET count_image_annotations = count_image_annotations - 1
@@ -209,7 +209,7 @@ class TriggerService {
             currentIndex  annotation_index%ROWTYPE;
         BEGIN
             SELECT * INTO currentImage FROM image_instance where id = OLD.image_id FOR UPDATE;
-            SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
+            --SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
             SELECT * INTO currentIndex FROM annotation_index WHERE user_id = OLD.user_id AND image_id = OLD.image_id;
             RETURN OLD;
         END ;
@@ -235,9 +235,9 @@ class TriggerService {
             current_project_id image_instance.id%TYPE;
             current_image_id project.id%TYPE;
         BEGIN
-                UPDATE project
-                SET count_annotations = count_annotations - 1
-                WHERE project.id = OLD.project_id;
+                --UPDATE project
+                --SET count_annotations = count_annotations - 1
+                --WHERE project.id = OLD.project_id;
 
                 UPDATE image_instance
                 SET count_image_annotations = count_image_annotations - 1
@@ -302,9 +302,9 @@ class TriggerService {
                 SET count_image_job_annotations = count_image_job_annotations + 1
                 WHERE image_instance.id = NEW.image_id;
 
-                UPDATE project
-                SET count_job_annotations = count_job_annotations + 1
-                WHERE project.id = NEW.project_id;
+                --UPDATE project
+                --SET count_job_annotations = count_job_annotations + 1
+                --WHERE project.id = NEW.project_id;
 
                 SELECT count(*) INTO alreadyExist FROM annotation_index WHERE user_id = NEW.user_id AND image_id = NEW.image_id;
                 IF (alreadyExist=0) THEN
@@ -335,9 +335,9 @@ class TriggerService {
             current_image_id project.id%TYPE;
         BEGIN
                 IF NEW.deleted IS NULL AND OLD.deleted IS NOT NULL THEN
-                    UPDATE project
-                    SET count_job_annotations = count_job_annotations + 1
-                    WHERE project.id = OLD.project_id;
+                    --UPDATE project
+                    --SET count_job_annotations = count_job_annotations + 1
+                    --WHERE project.id = OLD.project_id;
 
                     UPDATE image_instance
                     SET count_image_job_annotations = count_image_job_annotations + 1
@@ -345,9 +345,9 @@ class TriggerService {
 
                     UPDATE annotation_index SET count_annotation = count_annotation+1, version = version+1 WHERE user_id = OLD.user_id AND image_id = OLD.image_id;
                 ELSEIF NEW.deleted IS NOT NULL AND OLD.deleted IS NULL THEN
-                    UPDATE project
-                    SET count_job_annotations = count_job_annotations - 1
-                    WHERE project.id = OLD.project_id;
+                    --UPDATE project
+                    --SET count_job_annotations = count_job_annotations - 1
+                    --WHERE project.id = OLD.project_id;
 
                     UPDATE image_instance
                     SET count_image_job_annotations = count_image_job_annotations - 1
@@ -379,7 +379,7 @@ class TriggerService {
             currentIndex  annotation_index%ROWTYPE;
         BEGIN
             SELECT * INTO currentImage FROM image_instance where id = OLD.image_id FOR UPDATE;
-            SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
+            --SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
             SELECT * INTO currentIndex FROM annotation_index WHERE user_id = OLD.user_id AND image_id = OLD.image_id;
             RETURN OLD;
         END ;
@@ -405,9 +405,9 @@ class TriggerService {
             current_project_id image_instance.id%TYPE;
             current_image_id project.id%TYPE;
         BEGIN
-                UPDATE project
-                SET count_job_annotations = count_job_annotations - 1
-                WHERE project.id = OLD.project_id;
+                --UPDATE project
+                --SET count_job_annotations = count_job_annotations - 1
+                --WHERE project.id = OLD.project_id;
 
                 UPDATE image_instance
                 SET count_image_job_annotations = count_image_job_annotations - 1
@@ -532,7 +532,7 @@ class TriggerService {
         DECLARE
             currentProject  project%ROWTYPE;
         BEGIN
-            SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
+            --SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
             RETURN NEW;
         END ;
         \$decImageBefore\$ LANGUAGE plpgsql; """
@@ -712,9 +712,9 @@ class TriggerService {
             SET count_image_reviewed_annotations = count_image_reviewed_annotations + 1
             WHERE image_instance.id = NEW.image_id;
 
-            UPDATE project
-            SET count_reviewed_annotations = count_reviewed_annotations + 1
-            WHERE project.id = NEW.project_id;
+            --UPDATE project
+            --SET count_reviewed_annotations = count_reviewed_annotations + 1
+            --WHERE project.id = NEW.project_id;
 
 
             SELECT count(*) INTO alreadyExist FROM annotation_index WHERE user_id = NEW.review_user_id AND image_id = NEW.image_id;
@@ -764,15 +764,15 @@ class TriggerService {
         BEGIN
 
             IF NEW.deleted IS NULL AND OLD.deleted IS NOT NULL THEN
-                UPDATE project SET count_images = count_images + 1 WHERE project.id = OLD.project_id;
+                --UPDATE project SET count_images = count_images + 1 WHERE project.id = OLD.project_id;
 
                 UPDATE image_instance
                 SET count_image_reviewed_annotations = count_image_reviewed_annotations + 1
                 WHERE image_instance.id = NEW.image_id;
 
-                UPDATE project
-                SET count_reviewed_annotations = count_reviewed_annotations + 1
-                WHERE project.id = NEW.project_id;
+                --UPDATE project
+                --SET count_reviewed_annotations = count_reviewed_annotations + 1
+                --WHERE project.id = NEW.project_id;
 
 
                 SELECT count(*) INTO alreadyExist FROM annotation_index WHERE user_id = NEW.review_user_id AND image_id = NEW.image_id;
@@ -796,15 +796,15 @@ class TriggerService {
 
 
             ELSEIF NEW.deleted IS NOT NULL AND OLD.deleted IS NULL THEN
-                UPDATE project SET count_images = count_images - 1 WHERE project.id = OLD.project_id;
+                --UPDATE project SET count_images = count_images - 1 WHERE project.id = OLD.project_id;
 
                 UPDATE image_instance
                 SET count_image_reviewed_annotations = count_image_reviewed_annotations - 1
                 WHERE image_instance.id = NEW.image_id;
 
-                UPDATE project
-                SET count_reviewed_annotations = count_reviewed_annotations - 1
-                WHERE project.id = NEW.project_id;
+                --UPDATE project
+                --SET count_reviewed_annotations = count_reviewed_annotations - 1
+                --WHERE project.id = NEW.project_id;
 
 
                 SELECT count(*) INTO alreadyExist FROM annotation_index WHERE user_id = NEW.review_user_id AND image_id = NEW.image_id;
@@ -859,7 +859,7 @@ class TriggerService {
            currentAlgoAnnotation algo_annotation%ROWTYPE;
         BEGIN
             SELECT * INTO currentImage FROM image_instance where id = OLD.image_id FOR UPDATE;
-            SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
+            --SELECT * INTO currentProject FROM project where id = OLD.project_id FOR UPDATE;
             SELECT * INTO currentAnnotationIndex FROM annotation_index WHERE user_id = OLD.review_user_id AND image_id = OLD.image_id;
 
             SELECT parent_class_name INTO current_class from reviewed_annotation where id = OLD.id;
@@ -895,9 +895,9 @@ class TriggerService {
             SET count_image_reviewed_annotations = count_image_reviewed_annotations - 1
             WHERE image_instance.id = OLD.image_id;
 
-            UPDATE project
-            SET count_reviewed_annotations = count_reviewed_annotations - 1
-            WHERE project.id = OLD.project_id;
+            --UPDATE project
+            --SET count_reviewed_annotations = count_reviewed_annotations - 1
+            --WHERE project.id = OLD.project_id;
 
             UPDATE annotation_index
             SET count_reviewed_annotation = count_reviewed_annotation-1, version = version+1

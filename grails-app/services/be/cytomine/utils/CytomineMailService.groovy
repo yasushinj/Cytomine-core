@@ -30,7 +30,8 @@ import javax.mail.internet.MimeMessage
 
 class CytomineMailService {
 
-    static final String NO_REPLY_EMAIL = "no-reply@cytomine.org"
+    //static final String NO_REPLY_EMAIL = "noreply@revealbio.com"
+    static final String NO_REPLY_EMAIL = "noreply@revealbio.com"
 
     static transactional = false
 
@@ -40,6 +41,12 @@ class CytomineMailService {
         String defaultEmail = Holders.getGrailsApplication().config.grails.notification.email
 
         if (!from) from = defaultEmail
+
+        log.info "defaultEmail : $defaultEmail"
+        log.info "from : $from"
+        //log.info "NO_REPLY_EMAIL $NO_REPLY_EMAIL"
+        //String ID = Holders.getGrailsApplication().config.grails.notification.password
+        //log.info "ID  : $ID"
 
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable","true");
@@ -58,7 +65,7 @@ class CytomineMailService {
         MimeMessage mail = sender.createMimeMessage()
         MimeMessageHelper helper = new MimeMessageHelper(mail, true)
 
-        helper.setReplyTo("noreply@cytomine.org")
+        helper.setReplyTo("support@revealbio.com")
         helper.setFrom(from)
         helper.setTo(to)
         //helper.setCc(cc)
@@ -68,12 +75,12 @@ class CytomineMailService {
             helper.addInline((String) it.cid, new FileSystemResource((File)it.file))
         }
 
-        log.info "send $mail"
+        //log.info "send $mail"
+        //log.info "sender $sender"
         try {
             sender.send(mail)
         } catch (AuthenticationFailedException | MessagingException | MailAuthenticationException e) {
             log.error "can't send email $mail (MessagingException)"
-            e.printStackTrace()
             throw new MiddlewareException(e.getMessage())
         }
     }

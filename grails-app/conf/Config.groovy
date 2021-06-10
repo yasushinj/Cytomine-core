@@ -330,12 +330,19 @@ cytomine.customUI.global = [
 ]
 
 cytomine.customUI.project = [
+        //Reveal custom field
+        "project-qc-field": ["ADMIN_PROJECT":false, "CONTRIBUTOR_PROJECT":false],
+        "project-data-field": ["ADMIN_PROJECT":false, "CONTRIBUTOR_PROJECT":false],
+        "project-status-field": ["ADMIN_PROJECT":false, "CONTRIBUTOR_PROJECT":false],
+        
         //tabs
         "project-images-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-annotations-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
         "project-jobs-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-activities-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
         "project-information-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-results-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
+        "project-report-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
 
         //explore
@@ -434,14 +441,14 @@ cytomine.annotation.maxNumberOfPoint = 200
 
 
 // instance hoster configurations
-grails.admin.email = "info@cytomine.org"
-grails.notification.email = ""
-grails.notification.password = ""
+grails.admin.email = "sw@revealbio.com"
+grails.notification.email = "noreply@revealbio.com"
+grails.notification.password = "15de43b23d5c88dc96138dda2e69b1b0e42e50f6"
 grails.notification.smtp.host = "smtp.gmail.com"
 grails.notification.smtp.port = "587"
 
-grails.instanceHostWebsite = "https://www.cytomine.org"
-grails.instanceHostSupportMail = "support@cytomine.coop"
+grails.instanceHostWebsite = "revealbio.com"
+grails.instanceHostSupportMail = "support@revealbio.com"
 grails.instanceHostPhoneNumber = null
 
 grails.defaultLanguage = "ENGLISH"

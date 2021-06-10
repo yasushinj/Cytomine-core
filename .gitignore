@@ -2,3 +2,5 @@
 target/*
 scripts/yui-compressor-ant-task/*
 /grails-app/conf/Config.groovy
+temp/*
+*tomcat*

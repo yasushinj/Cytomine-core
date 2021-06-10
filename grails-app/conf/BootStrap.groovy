@@ -192,10 +192,12 @@ class BootStrap {
         bootstrapUtilsService.createMultipleRetrieval()
         bootstrapUtilsService.updateDefaultProcessingServer()
 
+        log.info "create ProjectConnectoin and Image Consultation..."
         bootstrapUtilsService.fillProjectConnections();
         bootstrapUtilsService.fillImageConsultations();
 
         fixPlugins()
+        log.info "End of Boostrap init()..."
     }
 
     private void mockServicesForTests(){

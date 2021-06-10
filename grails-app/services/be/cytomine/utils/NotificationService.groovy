@@ -108,7 +108,7 @@ class NotificationService {
                 mailFrom: grailsApplication.config.grails.instanceHostSupportMail,
                 phoneNumber: grailsApplication.config.grails.instanceHostPhoneNumber
         ])
-        String mailTitle = sender.getFirstname() + " " + sender.getLastname() + " invited you to join Cytomine"
+        String mailTitle = sender.getFirstname() + " " + sender.getLastname() + " invited you to join ImagdEx"
         cytomineMailService.send(
                 null,
                 (String[]) [guestUser.getEmail()],
@@ -151,10 +151,10 @@ class NotificationService {
                 phoneNumber: grailsApplication.config.grails.instanceHostPhoneNumber
         ])
         cytomineMailService.send(
-                cytomineMailService.NO_REPLY_EMAIL,
+                "noreply@revealbio.com",
                 (String[]) [user.getEmail()],
                 "",
-                "Cytomine : your username is $user.username",
+                "ImageDx : your username is $user.username",
                 message)
     }
 
@@ -170,10 +170,10 @@ class NotificationService {
         ])
 
         cytomineMailService.send(
-                cytomineMailService.NO_REPLY_EMAIL,
+                "noreply@revealbio.com",
                 (String[]) [user.getEmail()],
                 "",
-                "Cytomine : reset your password",
+                "ImageDx : reset your password",
                 message,
                 null)
     }

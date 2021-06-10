@@ -5,30 +5,20 @@
     <tr>
         <td></td>
         <td class="container" bgcolor="#FFFFFF">
-
             <div class="content">
-                <table>
+                <table class="social" width="100%">
                     <tr>
                         <td>
-                            <h3>Dear Madam/Sir,</h3>
+                            <div class="rv_mail">             
+                                <p class="rv_font">
+                                    Your ImageDx username is <%= username %>
+                                </p>
 
-                            <p class="lead">
-                                You receive this email because <%= senderFirstname %> <%= senderLastname %> (<%=  senderEmail %>) invited you to join Cytomine, a rich internet application for collaborative analysis of multi-gigapixel images. Welcome !
-                            </p>
-
-                            <p class="callout">
-                                Your Cytomine username is <%= username %>
-                            </p>
-
-                            <p>
-                                Click <a href='<%= by %>/#/account?token=<%= tokenKey %>&username=<%= username %>'> here</a> to sign in, set your firstname, lastname and change your password. <br />
-                                Please note that this link will expire on <%= expiryDate %>.
-                            </p>
-                            
-                            <p>
-                            For more information about Cytomine open-source project, please <a href='https://www.cytomine.org/'>visit our website</a>.
-                            </p>
-
+                                <p>
+                                    Click <a href='<%= by %>/#/account?token=<%= tokenKey %>&username=<%= username %>'> here</a> to sign in, set your firstname, lastname and change your password. <br />
+                                    Please note that this link will expire on <%= expiryDate %>.
+                                </p>
+                            </div>
                             <!-- social & contact -->
                             <g:render template="/mail/social" model="[website :website, mailFrom: mailFrom, phoneNumber:phoneNumber]"/>
 
@@ -36,7 +26,6 @@
                     </tr>
                 </table>
             </div><!-- /content -->
-
         </td>
         <td></td>
     </tr>

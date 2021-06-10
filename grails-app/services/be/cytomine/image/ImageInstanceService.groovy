@@ -252,6 +252,7 @@ class ImageInstanceService extends ModelService {
     }
 
     def listLastOpened(User user, Long offset = null, Long max = null) {
+        log.info "calling listLastOpened..."
         //get id of last open image
         securityACLService.checkIsSameUser(user,cytomineService.currentUser)
         def data = []
@@ -265,11 +266,14 @@ class ImageInstanceService extends ModelService {
                 [$limit: (max==null? 5 : max)]
         )
         //result = result.results().collect{it['_id']}.collect{[it["image"],it["user"]]}
+        def size = result.results().size()
+        log.info "listLastOpened=${user}, size=${size}"
         result.results().each {
             try {
                 ImageInstance image = read(it['_id'])
                 String filename;
                 filename = image.instanceFilename == null ? image.baseImage.originalFilename : image.instanceFilename;
+                log.info "filename=${filename}"
                 if(image.project.blindMode) filename = image.getBlindedName()
                 data << [id:it['_id'],date:it['date'], thumb: UrlApi.getAbstractImageThumbURL(image.baseImage.id),instanceFilename:filename,project:image.project.id]
             } catch(CytomineException e) {
@@ -277,6 +281,7 @@ class ImageInstanceService extends ModelService {
             }
         }
         data = data.sort{-it.date.getTime()}
+        log.info "data : ${data}"
         return data
     }
 

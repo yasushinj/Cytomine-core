@@ -17,7 +17,8 @@ import be.cytomine.CytomineDomain
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
+import grails.util.Environment
+import grails.util.Holders
 /**
  * Cytomine
  * User: stevben
@@ -27,10 +28,34 @@ import be.cytomine.CytomineDomain
 class ImageServerStorage {
     ImageServer imageServer
     Storage storage
+    
+    def grailsApplication
 
-    def getZoomifyUrl() {
+    def getZoomifyUrl_bk() {
+        log.info "calling getZoomifyUrl().."
         log.info "imageServer.url=${imageServer.url}"
+
         return imageServer.url + imageServer.service + "?zoomify=" + storage.getBasePath()
+        
+    }
+    // [reveal-change] only return valid image server url from config file
+    def getZoomifyUrl() {
+        log.info "calling getZoomifyUrl().."
+        log.info "imageServer.url=${imageServer.url}"
+        try {
+            def url = imageServer.url
+            log.info "url=${url}"
+            if(grailsApplication.config.grails.imageServerURL.contains(url)) {  
+                return imageServer.url + imageServer.service + "?zoomify=" + storage.getBasePath()
+            } else {
+                def alternate_url = grailsApplication.config.grails.imageServerURL[0]
+                log.info "alternate url=${alternate_url}"
+                return alternate_url + imageServer.service + "?zoomify=" + storage.getBasePath()
+            }
+        } catch (Exception e) {
+            e.printStackTrace()
+            return imageServer.url + imageServer.service + "?zoomify=" + storage.getBasePath()
+        }
     }
 
     /**

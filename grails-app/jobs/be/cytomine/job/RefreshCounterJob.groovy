@@ -29,6 +29,6 @@ class RefreshCounterJob {
     }
 
     def execute() {
-        counterService.refreshCounter()
+        //counterService.refreshCounter()
     }
 }

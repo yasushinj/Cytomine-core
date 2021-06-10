@@ -361,6 +361,7 @@ class RestImageInstanceController extends RestController {
         log.info "queryString=$queryString"
 //        queryString = queryString.replace("?", "")
         String imageServerURL = imageInstance.baseImage.getRandomImageServerURL()
+        log.info "imageServerURL=${imageServerURL}"
         String fif = URLEncoder.encode(imageInstance.baseImage.absolutePath, "UTF-8")
         String mimeType = imageInstance.baseImage.mimeType
         String url

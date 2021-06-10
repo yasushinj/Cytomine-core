@@ -179,7 +179,7 @@ class BootstrapUtilsService {
 
         def configs = []
 
-        if(!update) configs << new Configuration(key: "WELCOME", value: "<p>Welcome to the Cytomine software.</p><p>This software is supported by the <a href='https://cytomine.coop'>Cytomine company</a></p>", readingRole: allUsers)
+        if(!update) configs << new Configuration(key: "WELCOME", value: "<p>Welcome to the ImageDx.</p><p>This software is supported by the <a href='https://revealbio.com'>Reveal Biosciences</a></p>", readingRole: allUsers)
 
         configs << new Configuration(key: "retrieval_enabled", value: update, readingRole: allUsers)
 
@@ -227,11 +227,15 @@ class BootstrapUtilsService {
             return
         }
 
+        //reveal change to retain existing retrival server in the database
         RetrievalServer.list().each { server ->
             if(!grailsApplication.config.grails.retrievalServerURL.contains(server.url)) {
-                log.info server.url + " is not in config, drop it"
-                log.info "delete Retrieval $server"
-                server.delete()
+                //log.info server.url + " is not in config, drop it"
+                //log.info "delete Retrieval $server"
+                log.info server.url + " is not in config as retrieval server, but keep it"
+                //server.delete()
+            } else {
+                log.info server.url + " is in config as retrieval server, so keep it"
             }
 
         }
@@ -239,7 +243,7 @@ class BootstrapUtilsService {
         if (Environment.getCurrent() != Environment.TEST) {
 
             grailsApplication.config.grails.retrievalServerURL.eachWithIndex { it, index ->
-
+                log.info "setting retrieval server " + "${it}"
                 if (!RetrievalServer.findByUrl(it)) {
                     RetrievalServer server =
                             new RetrievalServer(
@@ -290,33 +294,53 @@ class BootstrapUtilsService {
         MessageBrokerServer.findByHost(splittedURL[0])
     }
 
-    def createMultipleIS() {
-
+    def createMultipleIS_bk() {
+        //reveal change for bulkload to retain existing image server instance info
         ImageServer.list().each { server ->
             if(!grailsApplication.config.grails.imageServerURL.contains(server.url)) {
-                log.info server.url + " is not in config, drop it"
+                //log.info server.url + " is not in config, drop it"
                 MimeImageServer.findAllByImageServer(server).each {
-                    log.info "delete $it"
-                    it.delete()
+                    //log.info "delete $it"
+                    log.info server.url + " is not in config, but keep it for ImageServerURL"
+                    //it.delete()
                 }
 
                 ImageServerStorage.findAllByImageServer(server).each {
-                    log.info "delete $it"
-                    it.delete()
+                    //log.info "delete $it"
+                    log.info server.url + " is not in config, keep it for imageServerStorage"
+                    //it.delete()
                 }
-                log.info "delete IS $server"
-                server.delete()
+                //log.info "delete IS $server"
+                log.info server.url + " is not in config, keep this server"
+                //server.delete()
+            } else {
+                log.info server.url + " is in the list"
             }
-
+            
         }
 
 
 
         grailsApplication.config.grails.imageServerURL.eachWithIndex { it, index ->
+            log.info "creating image server : " + "${index} :" + " Url : " + it
             createNewIS(index+"",it)
         }
     }
 
+    // [reveal-change] retain old image servers
+    def createMultipleIS() {
+        
+        ImageServer.list().each { server ->
+           
+            log.info server.url + " is found in db"
+
+        }
+
+        grailsApplication.config.grails.imageServerURL.eachWithIndex { it, index ->
+            log.info "creating image server : " + "${index}" + ", Url : " + it
+            createNewIS(index+"",it)
+        }
+    }
 
     def createNewIS(String name = "", String url) {
 

@@ -117,9 +117,9 @@ grails.project.dependency.resolution = {
 grails.war.resources = { stagingDir ->
     delete(file:"${stagingDir}/WEB-INF/lib/DisableOptimizationsTransformation-0.1-SNAPSHOT.jar")
 }
+//"**/be/cytomine/utils/bootstrap/**",
 coverage {
     exclusions = [
-            "**/be/cytomine/utils/bootstrap/**",
             "**/be/cytomine/data/**",
             "**/be/cytomine/processing/job/**",
             "**/be/cytomine/processing/image/filters/**",

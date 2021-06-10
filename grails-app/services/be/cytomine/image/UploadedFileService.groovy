@@ -38,7 +38,7 @@ class UploadedFileService extends ModelService {
     def cytomineService
     def securityACLService
     def dataSource
-
+    def grailsApplication
 
     def currentDomain() {
         return UploadedFile
@@ -162,9 +162,10 @@ class UploadedFileService extends ModelService {
         securityACLService.checkIsSameUser(uploadedFile.user, cytomineService.currentUser)
 
         String fif = uploadedFile.absolutePath
-
+        // [ reveal-change ] filter image sever url from config file
         if (fif) {
-            String downloadURL = ImageServer.list().get(0).url
+            //String downloadURL = ImageServer.list().get(0).url
+            String downloadURL = grailsApplication.config.grails.imageServerURL[0]
             fif = URLEncoder.encode(fif, "UTF-8")
             downloadURL += "/image/download?fif=$fif"
             if(uploadedFile.image) downloadURL += "&mimeType=${uploadedFile.image.mimeType}"

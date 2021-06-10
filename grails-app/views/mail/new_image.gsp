@@ -5,26 +5,24 @@
     <tr>
         <td></td>
         <td class="container" bgcolor="#FFFFFF">
-
             <div class="content">
-                <table>
+                <table class="social" width="100%">
                     <tr>
                         <td>
-                            <h3>Hi,</h3>
+                            <div class="rv_mail">
+                                <p class="rv_font">
+                                    The image <%= abstractImageFilename %> is now available on ImageDx.<br/>
+                                    <ul>
+                                        <g:each in="${imagesInstances}">
+                                            <li>Click <a href="${it.urlImageInstance}">here</a> to visualize <%= abstractImageFilename %> in workspace ${it.projectName}</li>
+                                        </g:each>
+                                    </ul>
+                                </p>
 
-                            <p class="lead">
-                                The image <%= abstractImageFilename %> is now available on Cytomine.<br/>
-                                <ul>
-                                    <g:each in="${imagesInstances}">
-                                        <li>Click <a href="${it.urlImageInstance}">here</a> to visualize <%= abstractImageFilename %> in workspace ${it.projectName}</li>
-                                    </g:each>
-                                </ul>
-                            </p>
-
-                            <p>
-                                <img alt="<%= abstractImageFilename %>" src='cid:<%= cid %>' style="max-width: 400px; max-height: 400px;"/>
-                            </p>
-
+                                <p class="rv_font">
+                                    <img alt="<%= abstractImageFilename %>" src='cid:<%= cid %>' style="max-width: 400px; max-height: 400px;"/>
+                                </p>
+                            </div>
                             <!-- social & contact -->
                             <g:render template="/mail/social" model="[website :website, mailFrom: mailFrom, phoneNumber:phoneNumber]"/>
 
@@ -32,7 +30,6 @@
                     </tr>
                 </table>
             </div><!-- /content -->
-
         </td>
         <td></td>
     </tr>

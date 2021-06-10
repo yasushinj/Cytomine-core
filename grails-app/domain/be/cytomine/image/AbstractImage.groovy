@@ -31,6 +31,8 @@ import be.cytomine.utils.JSONUtils
 import org.restapidoc.annotation.RestApiObject
 import org.restapidoc.annotation.RestApiObjectField
 import org.restapidoc.annotation.RestApiObjectFields
+import grails.util.Environment
+import grails.util.Holders
 
 /**
  * An abstract image is an image that can be map with projects.
@@ -78,6 +80,7 @@ class AbstractImage extends CytomineDomain implements Serializable {
         @RestApiObjectField(apiFieldName = "metadataUrl", description = "URL to get image file metadata",allowedType = "string",useForCreation = false),
         @RestApiObjectField(apiFieldName = "thumb", description = "URL to get abstract image short view (htumb)",allowedType = "string",useForCreation = false)
     ])
+
     static transients = ["zoomLevels", "thumbURL"]
 
     static mapping = {
@@ -100,6 +103,8 @@ class AbstractImage extends CytomineDomain implements Serializable {
         magnification(nullable: true)
         user(nullable: true)
     }
+
+    def grailsApplication
 
     public beforeInsert() {
         super.beforeInsert()
@@ -216,14 +221,29 @@ class AbstractImage extends CytomineDomain implements Serializable {
         return mime?.mimeType
     }
 
+    // [ reveal-change ] making sure if returns image server defined in config file
     def getRandomImageServerURL() {
+        log.info "calling getRandomImageServerURL..."
+
         def imageServerStorages = getImageServersStorage()
         if (imageServerStorages == null || imageServerStorages.size() == 0) {
             throw new ServerException("no IMS found")
             //return null
         }
         def index = (Integer) Math.round(Math.random() * (imageServerStorages.size() - 1)) //select an url randomly
-        return imageServerStorages[index].imageServer.url
+        def url = imageServerStorages[index].imageServer.url 
+        def size =  grailsApplication.config.grails.imageServerURL.size()
+        
+        index = index % 2
+        if (index < size) {      
+            url = grailsApplication.config.grails.imageServerURL[index]
+        } else {
+            url = grailsApplication.config.grails.imageServerURL[0]
+        }
+        
+        log.info "gettng random server name : " + url + ", image servers size = " + "${size}"
+
+        return url
     }
 
     /*def getCropURL(def boundaries) {

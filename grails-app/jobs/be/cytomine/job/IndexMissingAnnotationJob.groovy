@@ -27,7 +27,8 @@ class IndexMissingAnnotationJob {
 
      def execute(){
          //ask indexed annotation
-         imageRetrievalService.indexMissingAnnotation()
+         //imageRetrievalService.indexMissingAnnotation()
+         print "IndexMissingAnnotationJob run!"
      }
 
 
