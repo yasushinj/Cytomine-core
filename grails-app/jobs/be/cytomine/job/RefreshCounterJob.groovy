@@ -30,5 +30,6 @@ class RefreshCounterJob {
 
     def execute() {
         //counterService.refreshCounter()
+        print "RefreshCounterJob run!"
     }
 }

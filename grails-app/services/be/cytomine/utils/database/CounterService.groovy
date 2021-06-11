@@ -59,13 +59,14 @@ class CounterService {
             * WHERE p.id IN (SELECT DISTINCT project_id FROM image_instance WHERE deleted IS NULL);
             *
             */
-            sql.executeUpdate("UPDATE project p\n" +
+            /*sql.executeUpdate("UPDATE project p\n" +
                     "  SET \n" +
                     "    count_annotations = (SELECT sum(count_image_annotations) FROM image_instance WHERE project_id = p.id AND deleted IS NULL),\n" +
                     "    count_job_annotations = (SELECT sum(count_image_job_annotations) FROM image_instance WHERE project_id = p.id AND deleted IS NULL),\n" +
                     "    count_reviewed_annotations = (SELECT sum(count_image_reviewed_annotations) FROM image_instance WHERE project_id = p.id AND deleted IS NULL),\n" +
                     "    count_images = (SELECT count(*) FROM image_instance WHERE project_id = p.id AND deleted IS NULL)\n" +
                     "WHERE p.id IN (SELECT DISTINCT project_id FROM image_instance WHERE deleted IS NULL)")
+            */
             try {
                 sql.close()
             }catch (Exception e) {}
