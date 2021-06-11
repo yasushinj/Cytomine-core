@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -97,7 +97,6 @@ class BootStrap {
 
         [
             "Environment" : Environment.getCurrent().name,
-            "Client": grailsApplication.config.grails.client,
             "Server URL": grailsApplication.config.grails.serverURL,
             "Current directory": new File( './' ).absolutePath,
             "HeadLess: ": java.awt.GraphicsEnvironment.isHeadless(),
@@ -163,13 +162,13 @@ class BootStrap {
         //keys regenerated at each deployment with Docker
         //if keys deleted from external config files for security, keep old keys
         if(grailsApplication.config.grails.ImageServerPrivateKey && grailsApplication.config.grails.ImageServerPublicKey) {
-            SecUser imageServerUser = SecUser.findByUsername("ImageServer1")
+            SecUser imageServerUser = SecUser.findByUsernameIlike("ImageServer1")
             imageServerUser.setPrivateKey(grailsApplication.config.grails.ImageServerPrivateKey)
             imageServerUser.setPublicKey(grailsApplication.config.grails.ImageServerPublicKey)
             imageServerUser.save(flush : true)
         }
         if(grailsApplication.config.grails.rabbitMQPrivateKey && grailsApplication.config.grails.rabbitMQPublicKey) {
-            SecUser rabbitMQUser = SecUser.findByUsername("rabbitmq")
+            SecUser rabbitMQUser = SecUser.findByUsernameIlike("rabbitmq")
             if(rabbitMQUser) {
                 rabbitMQUser.setPrivateKey(grailsApplication.config.grails.rabbitMQPrivateKey)
                 rabbitMQUser.setPublicKey(grailsApplication.config.grails.rabbitMQPublicKey)

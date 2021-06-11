@@ -1,7 +1,7 @@
 package be.cytomine.api.ontology
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ class RestUserAnnotationController extends RestController {
     def downloadDocumentByProject() {
         Long afterThan = params.getLong('afterThan')
         Long beforeThan = params.getLong('beforeThan')
-        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.noTerm, params.multipleTerms,
+        reportService.createAnnotationDocuments(params.long('id'), params.terms, params.boolean("noTerm", false), params.boolean("multipleTerms", false),
                 params.users, params.images, afterThan, beforeThan, params.format, response, "USERANNOTATION")
     }
 

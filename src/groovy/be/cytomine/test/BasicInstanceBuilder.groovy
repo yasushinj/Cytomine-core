@@ -1,7 +1,7 @@
 package be.cytomine.test
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -1054,6 +1054,21 @@ class BasicInstanceBuilder {
         def relationTerm = RelationTerm.findWhere('relation': relation, 'term1': term1, 'term2': term2)
         if (!relationTerm) {
             relationTerm = new RelationTerm(relation:relation, term1:term1, term2:term2)
+            saveDomain(relationTerm)
+        }
+        relationTerm
+    }
+
+    static RelationTerm getParentRelationTerm(Term parent, Term child) {
+        def relation = Relation.findByName(RelationTerm.names.PARENT)
+        if (!relation) {
+            relation = new Relation(name: RelationTerm.names.PARENT)
+            BasicInstanceBuilder.saveDomain(relation)
+        }
+
+        def relationTerm = RelationTerm.findWhere('relation': relation, 'term1': parent, 'term2': child)
+        if (!relationTerm) {
+            relationTerm = new RelationTerm(relation:relation, term1:parent, term2:child)
             saveDomain(relationTerm)
         }
         relationTerm

@@ -1,7 +1,7 @@
 package be.cytomine.utils.database
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -504,10 +504,6 @@ class TriggerService {
         String createFunction = """
         CREATE OR REPLACE FUNCTION afterDeleteImage() RETURNS TRIGGER AS \$decImageAfter\$
         BEGIN
-                UPDATE project
-                SET count_images = count_images - 1,
-                count_annotations = count_annotations - (SELECT COUNT(*) FROM user_annotation WHERE image_id = OLD.id)
-                WHERE id = OLD.project_id;
 
             RETURN OLD;
         END ;
@@ -555,17 +551,11 @@ class TriggerService {
             current_project_id image_instance.id%TYPE;
         BEGIN
             IF NEW.deleted IS NULL AND OLD.deleted IS NOT NULL THEN
-                UPDATE project SET count_images = count_images + 1,
-                count_annotations = count_annotations + (SELECT COUNT(*) FROM user_annotation WHERE image_id = OLD.id),
-                count_job_annotations = count_job_annotations + (SELECT COUNT(*) FROM algo_annotation WHERE image_id = OLD.id),
-                count_reviewed_annotations = count_reviewed_annotations + (SELECT COUNT(*) FROM reviewed_annotation WHERE image_id = OLD.id)
+                UPDATE project SET count_images = count_images + 1 
                 WHERE project.id = OLD.project_id;
             ELSEIF NEW.deleted IS NOT NULL AND OLD.deleted IS NULL THEN
                 UPDATE project
-                SET count_images = count_images - 1,
-                count_annotations = count_annotations - (SELECT COUNT(*) FROM user_annotation WHERE image_id = OLD.id),
-                count_job_annotations = count_job_annotations - (SELECT COUNT(*) FROM algo_annotation WHERE image_id = OLD.id),
-                count_reviewed_annotations = count_reviewed_annotations - (SELECT COUNT(*) FROM reviewed_annotation WHERE image_id = OLD.id)
+                SET count_images = count_images - 1
                 WHERE project.id = OLD.project_id;
             END IF;
 

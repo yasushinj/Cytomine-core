@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -896,6 +896,7 @@ class ImageInstanceService extends ModelService {
         def validParameters = getDomainAssociatedSearchParameters(ImageInstance, searchParameters)
 
         String abstractImageAlias = "ai"
+        String imageInstanceAlias = "ii"
         validParameters.addAll(getDomainAssociatedSearchParameters(AbstractImage, searchParameters).collect {[operator:it.operator, property:abstractImageAlias+"."+it.property, value:it.value]})
         validParameters.addAll(getDomainAssociatedSearchParameters(Mime, searchParameters).collect {[operator:it.operator, property:"mime."+it.property, value:it.value]})
 
@@ -916,6 +917,10 @@ class ImageInstanceService extends ModelService {
             log.debug "The following search parameters have not been validated: "+searchParameters
         }
 
+        validParameters.findAll { it.property.equals("baseImage") }.each {
+            it.property = "base_image_id"
+            it.value = it.value.id
+        }
         return validParameters
     }
 

@@ -1,7 +1,7 @@
 package be.cytomine.utils
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class ReportService {
     def exportService
     def secUserService
 
-    def createAnnotationDocuments(Long idProject, def termsParam, def noTerm, def multipleTerms, def usersParam, def imagesParam, Long afterThan, Long beforeThan, def format,def response, String type) {
+    def createAnnotationDocuments(Long idProject, def termsParam, boolean noTerm, boolean multipleTerms, def usersParam, def imagesParam, Long afterThan, Long beforeThan, def format,def response, String type) {
 
         Project project = projectService.read(idProject)
 

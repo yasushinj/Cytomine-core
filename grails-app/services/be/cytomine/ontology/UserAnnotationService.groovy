@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -250,9 +250,11 @@ class UserAnnotationService extends ModelService {
 
         annotationForm = annotationForm.intersection(imageBounds)
 
-        def boundaries = GeometryUtils.getGeometryBoundaries(annotationForm)
-        if(boundaries.width == 0 || boundaries.height == 0){
-            throw new WrongArgumentException("Annotation dimension not valid")
+        if(!(annotationForm.geometryType.equals("LineString"))) {
+            def boundaries = GeometryUtils.getGeometryBoundaries(annotationForm)
+            if(boundaries == null || boundaries.width == 0 || boundaries.height == 0){
+                throw new WrongArgumentException("Annotation dimension not valid")
+            }
         }
 
         //simplify annotation

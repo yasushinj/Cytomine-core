@@ -1,7 +1,7 @@
 package be.cytomine.image
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ class ImagePropertiesService implements Serializable{
         def heightProperty = Property.findByDomainIdentAndKey(image.id, "cytomine.height")
         if (heightProperty) image.setHeight(Integer.parseInt(heightProperty.getValue()))
         else log.error "heightProperty is null"
-        if(!widthProperty || !heightProperty){
+        if((!widthProperty && !image.width) || (!heightProperty && !image.height)){
             throw new MiddlewareException("Width or Height cannot be determined")
         }
         //Magnification

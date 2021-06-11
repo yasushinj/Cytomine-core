@@ -1,7 +1,7 @@
 package be.cytomine.search
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -119,6 +119,15 @@ class ImageInstanceSearchTests {
         json = JSON.parse(result.data)
         assert json.collection instanceof JSONArray
         assert json.size == 0
+
+        searchParameters = [[operator : "equals", field : "baseImage", value:img1.getBaseImage().id]]
+
+        result = ImageInstanceAPI.listByProject(project.id, 0,0, searchParameters, Infos.SUPERADMINLOGIN, Infos.SUPERADMINPASSWORD)
+        assert 200 == result.code
+        json = JSON.parse(result.data)
+        assert json.collection instanceof JSONArray
+        assert json.size > 0
+        assert json.collection.collect{it.baseImage}.every{it == img1.getBaseImage().id}
 
         searchParameters = [[operator : "ilike", field : "name", value:img1.getInstanceFilename()]]
 
@@ -379,8 +388,6 @@ class ImageInstanceSearchTests {
         assert ImageInstanceAPI.containsInJSONList(img1.id,json)
 
         assert json.collection[0].blindedName == json.collection[0].baseImage.toString()
-
-
     }
 
 

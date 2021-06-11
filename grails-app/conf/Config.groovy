@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -324,7 +324,6 @@ cytomine.customUI.global = [
         ontology: ["ROLE_ADMIN"],
         storage : ["ROLE_USER","ROLE_ADMIN"],
         activity : ["ALL"],
-        explore : ["ROLE_USER","ROLE_ADMIN"],
         admin : ["ROLE_ADMIN"],
         help : ["ALL"]
 ]
@@ -344,6 +343,21 @@ cytomine.customUI.project = [
         "project-results-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-report-tab":["ADMIN_PROJECT":false,"CONTRIBUTOR_PROJECT":false],
         "project-configuration-tab":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":false],
+
+        //image details
+        "project-explore-image-overview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        //"project-explore-image-status":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-description":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-tags":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-properties":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-attached-files":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-slide-preview":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-original-filename":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        /*"project-explore-image-format":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-vendor":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-size":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-resolution":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
+        "project-explore-image-magnification":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],*/
 
         //explore
         "project-explore-hide-tools":["ADMIN_PROJECT":true,"CONTRIBUTOR_PROJECT":true],
@@ -426,8 +440,6 @@ environments {
     }
 }
 
-
-grails.client = "NO"
 
 grails.plugin.springsecurity.password.algorithm = 'SHA-256'
 grails.plugin.springsecurity.password.hash.iterations = 1

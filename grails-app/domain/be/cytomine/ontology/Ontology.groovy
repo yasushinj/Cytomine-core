@@ -1,7 +1,7 @@
 package be.cytomine.ontology
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -115,11 +115,7 @@ class Ontology extends CytomineDomain implements Serializable {
             rootTerms << branch(it, relation)
         }
         rootTerms.sort { a, b ->
-            if (a.isFolder != b.isFolder) {
-                a.isFolder <=> b.isFolder
-            } else {
-                a.name <=> b.name
-            }
+            a.name <=> b.name
         }
         return rootTerms;
     }
@@ -167,9 +163,7 @@ class Ontology extends CytomineDomain implements Serializable {
             }
         }
         t.children.sort { a, b ->
-            if (a.isFolder != b.isFolder)
-                a.isFolder <=> b.isFolder
-            else a.name <=> b.name
+            a.name <=> b.name
         }
         t.isFolder = isFolder
         t.hideCheckbox = isFolder

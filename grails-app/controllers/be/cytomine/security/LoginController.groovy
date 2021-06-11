@@ -1,7 +1,7 @@
 package be.cytomine.security
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -196,7 +196,7 @@ class LoginController extends RestController {
     def loginWithToken() {
         String username = params.username
         String tokenKey = params.tokenKey
-        User user = User.findByUsername(username) //we are not logged, we bypass the service
+        User user = User.findByUsernameIlike(username) //we are not logged, we bypass the service
 
 
         AuthWithToken authToken = AuthWithToken.findByTokenKeyAndUser(tokenKey, user)
@@ -228,11 +228,11 @@ class LoginController extends RestController {
     }
 
     def buildToken() {
-        String username = params.username
-        Double validityMin = params.double('validity',60d)
-        User user = User.findByUsername(username)
+        String username = params.username ?: request.JSON.username
+        Double validityMin = params.validity ? params.double('validity',60d) : Double.parseDouble(request.JSON.validity.toString())
+        User user = User.findByUsernameIlike(username)
 
-        if(currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser)) {
+        if(user && currentRoleServiceProxy.isAdminByNow(cytomineService.currentUser)) {
             String tokenKey = UUID.randomUUID().toString()
             AuthWithToken token = new AuthWithToken(
                     user : user,
@@ -240,8 +240,10 @@ class LoginController extends RestController {
                     tokenKey: tokenKey
             ).save(flush : true)
             response([success: true, token:token], 200)
-        } else {
+        } else if(user){
             response([success: false, message: "You must be an admin/superadmin!"], 403)
+        } else {
+            response([success: false, message: username+" don't match with any user"], 403)
         }
 
     }
@@ -249,7 +251,7 @@ class LoginController extends RestController {
     def forgotPassword () {
         String username = params.j_username
         if (username) {
-            User user = User.findByUsername(username) //we are not logged, so we bypass the service
+            User user = User.findByUsernameIlike(username) //we are not logged, so we bypass the service
             if (user) {
                 String tokenKey = UUID.randomUUID().toString()
                 ForgotPasswordToken forgotPasswordToken = new ForgotPasswordToken(

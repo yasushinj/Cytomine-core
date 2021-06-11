@@ -1,7 +1,7 @@
 package be.cytomine.sql
 
 /*
-* Copyright (c) 2009-2020. Authors: see NOTICE file.
+* Copyright (c) 2009-2021. Authors: see NOTICE file.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -407,7 +407,10 @@ abstract class AnnotationListing {
     def getTermsConst() {
         if (terms) {
             addIfMissingColumn('term')
-            return "AND ((at.term_id IN (${terms.join(',')}) AND at.deleted IS NULL)" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
+            if (this instanceof ReviewedAnnotationListing)
+                return " AND (at.term_id IN (${terms.join(',')})" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
+            else
+                return " AND ((at.term_id IN (${terms.join(',')}) AND at.deleted IS NULL)" + ((noTerm) ? " OR at.term_id IS NULL" : "") + ")\n"
         } else {
             return ""
         }
